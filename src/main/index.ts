@@ -3,6 +3,8 @@ import process from 'node:process'
 import { electronApp, is, optimizer } from '@electron-toolkit/utils'
 import { app, BrowserWindow, ipcMain, shell } from 'electron'
 import icon from '../../resources/icon.png?asset'
+import { setupIpcADB } from './ipcADB'
+import { setupIpcCommon } from './ipcCommon'
 
 function createWindow(): void {
   // Create the browser window.
@@ -44,15 +46,15 @@ app.whenReady().then(() => {
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.electron')
 
+  setupIpcADB()
+  setupIpcCommon()
+
   // Default open or close DevTools by F12 in development
   // and ignore CommandOrControl + R in production.
   // see https://github.com/alex8088/electron-toolkit/tree/master/packages/utils
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)
   })
-
-  // IPC test
-  ipcMain.on('ping', () => console.warn('pong'))
 
   createWindow()
 
