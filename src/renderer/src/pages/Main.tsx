@@ -1,12 +1,14 @@
-import { HStack, VStack } from '@chakra-ui/react'
+import { VStack } from '@chakra-ui/react'
 import AppHeader from '@renderer/components/AppHeader'
-import Welcome from '@renderer/components/Welcome'
+import { DataGrid } from '@renderer/components/DataGrid'
+import { SubHeader } from '@renderer/components/SubHeader'
 
 export function Main() {
   return (
-    <VStack>
+    <VStack height="100vh">
       <AppHeader />
-      <Welcome />
+      <SubHeader />
+      <DataGrid />
     </VStack>
   )
 }

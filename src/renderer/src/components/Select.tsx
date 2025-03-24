@@ -14,7 +14,7 @@ interface CustomSelectProps {
     value: string
     description?: string
   }[]
-  value: string
+  value: string[]
   onChange: (value: string) => void // Handle change
   helperText?: string
   errorMessage?: string
@@ -28,9 +28,9 @@ const FLSelect: React.FC<CustomSelectProps> = ({
   label,
 }) => {
   const optionsCollection = createListCollection({
-    items: options,
+    items: options ?? [],
   })
-
+ 
   return (
     <Select.Root
       collection={optionsCollection}
@@ -44,7 +44,7 @@ const FLSelect: React.FC<CustomSelectProps> = ({
       {/* <Select.Label>{label}</Select.Label> */}
       <Select.Control>
         <Select.Trigger>
-          <Select.ValueText placeholder={label}  />
+          <Select.ValueText placeholder={label} />
         </Select.Trigger>
         <Select.IndicatorGroup>
           <Select.Indicator />
@@ -53,16 +53,18 @@ const FLSelect: React.FC<CustomSelectProps> = ({
       <Portal>
         <Select.Positioner>
           <Select.Content>
-            {options.map(option => (
-              <Select.Item item={option} key={option.value} > 
+            {options?.map(option => (
+              <Select.Item item={option} key={option?.value}>
                 <Stack gap="0">
-                  <Select.ItemText maxW="170px">{option.label}</Select.ItemText>
-                  {option.description && <Span color="fg.muted" textStyle="xs" maxW="170px">
-                    {option.description}
-                  </Span>}
+                  <Select.ItemText maxW="140px">{option?.label}</Select.ItemText>
+                  {option?.description && (
+                    <Span color="fg.muted" textStyle="xs" maxW="140px">
+                      {option.description}
+                    </Span>
+                  )}
                 </Stack>
                 <Select.ItemIndicator />
-            </Select.Item>
+              </Select.Item>
             ))}
           </Select.Content>
         </Select.Positioner>

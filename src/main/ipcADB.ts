@@ -10,8 +10,6 @@ export function setupIpcADB() {
   if (!fs.existsSync(tempDirPath)) {
     fs.mkdirSync(tempDirPath, { recursive: true })
   }
-  // db find
-  // find "$(xcrun simctl get_app_container booted com.example.myapp data)" -name "*.db"
 
   const getIOsSimulators = async () => {
     const deviceList = await new Promise<string>((resolve, reject) => {
@@ -49,7 +47,7 @@ export function setupIpcADB() {
 
       const parsedPackages = JSON.parse(packages)
 
-      return { success: true, parsedPackages }
+      return { success: true, packages: parsedPackages }
     }
     catch (error: any) {
       console.error('Error getting IOs packages', error)
@@ -125,9 +123,11 @@ export function setupIpcADB() {
         exec(`adb -s ${deviceId} shell pm list packages -3`, (error, stdout, stderr) => { // -3 lists only user-installed apps
           if (error) {
             reject(error)
-          } else if (stderr) {
+          }
+          else if (stderr) {
             reject(new Error(stderr))
-          } else {
+          }
+          else {
             resolve(stdout)
           }
         })
@@ -139,14 +139,14 @@ export function setupIpcADB() {
 
       const packages = userApps.sort((a, b) => a.localeCompare(b)).map((pkg) => {
         const parts = pkg.split('.')
-        const name = parts[parts.length - 1]
+        const name = parts[parts.length - 1].replace(/_/g, ' ').replace(/-/g, ' ')
         return {
-          name,
+          name: pkg,
           bundleId: pkg,
         }
       })
 
-      return { success: true, packages: packages }
+      return { success: true, packages }
     }
     catch (error: any) {
       console.error('Error getting Android packages', error)
@@ -155,7 +155,69 @@ export function setupIpcADB() {
   })
 
   // Get database files for a specific package
-  ipcMain.handle('adb:getDatabaseFiles', async (_event, deviceId, packageName) => {
+  ipcMain.handle('adb:getIOSDatabaseFiles', async (_event, deviceId, packageName) => {
+    try {
+      const databaseFiles: Array<{ path: string, packageName: string, filename: string, location: string }> = []
+
+      // Get the app's data container path
+      const containerPathCmd = `xcrun simctl get_app_container ${deviceId} ${packageName} data`
+      const containerPath = await new Promise<string>((resolve, reject) => {
+        exec(containerPathCmd, (error, stdout, stderr) => {
+          if (error) {
+            reject(error)
+          }
+          else if (stderr) {
+            reject(new Error(stderr))
+          }
+          else {
+            resolve(stdout.trim())
+          }
+        })
+      })
+
+      // Search for database files
+      const fileExtensions = ['db', 'sqlite', 'sqlite3', 'sqlitedb']
+      const findPattern = fileExtensions.map(ext => `-name "*.${ext}"`).join(' -o ')
+      const findCmd = `find "${containerPath}" ${findPattern} 2>/dev/null`
+
+      const filesOutput = await new Promise<string>((resolve, reject) => {
+        exec(findCmd, (error, stdout, stderr) => {
+          if (error) {
+            reject(error)
+          }
+          else {
+            // We don't reject on stderr since 'find' might have permission warnings
+            resolve(stdout)
+          }
+        })
+      })
+
+      // Process found files
+      const filePaths = filesOutput.split('\n').filter(line => line.trim().length > 0)
+
+      filePaths.forEach((filePath) => {
+        const filename = path.basename(filePath)
+        // Determine relative location from container path
+        const relativePath = filePath.replace(containerPath, '').split('/').filter(p => p).shift() || 'root'
+
+        databaseFiles.push({
+          path: filePath,
+          packageName,
+          filename,
+          location: relativePath,
+        })
+      })
+
+      return { success: true, files: databaseFiles }
+    }
+    catch (error: any) {
+      console.error('Error getting iOS database files', error)
+      return { success: false, error: error.message }
+    }
+  })
+
+  // Get database files for a specific package
+  ipcMain.handle('adb:getAndroidDatabaseFiles', async (_event, deviceId, packageName) => {
     try {
       const databaseFiles: Array<{ path: string, packageName: string, filename: string, location: string }> = []
 
