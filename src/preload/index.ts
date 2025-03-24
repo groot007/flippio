@@ -6,8 +6,22 @@ import { contextBridge, ipcRenderer } from 'electron'
 const api = {
   getDevices: () => ipcRenderer.invoke('adb:getDevices'),
   getIOSPackages: (deviceId: string) => ipcRenderer.invoke('device:getIosPackages', deviceId),
-  getAndroidPackages: (deviceId: string) => 
-    ipcRenderer.invoke('adb:getPackages', deviceId)
+  getAndroidPackages: (deviceId: string) =>
+    ipcRenderer.invoke('adb:getPackages', deviceId),
+  getAndroidDatabaseFiles: (deviceId: string, applicationId) =>
+    ipcRenderer.invoke('adb:getAndroidDatabaseFiles', deviceId, applicationId),
+  getIOSDatabaseFiles: (deviceId: string, applicationId) =>
+    ipcRenderer.invoke('adb:getIOSDatabaseFiles', deviceId, applicationId),
+  pullDatabaseFile: (deviceId: string, remotePath: string, localPath: string = '') =>
+    ipcRenderer.invoke('adb:pullDatabaseFile', deviceId, remotePath, localPath),
+  pushDatabaseFile: (deviceId: string, localPath: string, packageName: string, remotePath: string) =>
+    ipcRenderer.invoke('adb:pushDatabaseFile', deviceId, localPath, packageName, remotePath),
+  getTables: () => ipcRenderer.invoke('db:getTables'),
+  openDatabase: (filePath: string) => ipcRenderer.invoke('db:open', filePath),
+  getTableInfo: (tableName: string) =>
+    ipcRenderer.invoke('db:getTableData', tableName),
+  updateTableRow: (tableName: string, row: any, condition: any) =>
+    ipcRenderer.invoke('db:updateTableRow', tableName, row, condition),
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to

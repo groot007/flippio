@@ -228,6 +228,8 @@ export function setupIpcDatabase() {
       // Add condition values
       const query = `UPDATE ${tableName} SET ${setClause} WHERE ${condition}`
 
+      console.log('Executing query:', query, values)
+
       const result = await new Promise<any>((resolve, reject) => {
         db!.run(query, values, function (err) {
           if (err)

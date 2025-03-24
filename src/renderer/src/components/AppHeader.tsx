@@ -1,7 +1,8 @@
 import { HStack } from '@chakra-ui/react'
-import { useEffect, useState } from 'react'
+import { useAppStore } from '@renderer/store/appStore'
+import { ColorModeButton, useColorMode } from '@renderer/ui/color-mode'
+import { useEffect, useMemo, useState } from 'react'
 import FLSelect from './Select'
-import { ColorModeButton } from '@renderer/ui/color-mode'
 
 interface SelectOption {
   label: string | JSX.Element
@@ -10,16 +11,30 @@ interface SelectOption {
 }
 
 function AppHeader() {
-  const [devices, setDevices] = useState<SelectOption[]>([])
-  const [packages, setPackages] = useState<SelectOption[]>([])
-  const [selectedDevice, setSelectedDevice] = useState('')
-  const [selectedPackage, setSelectedPackage] = useState('')
+  const { colorMode } = useColorMode()
+  const isDark = colorMode === 'dark'
+  const {
+    devices,
+    applications,
+    setDevices,
+    setApplications,
+    selectedApplication,
+    selectedDevice,
+    setSelectedApplication,
+    setSelectedDevice,
+    setDatabaseFiles,
+  } = useAppStore()
+
+  const deviceType = useMemo(() => {
+    return devices.find(device => device.value === selectedDevice[0])?.deviceType
+  }, [selectedDevice, devices])
+
   const onDeviceChange = (value: string) => {
     setSelectedDevice(value)
   }
 
   const onPackageChange = (value: string) => {
-    setSelectedPackage(value)
+    setSelectedApplication(value)
   }
 
   const loadDevices = async () => {
@@ -45,7 +60,6 @@ function AppHeader() {
       success: false,
       packages: [],
     }
-    const deviceType = devices.find(device => device.value === selectedDevice[0])?.deviceType
 
     if (deviceType === 'iphone') {
       response = await window.api.getIOSPackages(selectedDevice[0])
@@ -56,32 +70,60 @@ function AppHeader() {
     }
 
     if (!response.success) {
-      setPackages([])
+      setApplications([])
       return
     }
-    console.log('packages', response, deviceType, selectedDevice[0])
 
     const modPackages = response.packages?.map((pkg: any) => ({
       label: pkg.name,
       value: pkg.bundleId,
-      description: pkg.bundleId,
+      // description: pkg.bundleId,
     })) ?? []
 
-    setPackages(modPackages)
+    setApplications(modPackages)
+    // setSelectedDatabaseFile('nice')
+    //   setSelectedDatabaseTable('nice')
   }
 
   useEffect(() => {
-    if (selectedDevice) {
+    if (selectedDevice[0]) {
       getPackages()
     }
   }, [selectedDevice])
+
+  const getDatabaseFiles = async () => {
+    if (deviceType === 'iphone') {
+      const response = await window.api.getIOSDatabaseFiles(selectedDevice[0], selectedApplication?.[0])
+      if (response.success) {
+        const files = response.files.map((file: any) => ({
+          ...file,
+          deviceType: 'iphone',
+        }))
+        setDatabaseFiles(files)
+      }
+      return
+    }
+
+    if (deviceType === 'android') {
+      const response = await window.api.getAndroidDatabaseFiles(selectedDevice[0], selectedApplication?.[0])
+      if (response.success) {
+        setDatabaseFiles(response.files)
+      }
+    }
+  }
+
+  useEffect(() => {
+    if (selectedApplication?.[0]) {
+      getDatabaseFiles()
+    }
+  }, [selectedApplication])
 
   useEffect(() => {
     loadDevices()
   }, [])
 
   return (
-    <HStack padding={4} bg="gray.900" w="full">
+    <HStack padding={4} bg={isDark ? 'gray.800' : 'white'} w="full">
       <FLSelect
         options={devices}
         label="Select device"
@@ -89,13 +131,13 @@ function AppHeader() {
         onChange={onDeviceChange}
       />
       <FLSelect
-        options={packages}
+        options={applications}
         label="Select app"
-        value={selectedPackage}
+        value={selectedApplication || []}
         onChange={onPackageChange}
       />
 
-<ColorModeButton />
+      <ColorModeButton />
     </HStack>
   )
 }

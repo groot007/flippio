@@ -5,6 +5,7 @@ import { app, BrowserWindow, ipcMain, shell } from 'electron'
 import icon from '../../resources/icon.png?asset'
 import { setupIpcADB } from './ipcADB'
 import { setupIpcCommon } from './ipcCommon'
+import { setupIpcDatabase } from './ipcDatabase'
 
 function createWindow(): void {
   // Create the browser window.
@@ -48,6 +49,7 @@ app.whenReady().then(() => {
 
   setupIpcADB()
   setupIpcCommon()
+  setupIpcDatabase()
 
   // Default open or close DevTools by F12 in development
   // and ignore CommandOrControl + R in production.

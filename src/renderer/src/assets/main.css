@@ -6,3 +6,8 @@ body {
   overflow: hidden;
   user-select: none;
 }
+
+.rag-green {
+  color: 'green';
+  background-color: 'red'
+}

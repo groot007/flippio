@@ -10,6 +10,8 @@ ul {
   list-style: none;
 }
 
+
+
 body {
   min-height: 100vh;
   color: var(--color-text);
