@@ -8,7 +8,8 @@
       "@renderer/*": [
         "src/renderer/src/*"
       ]
-    }
+    },
+    "esModuleInterop": true
   },
   "include": [
     "src/renderer/src/env.d.ts",
