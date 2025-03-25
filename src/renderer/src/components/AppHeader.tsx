@@ -1,57 +1,60 @@
 import { HStack } from '@chakra-ui/react'
-import { useAppStore } from '@renderer/store/appStore'
+import { useCurrentDeviceSelection } from '@renderer/store'
 import { ColorModeButton, useColorMode } from '@renderer/ui/color-mode'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo } from 'react'
 import FLSelect from './Select'
-
-interface SelectOption {
-  label: string | JSX.Element
-  value: string
-  desctiption?: string
-}
 
 function AppHeader() {
   const { colorMode } = useColorMode()
   const isDark = colorMode === 'dark'
   const {
-    devices,
-    applications,
-    setDevices,
-    setApplications,
-    selectedApplication,
+    devicesList,
+    setDevicesList,
     selectedDevice,
-    setSelectedApplication,
     setSelectedDevice,
-    setDatabaseFiles,
-  } = useAppStore()
+    applicationsList,
+    setApplicationsList,
+    selectedApplication,
+    setSelectedApplication,
+  } = useCurrentDeviceSelection()
 
-  const deviceType = useMemo(() => {
-    return devices.find(device => device.value === selectedDevice[0])?.deviceType
-  }, [selectedDevice, devices])
+  const devicesSelectOptions = useMemo(() => {
+    return devicesList.map((device: any) => ({
+      label: device.model,
+      value: device.id,
+      deviceType: device.deviceType,
+    }))
+  }, [devicesList])
+
+  const applicationSelectOptions = useMemo(() => {
+    return applicationsList.map((app: any) => ({
+      label: app.name,
+      value: app.bundleId,
+      description: app.bundleId,
+    }))
+  }, [applicationsList])
 
   const onDeviceChange = (value: string) => {
-    setSelectedDevice(value)
+    const selectedDevice = devicesList.find((device: any) => device.id === value[0])
+    if (selectedDevice) {
+      setSelectedDevice(selectedDevice)
+    }
   }
 
   const onPackageChange = (value: string) => {
-    setSelectedApplication(value)
+    const selectedApplication = applicationsList.find((app: any) => app.bundleId === value[0])
+    if (selectedApplication) {
+      setSelectedApplication(selectedApplication)
+    }
   }
 
   const loadDevices = async () => {
     const deviceResponse = await window.api.getDevices()
     if (deviceResponse.success) {
-      const devices = deviceResponse.devices?.map((device: any) => ({
-        label: device.model,
-        value: device.id,
-        deviceType: device.deviceType,
-      })) ?? []
-      setDevices(devices)
+      setDevicesList(deviceResponse.devices)
     }
     else {
-      setDevices([{
-        label: 'No devices found',
-        value: 'no device',
-      }])
+      setDevicesList([])
     }
   }
 
@@ -61,62 +64,29 @@ function AppHeader() {
       packages: [],
     }
 
-    if (deviceType === 'iphone') {
-      response = await window.api.getIOSPackages(selectedDevice[0])
+    if (selectedDevice?.deviceType === 'iphone') {
+      response = await window.api.getIOSPackages(selectedDevice.id)
     }
 
-    if (deviceType === 'android') {
-      response = await window.api.getAndroidPackages(selectedDevice[0])
+    if (selectedDevice?.deviceType === 'android') {
+      response = await window.api.getAndroidPackages(selectedDevice.id)
     }
+
+    console.log('RESPONSE', response)
 
     if (!response.success) {
-      setApplications([])
+      setApplicationsList([])
       return
     }
 
-    const modPackages = response.packages?.map((pkg: any) => ({
-      label: pkg.name,
-      value: pkg.bundleId,
-      // description: pkg.bundleId,
-    })) ?? []
-
-    setApplications(modPackages)
-    // setSelectedDatabaseFile('nice')
-    //   setSelectedDatabaseTable('nice')
+    setApplicationsList(response.packages)
   }
 
   useEffect(() => {
-    if (selectedDevice[0]) {
+    if (selectedDevice?.id) {
       getPackages()
     }
   }, [selectedDevice])
-
-  const getDatabaseFiles = async () => {
-    if (deviceType === 'iphone') {
-      const response = await window.api.getIOSDatabaseFiles(selectedDevice[0], selectedApplication?.[0])
-      if (response.success) {
-        const files = response.files.map((file: any) => ({
-          ...file,
-          deviceType: 'iphone',
-        }))
-        setDatabaseFiles(files)
-      }
-      return
-    }
-
-    if (deviceType === 'android') {
-      const response = await window.api.getAndroidDatabaseFiles(selectedDevice[0], selectedApplication?.[0])
-      if (response.success) {
-        setDatabaseFiles(response.files)
-      }
-    }
-  }
-
-  useEffect(() => {
-    if (selectedApplication?.[0]) {
-      getDatabaseFiles()
-    }
-  }, [selectedApplication])
 
   useEffect(() => {
     loadDevices()
@@ -125,15 +95,15 @@ function AppHeader() {
   return (
     <HStack padding={4} bg={isDark ? 'gray.800' : 'white'} w="full">
       <FLSelect
-        options={devices}
+        options={devicesSelectOptions}
         label="Select device"
-        value={selectedDevice}
+        value={[selectedDevice?.id]}
         onChange={onDeviceChange}
       />
       <FLSelect
-        options={applications}
+        options={applicationSelectOptions}
         label="Select app"
-        value={selectedApplication || []}
+        value={[selectedApplication?.bundleId]}
         onChange={onPackageChange}
       />
 

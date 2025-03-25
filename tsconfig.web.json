@@ -9,12 +9,11 @@
         "src/renderer/src/*"
       ]
     },
+    "typeRoots": ["./node_modules/@types", "./src/renderer/src/types"],
     "esModuleInterop": true
   },
   "include": [
-    "src/renderer/src/env.d.ts",
     "src/renderer/src/**/*",
-    "src/renderer/src/**/*.tsx",
-    "src/preload/*.d.ts"
+    "src/renderer/src/**/*.tsx"
   ]
 }
