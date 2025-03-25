@@ -5,58 +5,55 @@ import {
   Stack,
   Text,
 } from '@chakra-ui/react'
+import { is } from '@electron-toolkit/utils'
+import { useCurrentDatabaseSelection, useCurrentDeviceSelection } from '@renderer/store'
 import { useColorMode } from '@renderer/ui/color-mode'
-import { useEffect, useMemo, useState } from 'react'
-import { useAppStore } from '../store/appStore'
+import { useEffect, useMemo } from 'react'
 import FLSelect from './Select'
 
 export function SubHeader() {
   const { colorMode } = useColorMode()
   const isDark = colorMode === 'dark'
+  const { selectedDevice, selectedApplication } = useCurrentDeviceSelection()
   const {
     selectedDatabaseFile,
-    selectedDatabaseTable,
-    databaseFiles,
-    databaseTables,
-    selectedApplication,
-    selectedDevice,
-    setDatabaseTables,
-    isLoadingDatabase,
     setSelectedDatabaseFile,
+    selectedDatabaseTable,
     setSelectedDatabaseTable,
-  } = useAppStore()
+    databaseFiles,
+    setDatabaseFiles,
+    databaseTables,
+    setDatabaseTables,
+    setPulledDatabaseFilePath,
+    setIsDBPulling,
+    isDBPulling,
+  } = useCurrentDatabaseSelection()
 
-  // Handler for database file selection change
   const handleDatabaseFileChange = (path: string) => {
     const file = databaseFiles?.find(f => f.path === path[0]) || null
     setSelectedDatabaseFile(file)
   }
 
-  // Handler for table selection change
   const handleTableChange = (name: string) => {
     const table = databaseTables?.find(t => t.name === name[0]) || null
 
     setSelectedDatabaseTable(table)
   }
 
-  const isExternalFile = false
-
-  // Format database files for select
   const dbFileOptions = useMemo(() => databaseFiles?.map(file => ({
     label: file.filename,
     value: file.path,
   })), [databaseFiles]) ?? []
 
-  // Format tables for select
-  const tableOptions = databaseTables?.map(table => ({
+  const tableOptions = useMemo(() => databaseTables?.map(table => ({
     label: table.name,
     value: table.name,
-  })) ?? []
+  })), [databaseTables]) ?? []
 
   const getTabels = async () => {
     let dbPath = selectedDatabaseFile?.path
     if (selectedDatabaseFile?.deviceType !== 'iphone') {
-      const pull = await window.api.pullDatabaseFile(selectedDevice, selectedDatabaseFile.path)
+      const pull = await window.api.pullDatabaseFile(selectedDevice.id, selectedDatabaseFile.path)
       if (!pull.success) {
         console.error('PULL FAILED', pull)
         return
@@ -64,21 +61,37 @@ export function SubHeader() {
 
       dbPath = pull.path
     }
+
+    setPulledDatabaseFilePath(dbPath)
+
     await window.api.openDatabase(dbPath)
     const response = await window.api.getTables()
 
     if (response.success) {
-      const tabels = response.tables.map((table: any) => ({
-        ...table,
-        deviceType: selectedDatabaseFile?.deviceType,
-        osLocalPath: dbPath,
-      }))
-      setDatabaseTables(tabels)
+      setDatabaseTables(response.tables)
     }
     else {
       setDatabaseTables([])
     }
   }
+
+  const getDatabaseFiles = async () => {
+    setIsDBPulling(true)
+    const fetchFunction = selectedDevice?.deviceType === 'iphone'
+      ? window.api.getIOSDatabaseFiles
+      : window.api.getAndroidDatabaseFiles
+
+    const response = await fetchFunction(selectedDevice.id, selectedApplication.bundleId)
+    if (response.success) {
+      setDatabaseFiles(response.files)
+      setIsDBPulling(false)
+    }
+    else {
+      console.error('Failed to fetch database files', response.error)
+    }
+  }
+
+  const isLoadingDatabase = false
 
   useEffect(() => {
     if (selectedDatabaseFile?.path) {
@@ -86,13 +99,17 @@ export function SubHeader() {
     }
   }, [selectedDatabaseFile])
 
-  if (!selectedApplication) {
+  useEffect(() => {
+    if (selectedApplication?.bundleId) {
+      getDatabaseFiles()
+    }
+  }, [selectedApplication])
+
+  if (!selectedApplication.bundleId || isDBPulling) {
     return null
   }
 
-  // If no database file is selected, don't render anything
-  if (!databaseFiles?.length) {
-    // No database files available
+  if (!databaseFiles?.length && !isDBPulling) {
     return (
       <Box
         width="full"
@@ -122,21 +139,13 @@ export function SubHeader() {
         <Stack direction="row" gap={4}>
           {/* Database File Selection or Static Text */}
           <Box width="250px">
-            {isExternalFile
-              ? (
-                  <Text fontWeight="medium">
-                    {selectedDatabaseFile.name}
-                  </Text>
-                )
-              : (
-                  <FLSelect
-                    label="Select Database"
-                    options={dbFileOptions}
-                    value={[selectedDatabaseFile?.path]}
-                    onChange={handleDatabaseFileChange}
-                    width="250px"
-                  />
-                )}
+
+            <FLSelect
+              label="Select Database"
+              options={dbFileOptions}
+              value={[selectedDatabaseFile?.path]}
+              onChange={handleDatabaseFileChange}
+            />
           </Box>
 
           {/* Table Selection */}
@@ -147,7 +156,6 @@ export function SubHeader() {
               value={[selectedDatabaseTable?.name]}
               onChange={handleTableChange}
               isDisabled={isLoadingDatabase}
-              width="250px"
             />
           </Box>
 

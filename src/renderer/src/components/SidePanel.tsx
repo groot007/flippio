@@ -10,13 +10,12 @@ import {
   Textarea,
   // useToast,
 } from '@chakra-ui/react'
+import { useCurrentDatabaseSelection, useCurrentDeviceSelection, useTableData } from '@renderer/store'
+import { useRowEditingStore } from '@renderer/store/useRowEditingStore'
+
 import { useColorMode } from '@renderer/ui/color-mode'
 import JsonView from '@uiw/react-json-view'
-
-import JsonViewEditor from '@uiw/react-json-view/editor'
 import React, { useState } from 'react'
-// import { CloseIcon, EditIcon, CheckIcon } from '@chakra-ui/icons';
-import { useAppStore } from '../store/appStore'
 import { toaster } from '../ui/toaster'
 
 function buildUniqueCondition(cols, rowData) {
@@ -33,31 +32,29 @@ function buildUniqueCondition(cols, rowData) {
 export function SidePanel() {
   const { colorMode } = useColorMode()
   const isDark = colorMode === 'dark'
-  const {
-    selectedRow,
-    closeRowPanel,
-    startEditingRow,
-    setEditedRowData,
-    cancelEditingRow,
-    tableData,
-    selectedDatabaseTable,
-    selectedDevice,
-    selectedDatabaseFile,
-    setIsLoadingTableData,
-  } = useAppStore()
+  const { selectedRow, setSelectedRow } = useRowEditingStore()
 
-  // const toast = useToast()
+  const { selectedDevice } = useCurrentDeviceSelection()
+  const { selectedDatabaseFile, selectedDatabaseTable, pulledDatabaseFilePath } = useCurrentDatabaseSelection()
+  const { tableData, setIsLoadingTableData } = useTableData()
+
   const [isLoading, setIsLoading] = useState(false)
-
-  // Local state for edited data
+  const [isEditing, setIsEditing] = useState(false)
   const [editedData, setEditedData] = useState<Record<string, any>>({})
 
-  // Initialize edit data when entering edit mode
+  const closeRowPanel = () => {
+    setSelectedRow(null)
+  }
+
+  const cancelEditingRow = () => {
+    setIsEditing(false)
+  }
+
   React.useEffect(() => {
-    if (selectedRow?.isEditing) {
+    if (isEditing && selectedRow) {
       setEditedData(selectedRow.rowData)
     }
-  }, [selectedRow?.isEditing, selectedRow?.rowData])
+  }, [isEditing, selectedRow])
 
   // Handle input change
   const handleInputChange = (key: string, value: any) => {
@@ -75,13 +72,8 @@ export function SidePanel() {
     try {
       setIsLoading(true)
       setIsLoadingTableData(true)
-      console.log('selectedRow', selectedRow)
-      // If we're using a device database, we need to update and push the file back
-      // Get key field and value for WHERE clause (usually 'id')
 
-      const condition = buildUniqueCondition(tableData?.columns, selectedRow.originalData)
-
-      // Use the updateTableRow API to update the row
+      const condition = buildUniqueCondition(tableData?.columns, selectedRow.rowData)
       const result = await window.api.updateTableRow(
         selectedDatabaseTable.name,
         editedData,
@@ -93,17 +85,18 @@ export function SidePanel() {
       }
 
       if (selectedDatabaseTable.deviceType !== 'iphone' && selectedDatabaseFile.packageName) {
-        console.log('selectedDatabaseFile', selectedDatabaseFile)
         await window.api.pushDatabaseFile(
-          selectedDevice,
-          selectedDatabaseTable.osLocalPath,
+          selectedDevice.id,
+          pulledDatabaseFilePath,
           selectedDatabaseFile.packageName,
           selectedDatabaseFile.path,
         )
       }
 
-      // Update the store with edited data
-      setEditedRowData(editedData)
+      setSelectedRow({
+        rowData: editedData,
+        originalData: editedData,
+      })
 
       toaster.create({
         title: 'Data updated',
@@ -131,12 +124,10 @@ export function SidePanel() {
     }
   }
 
-  // If no row is selected, don't render anything
   if (!selectedRow) {
     return null
   }
 
-  // Determine if a field value is JSON
   const isJsonValue = (value: any) => {
     if (typeof value !== 'string')
       return false
@@ -150,7 +141,6 @@ export function SidePanel() {
     }
   }
 
-  // Parse JSON if possible
   const parseJson = (value: string) => {
     try {
       return JSON.parse(value)
@@ -192,37 +182,38 @@ export function SidePanel() {
         zIndex="11"
       >
         <Heading size="md" pl={5}>
-          {selectedRow.isEditing ? 'Edit Row Data' : 'Row Details'}
+          {isEditing ? 'Edit Row Data' : 'Row Details'}
         </Heading>
         <Stack direction="row">
-          {!selectedRow.isEditing ? (
-            <IconButton
-              aria-label="Edit row"
-              size="sm"
-              onClick={startEditingRow}
-            >
-              edit
-            </IconButton>
-          ) : (
-            <>
-              <Button
-                colorScheme="green"
-                size="sm"
-                onClick={handleSave}
-                isLoading={isLoading}
-              >
-                {/* <CheckIcon mr={2} /> */}
-                Save
-              </Button>
-              <Button
-                size="sm"
-                onClick={cancelEditingRow}
-                isDisabled={isLoading}
-              >
-                Cancel
-              </Button>
-            </>
-          )}
+          {!isEditing
+            ? (
+                <IconButton
+                  aria-label="Edit row"
+                  size="sm"
+                  onClick={() => setIsEditing(true)}
+                >
+                  edit
+                </IconButton>
+              ) : (
+                <>
+                  <Button
+                    colorScheme="green"
+                    size="sm"
+                    onClick={handleSave}
+                    isLoading={isLoading}
+                  >
+                    {/* <CheckIcon mr={2} /> */}
+                    Save
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={cancelEditingRow}
+                    isDisabled={isLoading}
+                  >
+                    Cancel
+                  </Button>
+                </>
+              )}
           <IconButton
             aria-label="Close panel"
             size="sm"
@@ -237,9 +228,9 @@ export function SidePanel() {
       {/* Panel Content */}
       <Box p={6}>
         <Stack direction="column" align="stretch">
-          {Object.entries(selectedRow.rowData).map(([key, value]) => (
+          {Object.entries(selectedRow.rowData || {}).map(([key, value]) => (
             <Box key={key}>
-              {selectedRow.isEditing
+              {isEditing
                 ? (
                     <Box>
                       <Text fontWeight="bold" fontSize="sm" mb={0}>{key}</Text>

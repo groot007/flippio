@@ -3,26 +3,26 @@ import {
   Flex,
   Spinner,
 } from '@chakra-ui/react'
+import { useCurrentDatabaseSelection, useTableData } from '@renderer/store'
+import { useRowEditingStore } from '@renderer/store/useRowEditingStore'
 import { useColorMode } from '@renderer/ui/color-mode'
 import { colorSchemeDark, colorSchemeLight, themeQuartz } from 'ag-grid-community'
 import { AgGridReact } from 'ag-grid-react'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useAppStore } from '../store/appStore'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { SidePanel } from './SidePanel'
 
 export function DataGrid() {
   const { colorMode } = useColorMode()
   const {
     isLoadingTableData,
-    pageSize,
-    selectedDatabaseTable,
-    setPage,
-    selectRow,
+    setIsLoadingTableData,
     tableData,
     setTableData,
-    selectedRow,
-    setIsLoadingTableData,
-  } = useAppStore()
+  } = useTableData()
+
+  const { setSelectedRow } = useRowEditingStore()
+
+  const { selectedDatabaseTable } = useCurrentDatabaseSelection()
 
   const myTheme = themeQuartz.withPart(colorMode === 'dark' ? colorSchemeDark : colorSchemeLight)
 
@@ -47,23 +47,12 @@ export function DataGrid() {
     }
   }, [setIsLoadingTableData])
 
-  // Refresh data when the selected table changes
-  useEffect(() => {
-    if (selectedDatabaseTable) {
-      getDatabaseInfo(selectedDatabaseTable.name)
-    }
-  }, [selectedDatabaseTable])
-
-  // Monitor loading state and refresh data if it changes from true to false
-  // This allows the SidePanel to trigger a data refresh
   useEffect(() => {
     if (!isLoadingTableData && selectedDatabaseTable && gridRef.current) {
-      // Only refresh if we have a grid and a selected table
       getDatabaseInfo(selectedDatabaseTable.name)
     }
   }, [isLoadingTableData, selectedDatabaseTable])
 
-  // Column definitions
   const columnDefs = useMemo(() => {
     if (!tableData?.columns?.length)
       return []
@@ -76,37 +65,20 @@ export function DataGrid() {
       resizable: true,
       editable: true,
       tooltipValueGetter: params => params.value,
-      cellStyle: (params) => {
-        if (params.value == 0) {
-          // mark police cells as red
-          return { color: 'blue' }
-        }
-        if (typeof params.value == 'string' && params.value.startsWith('{"')) {
-          // mark police cells as red
-          return { color: 'green' }
-        }
-
-        return null
-      },
-      // Special rendering for JSON data
-      cellRenderer: (params: any) => {
-        const value = params.value
-        return value
-      },
     }))
   }, [tableData?.columns])
 
-  // Default column definition
   const defaultColDef = useMemo(() => ({
     flex: 1,
     minWidth: 100,
     filter: true,
   }), [])
 
-  // Row click handler
   const onRowClicked = useCallback((event: any) => {
-    selectRow(event.data)
-  }, [selectRow])
+    setSelectedRow({
+      rowData: event.data,
+    })
+  }, [setSelectedRow])
 
   if (isLoadingTableData) {
     return (
@@ -138,17 +110,11 @@ export function DataGrid() {
           rowSelection="single"
           onRowClicked={onRowClicked}
           pagination={true}
-          paginationPageSize={pageSize}
-          onPaginationChanged={() => {
-            if (gridRef.current) {
-              setPage(gridRef.current.api.paginationGetCurrentPage())
-            }
-          }}
+          paginationPageSize={10}
           suppressCellFocus={false}
         />
       </Box>
 
-      {/* Side Panel */}
       <SidePanel />
     </Box>
   )
