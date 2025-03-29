@@ -1,11 +1,5 @@
+import type { DeviceInfo } from '@renderer/types'
 import { create } from 'zustand'
-
-interface DeviceInfo {
-  deviceType: 'android' | 'iphone'
-  id: string
-  model: string
-  name: string
-}
 
 interface ApplicationInfo {
   name: string
@@ -19,8 +13,8 @@ interface DeviceStore {
   setSelectedDevice: (device: DeviceInfo) => void
   applicationsList: ApplicationInfo[]
   setApplicationsList: (apps: ApplicationInfo[]) => void
-  selectedApplication: ApplicationInfo
-  setSelectedApplication: (app: ApplicationInfo) => void
+  selectedApplication: ApplicationInfo | null
+  setSelectedApplication: (app: ApplicationInfo | null) => void
   isDBPulling: boolean
   setIsDBPulling: (isPulling: boolean) => void
 }

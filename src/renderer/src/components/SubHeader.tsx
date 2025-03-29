@@ -1,169 +1,110 @@
 import {
   Box,
   Flex,
+  HStack,
   Spinner,
-  Stack,
   Text,
 } from '@chakra-ui/react'
-import { is } from '@electron-toolkit/utils'
+import { useDatabaseFiles } from '@renderer/hooks/useDatabaseFiles'
+import { useDatabaseTables } from '@renderer/hooks/useDatabaseTabels'
 import { useCurrentDatabaseSelection, useCurrentDeviceSelection } from '@renderer/store'
-import { useColorMode } from '@renderer/ui/color-mode'
-import { useEffect, useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import FLSelect from './Select'
 
 export function SubHeader() {
-  const { colorMode } = useColorMode()
-  const isDark = colorMode === 'dark'
-  const { selectedDevice, selectedApplication } = useCurrentDeviceSelection()
-  const {
-    selectedDatabaseFile,
-    setSelectedDatabaseFile,
-    selectedDatabaseTable,
-    setSelectedDatabaseTable,
-    databaseFiles,
-    setDatabaseFiles,
-    databaseTables,
-    setDatabaseTables,
-    setPulledDatabaseFilePath,
-    setIsDBPulling,
-    isDBPulling,
-  } = useCurrentDatabaseSelection()
+  const selectedDevice = useCurrentDeviceSelection(state => state.selectedDevice)
+  const selectedApplication = useCurrentDeviceSelection(state => state.selectedApplication)
 
-  const handleDatabaseFileChange = (path: string) => {
+  const selectedDatabaseFile = useCurrentDatabaseSelection(state => state.selectedDatabaseFile)
+  const setSelectedDatabaseFile = useCurrentDatabaseSelection(state => state.setSelectedDatabaseFile)
+  const selectedDatabaseTable = useCurrentDatabaseSelection(state => state.selectedDatabaseTable)
+  const setSelectedDatabaseTable = useCurrentDatabaseSelection(state => state.setSelectedDatabaseTable)
+
+  // Custom hooks for data fetching
+  const {
+    databaseFiles,
+    isLoading: isDBPulling,
+  } = useDatabaseFiles(selectedDevice, selectedApplication)
+
+  const {
+    tables: databaseTables,
+  } = useDatabaseTables(selectedDatabaseFile, selectedDevice)
+
+  const handleDatabaseFileChange = useCallback((path) => {
     const file = databaseFiles?.find(f => f.path === path[0]) || null
     setSelectedDatabaseFile(file)
-  }
+    setSelectedDatabaseTable(null)
+  }, [databaseFiles, setSelectedDatabaseFile])
 
-  const handleTableChange = (name: string) => {
+  const handleTableChange = useCallback((name) => {
     const table = databaseTables?.find(t => t.name === name[0]) || null
-
     setSelectedDatabaseTable(table)
-  }
+  }, [databaseTables, setSelectedDatabaseTable])
 
-  const dbFileOptions = useMemo(() => databaseFiles?.map(file => ({
-    label: file.filename,
-    value: file.path,
-  })), [databaseFiles]) ?? []
+  const dbFileOptions = useMemo(() =>
+    databaseFiles?.map(file => ({
+      label: file.filename,
+      value: file.path,
+    })) ?? [], [databaseFiles])
 
-  const tableOptions = useMemo(() => databaseTables?.map(table => ({
-    label: table.name,
-    value: table.name,
-  })), [databaseTables]) ?? []
+  const tableOptions = useMemo(() =>
+    databaseTables?.map(table => ({
+      label: table.name,
+      value: table.name,
+    })) ?? [], [databaseTables])
 
-  const getTabels = async () => {
-    let dbPath = selectedDatabaseFile?.path
-    if (selectedDatabaseFile?.deviceType !== 'iphone') {
-      const pull = await window.api.pullDatabaseFile(selectedDevice.id, selectedDatabaseFile.path)
-      if (!pull.success) {
-        console.error('PULL FAILED', pull)
-        return
-      }
-
-      dbPath = pull.path
-    }
-
-    setPulledDatabaseFilePath(dbPath)
-
-    await window.api.openDatabase(dbPath)
-    const response = await window.api.getTables()
-
-    if (response.success) {
-      setDatabaseTables(response.tables)
-    }
-    else {
-      setDatabaseTables([])
-    }
-  }
-
-  const getDatabaseFiles = async () => {
-    setIsDBPulling(true)
-    const fetchFunction = selectedDevice?.deviceType === 'iphone'
-      ? window.api.getIOSDatabaseFiles
-      : window.api.getAndroidDatabaseFiles
-
-    const response = await fetchFunction(selectedDevice.id, selectedApplication.bundleId)
-    if (response.success) {
-      setDatabaseFiles(response.files)
-      setIsDBPulling(false)
-    }
-    else {
-      console.error('Failed to fetch database files', response.error)
-    }
-  }
-
-  const isLoadingDatabase = false
-
-  useEffect(() => {
-    if (selectedDatabaseFile?.path) {
-      getTabels()
-    }
-  }, [selectedDatabaseFile])
-
-  useEffect(() => {
-    if (selectedApplication?.bundleId) {
-      getDatabaseFiles()
-    }
-  }, [selectedApplication])
-
-  if (!selectedApplication.bundleId || isDBPulling) {
-    return null
-  }
-
-  if (!databaseFiles?.length && !isDBPulling) {
-    return (
-      <Box
-        width="full"
-        py={3}
-        px={6}
-        borderBottomWidth="1px"
-        borderColor={isDark ? 'gray.700' : 'gray.200'}
-        bg={isDark ? 'gray.700' : 'gray.100'}
-      >
-        <Text fontWeight="medium">
-          No database files available
-        </Text>
-      </Box>
-    )
-  }
+  // const handleQueryExecution = useCallback(async () => {
+  //   const data = await window.api.executeQuery('SELECT * FROM config')
+  //   console.log('handleQueryExecution__', data)
+  // }, [])
 
   return (
     <Box
       width="full"
-      py={3}
-      px={6}
+      pb={3}
+      px={4}
       borderBottomWidth="1px"
-      borderColor={isDark ? 'gray.700' : 'gray.200'}
-      bg={isDark ? 'gray.700' : 'gray.100'}
+      borderColor="app.border"
+      bg="app.subheader.bg"
     >
+      {!databaseFiles?.length && !isDBPulling
+        ? (
+            <Box
+              width="full"
+              pb={7}
+            >
+              <Text fontWeight="medium" color="red.400">
+                No database files available
+              </Text>
+            </Box>
+          )
+        : null}
       <Flex justifyContent="flex-start" alignItems="center">
-        <Stack direction="row" gap={4}>
-          {/* Database File Selection or Static Text */}
-          <Box width="250px">
+        <HStack direction="row" gap={5}>
+          <FLSelect
+            label="Select Database"
+            options={dbFileOptions}
+            value={[selectedDatabaseFile?.path || '']}
+            onChange={handleDatabaseFileChange}
+            isDisabled={!databaseFiles?.length}
+          />
 
-            <FLSelect
-              label="Select Database"
-              options={dbFileOptions}
-              value={[selectedDatabaseFile?.path]}
-              onChange={handleDatabaseFileChange}
-            />
-          </Box>
-
-          {/* Table Selection */}
           <Box width="250px">
             <FLSelect
               label="Select Table"
               options={tableOptions}
-              value={[selectedDatabaseTable?.name]}
+              value={[selectedDatabaseTable?.name || '']}
               onChange={handleTableChange}
-              isDisabled={isLoadingDatabase}
+              isDisabled={!selectedDatabaseFile?.path || isDBPulling}
             />
           </Box>
-
-          {/* Loading Indicator */}
-          {isLoadingDatabase && (
+          {/* <Button onClick={handleQueryExecution}>
+            Custom query
+          </Button> */}
+          {isDBPulling && (
             <Spinner size="sm" color="blue.500" />
           )}
-        </Stack>
+        </HStack>
       </Flex>
     </Box>
   )

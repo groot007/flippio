@@ -12,21 +12,27 @@ export function setupIpcADB() {
   }
 
   const getIOsSimulators = async () => {
-    const deviceList = await new Promise<string>((resolve, reject) => {
-      exec('xcrun simctl list devices | grep Booted', (error, stdout, stderr) => {
-        if (error) {
-          reject(error)
-        }
-        else if (stderr) {
-          reject(new Error(stderr))
-        }
-        else {
-          resolve(stdout)
-        }
+    try {
+      const deviceList = await new Promise<string>((resolve, reject) => {
+        exec('xcrun simctl list devices | grep Booted', (error, stdout, stderr) => {
+          if (error) {
+            reject(error)
+          }
+          else if (stderr) {
+            reject(new Error(stderr))
+          }
+          else {
+            resolve(stdout)
+          }
+        })
       })
-    })
-    const devices = parseSimulators(deviceList)
-    return devices
+      const devices = parseSimulators(deviceList)
+      return devices
+    }
+    catch (error: any) {
+      console.error('Error getting iOS devices', error)
+      return []
+    }
   }
 
   ipcMain.handle('device:getIosPackages', async (_event, deviceId) => {
@@ -138,8 +144,8 @@ export function setupIpcADB() {
       const userApps = apps.map(app => app.replace('package:', '').trim())
 
       const packages = userApps.sort((a, b) => a.localeCompare(b)).map((pkg) => {
-        const parts = pkg.split('.')
-        const name = parts[parts.length - 1].replace(/_/g, ' ').replace(/-/g, ' ')
+        // const parts = pkg.split('.')
+        // const name = parts[parts.length - 1].replace(/_/g, ' ').replace(/-/g, ' ')
         return {
           name: pkg,
           bundleId: pkg,
@@ -181,7 +187,7 @@ export function setupIpcADB() {
       const findCmd = `find "${containerPath}" ${findPattern} 2>/dev/null`
 
       const filesOutput = await new Promise<string>((resolve, reject) => {
-        exec(findCmd, (error, stdout, stderr) => {
+        exec(findCmd, (error, stdout, _stderr) => {
           if (error) {
             reject(error)
           }
