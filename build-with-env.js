@@ -8,4 +8,4 @@ if (!ghToken) {
   process.exit(1)
 }
 
-execSync('npm run release', { stdio: 'inherit' })
+execSync('NODE_ENV=production npm run build && electron-builder --publish always', { stdio: 'inherit' })

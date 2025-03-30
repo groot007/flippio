@@ -17,6 +17,7 @@ function AppHeader() {
   const selectedApplication = useCurrentDeviceSelection(state => state.selectedApplication)
   const setSelectedApplication = useCurrentDeviceSelection(state => state.setSelectedApplication)
   const setSelectedDatabaseFile = useCurrentDatabaseSelection(state => state.setSelectedDatabaseFile)
+  const setSelectedDatabaseTable = useCurrentDatabaseSelection(state => state.setSelectedDatabaseTable)
 
   const {
     devices: devicesList,
@@ -32,6 +33,11 @@ function AppHeader() {
     }
     refreshDevices()
       .then(() => {
+        setSelectedDevice(null)
+        setSelectedApplication(null)
+        setSelectedDatabaseFile(null)
+        setSelectedDatabaseTable(null)
+
         timeoutId = setTimeout(() => {
           toaster.create({
             title: 'Device list refreshed',

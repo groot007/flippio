@@ -9,16 +9,12 @@ import { setupIpcADB } from './ipcADB'
 import { setupIpcCommon } from './ipcCommon'
 import { setupIpcDatabase } from './ipcDatabase'
 
-if (process.env.NODE_ENV === "production") {
+if (process.env.NODE_ENV === 'production') {
   Sentry.init({
-    dsn: "https://your-sentry-dsn@o123456.ingest.sentry.io/123456",
-    release: "your-app-name@1.0.0", // Optional: specify release version
-    environment: "production",
-  });
-
-  console.log("Sentry initialized in production mode.");
-} else {
-  console.log("Skipping Sentry in development mode.");
+    dsn: 'https://your-sentry-dsn@o123456.ingest.sentry.io/123456',
+    release: 'your-app-name@1.0.0', // Optional: specify release version
+    environment: 'production',
+  })
 }
 
 (async () => {
@@ -98,7 +94,7 @@ app.whenReady().then(() => {
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
 app.on('window-all-closed', () => {
-    app.quit()
+  app.quit()
 })
 
 autoUpdater.on('update-available', (info) => {

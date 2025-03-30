@@ -5,16 +5,12 @@ import ReactDOM from 'react-dom/client'
 import App from './App'
 import './assets/main.css'
 
-if (process.env.NODE_ENV === "production") {
+if (window.env.NODE_ENV === 'production') {
   Sentry.init({
-    dsn: 'https://561d196b910f78c86856522f199f9ef6@o4509048883970048.ingest.de.sentry.io/4509048886132816',
-  });
-
-  console.log("Sentry initialized in production mode.");
-} else {
-  console.log("Skipping Sentry in development mode.");
+    integrations: [
+    ],
+  })
 }
-
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>

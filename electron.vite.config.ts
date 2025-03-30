@@ -3,9 +3,9 @@ import process from 'node:process'
 import { sentryVitePlugin } from '@sentry/vite-plugin'
 import react from '@vitejs/plugin-react'
 import { defineConfig, externalizeDepsPlugin } from 'electron-vite'
+import tsconfigPaths from 'vite-tsconfig-paths'
 
 export default defineConfig({
-
   main: {
     plugins: [externalizeDepsPlugin(), sentryVitePlugin({
       authToken: process.env.SENTRY_AUTH_TOKEN,
@@ -37,9 +37,10 @@ export default defineConfig({
       authToken: process.env.SENTRY_AUTH_TOKEN,
       org: 'mykola-stanislavchuk',
       project: 'electron',
-    })],
+    }), tsconfigPaths()],
     build: {
       sourcemap: true, // Source map generation must be turned on
     },
+
   },
 })
