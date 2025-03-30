@@ -11,7 +11,6 @@ export function Settings() {
 
         <Button variant="outline" size="sm">
           <LuSettings />
-
         </Button>
       </Menu.Trigger>
       <Portal>

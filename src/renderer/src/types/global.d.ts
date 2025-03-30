@@ -2,6 +2,7 @@ export {}
 
 declare global {
   interface Window {
+    env: any
     electron: Electron
     api: {
       // ADB operations
