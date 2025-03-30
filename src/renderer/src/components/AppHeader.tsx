@@ -1,14 +1,13 @@
-import { HStack } from '@chakra-ui/react'
-import { useAppStore } from '@renderer/store/appStore'
-import { ColorModeButton, useColorMode } from '@renderer/ui/color-mode'
-import { useEffect, useMemo, useState } from 'react'
-import FLSelect from './Select'
-
-interface SelectOption {
-  label: string | JSX.Element
-  value: string
-  desctiption?: string
-}
+import type { Application } from '@renderer/hooks/useApplications'
+import { Button, HStack, Spacer } from '@chakra-ui/react'
+import { useApplications } from '@renderer/hooks/useApplications'
+import { useDevices } from '@renderer/hooks/useDevices'
+import { useCurrentDatabaseSelection, useCurrentDeviceSelection } from '@renderer/store'
+import { toaster } from '@renderer/ui/toaster'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { LuRefreshCcw } from 'react-icons/lu'
+import FLSelect from './FLSelect'
+import { Settings } from './Settings'
 
 function AppHeader() {
   const { colorMode } = useColorMode()
@@ -137,7 +136,7 @@ function AppHeader() {
         onChange={onPackageChange}
       />
 
-      <ColorModeButton />
+      <Settings />
     </HStack>
   )
 }

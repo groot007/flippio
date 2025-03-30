@@ -295,6 +295,11 @@
   resolved "https://registry.yarnpkg.com/@chakra-ui/icons/-/icons-2.2.4.tgz#fc3f59a7e377d6e4efdbe8ee0a3aec7f29a4ab32"
   integrity sha512-l5QdBgwrAg3Sc2BRqtNkJpfuLw/pWRDwwT58J6c4PqQT6wzXxyNa8Q0PForu1ltB5qEiFb1kxr/F/HO1EwNa6g==
 
+"@chakra-ui/react-types@^2.0.6":
+  version "2.0.6"
+  resolved "https://registry.yarnpkg.com/@chakra-ui/react-types/-/react-types-2.0.6.tgz#96b4f8a082ab5244fe6b574e953b1b64ece9605a"
+  integrity sha512-aAq/nl//PneEfeaDb94zwfXor4OP/d5kc6dEXOZB2HJgCt3hu2+F/1u1QpPLPPTys5xexkQojuZQLnnD9lmQFw==
+
 "@chakra-ui/react@^3.13.0":
   version "3.13.0"
   resolved "https://registry.yarnpkg.com/@chakra-ui/react/-/react-3.13.0.tgz#9dd01a6876b7d19dbfbf936645a64466106a7746"

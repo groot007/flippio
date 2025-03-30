@@ -4,26 +4,16 @@ import ReactDOM from 'react-dom/client'
 import App from './App'
 import './assets/main.css'
 
-declare global {
-  interface Window {
-    api: {
-      // ADB operations
-      getDevices: () => Promise<any>
-      getIOSPackages: (id: string) => Promise<any>
-      getAndroidPackages: (id: string) => Promise<any>
-      getAndroidDatabaseFiles: (deviceId: string, applicationId) => Promise<any>
-      getIOSDatabaseFiles: (deviceId: string, applicationId) => Promise<any>
-      pullDatabaseFile: (deviceId: string, remotePath: string, localPath?: string) =>
-      Promise<any>
-      pushDatabaseFile: (deviceId: string, localPath: string, packageName: string, remotePath: string) =>
-      Promise<any>
-      getTables: () => Promise<any>
-      openDatabase: (filePath: string) => Promise<any>
-      getTableInfo: (tableName: string) => Promise<any>
-      updateTableRow: (tableName: string, row: any, condition: any) => Promise<any>
-    }
-  }
+if (process.env.NODE_ENV === "production") {
+  Sentry.init({
+    dsn: 'https://561d196b910f78c86856522f199f9ef6@o4509048883970048.ingest.de.sentry.io/4509048886132816',
+  });
+
+  console.log("Sentry initialized in production mode.");
+} else {
+  console.log("Skipping Sentry in development mode.");
 }
+
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>

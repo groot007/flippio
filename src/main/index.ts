@@ -7,14 +7,35 @@ import { setupIpcADB } from './ipcADB'
 import { setupIpcCommon } from './ipcCommon'
 import { setupIpcDatabase } from './ipcDatabase'
 
+if (process.env.NODE_ENV === "production") {
+  Sentry.init({
+    dsn: "https://your-sentry-dsn@o123456.ingest.sentry.io/123456",
+    release: "your-app-name@1.0.0", // Optional: specify release version
+    environment: "production",
+  });
+
+  console.log("Sentry initialized in production mode.");
+} else {
+  console.log("Skipping Sentry in development mode.");
+}
+
+(async () => {
+  const { default: fixPath } = await import('fix-path')
+  fixPath()
+})()
+
 function createWindow(): void {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
     width: 900,
     height: 670,
-    show: false,
+    minWidth: 500,
+    minHeight: 600,
+    show: true,
     autoHideMenuBar: true,
-    ...(process.platform === 'linux' ? { icon } : {}),
+    backgroundColor: '#1a202c',
+    title: 'Flipio - database explorer for iOS and Android',
+    // ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false,
@@ -72,9 +93,7 @@ app.whenReady().then(() => {
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
     app.quit()
-  }
 })
 
 // In this file you can include the rest of your app's specific main process
