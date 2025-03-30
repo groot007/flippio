@@ -1,8 +1,8 @@
 <div align="center">
   <h1>Flippio</h1>
   <p>A modern database viewer for mobile applications</p>
-![demo-no-sound-ezgif com-video-to-gif-converter (1)](https://github.com/user-attachments/assets/535bfa7d-1d74-4c9a-9048-1ef9461cc339)
 
+  <img src="https://github.com/user-attachments/assets/535bfa7d-1d74-4c9a-9048-1ef9461cc339" alt="Flippio Demo" width="600"/>
 </div>
 
 ## Overview
