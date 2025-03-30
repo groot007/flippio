@@ -2,7 +2,7 @@ name: Lint
 
 on:
   push:
-    branches: ['**'] # Run on all branches
+    branches: [main] # Run on all branches
   pull_request:
     branches: ['**'] # Run on all PRs
 
