@@ -1,11 +1,5 @@
+import type { DeviceInfo } from '@renderer/types'
 import { create } from 'zustand'
-
-interface DeviceInfo {
-  deviceType: 'android' | 'iphone'
-  id: string
-  model: string
-  name: string
-}
 
 interface ApplicationInfo {
   name: string
@@ -13,14 +7,14 @@ interface ApplicationInfo {
 }
 
 interface DeviceStore {
-  devicesList: DeviceInfo[]
-  setDevicesList: (devices: DeviceInfo[]) => void
-  selectedDevice: DeviceInfo
-  setSelectedDevice: (device: DeviceInfo) => void
-  applicationsList: ApplicationInfo[]
-  setApplicationsList: (apps: ApplicationInfo[]) => void
-  selectedApplication: ApplicationInfo
-  setSelectedApplication: (app: ApplicationInfo) => void
+  devicesList: DeviceInfo[] | null
+  setDevicesList: (devices: DeviceInfo[] | null) => void
+  selectedDevice: DeviceInfo | null
+  setSelectedDevice: (device: DeviceInfo | null) => void
+  applicationsList: ApplicationInfo[] | null
+  setApplicationsList: (apps: ApplicationInfo[] | null) => void
+  selectedApplication: ApplicationInfo | null
+  setSelectedApplication: (app: ApplicationInfo | null) => void
   isDBPulling: boolean
   setIsDBPulling: (isPulling: boolean) => void
 }
@@ -28,19 +22,11 @@ interface DeviceStore {
 export const useCurrentDeviceSelection = create<DeviceStore>((set, _get) => ({
   devicesList: [],
   setDevicesList: devices => set({ devicesList: devices }),
-  selectedDevice: {
-    id: '',
-    model: '',
-    name: '',
-    deviceType: 'android',
-  },
+  selectedDevice: null,
   setSelectedDevice: device => set({ selectedDevice: device }),
   applicationsList: [],
   setApplicationsList: apps => set({ applicationsList: apps }),
-  selectedApplication: {
-    name: '',
-    bundleId: '',
-  },
+  selectedApplication: null,
   setSelectedApplication: app => set({ selectedApplication: app }),
   isDBPulling: false,
   setIsDBPulling: isPulling => set({ isDBPulling: isPulling }),

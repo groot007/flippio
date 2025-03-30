@@ -1,14 +1,15 @@
+import type { DatabaseFile, DatabaseTable } from '@renderer/types'
 import { create } from 'zustand'
 
 interface DatabaseStore {
-  selectedDatabaseFile: any
-  setSelectedDatabaseFile: (file: any) => void
-  selectedDatabaseTable: any
-  setSelectedDatabaseTable: (table: any) => void
-  databaseFiles: any[]
-  setDatabaseFiles: (files: any[]) => void
-  databaseTables: any[]
-  setDatabaseTables: (tables: any[]) => void
+  selectedDatabaseFile: DatabaseFile | null
+  setSelectedDatabaseFile: (file: DatabaseFile | null) => void
+  selectedDatabaseTable: DatabaseTable | null
+  setSelectedDatabaseTable: (table: DatabaseTable | null) => void
+  databaseFiles: DatabaseFile[]
+  setDatabaseFiles: (files: DatabaseFile[]) => void
+  databaseTables: DatabaseTable[]
+  setDatabaseTables: (tables: DatabaseTable[]) => void
   pulledDatabaseFilePath: string
   setPulledDatabaseFilePath: (path: string) => void
   isDBPulling: boolean
@@ -16,9 +17,9 @@ interface DatabaseStore {
 }
 
 export const useCurrentDatabaseSelection = create<DatabaseStore>((set, _get) => ({
-  selectedDatabaseFile: '',
+  selectedDatabaseFile: null,
   setSelectedDatabaseFile: file => set({ selectedDatabaseFile: file }),
-  selectedDatabaseTable: '',
+  selectedDatabaseTable: null,
   setSelectedDatabaseTable: table => set({ selectedDatabaseTable: table }),
   databaseFiles: [],
   setDatabaseFiles: files => set({ databaseFiles: files }),

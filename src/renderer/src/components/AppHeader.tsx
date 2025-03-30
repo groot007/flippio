@@ -1,111 +1,133 @@
-import { HStack } from '@chakra-ui/react'
-import { useCurrentDeviceSelection } from '@renderer/store'
-import { ColorModeButton, useColorMode } from '@renderer/ui/color-mode'
-import { useEffect, useMemo } from 'react'
-import FLSelect from './Select'
+import type { Application } from '@renderer/hooks/useApplications'
+import { Button, HStack, Spacer } from '@chakra-ui/react'
+import { useApplications } from '@renderer/hooks/useApplications'
+import { useDevices } from '@renderer/hooks/useDevices'
+import { useCurrentDatabaseSelection, useCurrentDeviceSelection } from '@renderer/store'
+import { ColorModeButton } from '@renderer/ui/color-mode'
+import { toaster } from '@renderer/ui/toaster'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { LuRefreshCcw } from 'react-icons/lu'
+import FLSelect from './FLSelect'
 
 function AppHeader() {
-  const { colorMode } = useColorMode()
-  const isDark = colorMode === 'dark'
-  const {
-    devicesList,
-    setDevicesList,
-    selectedDevice,
-    setSelectedDevice,
-    applicationsList,
-    setApplicationsList,
-    selectedApplication,
-    setSelectedApplication,
-  } = useCurrentDeviceSelection()
+  const [isRefreshing, setIsRefreshing] = useState(false)
 
-  const devicesSelectOptions = useMemo(() => {
-    return devicesList.map((device: any) => ({
+  const selectedDevice = useCurrentDeviceSelection(state => state.selectedDevice)
+  const setSelectedDevice = useCurrentDeviceSelection(state => state.setSelectedDevice)
+  const selectedApplication = useCurrentDeviceSelection(state => state.selectedApplication)
+  const setSelectedApplication = useCurrentDeviceSelection(state => state.setSelectedApplication)
+  const setSelectedDatabaseFile = useCurrentDatabaseSelection(state => state.setSelectedDatabaseFile)
+
+  const {
+    devices: devicesList,
+    refresh: refreshDevices,
+  } = useDevices()
+
+  const handleRefreshDevices = useCallback(() => {
+    let timeoutId: NodeJS.Timeout | null = null
+    setIsRefreshing(true)
+
+    if (timeoutId) {
+      clearTimeout(timeoutId)
+    }
+    refreshDevices()
+      .then(() => {
+        timeoutId = setTimeout(() => {
+          toaster.create({
+            title: 'Device list refreshed',
+            status: 'success',
+            duration: 3000,
+            isClosable: true,
+          })
+        }, 800)
+      })
+      .catch((err) => {
+        toaster.create({
+          title: 'Error refreshing devices',
+          description: err.message,
+          status: 'error',
+          duration: 3000,
+          isClosable: true,
+        })
+      })
+
+      .finally(() => {
+        timeoutId = setTimeout(() => {
+          setIsRefreshing(false)
+        }, 800)
+      })
+  }, [])
+
+  const {
+    isLoading,
+    applications: applicationsList,
+  } = useApplications(selectedDevice)
+
+  const devicesSelectOptions = useMemo(() =>
+    devicesList.map(device => ({
       label: device.model,
       value: device.id,
-      deviceType: device.deviceType,
-    }))
-  }, [devicesList])
+      description: device.deviceType === 'iphone' ? 'iOS' : 'Android',
+      ...device,
+    })), [devicesList])
 
-  const applicationSelectOptions = useMemo(() => {
-    return applicationsList.map((app: any) => ({
+  const applicationSelectOptions = useMemo(() =>
+    applicationsList.map(app => ({
       label: app.name,
       value: app.bundleId,
       description: app.bundleId,
-    }))
-  }, [applicationsList])
+      ...app,
+    })), [applicationsList])
 
-  const onDeviceChange = (value: string) => {
-    const selectedDevice = devicesList.find((device: any) => device.id === value[0])
-    if (selectedDevice) {
-      setSelectedDevice(selectedDevice)
-    }
-  }
+  const handleDeviceChange = useCallback((value: any) => {
+    setSelectedDevice(value)
+    setSelectedApplication(null)
+  }, [setSelectedDevice, setSelectedApplication])
 
-  const onPackageChange = (value: string) => {
-    const selectedApplication = applicationsList.find((app: any) => app.bundleId === value[0])
-    if (selectedApplication) {
-      setSelectedApplication(selectedApplication)
-    }
-  }
-
-  const loadDevices = async () => {
-    const deviceResponse = await window.api.getDevices()
-    if (deviceResponse.success) {
-      setDevicesList(deviceResponse.devices)
-    }
-    else {
-      setDevicesList([])
-    }
-  }
-
-  const getPackages = async () => {
-    let response = {
-      success: false,
-      packages: [],
-    }
-
-    if (selectedDevice?.deviceType === 'iphone') {
-      response = await window.api.getIOSPackages(selectedDevice.id)
-    }
-
-    if (selectedDevice?.deviceType === 'android') {
-      response = await window.api.getAndroidPackages(selectedDevice.id)
-    }
-
-    console.log('RESPONSE', response)
-
-    if (!response.success) {
-      setApplicationsList([])
-      return
-    }
-
-    setApplicationsList(response.packages)
-  }
+  const handlePackageChange = useCallback((value: Application) => {
+    setSelectedDatabaseFile(null)
+    setSelectedApplication(value)
+  }, [setSelectedApplication])
 
   useEffect(() => {
-    if (selectedDevice?.id) {
-      getPackages()
-    }
-  }, [selectedDevice])
-
-  useEffect(() => {
-    loadDevices()
+    refreshDevices()
   }, [])
 
   return (
-    <HStack padding={4} bg={isDark ? 'gray.800' : 'white'} w="full">
-      <FLSelect
-        options={devicesSelectOptions}
-        label="Select device"
-        value={[selectedDevice?.id]}
-        onChange={onDeviceChange}
-      />
-      <FLSelect
-        options={applicationSelectOptions}
-        label="Select app"
-        value={[selectedApplication?.bundleId]}
-        onChange={onPackageChange}
-      />
+    <HStack padding={4} w="full" alignItems="center">
+      <HStack direction="row" gap={5} alignItems="center">
+        <FLSelect
+          options={devicesSelectOptions}
+          label="Select Device"
+          value={selectedDevice}
+          onChange={handleDeviceChange}
+        />
+        <FLSelect
+          options={applicationSelectOptions}
+          label="Select App"
+          value={selectedApplication}
+          onChange={handlePackageChange}
+          isDisabled={!selectedDevice || isLoading}
+        />
+      </HStack>
+      <Button
+        data-state={isRefreshing ? 'open' : 'closed'}
+        onClick={handleRefreshDevices}
+        bg="transparent"
+        color="gray.300"
+        ml="10px"
+        _hover={{
+          opacity: 0.8,
+        }}
+        disabled={isRefreshing || isLoading}
+        _open={{
+          animationName: 'rotate',
+          animationDuration: '1100ms',
+        }}
+      >
+        <LuRefreshCcw />
+      </Button>
+      <Spacer />
 
       <ColorModeButton />
     </HStack>

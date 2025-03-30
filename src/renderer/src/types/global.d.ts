@@ -17,6 +17,7 @@ declare global {
       openDatabase: (filePath: string) => Promise<any>
       getTableInfo: (tableName: string) => Promise<any>
       updateTableRow: (tableName: string, row: any, condition: any) => Promise<any>
+      executeQuery: (query: string) => Promise<any>
     }
   }
 }

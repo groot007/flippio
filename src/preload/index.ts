@@ -22,6 +22,8 @@ const api = {
     ipcRenderer.invoke('db:getTableData', tableName),
   updateTableRow: (tableName: string, row: any, condition: any) =>
     ipcRenderer.invoke('db:updateTableRow', tableName, row, condition),
+  executeQuery: (query: string) =>
+    ipcRenderer.invoke('db:executeQuery', query),
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to
@@ -39,6 +41,5 @@ if (process.contextIsolated) {
 else {
   // @ts-expect-error (define in dts)
   window.electron = electronAPI
-  // @ts-expect-error (define in dts)
   window.api = api
 }

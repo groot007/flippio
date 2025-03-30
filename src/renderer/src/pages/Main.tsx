@@ -1,6 +1,7 @@
 import { VStack } from '@chakra-ui/react'
 import AppHeader from '@renderer/components/AppHeader'
 import { DataGrid } from '@renderer/components/DataGrid'
+import { SidePanel } from '@renderer/components/SidePanel'
 import { SubHeader } from '@renderer/components/SubHeader'
 
 export function Main() {
@@ -9,6 +10,7 @@ export function Main() {
       <AppHeader />
       <SubHeader />
       <DataGrid />
+      <SidePanel />
     </VStack>
   )
 }

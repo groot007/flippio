@@ -1,15 +1,16 @@
 import {
   Box,
+  Center,
   Flex,
   Spinner,
+  Text,
 } from '@chakra-ui/react'
 import { useCurrentDatabaseSelection, useTableData } from '@renderer/store'
 import { useRowEditingStore } from '@renderer/store/useRowEditingStore'
 import { useColorMode } from '@renderer/ui/color-mode'
 import { colorSchemeDark, colorSchemeLight, themeQuartz } from 'ag-grid-community'
 import { AgGridReact } from 'ag-grid-react'
-import { useCallback, useEffect, useMemo, useRef } from 'react'
-import { SidePanel } from './SidePanel'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 export function DataGrid() {
   const { colorMode } = useColorMode()
@@ -20,38 +21,51 @@ export function DataGrid() {
     setTableData,
   } = useTableData()
 
-  const { setSelectedRow } = useRowEditingStore()
-
+  const { setSelectedRow, selectedRow } = useRowEditingStore()
   const { selectedDatabaseTable } = useCurrentDatabaseSelection()
+  const [error, setError] = useState<string | null>(null)
 
-  const myTheme = themeQuartz.withPart(colorMode === 'dark' ? colorSchemeDark : colorSchemeLight)
-
+  const gridTheme = themeQuartz.withPart(colorMode === 'dark' ? colorSchemeDark : colorSchemeLight)
   const gridRef = useRef<AgGridReact>(null)
 
-  const getDatabaseInfo = useCallback(async (tableName) => {
+  const fetchTableData = useCallback(async (tableName: string) => {
+    // setIsLoadingTableData(true)
+    setError(null)
+
     try {
-      // setIsLoadingTableData(true)
       const response = await window.api.getTableInfo(tableName)
-      if (response && response.columns && response.rows) {
+
+      if (!response.success) {
+        throw new Error(response.error || 'Failed to fetch table data')
+      }
+
+      if (response.columns && response.rows) {
         setTableData({
-          columns: response.columns.map((col: any) => col.name),
-          rows: response.rows,
+          columns: response.columns.map((col: { name: string }) => col.name),
+          rows: [...response.rows, ...response.rows, ...response.rows, ...response.rows, ...response.rows],
         })
+      }
+      else {
+        throw new Error('Invalid data structure received')
       }
     }
     catch (error) {
       console.error('Error fetching table data:', error)
+      setError(error instanceof Error ? error.message : 'Unknown error occurred')
+      setTableData({ columns: [], rows: [] })
     }
     finally {
       setIsLoadingTableData(false)
     }
-  }, [setIsLoadingTableData])
+  }, [setIsLoadingTableData, setTableData])
 
+  // Effect to fetch data when table selection changes
   useEffect(() => {
-    if (!isLoadingTableData && selectedDatabaseTable && gridRef.current) {
-      getDatabaseInfo(selectedDatabaseTable.name)
+    console.log("selectedDatabaseTable", selectedDatabaseTable)
+    if (selectedDatabaseTable?.name) {
+      fetchTableData(selectedDatabaseTable.name)
     }
-  }, [isLoadingTableData, selectedDatabaseTable])
+  }, [selectedDatabaseTable, fetchTableData, selectedRow])
 
   const columnDefs = useMemo(() => {
     if (!tableData?.columns?.length)
@@ -74,11 +88,13 @@ export function DataGrid() {
     filter: true,
   }), [])
 
-  const onRowClicked = useCallback((event: any) => {
+  const onRowClicked = useCallback((event: Record<string, any>) => {
     setSelectedRow({
       rowData: event.data,
     })
   }, [setSelectedRow])
+
+  const rowsData = selectedDatabaseTable ? tableData?.rows : []
 
   if (isLoadingTableData) {
     return (
@@ -92,11 +108,18 @@ export function DataGrid() {
     )
   }
 
-  const rowsData = selectedDatabaseTable ? tableData?.rows : []
+  if (error) {
+    return (
+      <Center height="calc(100vh - 140px)" flexDirection="column">
+        <Text fontSize="xl" mb={4} color="red.500">Error loading data</Text>
+        <Text color="gray.500">{error}</Text>
+      </Center>
+    )
+  }
+
   return (
     <Box flex={1} height="full" width="full">
       <Box
-        className={colorMode === 'dark' ? 'ag-theme-alpine-dark' : 'ag-theme-alpine'}
         height="100%"
         width="100%"
       >
@@ -106,16 +129,15 @@ export function DataGrid() {
           columnDefs={columnDefs}
           defaultColDef={defaultColDef}
           animateRows={true}
-          theme={myTheme}
+          theme={gridTheme}
           rowSelection="single"
           onRowClicked={onRowClicked}
           pagination={true}
-          paginationPageSize={10}
+          paginationPageSize={20}
           suppressCellFocus={false}
         />
       </Box>
 
-      <SidePanel />
     </Box>
   )
 }

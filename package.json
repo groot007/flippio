@@ -1,9 +1,9 @@
 {
   "name": "flippio",
-  "version": "0.0.1",
+  "version": "0.0.10",
   "description": "Database viewer with device connection",
-  "author": "example.com",
-  "homepage": "https://electron-vite.org",
+  "author": "koliastanis",
+  "homepage": "https://github.com/groot007/flippio",
   "main": "./out/main/index.js",
   "scripts": {
     "format": "prettier --write .",
@@ -19,7 +19,8 @@
     "build:unpack": "npm run build && electron-builder --dir",
     "build:win": "npm run build && electron-builder --win",
     "build:mac": "electron-vite build && electron-builder --mac --c.mac.identity=null",
-    "build:linux": "electron-vite build && electron-builder --linux"
+    "build:linux": "electron-vite build && electron-builder --linux",
+    "release": "node build.js && npm run build && electron-builder --publish always"
   },
   "dependencies": {
     "@chakra-ui/icons": "^2.2.4",
@@ -28,10 +29,15 @@
     "@electron-toolkit/utils": "^4.0.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
+    "@sentry/electron": "^6.3.0",
+    "@sentry/vite-plugin": "^3.2.3",
     "@uiw/react-json-view": "^2.0.0-alpha.30",
     "ag-grid-community": "^33.1.1",
     "ag-grid-react": "^33.1.1",
-    "electron-updater": "^6.3.9",
+    "chakra-react-select": "^6.1.0",
+    "dotenv": "^16.4.7",
+    "electron-log": "^5.3.3",
+    "electron-updater": "^6.6.2",
     "framer-motion": "^12.5.0",
     "next-themes": "^0.4.6",
     "react-icons": "^5.5.0",
@@ -54,6 +60,7 @@
     "eslint-plugin-react": "^7.37.4",
     "eslint-plugin-react-hooks": "^5.1.0",
     "eslint-plugin-react-refresh": "^0.4.19",
+    "fix-path": "^4.0.0",
     "prettier": "^3.5.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
