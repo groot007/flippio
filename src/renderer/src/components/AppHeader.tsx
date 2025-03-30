@@ -1,3 +1,4 @@
+import type { Application } from '@renderer/hooks/useApplications'
 import { Button, HStack, Spacer } from '@chakra-ui/react'
 import { useApplications } from '@renderer/hooks/useApplications'
 import { useDevices } from '@renderer/hooks/useDevices'
@@ -6,7 +7,7 @@ import { ColorModeButton } from '@renderer/ui/color-mode'
 import { toaster } from '@renderer/ui/toaster'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { LuRefreshCcw } from 'react-icons/lu'
-import FLSelect from './Select'
+import FLSelect from './FLSelect'
 
 function AppHeader() {
   const [isRefreshing, setIsRefreshing] = useState(false)
@@ -67,30 +68,26 @@ function AppHeader() {
       label: device.model,
       value: device.id,
       description: device.deviceType === 'iphone' ? 'iOS' : 'Android',
+      ...device,
     })), [devicesList])
 
   const applicationSelectOptions = useMemo(() =>
     applicationsList.map(app => ({
       label: app.name,
       value: app.bundleId,
-      // description: app.bundleId,
+      description: app.bundleId,
+      ...app,
     })), [applicationsList])
 
-  const handleDeviceChange = useCallback((value: string) => {
-    const device = devicesList.find(d => d.id === value[0])
-    if (device) {
-      setSelectedDevice(device)
-      setSelectedApplication(null)
-    }
-  }, [devicesList, setSelectedDevice, setSelectedApplication])
+  const handleDeviceChange = useCallback((value: any) => {
+    setSelectedDevice(value)
+    setSelectedApplication(null)
+  }, [setSelectedDevice, setSelectedApplication])
 
-  const handlePackageChange = useCallback((value: string) => {
-    const app = applicationsList.find(a => a.bundleId === value[0])
-    if (app) {
-      setSelectedDatabaseFile(null)
-      setSelectedApplication(app)
-    }
-  }, [applicationsList, setSelectedApplication])
+  const handlePackageChange = useCallback((value: Application) => {
+    setSelectedDatabaseFile(null)
+    setSelectedApplication(value)
+  }, [setSelectedApplication])
 
   useEffect(() => {
     refreshDevices()
@@ -102,15 +99,15 @@ function AppHeader() {
         <FLSelect
           options={devicesSelectOptions}
           label="Select Device"
-          value={[selectedDevice?.id]}
+          value={selectedDevice}
           onChange={handleDeviceChange}
         />
         <FLSelect
           options={applicationSelectOptions}
           label="Select App"
-          value={[selectedApplication?.bundleId || '']}
+          value={selectedApplication}
           onChange={handlePackageChange}
-          isDisabled={!selectedDevice.id || isLoading}
+          isDisabled={!selectedDevice || isLoading}
         />
       </HStack>
       <Button

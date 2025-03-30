@@ -131,7 +131,9 @@ export function SidePanel() {
     <Drawer.Root open={isOpen} onOpenChange={() => closePanel()}>
       <Portal>
         <Drawer.Backdrop />
+        {/* @ts-expect-error chakra types */}
         <Drawer.Positioner placement="right">
+          {/* @ts-expect-error chakra types */}
           <Drawer.Content maxWidth="500px" width="100%">
             <Drawer.Header pr={16}>
               <Drawer.Title>{isEditing ? 'Edit Row Data' : 'Row Details'}</Drawer.Title>
@@ -171,6 +173,7 @@ export function SidePanel() {
                         </Button>
                       </>
                     )}
+                {/* @ts-expect-error chakra types */}
                 <Drawer.CloseTrigger asChild>
                   <IconButton
                     aria-label="Close panel"
@@ -187,7 +190,7 @@ export function SidePanel() {
 
             <Drawer.Body>
               {selectedRow && (
-                <Stack spacing={4}>
+                <Stack gap="4">
                   {Object.entries(selectedRow.rowData || {}).map(([key, value]) => (
                     <FieldItem
                       key={key}

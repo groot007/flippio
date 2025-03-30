@@ -3,7 +3,6 @@
   "compilerOptions": {
     "composite": true,
     "typeRoots": ["./node_modules/@types", "./src/renderer/src/types"],
-    "types": ["electron-vite/node"],
     "esModuleInterop": true
   },
   "include": ["electron.vite.config.*", "src/main/**/*", "src/preload/**/*", "**/*.d.ts"]

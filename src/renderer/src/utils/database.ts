@@ -1,5 +1,5 @@
 export function buildUniqueCondition(cols, rowData) {
-  const conditions = []
+  const conditions: string[] = []
 
   // Try to find ID first for more reliable updates
   const idField = Object.keys(rowData).find(key =>

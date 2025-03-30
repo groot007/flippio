@@ -28,7 +28,7 @@ export function useDatabaseFiles(selectedDevice, selectedApplication) {
           setError(response.error || 'Failed to fetch database files')
         }
       }
-      catch (err) {
+      catch (err: any) {
         setError(err.message)
       }
       finally {

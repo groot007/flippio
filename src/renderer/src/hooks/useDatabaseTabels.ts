@@ -39,7 +39,7 @@ export function useDatabaseTables(selectedDatabaseFile, selectedDevice) {
           setError(response.error || 'Failed to fetch tables')
         }
       }
-      catch (err) {
+      catch (err: any) {
         setError(err.message)
       }
       finally {

@@ -8,8 +8,8 @@ import {
 import { useDatabaseFiles } from '@renderer/hooks/useDatabaseFiles'
 import { useDatabaseTables } from '@renderer/hooks/useDatabaseTabels'
 import { useCurrentDatabaseSelection, useCurrentDeviceSelection } from '@renderer/store'
-import { useCallback, useMemo } from 'react'
-import FLSelect from './Select'
+import { useCallback, useEffect, useMemo } from 'react'
+import FLSelect from './FLSelect'
 
 export function SubHeader() {
   const selectedDevice = useCurrentDeviceSelection(state => state.selectedDevice)
@@ -20,7 +20,6 @@ export function SubHeader() {
   const selectedDatabaseTable = useCurrentDatabaseSelection(state => state.selectedDatabaseTable)
   const setSelectedDatabaseTable = useCurrentDatabaseSelection(state => state.setSelectedDatabaseTable)
 
-  // Custom hooks for data fetching
   const {
     databaseFiles,
     isLoading: isDBPulling,
@@ -30,14 +29,12 @@ export function SubHeader() {
     tables: databaseTables,
   } = useDatabaseTables(selectedDatabaseFile, selectedDevice)
 
-  const handleDatabaseFileChange = useCallback((path) => {
-    const file = databaseFiles?.find(f => f.path === path[0]) || null
+  const handleDatabaseFileChange = useCallback((file) => {
     setSelectedDatabaseFile(file)
     setSelectedDatabaseTable(null)
   }, [databaseFiles, setSelectedDatabaseFile])
 
-  const handleTableChange = useCallback((name) => {
-    const table = databaseTables?.find(t => t.name === name[0]) || null
+  const handleTableChange = useCallback((table) => {
     setSelectedDatabaseTable(table)
   }, [databaseTables, setSelectedDatabaseTable])
 
@@ -45,13 +42,21 @@ export function SubHeader() {
     databaseFiles?.map(file => ({
       label: file.filename,
       value: file.path,
+      ...file,
     })) ?? [], [databaseFiles])
 
   const tableOptions = useMemo(() =>
     databaseTables?.map(table => ({
       label: table.name,
       value: table.name,
+      ...table,
     })) ?? [], [databaseTables])
+
+  useEffect(() => {
+    if (!selectedDatabaseFile?.filename) {
+      setSelectedDatabaseTable(null)
+    }
+  }, [selectedDatabaseFile])
 
   // const handleQueryExecution = useCallback(async () => {
   //   const data = await window.api.executeQuery('SELECT * FROM config')
@@ -67,7 +72,7 @@ export function SubHeader() {
       borderColor="app.border"
       bg="app.subheader.bg"
     >
-      {!databaseFiles?.length && !isDBPulling
+      {!databaseFiles?.length && selectedApplication?.bundleId
         ? (
             <Box
               width="full"
@@ -84,16 +89,16 @@ export function SubHeader() {
           <FLSelect
             label="Select Database"
             options={dbFileOptions}
-            value={[selectedDatabaseFile?.path || '']}
+            value={selectedDatabaseFile}
             onChange={handleDatabaseFileChange}
-            isDisabled={!databaseFiles?.length}
+            isDisabled={!selectedApplication?.bundleId || isDBPulling}
           />
 
           <Box width="250px">
             <FLSelect
               label="Select Table"
               options={tableOptions}
-              value={[selectedDatabaseTable?.name || '']}
+              value={selectedDatabaseTable}
               onChange={handleTableChange}
               isDisabled={!selectedDatabaseFile?.path || isDBPulling}
             />

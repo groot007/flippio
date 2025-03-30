@@ -61,6 +61,7 @@ export function DataGrid() {
 
   // Effect to fetch data when table selection changes
   useEffect(() => {
+    console.log("selectedDatabaseTable", selectedDatabaseTable)
     if (selectedDatabaseTable?.name) {
       fetchTableData(selectedDatabaseTable.name)
     }
