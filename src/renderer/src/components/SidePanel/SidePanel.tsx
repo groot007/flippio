@@ -59,72 +59,61 @@ export function SidePanel() {
 
     try {
       setIsLoading(true)
-
-      const condition = buildUniqueCondition(tableData?.columns, selectedRow.originalData || selectedRow.rowData)
-      const result = await window.api.updateTableRow(
-        selectedDatabaseTable.name,
-        editedData,
-        condition,
-      )
-
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to update row')
-      }
-
-      // Handle database file push for Android
-      if (selectedDatabaseFile
-        && selectedDevice
-        && selectedDatabaseFile.packageName
-        && selectedDatabaseTable.deviceType !== 'iphone') {
-        await window.api.pushDatabaseFile(
-          selectedDevice.id,
-          pulledDatabaseFilePath,
-          selectedDatabaseFile.packageName,
-          selectedDatabaseFile.path,
-        )
-      }
-
-      // Update selected row with new data
-      setSelectedRow({
-        rowData: editedData,
-        originalData: { ...editedData },
-      })
-
-      setIsEditing(false)
-
-      toaster.create({
-        title: 'Data updated',
-        description: 'Row data has been successfully updated',
-        status: 'success',
-        duration: 3000,
-        isClosable: true,
-      })
+      await updateRowData()
+      await pushDatabaseFileIfNeeded()
+      updateSelectedRow()
+      showSuccessToast()
     }
-    catch (error: any) {
-      console.error('Error saving data:', error)
-      toaster.create({
-        title: 'Update failed',
-        description: error.message || 'Failed to update data',
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
-      })
-      cancelEditing()
+    catch (error) {
+      handleSaveError(error)
     }
     finally {
       setIsLoading(false)
     }
-  }, [
-    selectedRow,
-    selectedDatabaseTable,
-    editedData,
-    tableData?.columns,
-    selectedDatabaseFile,
-    selectedDevice,
-    pulledDatabaseFilePath,
-    setSelectedRow,
-    cancelEditing,
-  ])
+  }, [selectedRow, selectedDatabaseTable, editedData])
+
+  async function updateRowData() {
+    const condition = buildUniqueCondition(tableData?.columns, selectedRow.originalData || selectedRow.rowData)
+    const result = await window.api.updateTableRow(selectedDatabaseTable.name, editedData, condition)
+    if (!result.success)
+      throw new Error(result.error || 'Failed to update row')
+  }
+
+  async function pushDatabaseFileIfNeeded() {
+    if (selectedDatabaseFile && selectedDevice && selectedDatabaseFile.packageName && selectedDatabaseTable.deviceType !== 'iphone') {
+      await window.api.pushDatabaseFile(selectedDevice.id, pulledDatabaseFilePath, selectedDatabaseFile.packageName, selectedDatabaseFile.path)
+    }
+  }
+
+  function updateSelectedRow() {
+    setSelectedRow({
+      rowData: editedData,
+      originalData: { ...editedData },
+    })
+    setIsEditing(false)
+  }
+
+  function showSuccessToast() {
+    toaster.create({
+      title: 'Data updated',
+      description: 'Row data has been successfully updated',
+      status: 'success',
+      duration: 3000,
+      isClosable: true,
+    })
+  }
+
+  function handleSaveError(error: any) {
+    console.error('Error saving data:', error)
+    toaster.create({
+      title: 'Update failed',
+      description: error.message || 'Failed to update data',
+      status: 'error',
+      duration: 5000,
+      isClosable: true,
+    })
+    cancelEditing()
+  }
 
   // Using the provided Drawer pattern for consistent UI
   return (

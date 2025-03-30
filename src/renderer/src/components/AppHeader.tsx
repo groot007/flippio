@@ -111,6 +111,7 @@ function AppHeader() {
         />
       </HStack>
       <Button
+        data-testid="refresh-devices"
         data-state={isRefreshing ? 'open' : 'closed'}
         onClick={handleRefreshDevices}
         bg="transparent"

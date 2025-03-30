@@ -26,6 +26,11 @@ const api = {
     ipcRenderer.invoke('db:executeQuery', query),
 }
 
+contextBridge.exposeInMainWorld('env', {
+  NODE_ENV: process.env.NODE_ENV,
+  SENTRY_DSN: process.env.SENTRY_DSN,
+})
+
 // Use `contextBridge` APIs to expose Electron APIs to
 // renderer only if context isolation is enabled, otherwise
 // just add to the DOM global.

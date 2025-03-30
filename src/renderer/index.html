@@ -167,7 +167,9 @@
        window.onload = () => {
         const preloader = document.getElementById('preloader');
         if (preloader) {
-          preloader.classList.add('fade');
+          setTimeout(() => {
+            preloader.classList.add('fade');
+          }, 1000); 
         }
       }
     </script>
