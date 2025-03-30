@@ -2,6 +2,7 @@ export {}
 
 declare global {
   interface Window {
+    electron: Electron,
     api: {
       // ADB operations
       getDevices: () => Promise<any>

@@ -8,4 +8,4 @@ if (!ghToken) {
   process.exit(1)
 }
 
-execSync('npm run publish', { stdio: 'inherit' })
+execSync('npm run release', { stdio: 'inherit' })

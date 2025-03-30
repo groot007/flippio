@@ -1,6 +1,6 @@
 {
   "name": "flippio",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "description": "Database viewer with device connection",
   "author": "koliastanis",
   "homepage": "https://github.com/groot007/flippio",
@@ -20,11 +20,12 @@
     "build:win": "npm run build && electron-builder --win",
     "build:mac": "electron-vite build && electron-builder --mac --c.mac.identity=null",
     "build:linux": "electron-vite build && electron-builder --linux",
-    "release": "node build.js && npm run build && electron-builder --publish always"
+    "release": "NODE_ENV=production npm run build && electron-builder --publish always"
   },
   "dependencies": {
     "@chakra-ui/icons": "^2.2.4",
     "@chakra-ui/react": "^3.13.0",
+    "@chakra-ui/react-types": "^2.0.6",
     "@electron-toolkit/preload": "^3.0.1",
     "@electron-toolkit/utils": "^4.0.0",
     "@emotion/react": "^11.14.0",

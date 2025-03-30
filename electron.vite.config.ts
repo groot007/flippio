@@ -10,7 +10,7 @@ export default defineConfig({
     plugins: [externalizeDepsPlugin(), sentryVitePlugin({
       authToken: process.env.SENTRY_AUTH_TOKEN,
       org: 'mykola-stanislavchuk',
-      project: 'electron',
+      project: 'flipio',
     })],
     build: {
       sourcemap: true, // Source map generation must be turned on
@@ -20,7 +20,7 @@ export default defineConfig({
     plugins: [externalizeDepsPlugin(), sentryVitePlugin({
       authToken: process.env.SENTRY_AUTH_TOKEN,
       org: 'mykola-stanislavchuk',
-      project: 'electron',
+      project: 'flipio',
     })],
     build: {
       sourcemap: true, // Source map generation must be turned on

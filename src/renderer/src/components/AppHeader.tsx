@@ -3,11 +3,11 @@ import { Button, HStack, Spacer } from '@chakra-ui/react'
 import { useApplications } from '@renderer/hooks/useApplications'
 import { useDevices } from '@renderer/hooks/useDevices'
 import { useCurrentDatabaseSelection, useCurrentDeviceSelection } from '@renderer/store'
-import { ColorModeButton } from '@renderer/ui/color-mode'
 import { toaster } from '@renderer/ui/toaster'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { LuRefreshCcw } from 'react-icons/lu'
 import FLSelect from './FLSelect'
+import { Settings } from './Settings'
 
 function AppHeader() {
   const [isRefreshing, setIsRefreshing] = useState(false)
@@ -129,7 +129,7 @@ function AppHeader() {
       </Button>
       <Spacer />
 
-      <ColorModeButton />
+      <Settings />
     </HStack>
   )
 }
