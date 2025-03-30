@@ -99,68 +99,69 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   databaseFiles: [],
   setDatabaseFiles: files => set({ databaseFiles: files }),
-  selectedDatabaseFile: '',
+  selectedDatabaseFile: null,
   databaseTables: [],
   setDatabaseTables: tables => set({ databaseTables: tables }),
-  selectedDatabaseTable: '',
+  selectedDatabaseTable: null,
 
   tableData: null,
   setTableData: data => set({ tableData: data }),
   currentPage: 0,
   pageSize: 25,
-  setPage: (page) => set({ currentPage: page }),
+  setPage: page => set({ currentPage: page }),
 
   selectedRow: null,
-  selectRow: (rowData) => set({ 
-    selectedRow: { 
-      rowData, 
+  selectRow: rowData => set({
+    selectedRow: {
+      rowData,
       isEditing: false,
-      originalData: { ...rowData } 
-    } 
+      originalData: { ...rowData },
+    },
   }),
   closeRowPanel: () => set({ selectedRow: null }),
   startEditingRow: () => {
-    const { selectedRow } = get();
+    const { selectedRow } = get()
     if (selectedRow) {
-      set({ 
-        selectedRow: { 
-          ...selectedRow, 
+      set({
+        selectedRow: {
+          ...selectedRow,
           isEditing: true,
-          originalData: { ...selectedRow.rowData }
-        } 
-      });
+          originalData: { ...selectedRow.rowData },
+        },
+      })
     }
   },
   setEditedRowData: (editedData) => {
-    set({ 
-      selectedRow: { 
-        rowData: editedData, 
-        isEditing: false, 
-        originalData: editedData 
-      } 
-    });
+    set({
+      selectedRow: {
+        rowData: editedData,
+        isEditing: false,
+        originalData: editedData,
+      },
+    })
   },
   cancelEditingRow: () => {
-    const { selectedRow } = get();
+    const { selectedRow } = get()
     if (selectedRow && selectedRow.originalData) {
-      set({ 
-        selectedRow: { 
-          rowData: selectedRow.originalData, 
+      set({
+        selectedRow: {
+          rowData: selectedRow.originalData,
           isEditing: false,
-          originalData: selectedRow.originalData
-        } 
-      });
-    } else if (selectedRow) {
-      set({ selectedRow: { ...selectedRow, isEditing: false } });
+          originalData: selectedRow.originalData,
+        },
+      })
+    }
+    else if (selectedRow) {
+      set({ selectedRow: { ...selectedRow, isEditing: false } })
     }
   },
 
   isLoadingApps: false,
-  setIsLoadingApps: (loading) => set({ isLoadingApps: loading }),
+  setIsLoadingApps: loading => set({ isLoadingApps: loading }),
   isLoadingDatabase: false,
-  setIsLoadingDatabase: (loading) => set({ isLoadingDatabase: loading }),
+  setIsLoadingDatabase: loading => set({ isLoadingDatabase: loading }),
   isLoadingTableData: false,
-  setIsLoadingTableData: (loading) => set({ isLoadingTableData: loading }),
+  setIsLoadingTableData: loading => set({ isLoadingTableData: loading }),
 
   setDevices: devices => set({ devices }),
   setApplications: applications => set({ applications, selectedDatabaseFile: null, selectedDatabaseTable: null }),

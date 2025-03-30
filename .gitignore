@@ -4,6 +4,7 @@ out
 .DS_Store
 .eslintcache
 *.log*
-
 .env
+
+# Sentry Config File
 .env.sentry-build-plugin

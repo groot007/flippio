@@ -1,8 +1,10 @@
 import { join } from 'node:path'
 import process from 'node:process'
 import { electronApp, is, optimizer } from '@electron-toolkit/utils'
-import { app, BrowserWindow, ipcMain, shell } from 'electron'
-import icon from '../../resources/icon.png?asset'
+import * as Sentry from '@sentry/electron/main'
+import { app, BrowserWindow, dialog, shell } from 'electron'
+import { autoUpdater } from 'electron-updater'
+
 import { setupIpcADB } from './ipcADB'
 import { setupIpcCommon } from './ipcCommon'
 import { setupIpcDatabase } from './ipcDatabase'
@@ -44,6 +46,7 @@ function createWindow(): void {
 
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()
+    // mainWindow.webContents.openDevTools();
   })
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
@@ -87,6 +90,8 @@ app.whenReady().then(() => {
     if (BrowserWindow.getAllWindows().length === 0)
       createWindow()
   })
+
+  autoUpdater.checkForUpdatesAndNotify()
 })
 
 // Quit when all windows are closed, except on macOS. There, it's common
@@ -96,5 +101,25 @@ app.on('window-all-closed', () => {
     app.quit()
 })
 
-// In this file you can include the rest of your app's specific main process
-// code. You can also put them in separate files and require them here.
+autoUpdater.on('update-available', (info) => {
+  dialog.showMessageBox({
+    type: 'info',
+    title: 'Update Available',
+    message: `A new version (${info.version}) is available. Downloading now...`,
+  })
+})
+
+autoUpdater.on('update-downloaded', () => {
+  dialog.showMessageBox({
+    type: 'info',
+    title: 'Update Ready',
+    message: 'Update downloaded. The application will now restart to apply the update.',
+  }).then(() => {
+    autoUpdater.quitAndInstall()
+  })
+})
+
+autoUpdater.on('error', (err) => {
+  console.error('Update error:', err)
+  Sentry.captureException(err) // Capture update errors in Sentry
+})

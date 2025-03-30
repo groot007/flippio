@@ -1,8 +1,11 @@
 import { resolve } from 'node:path'
+import process from 'node:process'
+import { sentryVitePlugin } from '@sentry/vite-plugin'
 import react from '@vitejs/plugin-react'
 import { defineConfig, externalizeDepsPlugin } from 'electron-vite'
 
 export default defineConfig({
+
   main: {
     plugins: [externalizeDepsPlugin(), sentryVitePlugin({
       authToken: process.env.SENTRY_AUTH_TOKEN,
@@ -27,6 +30,7 @@ export default defineConfig({
     resolve: {
       alias: {
         '@renderer': resolve('src/renderer/src'),
+        '@': resolve(__dirname, 'src'),
       },
     },
     plugins: [react(), sentryVitePlugin({
@@ -36,12 +40,6 @@ export default defineConfig({
     })],
     build: {
       sourcemap: true, // Source map generation must be turned on
-        rollupOptions: {
-          input: {
-            index: resolve(__dirname, 'src/renderer/index.html'),
-            loader: resolve(__dirname, 'src/renderer/loader.html')
-          }
-        }
     },
   },
 })

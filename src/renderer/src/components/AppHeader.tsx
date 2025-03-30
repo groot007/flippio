@@ -10,131 +10,124 @@ import FLSelect from './FLSelect'
 import { Settings } from './Settings'
 
 function AppHeader() {
-  const { colorMode } = useColorMode()
-  const isDark = colorMode === 'dark'
+  const [isRefreshing, setIsRefreshing] = useState(false)
+
+  const selectedDevice = useCurrentDeviceSelection(state => state.selectedDevice)
+  const setSelectedDevice = useCurrentDeviceSelection(state => state.setSelectedDevice)
+  const selectedApplication = useCurrentDeviceSelection(state => state.selectedApplication)
+  const setSelectedApplication = useCurrentDeviceSelection(state => state.setSelectedApplication)
+  const setSelectedDatabaseFile = useCurrentDatabaseSelection(state => state.setSelectedDatabaseFile)
+
   const {
-    devices,
-    applications,
-    setDevices,
-    setApplications,
-    selectedApplication,
-    selectedDevice,
-    setSelectedApplication,
-    setSelectedDevice,
-    setDatabaseFiles,
-  } = useAppStore()
+    devices: devicesList,
+    refresh: refreshDevices,
+  } = useDevices()
 
-  const deviceType = useMemo(() => {
-    return devices.find(device => device.value === selectedDevice[0])?.deviceType
-  }, [selectedDevice, devices])
+  const handleRefreshDevices = useCallback(() => {
+    let timeoutId: NodeJS.Timeout | null = null
+    setIsRefreshing(true)
 
-  const onDeviceChange = (value: string) => {
+    if (timeoutId) {
+      clearTimeout(timeoutId)
+    }
+    refreshDevices()
+      .then(() => {
+        timeoutId = setTimeout(() => {
+          toaster.create({
+            title: 'Device list refreshed',
+            status: 'success',
+            duration: 3000,
+            isClosable: true,
+          })
+        }, 800)
+      })
+      .catch((err) => {
+        toaster.create({
+          title: 'Error refreshing devices',
+          description: err.message,
+          status: 'error',
+          duration: 3000,
+          isClosable: true,
+        })
+      })
+
+      .finally(() => {
+        timeoutId = setTimeout(() => {
+          setIsRefreshing(false)
+        }, 800)
+      })
+  }, [])
+
+  const {
+    isLoading,
+    applications: applicationsList,
+  } = useApplications(selectedDevice)
+
+  const devicesSelectOptions = useMemo(() =>
+    devicesList.map(device => ({
+      label: device.model,
+      value: device.id,
+      description: device.deviceType === 'iphone' ? 'iOS' : 'Android',
+      ...device,
+    })), [devicesList])
+
+  const applicationSelectOptions = useMemo(() =>
+    applicationsList.map(app => ({
+      label: app.name,
+      value: app.bundleId,
+      description: app.bundleId,
+      ...app,
+    })), [applicationsList])
+
+  const handleDeviceChange = useCallback((value: any) => {
     setSelectedDevice(value)
-  }
+    setSelectedApplication(null)
+  }, [setSelectedDevice, setSelectedApplication])
 
-  const onPackageChange = (value: string) => {
+  const handlePackageChange = useCallback((value: Application) => {
+    setSelectedDatabaseFile(null)
     setSelectedApplication(value)
-  }
-
-  const loadDevices = async () => {
-    const deviceResponse = await window.api.getDevices()
-    if (deviceResponse.success) {
-      const devices = deviceResponse.devices?.map((device: any) => ({
-        label: device.model,
-        value: device.id,
-        deviceType: device.deviceType,
-      })) ?? []
-      setDevices(devices)
-    }
-    else {
-      setDevices([{
-        label: 'No devices found',
-        value: 'no device',
-      }])
-    }
-  }
-
-  const getPackages = async () => {
-    let response = {
-      success: false,
-      packages: [],
-    }
-
-    if (deviceType === 'iphone') {
-      response = await window.api.getIOSPackages(selectedDevice[0])
-    }
-
-    if (deviceType === 'android') {
-      response = await window.api.getAndroidPackages(selectedDevice[0])
-    }
-
-    if (!response.success) {
-      setApplications([])
-      return
-    }
-
-    const modPackages = response.packages?.map((pkg: any) => ({
-      label: pkg.name,
-      value: pkg.bundleId,
-      // description: pkg.bundleId,
-    })) ?? []
-
-    setApplications(modPackages)
-    // setSelectedDatabaseFile('nice')
-    //   setSelectedDatabaseTable('nice')
-  }
+  }, [setSelectedApplication])
 
   useEffect(() => {
-    if (selectedDevice[0]) {
-      getPackages()
-    }
-  }, [selectedDevice])
-
-  const getDatabaseFiles = async () => {
-    if (deviceType === 'iphone') {
-      const response = await window.api.getIOSDatabaseFiles(selectedDevice[0], selectedApplication?.[0])
-      if (response.success) {
-        const files = response.files.map((file: any) => ({
-          ...file,
-          deviceType: 'iphone',
-        }))
-        setDatabaseFiles(files)
-      }
-      return
-    }
-
-    if (deviceType === 'android') {
-      const response = await window.api.getAndroidDatabaseFiles(selectedDevice[0], selectedApplication?.[0])
-      if (response.success) {
-        setDatabaseFiles(response.files)
-      }
-    }
-  }
-
-  useEffect(() => {
-    if (selectedApplication?.[0]) {
-      getDatabaseFiles()
-    }
-  }, [selectedApplication])
-
-  useEffect(() => {
-    loadDevices()
+    refreshDevices()
   }, [])
 
   return (
-    <HStack padding={4} bg={isDark ? 'gray.800' : 'white'} w="full">
-      <FLSelect
-        options={devices}
-        label="Select device"
-        value={selectedDevice}
-        onChange={onDeviceChange}
-      />
-      <FLSelect
-        options={applications}
-        label="Select app"
-        value={selectedApplication || []}
-        onChange={onPackageChange}
-      />
+    <HStack padding={4} w="full" alignItems="center">
+      <HStack direction="row" gap={5} alignItems="center">
+        <FLSelect
+          options={devicesSelectOptions}
+          label="Select Device"
+          value={selectedDevice}
+          onChange={handleDeviceChange}
+        />
+        <FLSelect
+          options={applicationSelectOptions}
+          label="Select App"
+          value={selectedApplication}
+          onChange={handlePackageChange}
+          isDisabled={!selectedDevice || isLoading}
+        />
+      </HStack>
+      <Button
+        data-state={isRefreshing ? 'open' : 'closed'}
+        onClick={handleRefreshDevices}
+        bg="transparent"
+        color="gray.300"
+        ml="10px"
+        _hover={{
+          opacity: 0.8,
+        }}
+        disabled={isRefreshing || isLoading}
+        _open={{
+          animationName: 'rotate',
+          animationDuration: '1100ms',
+        }}
+      >
+        <LuRefreshCcw />
+      </Button>
+      <Spacer />
 
       <Settings />
     </HStack>

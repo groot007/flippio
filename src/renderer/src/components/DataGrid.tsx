@@ -1,69 +1,72 @@
 import {
   Box,
+  Center,
   Flex,
   Spinner,
+  Text,
 } from '@chakra-ui/react'
+import { useCurrentDatabaseSelection, useTableData } from '@renderer/store'
+import { useRowEditingStore } from '@renderer/store/useRowEditingStore'
 import { useColorMode } from '@renderer/ui/color-mode'
 import { colorSchemeDark, colorSchemeLight, themeQuartz } from 'ag-grid-community'
 import { AgGridReact } from 'ag-grid-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useAppStore } from '../store/appStore'
-import { SidePanel } from './SidePanel'
 
 export function DataGrid() {
   const { colorMode } = useColorMode()
   const {
     isLoadingTableData,
-    pageSize,
-    selectedDatabaseTable,
-    setPage,
-    selectRow,
+    setIsLoadingTableData,
     tableData,
     setTableData,
-    selectedRow,
-    setIsLoadingTableData,
-  } = useAppStore()
+  } = useTableData()
 
-  const myTheme = themeQuartz.withPart(colorMode === 'dark' ? colorSchemeDark : colorSchemeLight)
+  const { setSelectedRow, selectedRow } = useRowEditingStore()
+  const { selectedDatabaseTable } = useCurrentDatabaseSelection()
+  const [error, setError] = useState<string | null>(null)
 
+  const gridTheme = themeQuartz.withPart(colorMode === 'dark' ? colorSchemeDark : colorSchemeLight)
   const gridRef = useRef<AgGridReact>(null)
 
-  const getDatabaseInfo = useCallback(async (tableName) => {
+  const fetchTableData = useCallback(async (tableName: string) => {
+    // setIsLoadingTableData(true)
+    setError(null)
+
     try {
-      // setIsLoadingTableData(true)
       const response = await window.api.getTableInfo(tableName)
-      if (response && response.columns && response.rows) {
+
+      if (!response.success) {
+        throw new Error(response.error || 'Failed to fetch table data')
+      }
+
+      if (response.columns && response.rows) {
         setTableData({
-          columns: response.columns.map((col: any) => col.name),
-          rows: response.rows,
+          columns: response.columns.map((col: { name: string }) => col.name),
+          rows: [...response.rows, ...response.rows, ...response.rows, ...response.rows, ...response.rows],
         })
+      }
+      else {
+        throw new Error('Invalid data structure received')
       }
     }
     catch (error) {
       console.error('Error fetching table data:', error)
+      setError(error instanceof Error ? error.message : 'Unknown error occurred')
+      setTableData({ columns: [], rows: [] })
     }
     finally {
       setIsLoadingTableData(false)
     }
-  }, [setIsLoadingTableData])
+  }, [setIsLoadingTableData, setTableData])
 
-  // Refresh data when the selected table changes
+  // Effect to fetch data when table selection changes
   useEffect(() => {
-    if (selectedDatabaseTable) {
-      getDatabaseInfo(selectedDatabaseTable.name)
+    console.log("selectedDatabaseTable", selectedDatabaseTable)
+    if (selectedDatabaseTable?.name) {
+      fetchTableData(selectedDatabaseTable.name)
     }
-  }, [selectedDatabaseTable])
+  }, [selectedDatabaseTable, fetchTableData, selectedRow])
 
-  // Monitor loading state and refresh data if it changes from true to false
-  // This allows the SidePanel to trigger a data refresh
-  useEffect(() => {
-    if (!isLoadingTableData && selectedDatabaseTable && gridRef.current) {
-      // Only refresh if we have a grid and a selected table
-      getDatabaseInfo(selectedDatabaseTable.name)
-    }
-  }, [isLoadingTableData, selectedDatabaseTable])
-
-  // Column definitions
   const columnDefs = useMemo(() => {
     if (!tableData?.columns?.length)
       return []
@@ -76,37 +79,22 @@ export function DataGrid() {
       resizable: true,
       editable: true,
       tooltipValueGetter: params => params.value,
-      cellStyle: (params) => {
-        if (params.value == 0) {
-          // mark police cells as red
-          return { color: 'blue' }
-        }
-        if (typeof params.value == 'string' && params.value.startsWith('{"')) {
-          // mark police cells as red
-          return { color: 'green' }
-        }
-
-        return null
-      },
-      // Special rendering for JSON data
-      cellRenderer: (params: any) => {
-        const value = params.value
-        return value
-      },
     }))
   }, [tableData?.columns])
 
-  // Default column definition
   const defaultColDef = useMemo(() => ({
     flex: 1,
     minWidth: 100,
     filter: true,
   }), [])
 
-  // Row click handler
-  const onRowClicked = useCallback((event: any) => {
-    selectRow(event.data)
-  }, [selectRow])
+  const onRowClicked = useCallback((event: Record<string, any>) => {
+    setSelectedRow({
+      rowData: event.data,
+    })
+  }, [setSelectedRow])
+
+  const rowsData = selectedDatabaseTable ? tableData?.rows : []
 
   if (isLoadingTableData) {
     return (
@@ -120,11 +108,18 @@ export function DataGrid() {
     )
   }
 
-  const rowsData = selectedDatabaseTable ? tableData?.rows : []
+  if (error) {
+    return (
+      <Center height="calc(100vh - 140px)" flexDirection="column">
+        <Text fontSize="xl" mb={4} color="red.500">Error loading data</Text>
+        <Text color="gray.500">{error}</Text>
+      </Center>
+    )
+  }
+
   return (
     <Box flex={1} height="full" width="full">
       <Box
-        className={colorMode === 'dark' ? 'ag-theme-alpine-dark' : 'ag-theme-alpine'}
         height="100%"
         width="100%"
       >
@@ -134,22 +129,15 @@ export function DataGrid() {
           columnDefs={columnDefs}
           defaultColDef={defaultColDef}
           animateRows={true}
-          theme={myTheme}
+          theme={gridTheme}
           rowSelection="single"
           onRowClicked={onRowClicked}
           pagination={true}
-          paginationPageSize={pageSize}
-          onPaginationChanged={() => {
-            if (gridRef.current) {
-              setPage(gridRef.current.api.paginationGetCurrentPage())
-            }
-          }}
+          paginationPageSize={20}
           suppressCellFocus={false}
         />
       </Box>
 
-      {/* Side Panel */}
-      <SidePanel />
     </Box>
   )
 }
