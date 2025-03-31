@@ -9,7 +9,6 @@ import { useDatabaseFiles } from '@renderer/hooks/useDatabaseFiles'
 import { useDatabaseTables } from '@renderer/hooks/useDatabaseTabels'
 import { useCurrentDatabaseSelection, useCurrentDeviceSelection } from '@renderer/store'
 import { useCallback, useEffect, useMemo } from 'react'
-import { LuDatabase, LuTable } from 'react-icons/lu'
 import FLSelect from './FLSelect'
 
 export function SubHeader() {
@@ -26,7 +25,7 @@ export function SubHeader() {
     isLoading,
   } = useDatabaseFiles(selectedDevice, selectedApplication)
 
-  const isDBPulling = selectedApplication?.bundleId && selectedDevice?.id && isLoading
+  const isDBPulling = !!selectedApplication?.bundleId && !!selectedDevice?.id && isLoading
 
   const {
     tables: databaseTables,
@@ -61,12 +60,12 @@ export function SubHeader() {
     }
   }, [selectedDatabaseFile])
 
+  const isNoDB = !databaseFiles?.length && !isDBPulling && selectedApplication?.bundleId && selectedDevice?.id
+
   // const handleQueryExecution = useCallback(async () => {
   //   const data = await window.api.executeQuery('SELECT * FROM config')
   //   console.log('handleQueryExecution__', data)
   // }, [])
-
-  const noDB = (!databaseFiles?.length && !isDBPulling) && selectedApplication?.bundleId && selectedDevice?.id
 
   return (
     <Box
@@ -77,7 +76,7 @@ export function SubHeader() {
       borderColor="app.border"
       bg="app.subheader.bg"
     >
-      {noDB
+      {isNoDB
         ? (
             <Box
               width="full"
@@ -96,7 +95,6 @@ export function SubHeader() {
             options={dbFileOptions}
             value={selectedDatabaseFile}
             onChange={handleDatabaseFileChange}
-            icon={<LuDatabase color="#47d5c9" />}
             isDisabled={!selectedApplication?.bundleId || isDBPulling}
           />
 
@@ -106,7 +104,6 @@ export function SubHeader() {
               options={tableOptions}
               value={selectedDatabaseTable}
               onChange={handleTableChange}
-              icon={<LuTable color="#47d5c9" />}
               isDisabled={!selectedDatabaseFile?.path || isDBPulling}
             />
           </Box>

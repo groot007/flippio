@@ -17,6 +17,7 @@ interface CustomSelectProps {
   width?: string | number
   placeholder?: string
   searchable?: boolean
+  noOptionsMessage?: string
 }
 
 const FLSelect: React.FC<CustomSelectProps> = ({
@@ -29,6 +30,7 @@ const FLSelect: React.FC<CustomSelectProps> = ({
   icon = null,
   placeholder,
   searchable = true,
+  noOptionsMessage = 'No options available',
 }) => {
   const customComponents = {
     Control: ({ children, ...props }) => {
@@ -49,7 +51,7 @@ const FLSelect: React.FC<CustomSelectProps> = ({
       onChange={(selected) => {
         onChange(selected)
       }}
-
+      noOptionsMessage={() => noOptionsMessage}
       placeholder={placeholder || label}
       isSearchable={searchable}
       isDisabled={isDisabled}
