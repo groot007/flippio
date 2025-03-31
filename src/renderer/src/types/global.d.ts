@@ -20,6 +20,53 @@ declare global {
       getTableInfo: (tableName: string) => Promise<any>
       updateTableRow: (tableName: string, row: any, condition: any) => Promise<any>
       executeQuery: (query: string) => Promise<any>
+      getDevices: () => Promise<any>
+      getIOSPackages: (deviceId: string) => Promise<any>
+      getAndroidPackages: (deviceId: string) => Promise<any>
+      getAndroidDatabaseFiles: (deviceId: string, applicationId: string) => Promise<any>
+      getIOSDatabaseFiles: (deviceId: string, applicationId: string) => Promise<any>
+      pullDatabaseFile: (deviceId: string, remotePath: string, localPath?: string) => Promise<any>
+      pushDatabaseFile: (deviceId: string, localPath: string, packageName: string, remotePath: string) => Promise<any>
+
+      // Database methods
+      getTables: () => Promise<any>
+      openDatabase: (filePath: string) => Promise<any>
+      getTableInfo: (tableName: string) => Promise<any>
+      updateTableRow: (tableName: string, row: any, condition: any) => Promise<any>
+      executeQuery: (query: string) => Promise<any>
+
+      // Virtual device methods
+      getAndroidEmulators: () => Promise<{
+        success: boolean
+        emulators?: Array<{
+          name: string
+          id: string
+          platform: 'android'
+          status?: 'running' | 'stopped'
+        }>
+        error?: string
+      }>
+
+      getIOSSimulators: () => Promise<{
+        success: boolean
+        simulators?: Array<{
+          name: string
+          id: string
+          platform: 'ios'
+          status?: 'running' | 'stopped'
+        }>
+        error?: string
+      }>
+
+      launchAndroidEmulator: (emulatorId: string) => Promise<{
+        success: boolean
+        error?: string
+      }>
+
+      launchIOSSimulator: (simulatorId: string) => Promise<{
+        success: boolean
+        error?: string
+      }>
     }
   }
 }

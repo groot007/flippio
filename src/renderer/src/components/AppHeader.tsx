@@ -5,12 +5,14 @@ import { useDevices } from '@renderer/hooks/useDevices'
 import { useCurrentDatabaseSelection, useCurrentDeviceSelection } from '@renderer/store'
 import { toaster } from '@renderer/ui/toaster'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { LuRefreshCcw } from 'react-icons/lu'
+import { LuMonitor, LuPackage, LuRefreshCcw, LuSmartphone } from 'react-icons/lu'
 import FLSelect from './FLSelect'
 import { Settings } from './Settings'
+import { VirtualDeviceModal } from './VirtualDeviceModal'
 
 function AppHeader() {
   const [isRefreshing, setIsRefreshing] = useState(false)
+  const [isVirtualDeviceModalOpen, setIsVirtualDeviceModalOpen] = useState(false)
 
   const selectedDevice = useCurrentDeviceSelection(state => state.selectedDevice)
   const setSelectedDevice = useCurrentDeviceSelection(state => state.setSelectedDevice)
@@ -40,7 +42,8 @@ function AppHeader() {
 
         timeoutId = setTimeout(() => {
           toaster.create({
-            title: 'Device list refreshed',
+            title: 'Success',
+            description: 'Device list refreshed',
             status: 'success',
             duration: 3000,
             isClosable: true,
@@ -95,48 +98,86 @@ function AppHeader() {
     setSelectedApplication(value)
   }, [setSelectedApplication])
 
+  const handleOpenVirtualDeviceModal = useCallback(() => {
+    setIsVirtualDeviceModalOpen(true)
+  }, [])
+
+  const handleCloseVirtualDeviceModal = useCallback(() => {
+    setIsVirtualDeviceModalOpen(false)
+    // Refresh device list after modal closes in case new emulators were launched
+    setTimeout(() => {
+      refreshDevices()
+    }, 1500)
+  }, [refreshDevices])
+
   useEffect(() => {
     refreshDevices()
   }, [])
 
   return (
-    <HStack padding={4} w="full" alignItems="center">
-      <HStack direction="row" gap={5} alignItems="center">
-        <FLSelect
-          options={devicesSelectOptions}
-          label="Select Device"
-          value={selectedDevice}
-          onChange={handleDeviceChange}
-        />
-        <FLSelect
-          options={applicationSelectOptions}
-          label="Select App"
-          value={selectedApplication}
-          onChange={handlePackageChange}
-          isDisabled={!selectedDevice || isLoading}
-        />
+    <>
+      <HStack padding={4} w="full" alignItems="center">
+        <HStack direction="row" gap={5} alignItems="center">
+          <FLSelect
+            options={devicesSelectOptions}
+            label="Select Device"
+            value={selectedDevice}
+            icon={<LuSmartphone color="#47d5c9" />}
+            onChange={handleDeviceChange}
+          />
+          <FLSelect
+            options={applicationSelectOptions}
+            label="Select App"
+            value={selectedApplication}
+            icon={<LuPackage color="#47d5c9" />}
+            onChange={handlePackageChange}
+            isDisabled={!selectedDevice || isLoading}
+          />
+        </HStack>
+        <Button
+          data-testid="refresh-devices"
+          data-state={isRefreshing ? 'open' : 'closed'}
+          onClick={handleRefreshDevices}
+          bg="transparent"
+          color="flipioSecondary"
+          ml="10px"
+          _hover={{
+            opacity: 0.8,
+          }}
+          disabled={isRefreshing || isLoading}
+          _open={{
+            animationName: 'rotate',
+            animationDuration: '1100ms',
+          }}
+        >
+          <LuRefreshCcw />
+        </Button>
+
+        <Button
+          onClick={handleOpenVirtualDeviceModal}
+          leftIcon={<LuMonitor />}
+          variant="outline"
+          size="sm"
+          ml={3}
+          color="flipioPrimary"
+          borderColor="flipioPrimary"
+          _hover={{
+            bg: 'flipioAqua.50',
+            _dark: { bg: 'flipioTeal.900' },
+          }}
+        >
+          Virtual Device
+        </Button>
+
+        <Spacer />
+        <Settings />
       </HStack>
-      <Button
-        data-testid="refresh-devices"
-        data-state={isRefreshing ? 'open' : 'closed'}
-        onClick={handleRefreshDevices}
-        bg="transparent"
-        color="gray.300"
-        ml="10px"
-        _hover={{
-          opacity: 0.8,
-        }}
-        disabled={isRefreshing || isLoading}
-        _open={{
-          animationName: 'rotate',
-          animationDuration: '1100ms',
-        }}
-      >
-        <LuRefreshCcw />
-      </Button>
-      <Spacer />
-      <Settings />
-    </HStack>
+
+      <VirtualDeviceModal
+        isOpen={isVirtualDeviceModalOpen}
+        onClose={handleCloseVirtualDeviceModal}
+      />
+    </>
   )
 }
 

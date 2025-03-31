@@ -23,7 +23,7 @@ const colors = {
     600: { value: '#1193a0' },
   },
   fliplightGray: {
-    50: { value: '#f5f5f5' }, // background.default (light)
+    50: { value: '#EDEDED' }, // background.default (light)
     100: { value: '#eeeeee' },
     200: { value: '#e0e0e0' },
     300: { value: '#dddddd' },
@@ -57,7 +57,7 @@ const flipioTheme = defineConfig({
         },
         flipioPrimary: {
           value: {
-            base: `{colors.flipioAqua.300}`,
+            base: `{colors.flipioAqua.600}`,
             _dark: `{colors.flipioTeal.500}`,
           },
         },

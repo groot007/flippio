@@ -8,6 +8,7 @@ import { autoUpdater } from 'electron-updater'
 import { setupIpcADB } from './ipcADB'
 import { setupIpcCommon } from './ipcCommon'
 import { setupIpcDatabase } from './ipcDatabase'
+import { registerVirtualDeviceHandlers } from './ipcVirtualDevices'
 
 if (process.env.NODE_ENV === 'production') {
   Sentry.init({
@@ -70,6 +71,7 @@ app.whenReady().then(() => {
   setupIpcADB()
   setupIpcCommon()
   setupIpcDatabase()
+  registerVirtualDeviceHandlers() // Add this line to register virtual device handlers
 
   // Default open or close DevTools by F12 in development
   // and ignore CommandOrControl + R in production.

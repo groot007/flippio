@@ -26,6 +26,7 @@ export function DataGrid() {
   const [error, setError] = useState<string | null>(null)
 
   const gridTheme = themeQuartz.withPart(colorMode === 'dark' ? colorSchemeDark : colorSchemeLight)
+
   const gridRef = useRef<AgGridReact>(null)
 
   const fetchTableData = useCallback(async (tableName: string) => {
@@ -64,6 +65,9 @@ export function DataGrid() {
     if (selectedDatabaseTable?.name) {
       fetchTableData(selectedDatabaseTable.name)
     }
+    else {
+      setTableData({ columns: [], rows: [] })
+    }
   }, [selectedDatabaseTable, fetchTableData, selectedRow])
 
   const columnDefs = useMemo(() => {
@@ -92,6 +96,13 @@ export function DataGrid() {
       rowData: event.data,
     })
   }, [setSelectedRow])
+
+  const getRowStyle = useCallback((params) => {
+    // Return different styles for even and odd rows
+    return params.node.rowIndex % 2 === 0
+      ? { backgroundColor: colorMode === 'dark' ? '#1A202C' : '#FFFFFF' } // even rows
+      : { backgroundColor: colorMode === 'dark' ? '#121212' : '#F7FAFC' } // odd rows
+  }, [colorMode])
 
   const rowsData = selectedDatabaseTable ? tableData?.rows : []
 
@@ -129,6 +140,7 @@ export function DataGrid() {
           defaultColDef={defaultColDef}
           animateRows={true}
           theme={gridTheme}
+          getRowStyle={getRowStyle}
           rowSelection="single"
           onRowClicked={onRowClicked}
           pagination={true}
