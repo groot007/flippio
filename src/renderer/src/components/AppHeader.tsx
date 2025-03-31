@@ -135,7 +135,6 @@ function AppHeader() {
         <LuRefreshCcw />
       </Button>
       <Spacer />
-
       <Settings />
     </HStack>
   )
