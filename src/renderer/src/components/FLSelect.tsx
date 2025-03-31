@@ -1,5 +1,4 @@
-import { HStack, Stack, Text } from '@chakra-ui/react'
-import { useColorMode } from '@renderer/ui/color-mode'
+import { HStack } from '@chakra-ui/react'
 import { chakraComponents, Select } from 'chakra-react-select'
 
 interface CustomSelectProps {
@@ -60,7 +59,7 @@ const FLSelect: React.FC<CustomSelectProps> = ({
         menu: provided => ({
           ...provided,
           zIndex: 100,
-          
+
         }),
 
         option: provided => ({

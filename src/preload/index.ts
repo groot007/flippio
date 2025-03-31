@@ -24,6 +24,12 @@ const api = {
     ipcRenderer.invoke('db:updateTableRow', tableName, row, condition),
   executeQuery: (query: string) =>
     ipcRenderer.invoke('db:executeQuery', query),
+
+  // Virtual device methods
+  getAndroidEmulators: () => ipcRenderer.invoke('getAndroidEmulators'),
+  getIOSSimulators: () => ipcRenderer.invoke('getIOSSimulators'),
+  launchAndroidEmulator: (emulatorId: string) => ipcRenderer.invoke('launchAndroidEmulator', emulatorId),
+  launchIOSSimulator: (simulatorId: string) => ipcRenderer.invoke('launchIOSSimulator', simulatorId),
 }
 
 contextBridge.exposeInMainWorld('env', {

@@ -25,7 +25,7 @@ export function DataGrid() {
   const { selectedDatabaseTable } = useCurrentDatabaseSelection()
   const [error, setError] = useState<string | null>(null)
 
-  const gridTheme = themeQuartz.withPart(colorMode === 'dark' ? colorSchemeDark : colorSchemeLight);
+  const gridTheme = themeQuartz.withPart(colorMode === 'dark' ? colorSchemeDark : colorSchemeLight)
 
   const gridRef = useRef<AgGridReact>(null)
 
@@ -64,7 +64,8 @@ export function DataGrid() {
   useEffect(() => {
     if (selectedDatabaseTable?.name) {
       fetchTableData(selectedDatabaseTable.name)
-    } else {
+    }
+    else {
       setTableData({ columns: [], rows: [] })
     }
   }, [selectedDatabaseTable, fetchTableData, selectedRow])
@@ -84,7 +85,6 @@ export function DataGrid() {
     }))
   }, [tableData?.columns])
 
-
   const defaultColDef = useMemo(() => ({
     flex: 1,
     minWidth: 100,
@@ -99,10 +99,10 @@ export function DataGrid() {
 
   const getRowStyle = useCallback((params) => {
     // Return different styles for even and odd rows
-    return params.node.rowIndex % 2 === 0 
+    return params.node.rowIndex % 2 === 0
       ? { backgroundColor: colorMode === 'dark' ? '#1A202C' : '#FFFFFF' } // even rows
       : { backgroundColor: colorMode === 'dark' ? '#121212' : '#F7FAFC' } // odd rows
-  }, [colorMode]);
+  }, [colorMode])
 
   const rowsData = selectedDatabaseTable ? tableData?.rows : []
 
