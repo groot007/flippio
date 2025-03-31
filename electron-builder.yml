@@ -1,4 +1,4 @@
-appId: com.electron.app
+appId: com.koliastanis.flippio
 productName: flippio
 directories:
   buildResources: build
@@ -9,8 +9,12 @@ files:
   - '!{.eslintignore,.eslintrc.cjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}'
   - '!{.env,.env.*,.npmrc,pnpm-lock.yaml}'
   - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
+  - '!**/node_modules/*/{CHANGELOG.md,README.md,README,readme.md,readme}'
+  - '!**/node_modules/*/{test,__tests__,tests,powered-test,example,examples}'
+  - '!**/node_modules/*/{.bin,.editorconfig,.idea,.vscode}'
 asarUnpack:
   - resources/**
+compression: maximum
 win:
   executableName: flippio
 nsis:
@@ -25,9 +29,11 @@ mac:
     - NSMicrophoneUsageDescription: Application requests access to the device's microphone.
     - NSDocumentsFolderUsageDescription: Application requests access to the user's Documents folder.
     - NSDownloadsFolderUsageDescription: Application requests access to the user's Downloads folder.
-  notarize: false
+  notarize: true
+afterSign: notarize.js
 dmg:
   artifactName: ${name}-${version}.${ext}
+  sign: true
 linux:
   target:
     - AppImage

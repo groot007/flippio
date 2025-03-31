@@ -102,7 +102,7 @@ export function DataGrid() {
         alignItems="center"
         height="calc(100vh - 140px)"
       >
-        <Spinner size="xl" color="blue.500" />
+        <Spinner size="xl" color="flipioPrimary" />
       </Flex>
     )
   }

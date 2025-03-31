@@ -8,9 +8,14 @@ export function Settings() {
     <Menu.Root>
       {/* @ts-expect-error chakra types */}
       <Menu.Trigger asChild>
-
-        <Button variant="outline" size="sm">
-          <LuSettings />
+        <Button
+          variant="outline"
+          size="sm"
+          borderColor="gray.300"
+          _dark={{ borderColor: 'gray.600' }}
+          _hover={{ borderColor: 'flipioPrimary' }}
+        >
+          <LuSettings color="flipioPrimary" />
         </Button>
       </Menu.Trigger>
       <Portal>
@@ -22,14 +27,22 @@ export function Settings() {
             </Menu.Item>
             {/* @ts-expect-error chakra types */}
             <Menu.Item value="version" justifyContent="center" justifyItems="center">
-              <Link target="_blank" href="https://github.com/groot007/flippio" variant="plain" outline="none">
+              <Link
+                target="_blank"
+                href="https://github.com/groot007/flippio"
+                variant="plain"
+                outline="none"
+                color="gray.600"
+                _dark={{ color: 'gray.300' }}
+                _hover={{ color: 'flipioPrimary' }}
+              >
                 <LuGithub />
                 {' '}
                 <LuExternalLink />
               </Link>
             </Menu.Item>
             <VStack>
-              <Text fontSize="sm" color="gray.500">
+              <Text fontSize="sm" color="gray.500" _dark={{ color: 'gray.400' }}>
                 v:
                 {' '}
                 {packageJSON.version}

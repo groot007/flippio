@@ -73,14 +73,14 @@ export function SidePanel() {
   }, [selectedRow, selectedDatabaseTable, editedData])
 
   async function updateRowData() {
-    const condition = buildUniqueCondition(tableData?.columns, selectedRow.originalData || selectedRow.rowData)
-    const result = await window.api.updateTableRow(selectedDatabaseTable.name, editedData, condition)
+    const condition = buildUniqueCondition(tableData?.columns, selectedRow?.originalData || selectedRow?.rowData)
+    const result = await window.api.updateTableRow(selectedDatabaseTable?.name || '', editedData, condition)
     if (!result.success)
       throw new Error(result.error || 'Failed to update row')
   }
 
   async function pushDatabaseFileIfNeeded() {
-    if (selectedDatabaseFile && selectedDevice && selectedDatabaseFile.packageName && selectedDatabaseTable.deviceType !== 'iphone') {
+    if (selectedDatabaseFile && selectedDevice && selectedDatabaseFile.packageName && selectedDatabaseTable?.deviceType !== 'iphone') {
       await window.api.pushDatabaseFile(selectedDevice.id, pulledDatabaseFilePath, selectedDatabaseFile.packageName, selectedDatabaseFile.path)
     }
   }
