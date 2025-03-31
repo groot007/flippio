@@ -5,7 +5,7 @@ import { useDevices } from '@renderer/hooks/useDevices'
 import { useCurrentDatabaseSelection, useCurrentDeviceSelection } from '@renderer/store'
 import { toaster } from '@renderer/ui/toaster'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { LuRefreshCcw } from 'react-icons/lu'
+import { LuPackage, LuRefreshCcw, LuSmartphone } from 'react-icons/lu'
 import FLSelect from './FLSelect'
 import { Settings } from './Settings'
 
@@ -40,7 +40,8 @@ function AppHeader() {
 
         timeoutId = setTimeout(() => {
           toaster.create({
-            title: 'Device list refreshed',
+            title: 'Success',
+            description: 'Device list refreshed',
             status: 'success',
             duration: 3000,
             isClosable: true,
@@ -106,12 +107,14 @@ function AppHeader() {
           options={devicesSelectOptions}
           label="Select Device"
           value={selectedDevice}
+          icon={<LuSmartphone color="#47d5c9" />}
           onChange={handleDeviceChange}
         />
         <FLSelect
           options={applicationSelectOptions}
           label="Select App"
           value={selectedApplication}
+          icon={<LuPackage color="#47d5c9" />}
           onChange={handlePackageChange}
           isDisabled={!selectedDevice || isLoading}
         />
@@ -121,7 +124,7 @@ function AppHeader() {
         data-state={isRefreshing ? 'open' : 'closed'}
         onClick={handleRefreshDevices}
         bg="transparent"
-        color="gray.300"
+        color="flipioSecondary"
         ml="10px"
         _hover={{
           opacity: 0.8,

@@ -2,8 +2,8 @@ import type { DatabaseFile } from '@renderer/types'
 import { useEffect, useState } from 'react'
 
 export function useDatabaseFiles(selectedDevice, selectedApplication) {
-  const [databaseFiles, setDatabaseFiles] = useState<DatabaseFile[]>([])
-  const [isLoading, setIsLoading] = useState(false)
+  const [databaseFiles, setDatabaseFiles] = useState<DatabaseFile[]>()
+  const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(null)
 
   useEffect(() => {

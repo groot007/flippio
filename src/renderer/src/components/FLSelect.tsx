@@ -1,5 +1,6 @@
+import { HStack, Stack, Text } from '@chakra-ui/react'
 import { useColorMode } from '@renderer/ui/color-mode'
-import { Select } from 'chakra-react-select'
+import { chakraComponents, Select } from 'chakra-react-select'
 
 interface CustomSelectProps {
   label: string
@@ -11,6 +12,7 @@ interface CustomSelectProps {
   value: any
   onChange: (value: any) => void
   helperText?: string
+  icon?: React.ReactNode
   errorMessage?: string
   isDisabled?: boolean
   width?: string | number
@@ -25,39 +27,70 @@ const FLSelect: React.FC<CustomSelectProps> = ({
   label,
   isDisabled = false,
   width = '200px',
+  icon = null,
   placeholder,
   searchable = true,
 }) => {
-  const { colorMode } = useColorMode()
-  const isDark = colorMode === 'dark'
+  const customComponents = {
+    Control: ({ children, ...props }) => {
+      return (
+        // @ts-expect-error chakra-react-select types
+        <chakraComponents.Control {...props}>
+          <HStack mr={1}>{icon}</HStack>
+          {children}
+        </chakraComponents.Control>
+      )
+    },
+  }
 
   return (
-
     <Select
       options={options}
       value={value}
       onChange={(selected) => {
         onChange(selected)
       }}
+
       placeholder={placeholder || label}
       isSearchable={searchable}
       isDisabled={isDisabled}
+      components={customComponents}
       size="md"
       chakraStyles={{
         menu: provided => ({
           ...provided,
           zIndex: 100,
+          
+        }),
+
+        option: provided => ({
+          ...provided,
+          _selected: {
+            background: 'flipioPrimary',
+          },
+          _hover: { cursor: 'pointer' },
         }),
         container: provided => ({
           ...provided,
           width,
-
+          _hover: { cursor: 'pointer' },
         }),
+        dropdownIndicator: provided => ({
+          ...provided,
+          color: 'flipioPrimary',
+        }),
+        valueContainer: provided => ({
+          ...provided,
+          color: 'flipioPrimary',
+        }),
+
         control: provided => ({
           ...provided,
 
-          borderColor: isDark ? 'gray.600' : 'gray.300',
+          borderColor: 'flipioPrimary',
+          borderWidth: '1px',
           _hover: { borderColor: 'flipioPrimary' },
+          _focus: { borderColor: 'flipioPrimary', outline: 'none', borderWidth: '2px' },
         }),
       }}
     />
