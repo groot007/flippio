@@ -5,7 +5,7 @@ import { useDevices } from '@renderer/hooks/useDevices'
 import { useCurrentDatabaseSelection, useCurrentDeviceSelection } from '@renderer/store'
 import { toaster } from '@renderer/ui/toaster'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { LuMonitor, LuPackage, LuRefreshCcw, LuSmartphone } from 'react-icons/lu'
+import { LuPackage, LuRefreshCcw, LuSmartphone } from 'react-icons/lu'
 import FLSelect from './FLSelect'
 import { Settings } from './Settings'
 import { VirtualDeviceModal } from './VirtualDeviceModal'
@@ -124,6 +124,7 @@ function AppHeader() {
             value={selectedDevice}
             icon={<LuSmartphone color="#47d5c9" />}
             onChange={handleDeviceChange}
+            noOptionsMessage="No devices available. Try run an emulator"
           />
           <FLSelect
             options={applicationSelectOptions}
@@ -155,7 +156,6 @@ function AppHeader() {
 
         <Button
           onClick={handleOpenVirtualDeviceModal}
-          leftIcon={<LuMonitor />}
           variant="outline"
           size="sm"
           ml={3}
@@ -166,6 +166,8 @@ function AppHeader() {
             _dark: { bg: 'flipioTeal.900' },
           }}
         >
+          <LuSmartphone />
+          {' '}
           Virtual Device
         </Button>
 

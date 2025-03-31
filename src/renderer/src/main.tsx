@@ -7,8 +7,8 @@ import './assets/main.css'
 
 if (window.env.NODE_ENV === 'production') {
   Sentry.init({
-    integrations: [
-    ],
+    dsn: 'https://561d196b910f78c86856522f199f9ef6@o4509048883970048.ingest.de.sentry.io/4509048886132816',
+    environment: 'production',
   })
 }
 

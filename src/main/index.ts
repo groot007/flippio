@@ -2,18 +2,18 @@ import { join } from 'node:path'
 import process from 'node:process'
 import { electronApp, is, optimizer } from '@electron-toolkit/utils'
 import * as Sentry from '@sentry/electron/main'
-import { app, BrowserWindow, dialog, shell } from 'electron'
+import { app, BrowserWindow, shell } from 'electron'
 import { autoUpdater } from 'electron-updater'
 
 import { setupIpcADB } from './ipcADB'
 import { setupIpcCommon } from './ipcCommon'
 import { setupIpcDatabase } from './ipcDatabase'
 import { registerVirtualDeviceHandlers } from './ipcVirtualDevices'
+import './autoUpdaterEvents'
 
 if (process.env.NODE_ENV === 'production') {
   Sentry.init({
-    dsn: 'https://your-sentry-dsn@o123456.ingest.sentry.io/123456',
-    release: 'your-app-name@1.0.0', // Optional: specify release version
+    dsn: 'https://561d196b910f78c86856522f199f9ef6@o4509048883970048.ingest.de.sentry.io/4509048886132816',
     environment: 'production',
   })
 }
@@ -97,27 +97,4 @@ app.whenReady().then(() => {
 // explicitly with Cmd + Q.
 app.on('window-all-closed', () => {
   app.quit()
-})
-
-autoUpdater.on('update-available', (info) => {
-  dialog.showMessageBox({
-    type: 'info',
-    title: 'Update Available',
-    message: `A new version (${info.version}) is available. Downloading now...`,
-  })
-})
-
-autoUpdater.on('update-downloaded', () => {
-  dialog.showMessageBox({
-    type: 'info',
-    title: 'Update Ready',
-    message: 'Update downloaded. The application will now restart to apply the update.',
-  }).then(() => {
-    autoUpdater.quitAndInstall()
-  })
-})
-
-autoUpdater.on('error', (err) => {
-  console.error('Update error:', err)
-  Sentry.captureException(err) // Capture update errors in Sentry
 })

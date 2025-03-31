@@ -133,7 +133,6 @@ export const VirtualDeviceModal: React.FC<VirtualDeviceModalProps> = ({ isOpen, 
         borderColor={device.status === 'running' ? 'flipioPrimary' : 'gray.200'}
         _dark={{ borderColor: device.status === 'running' ? 'flipioPrimary' : 'gray.600' }}
         bg={device.status === 'running' ? 'flipioAqua.100' : 'transparent'}
-        _dark={{ bg: device.status === 'running' ? 'flipioTeal.900' : 'transparent' }}
         _hover={{
           bg: 'flipioAqua.50',
           _dark: { bg: 'flipioTeal.800' },
