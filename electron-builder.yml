@@ -15,8 +15,6 @@ files:
 asarUnpack:
   - resources/**
 compression: maximum
-win:
-  executableName: flippio
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
   shortcutName: ${productName}
@@ -24,23 +22,17 @@ nsis:
   createDesktopShortcut: always
 mac:
   entitlementsInherit: build/entitlements.mac.plist
+  hardenedRuntime: true
+  gatekeeperAssess: false
   extendInfo:
     - NSCameraUsageDescription: Application requests access to the device's camera.
     - NSMicrophoneUsageDescription: Application requests access to the device's microphone.
     - NSDocumentsFolderUsageDescription: Application requests access to the user's Documents folder.
     - NSDownloadsFolderUsageDescription: Application requests access to the user's Downloads folder.
   notarize: true
-afterSign: notarize.js
 dmg:
   artifactName: ${name}-${version}.${ext}
   sign: true
-linux:
-  target:
-    - AppImage
-    - snap
-    - deb
-  maintainer: electronjs.org
-  category: Utility
 appImage:
   artifactName: ${name}-${version}.${ext}
 npmRebuild: false

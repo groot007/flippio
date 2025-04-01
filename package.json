@@ -1,6 +1,6 @@
 {
   "name": "flippio",
-  "version": "0.1.2",
+  "version": "0.1.4",
   "description": "Database viewer with device connection",
   "author": "koliastanis",
   "homepage": "https://github.com/groot007/flippio",
@@ -20,9 +20,12 @@
     "postinstall": "electron-builder install-app-deps",
     "build:unpack": "npm run build && electron-builder --dir",
     "build:win": "npm run build && electron-builder --win",
-    "build:mac": "electron-vite build && electron-builder --mac",
+    "build:mac": "export $(cat .env | xargs) && electron-vite build && electron-builder --mac",
     "build:linux": "electron-vite build && electron-builder --linux",
-    "release": "export $(cat .env | xargs) && NODE_ENV=production npm run build && electron-builder --publish always"
+    "staple-dmg": "export $(cat .env | xargs) && node scripts/staple-dmg.js",
+    "notarize-dmg": "export $(cat .env | xargs) && node scripts/notarize-dmg.js",
+    "test:env": "export $(cat .env | xargs) && echo \"APPLE_ID: $APPLE_ID, TEAM_ID: $APPLE_TEAM_ID\"",
+    "release": "export $(cat .env | xargs) && node scripts/release.js"
   },
   "dependencies": {
     "@chakra-ui/react": "^3.13.0",

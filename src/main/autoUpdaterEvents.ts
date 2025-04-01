@@ -2,14 +2,6 @@ import * as Sentry from '@sentry/electron/main'
 import { dialog } from 'electron'
 import { autoUpdater } from 'electron-updater'
 
-autoUpdater.on('update-available', (info) => {
-  dialog.showMessageBox({
-    type: 'info',
-    title: 'Update Available',
-    message: `A new version (${info.version}) is available. Downloading now...`,
-  })
-})
-
 autoUpdater.on('update-downloaded', () => {
   dialog.showMessageBox({
     type: 'info',
