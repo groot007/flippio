@@ -1,6 +1,6 @@
 {
   "name": "flippio",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "Database viewer with device connection",
   "author": "koliastanis",
   "homepage": "https://github.com/groot007/flippio",
@@ -25,7 +25,7 @@
     "staple-dmg": "export $(cat .env | xargs) && node scripts/staple-dmg.js",
     "notarize-dmg": "export $(cat .env | xargs) && node scripts/notarize-dmg.js",
     "test:env": "export $(cat .env | xargs) && echo \"APPLE_ID: $APPLE_ID, TEAM_ID: $APPLE_TEAM_ID\"",
-    "release": "export $(cat .env | xargs) && node scripts/release.js"
+    "release": "export $(cat .env | xargs) && npm run build && electron-builder --publish always --mac"
   },
   "dependencies": {
     "@chakra-ui/react": "^3.13.0",
