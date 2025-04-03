@@ -5,6 +5,14 @@ import path from 'node:path'
 import { ipcMain } from 'electron'
 import { parseSimulators } from './utils'
 
+interface DatabaseFile {
+  path: string
+  packageName: string
+  filename: string
+  location: string
+  deviceType: 'android' | 'iphone'
+}
+
 export function setupIpcADB() {
   const tempDirPath = path.join(os.tmpdir(), 'flippio-db-temp')
   if (!fs.existsSync(tempDirPath)) {
@@ -163,7 +171,7 @@ export function setupIpcADB() {
   // Get database files for a specific package
   ipcMain.handle('adb:getIOSDatabaseFiles', async (_event, deviceId, packageName) => {
     try {
-      const databaseFiles: Array<{ path: string, packageName: string, filename: string, location: string }> = []
+      const databaseFiles: DatabaseFile[] = []
 
       // Get the app's data container path
       const containerPathCmd = `xcrun simctl get_app_container ${deviceId} ${packageName} data`
@@ -211,6 +219,7 @@ export function setupIpcADB() {
           packageName,
           filename,
           location: relativePath,
+          deviceType: 'iphone',
         })
       })
 
@@ -225,7 +234,7 @@ export function setupIpcADB() {
   // Get database files for a specific package
   ipcMain.handle('adb:getAndroidDatabaseFiles', async (_event, deviceId, packageName) => {
     try {
-      const databaseFiles: Array<{ path: string, packageName: string, filename: string, location: string }> = []
+      const databaseFiles: DatabaseFile[] = []
 
       // Try to list database files in various common locations
       const locations = [
@@ -260,6 +269,7 @@ export function setupIpcADB() {
               packageName,
               filename,
               location,
+              deviceType: 'android',
             })
           })
         }

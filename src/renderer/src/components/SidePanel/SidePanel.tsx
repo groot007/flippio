@@ -80,7 +80,7 @@ export function SidePanel() {
   }
 
   async function pushDatabaseFileIfNeeded() {
-    if (selectedDatabaseFile && selectedDevice && selectedDatabaseFile.packageName && selectedDatabaseTable?.deviceType !== 'iphone') {
+    if (selectedDatabaseFile && selectedDevice && selectedDatabaseFile.packageName && selectedDatabaseFile?.deviceType !== 'iphone') {
       await window.api.pushDatabaseFile(selectedDevice.id, pulledDatabaseFilePath, selectedDatabaseFile.packageName, selectedDatabaseFile.path)
     }
   }
