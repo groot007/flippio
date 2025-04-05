@@ -11,12 +11,9 @@ import { setupIpcDatabase } from './ipcDatabase'
 import { registerVirtualDeviceHandlers } from './ipcVirtualDevices'
 import './autoUpdaterEvents'
 
-if (process.env.NODE_ENV === 'production') {
-  Sentry.init({
-    dsn: 'https://561d196b910f78c86856522f199f9ef6@o4509048883970048.ingest.de.sentry.io/4509048886132816',
-    environment: 'production',
-  })
-}
+Sentry.init({
+  dsn: 'https://561d196b910f78c86856522f199f9ef6@o4509048883970048.ingest.de.sentry.io/4509048886132816',
+});
 
 (async () => {
   const { default: fixPath } = await import('fix-path')

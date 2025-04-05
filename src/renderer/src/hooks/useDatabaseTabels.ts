@@ -19,7 +19,7 @@ export function useDatabaseTables(selectedDatabaseFile, selectedDevice) {
       try {
         let dbPath = selectedDatabaseFile.path
 
-        if (selectedDatabaseFile?.deviceType !== 'iphone') {
+        if (selectedDatabaseFile?.deviceType === 'android') {
           const pull = await window.api.pullDatabaseFile(selectedDevice.id, selectedDatabaseFile.path)
           if (!pull.success) {
             throw new Error(pull.error || 'Failed to pull database file')

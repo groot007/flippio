@@ -1,3 +1,4 @@
+import fs from 'node:fs'
 import { dialog, ipcMain } from 'electron'
 
 export function setupIpcCommon() {
@@ -7,7 +8,12 @@ export function setupIpcCommon() {
   })
 
   ipcMain.handle('dialog:saveFile', async (_event, options) => {
-    const result = await dialog.showSaveDialog(options)
-    return result
+    const { canceled, filePath } = await dialog.showSaveDialog(options)
+
+    if (!canceled && filePath) {
+      fs.copyFileSync(options.dbFilePath, filePath)
+    }
+
+    return filePath
   })
 }

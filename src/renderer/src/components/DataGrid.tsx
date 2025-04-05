@@ -132,6 +132,7 @@ export function DataGrid() {
       <Box
         height="100%"
         width="100%"
+        onDragOver={e => e.preventDefault()}
       >
         <AgGridReact
           ref={gridRef}

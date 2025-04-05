@@ -1,6 +1,6 @@
 import process from 'node:process'
 import { electronAPI } from '@electron-toolkit/preload'
-import { contextBridge, ipcRenderer } from 'electron'
+import { contextBridge, ipcRenderer, webUtils } from 'electron'
 
 // Custom APIs for renderer
 const api = {
@@ -25,6 +25,9 @@ const api = {
   executeQuery: (query: string) =>
     ipcRenderer.invoke('db:executeQuery', query),
 
+  openFile: () => ipcRenderer.invoke('dialog:selectFile'),
+  exportFile: file => ipcRenderer.invoke('dialog:saveFile', file),
+  webUtils,
   // Virtual device methods
   getAndroidEmulators: () => ipcRenderer.invoke('getAndroidEmulators'),
   getIOSSimulators: () => ipcRenderer.invoke('getIOSSimulators'),

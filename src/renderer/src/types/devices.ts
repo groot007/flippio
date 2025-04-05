@@ -1,5 +1,6 @@
+type DeviceType = 'android' | 'iphone' | 'desktop'
 export interface DeviceInfo {
-  deviceType: 'android' | 'iphone'
+  deviceType: DeviceType
   id: string
   model: string
   name: string
@@ -9,9 +10,10 @@ export interface DatabaseFile {
   path: string
   filename: string
   packageName: string
+  deviceType?: DeviceType
 }
 
 export interface DatabaseTable {
   name: string
-  deviceType: 'android' | 'iphone'
+  deviceType?: DeviceType
 }

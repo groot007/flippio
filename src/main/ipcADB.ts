@@ -10,7 +10,7 @@ interface DatabaseFile {
   packageName: string
   filename: string
   location: string
-  deviceType: 'android' | 'iphone'
+  deviceType: 'android' | 'iphone' | 'desktop'
 }
 
 export function setupIpcADB() {

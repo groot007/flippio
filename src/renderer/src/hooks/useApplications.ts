@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 export interface Device {
   id: string
   model: string
-  deviceType: 'iphone' | 'android'
+  deviceType: 'iphone' | 'android' | 'desktop'
 }
 
 export interface Application {

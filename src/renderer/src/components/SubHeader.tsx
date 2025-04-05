@@ -1,5 +1,6 @@
 import {
   Box,
+  Button,
   Flex,
   HStack,
   Spinner,
@@ -8,6 +9,7 @@ import {
 import { useDatabaseFiles } from '@renderer/hooks/useDatabaseFiles'
 import { useDatabaseTables } from '@renderer/hooks/useDatabaseTabels'
 import { useCurrentDatabaseSelection, useCurrentDeviceSelection } from '@renderer/store'
+import { toaster } from '@renderer/ui/toaster'
 import { useCallback, useEffect, useMemo } from 'react'
 import FLSelect from './FLSelect'
 
@@ -67,6 +69,46 @@ export function SubHeader() {
   //   console.log('handleQueryExecution__', data)
   // }, [])
 
+  const handleOpenDBFile = useCallback(() => {
+    window.api.openFile().then((file) => {
+      if (!file.canceled && file.filePaths.length) {
+        const filePath = file.filePaths[0]
+        setSelectedDatabaseFile({
+          path: filePath,
+          filename: filePath.split('/').pop() || '',
+          deviceType: 'desktop',
+          packageName: '',
+        })
+      }
+    })
+  }, [])
+
+  const handleExportDB = useCallback(() => {
+    if (!selectedDatabaseFile?.path) {
+      return
+    }
+
+    window.api.exportFile({
+      defaultPath: selectedDatabaseFile?.filename,
+      filters: [
+        {
+          name: 'Database Files',
+          extensions: ['db', 'sqlite'],
+        },
+      ],
+      dbFilePath: selectedDatabaseFile?.path,
+    }).then((savedFilePath) => {
+      if (!savedFilePath) {
+        return
+      }
+      toaster.create({
+        title: 'Success',
+        description: `Database file exported successfully to ${savedFilePath}`,
+        status: 'success',
+      })
+    })
+  }, [])
+
   return (
     <Box
       width="full"
@@ -90,13 +132,21 @@ export function SubHeader() {
         : null}
       <Flex justifyContent="flex-start" alignItems="center">
         <HStack direction="row" gap={5}>
-          <FLSelect
-            label="Select Database"
-            options={dbFileOptions}
-            value={selectedDatabaseFile}
-            onChange={handleDatabaseFileChange}
-            isDisabled={!selectedApplication?.bundleId || isDBPulling}
-          />
+          {selectedDatabaseFile?.deviceType === 'desktop'
+            ? (
+                <Text fontSize="sm">
+                  {selectedDatabaseFile?.path}
+                </Text>
+              )
+            : (
+                <FLSelect
+                  label="Select Database"
+                  options={dbFileOptions}
+                  value={selectedDatabaseFile}
+                  onChange={handleDatabaseFileChange}
+                  isDisabled={!selectedApplication?.bundleId || isDBPulling}
+                />
+              )}
 
           <Box width="250px">
             <FLSelect
@@ -113,6 +163,18 @@ export function SubHeader() {
           {isDBPulling && (
             <Spinner size="sm" color="blue.500" />
           )}
+        </HStack>
+        <HStack
+          ml="auto"
+          gap={2}
+        >
+          <Button onClick={handleOpenDBFile} variant="plain" size="xs" color="flipioPrimary" borderColor="flipioPrimary">
+            Open DB
+          </Button>
+
+          <Button onClick={handleExportDB} variant="outline" size="xs" color="flipioPrimary" borderColor="flipioPrimary">
+            Export
+          </Button>
         </HStack>
       </Flex>
     </Box>

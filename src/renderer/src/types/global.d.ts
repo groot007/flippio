@@ -1,3 +1,5 @@
+import type { WebUtils } from 'electron'
+
 export {}
 
 declare global {
@@ -27,6 +29,17 @@ declare global {
       getIOSDatabaseFiles: (deviceId: string, applicationId: string) => Promise<any>
       pullDatabaseFile: (deviceId: string, remotePath: string, localPath?: string) => Promise<any>
       pushDatabaseFile: (deviceId: string, localPath: string, packageName: string, remotePath: string) => Promise<any>
+
+      openFile: () => Promise<any>
+      exportFile: (options: {
+        dbFilePath: string
+        defaultPath: string
+        filters: Array<{
+          name: string
+          extensions: string[]
+        }>
+      }) => Promise<any>
+      webUtils: WebUtils
 
       // Database methods
       getTables: () => Promise<any>

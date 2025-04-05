@@ -1,6 +1,6 @@
 {
   "name": "flippio",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "Database viewer with device connection",
   "author": "koliastanis",
   "homepage": "https://github.com/groot007/flippio",
@@ -59,8 +59,8 @@
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
     "@vitejs/plugin-react": "^4.3.4",
-    "electron": "35.0.3",
-    "electron-builder": "25.1.8",
+    "electron": "35.1.4",
+    "electron-builder": "26.0.12",
     "electron-vite": "^3.0.0",
     "eslint": "^9.20.1",
     "eslint-plugin-react-hooks": "^5.1.0",
