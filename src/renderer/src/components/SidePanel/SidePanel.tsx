@@ -5,6 +5,7 @@ import {
   IconButton,
   Portal,
   Stack,
+  Text,
 } from '@chakra-ui/react'
 import { useCurrentDatabaseSelection, useCurrentDeviceSelection, useTableData } from '@renderer/store'
 import { useRowEditingStore } from '@renderer/store/useRowEditingStore'
@@ -13,6 +14,7 @@ import { toaster } from '@renderer/ui/toaster'
 import { buildUniqueCondition } from '@renderer/utils'
 import { useCallback, useState } from 'react'
 import { LuPencil, LuSave, LuX } from 'react-icons/lu'
+import FLModal from '../FLModal'
 import { FieldItem } from './Field'
 
 export function SidePanel() {
@@ -20,14 +22,14 @@ export function SidePanel() {
   const isDark = colorMode === 'dark'
   const { selectedRow, setSelectedRow } = useRowEditingStore()
   const isOpen = !!selectedRow
-
   const { selectedDevice } = useCurrentDeviceSelection()
   const { selectedDatabaseFile, selectedDatabaseTable, pulledDatabaseFilePath } = useCurrentDatabaseSelection()
   const tableData = useTableData(state => state.tableData)
-
+  const setTableData = useTableData(state => state.setTableData)
   const [isLoading, setIsLoading] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [editedData, setEditedData] = useState<Record<string, any>>({})
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 
   const closePanel = useCallback(() => {
     setSelectedRow(null)
@@ -115,7 +117,65 @@ export function SidePanel() {
     cancelEditing()
   }
 
-  // Using the provided Drawer pattern for consistent UI
+  const handleDeleteRow = useCallback(async () => {
+    if (!selectedRow || !selectedDatabaseTable)
+      return
+
+    try {
+      const condition = buildUniqueCondition(tableData?.columns, selectedRow?.originalData || selectedRow?.rowData)
+
+      const result = await window.api.deleteTableRow(selectedDatabaseTable?.name || '', condition)
+
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to delete row')
+      }
+
+      // Push changes back to device if needed
+      if (selectedDatabaseFile && selectedDevice && selectedDatabaseFile.packageName && selectedDatabaseFile?.deviceType !== 'iphone') {
+        await window.api.pushDatabaseFile(
+          selectedDevice.id,
+          pulledDatabaseFilePath,
+          selectedDatabaseFile.packageName,
+          selectedDatabaseFile.path,
+        )
+      }
+
+      setIsDeleteDialogOpen(false)
+      // Show success message
+      toaster.create({
+        title: 'Row deleted',
+        description: 'The row has been successfully deleted',
+        status: 'success',
+        duration: 3000,
+        isClosable: true,
+      })
+
+      // Close the panel
+      closePanel()
+
+      // Refresh table data to reflect deletion
+      if (selectedDatabaseTable?.name) {
+        const response = await window.api.getTableInfo(selectedDatabaseTable.name)
+        if (response.success && response.columns && response.rows) {
+          setTableData({
+            columns: response.columns,
+            rows: response.rows,
+          })
+        }
+      }
+    }
+    catch (error) {
+      console.error('Error deleting row:', error)
+      toaster.create({
+        title: 'Delete failed',
+        description: error instanceof Error ? error.message : 'Failed to delete row',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      })
+    }
+  }, [selectedRow, selectedDatabaseTable, tableData?.columns, selectedDatabaseFile, selectedDevice, pulledDatabaseFilePath, closePanel])
+
   return (
     <Drawer.Root open={isOpen} onOpenChange={() => closePanel()}>
       <Portal>
@@ -131,14 +191,12 @@ export function SidePanel() {
                   ? (
                       <IconButton
                         aria-label="Edit row"
-
                         size="sm"
                         onClick={startEditing}
                         disabled={isLoading}
                       >
                         <LuPencil />
                         {' '}
-
                       </IconButton>
                     )
                   : (
@@ -176,7 +234,6 @@ export function SidePanel() {
                 </Drawer.CloseTrigger>
               </Flex>
             </Drawer.Header>
-
             <Drawer.Body>
               {selectedRow && (
                 <Stack gap="4">
@@ -191,6 +248,36 @@ export function SidePanel() {
                       isDark={isDark}
                     />
                   ))}
+
+                  <Button
+                    colorScheme="red"
+                    variant="outline"
+                    onClick={() => {
+                      setIsDeleteDialogOpen(true)
+                    }}
+                    size="md"
+                    width="full"
+                    _hover={{ bg: 'red.50', _dark: { bg: 'red.900' } }}
+                  >
+                    Remove Row
+                  </Button>
+
+                  <FLModal
+                    isOpen={isDeleteDialogOpen}
+                    body={(
+                      <Text>
+                        Are you sure you want to delete this row? This action cannot be undone.
+                      </Text>
+                    )}
+                    title="Delete Row"
+                    acceptBtn="Delete"
+                    onAccept={handleDeleteRow}
+                    rejectBtn="Cancel"
+                    onReject={() => {
+                      setIsDeleteDialogOpen(false)
+                    }}
+                  />
+
                 </Stack>
               )}
             </Drawer.Body>

@@ -29,6 +29,8 @@ declare global {
       getIOSDatabaseFiles: (deviceId: string, applicationId: string) => Promise<any>
       pullDatabaseFile: (deviceId: string, remotePath: string, localPath?: string) => Promise<any>
       pushDatabaseFile: (deviceId: string, localPath: string, packageName: string, remotePath: string) => Promise<any>
+      insertTableRow: (table: string, row: any) => Promise<any>
+      deleteTableRow: (table: string, condition: any) => Promise<any>
 
       openFile: () => Promise<any>
       exportFile: (options: {

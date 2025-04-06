@@ -13,8 +13,8 @@ export function buildUniqueCondition(cols, rowData) {
 
   // Otherwise use all non-empty fields
   cols.forEach((col) => {
-    if (rowData[col]) {
-      conditions.push(`${col} = '${rowData[col]}'`)
+    if (rowData[col.name]) {
+      conditions.push(`${col.name} = '${rowData[col.name]}'`)
     }
   })
 

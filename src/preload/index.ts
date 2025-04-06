@@ -24,6 +24,10 @@ const api = {
     ipcRenderer.invoke('db:updateTableRow', tableName, row, condition),
   executeQuery: (query: string) =>
     ipcRenderer.invoke('db:executeQuery', query),
+  insertTableRow: (tableName: string, row: any) =>
+    ipcRenderer.invoke('db:insertTableRow', tableName, row),
+  deleteTableRow: (tableName: string, condition: any) =>
+    ipcRenderer.invoke('db:deleteTableRow', tableName, condition),
 
   openFile: () => ipcRenderer.invoke('dialog:selectFile'),
   exportFile: file => ipcRenderer.invoke('dialog:saveFile', file),
