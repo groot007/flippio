@@ -107,7 +107,7 @@ export function SubHeader() {
         status: 'success',
       })
     })
-  }, [])
+  }, [selectedDatabaseFile])
 
   return (
     <Box
