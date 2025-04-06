@@ -76,7 +76,7 @@ export function SidePanel() {
     const condition = buildUniqueCondition(tableData?.columns, selectedRow?.originalData || selectedRow?.rowData)
     const result = await window.api.updateTableRow(selectedDatabaseTable?.name || '', editedData, condition)
     if (!result.success)
-      throw new Error(result.error || 'Failed to update row')
+      handleSaveError(result)
   }
 
   async function pushDatabaseFileIfNeeded() {

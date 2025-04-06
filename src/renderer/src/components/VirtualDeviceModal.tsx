@@ -132,13 +132,12 @@ export const VirtualDeviceModal: React.FC<VirtualDeviceModalProps> = ({ isOpen, 
         borderRadius="md"
         borderColor={device.status === 'running' ? 'flipioPrimary' : 'gray.200'}
         _dark={{ borderColor: device.status === 'running' ? 'flipioPrimary' : 'gray.600' }}
-        bg={device.status === 'running' ? 'flipioAqua.100' : 'transparent'}
+        bg="transparent"
         _hover={{
           bg: 'flipioAqua.50',
-          _dark: { bg: 'flipioTeal.800' },
         }}
         cursor="pointer"
-        onClick={() => handleLaunchDevice(device)}
+        onClick={() => device.status === 'running' ? undefined : handleLaunchDevice(device)}
       >
         <Flex alignItems="center">
           <Icon
@@ -166,7 +165,7 @@ export const VirtualDeviceModal: React.FC<VirtualDeviceModalProps> = ({ isOpen, 
                     bg: device.status === 'running' ? 'green.600' : 'flipioSecondary',
                   }}
                 >
-                  {device.status === 'running' ? 'Connect' : 'Launch'}
+                  {device.status === 'running' ? 'booted' : 'Launch'}
                 </Button>
               )}
         </Flex>

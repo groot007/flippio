@@ -42,8 +42,8 @@ export function DataGrid() {
 
       if (response.columns && response.rows) {
         setTableData({
-          columns: response.columns.map((col: { name: string }) => col.name),
-          rows: [...response.rows, ...response.rows, ...response.rows, ...response.rows, ...response.rows],
+          columns: response.columns,
+          rows: response.rows,
         })
       }
       else {
@@ -75,20 +75,20 @@ export function DataGrid() {
       return []
 
     return tableData.columns?.map(col => ({
-      field: col,
-      headerName: col,
+      field: col.name,
+      headerName: `${col.name} (${col.type})`,
       sortable: true,
       filter: true,
       resizable: true,
       editable: true,
+
       tooltipValueGetter: params => params.value,
     }))
   }, [tableData?.columns])
 
   const defaultColDef = useMemo(() => ({
-    flex: 1,
-    minWidth: 100,
     filter: true,
+    flex: 1,
   }), [])
 
   const onRowClicked = useCallback((event: Record<string, any>) => {
