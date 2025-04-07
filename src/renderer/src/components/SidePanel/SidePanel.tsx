@@ -5,7 +5,6 @@ import {
   IconButton,
   Portal,
   Stack,
-  Text,
 } from '@chakra-ui/react'
 import { useCurrentDatabaseSelection, useCurrentDeviceSelection, useTableData } from '@renderer/store'
 import { useRowEditingStore } from '@renderer/store/useRowEditingStore'
@@ -13,9 +12,10 @@ import { useColorMode } from '@renderer/ui/color-mode'
 import { toaster } from '@renderer/ui/toaster'
 import { buildUniqueCondition } from '@renderer/utils'
 import { useCallback, useState } from 'react'
-import { LuPencil, LuSave, LuX } from 'react-icons/lu'
-import FLModal from '../FLModal'
+import { LuX } from 'react-icons/lu'
+import { DeleteRowDialog } from './DeleteRowDialog'
 import { FieldItem } from './Field'
+import { RowEditor } from './RowEditor'
 
 export function SidePanel() {
   const { colorMode } = useColorMode()
@@ -36,102 +36,31 @@ export function SidePanel() {
     setIsEditing(false)
   }, [setSelectedRow])
 
-  const startEditing = useCallback(() => {
-    if (selectedRow?.rowData) {
-      setEditedData(selectedRow.rowData)
-    }
-    setIsEditing(true)
-  }, [selectedRow])
-
-  const cancelEditing = useCallback(() => {
-    setIsEditing(false)
-    setEditedData(selectedRow?.rowData || {})
-  }, [selectedRow])
-
-  const handleInputChange = useCallback((key: string, value: any) => {
-    setEditedData(prev => ({
-      ...prev,
-      [key]: value,
-    }))
-  }, [])
-
-  const handleSave = useCallback(async () => {
-    if (!selectedRow || !selectedDatabaseTable || !editedData)
-      return
-
-    try {
-      setIsLoading(true)
-      await updateRowData()
-      await pushDatabaseFileIfNeeded()
-      updateSelectedRow()
-      showSuccessToast()
-    }
-    catch (error) {
-      handleSaveError(error)
-    }
-    finally {
-      setIsLoading(false)
-    }
-  }, [selectedRow, selectedDatabaseTable, editedData])
-
-  async function updateRowData() {
-    const condition = buildUniqueCondition(tableData?.columns, selectedRow?.originalData || selectedRow?.rowData)
-    const result = await window.api.updateTableRow(selectedDatabaseTable?.name || '', editedData, condition)
-    if (!result.success)
-      handleSaveError(result)
-  }
-
-  async function pushDatabaseFileIfNeeded() {
-    if (selectedDatabaseFile && selectedDevice && selectedDatabaseFile.packageName && selectedDatabaseFile?.deviceType !== 'iphone') {
-      await window.api.pushDatabaseFile(selectedDevice.id, pulledDatabaseFilePath, selectedDatabaseFile.packageName, selectedDatabaseFile.path)
-    }
-  }
-
-  function updateSelectedRow() {
-    setSelectedRow({
-      rowData: editedData,
-      originalData: { ...editedData },
-    })
-    setIsEditing(false)
-  }
-
-  function showSuccessToast() {
-    toaster.create({
-      title: 'Data updated',
-      description: 'Row data has been successfully updated',
-      status: 'success',
-      duration: 3000,
-      isClosable: true,
-    })
-  }
-
-  function handleSaveError(error: any) {
-    console.error('Error saving data:', error)
-    toaster.create({
-      title: 'Update failed',
-      description: error.message || 'Failed to update data',
-      status: 'error',
-      duration: 5000,
-      isClosable: true,
-    })
-    cancelEditing()
-  }
-
   const handleDeleteRow = useCallback(async () => {
     if (!selectedRow || !selectedDatabaseTable)
       return
 
     try {
-      const condition = buildUniqueCondition(tableData?.columns, selectedRow?.originalData || selectedRow?.rowData)
-
-      const result = await window.api.deleteTableRow(selectedDatabaseTable?.name || '', condition)
+      const condition = buildUniqueCondition(
+        tableData?.columns,
+        selectedRow?.originalData || selectedRow?.rowData,
+      )
+      const result = await window.api.deleteTableRow(
+        selectedDatabaseTable?.name || '',
+        condition,
+      )
 
       if (!result.success) {
         throw new Error(result.error || 'Failed to delete row')
       }
 
       // Push changes back to device if needed
-      if (selectedDatabaseFile && selectedDevice && selectedDatabaseFile.packageName && selectedDatabaseFile?.deviceType !== 'iphone') {
+      if (
+        selectedDatabaseFile
+        && selectedDevice
+        && selectedDatabaseFile.packageName
+        && selectedDatabaseFile?.deviceType !== 'iphone'
+      ) {
         await window.api.pushDatabaseFile(
           selectedDevice.id,
           pulledDatabaseFilePath,
@@ -141,6 +70,7 @@ export function SidePanel() {
       }
 
       setIsDeleteDialogOpen(false)
+
       // Show success message
       toaster.create({
         title: 'Row deleted',
@@ -174,7 +104,15 @@ export function SidePanel() {
         isClosable: true,
       })
     }
-  }, [selectedRow, selectedDatabaseTable, tableData?.columns, selectedDatabaseFile, selectedDevice, pulledDatabaseFilePath, closePanel])
+  }, [
+    selectedRow,
+    selectedDatabaseTable,
+    tableData?.columns,
+    selectedDatabaseFile,
+    selectedDevice,
+    pulledDatabaseFilePath,
+    closePanel,
+  ])
 
   return (
     <Drawer.Root open={isOpen} onOpenChange={() => closePanel()}>
@@ -187,39 +125,14 @@ export function SidePanel() {
             <Drawer.Header pr={16}>
               <Drawer.Title>{isEditing ? 'Edit Row Data' : 'Row Details'}</Drawer.Title>
               <Flex gap={2}>
-                {!isEditing
-                  ? (
-                      <IconButton
-                        aria-label="Edit row"
-                        size="sm"
-                        onClick={startEditing}
-                        disabled={isLoading}
-                      >
-                        <LuPencil />
-                        {' '}
-                      </IconButton>
-                    )
-                  : (
-                      <>
-                        <Button
-                          colorScheme="green"
-                          size="sm"
-                          onClick={handleSave}
-                          disabled={isLoading}
-                        >
-                          Save
-                          <LuSave />
-                        </Button>
-                        <Button
-                          size="sm"
-                          colorPalette="pink"
-                          onClick={cancelEditing}
-                          disabled={isLoading}
-                        >
-                          Cancel
-                        </Button>
-                      </>
-                    )}
+                <RowEditor
+                  isEditing={isEditing}
+                  setIsEditing={setIsEditing}
+                  isLoading={isLoading}
+                  setIsLoading={setIsLoading}
+                  editedData={editedData}
+                  setEditedData={setEditedData}
+                />
                 {/* @ts-expect-error chakra types */}
                 <Drawer.CloseTrigger asChild>
                   <IconButton
@@ -243,12 +156,15 @@ export function SidePanel() {
                       fieldKey={key}
                       value={isEditing ? editedData[key] : value}
                       isEditing={isEditing}
-                      onChange={handleInputChange}
+                      onChange={(key, value) =>
+                        setEditedData(prev => ({
+                          ...prev,
+                          [key]: value,
+                        }))}
                       isLoading={isLoading}
                       isDark={isDark}
                     />
                   ))}
-
                   <Button
                     colorScheme="red"
                     variant="outline"
@@ -261,23 +177,12 @@ export function SidePanel() {
                   >
                     Remove Row
                   </Button>
-
-                  <FLModal
+                  <DeleteRowDialog
                     isOpen={isDeleteDialogOpen}
-                    body={(
-                      <Text>
-                        Are you sure you want to delete this row? This action cannot be undone.
-                      </Text>
-                    )}
-                    title="Delete Row"
-                    acceptBtn="Delete"
-                    onAccept={handleDeleteRow}
-                    rejectBtn="Cancel"
-                    onReject={() => {
-                      setIsDeleteDialogOpen(false)
-                    }}
+                    onClose={() => setIsDeleteDialogOpen(false)}
+                    onDelete={handleDeleteRow}
+                    isLoading={isLoading}
                   />
-
                 </Stack>
               )}
             </Drawer.Body>

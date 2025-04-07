@@ -1,24 +1,8 @@
 import { JSDOM } from 'jsdom'
-import { beforeEach, vi } from 'vitest'
+import { vi } from 'vitest'
 import '@testing-library/jest-dom/vitest'
 
 const { window } = new JSDOM()
-
-beforeEach(() => {
-  Object.defineProperty(window, 'matchMedia', {
-    writable: true,
-    value: vi.fn().mockImplementation(query => ({
-      matches: false,
-      media: query,
-      onchange: null,
-      addListener: vi.fn(), // Deprecated
-      removeListener: vi.fn(), // Deprecated
-      addEventListener: vi.fn(),
-      removeEventListener: vi.fn(),
-      dispatchEvent: vi.fn(),
-    })),
-  })
-})
 
 // IntersectionObserver mock
 const IntersectionObserverMock = vi.fn(() => ({
@@ -40,6 +24,11 @@ window.requestAnimationFrame = cb => setTimeout(cb, 1000 / 60)
 // URL object mock
 window.URL.createObjectURL = () => 'https://i.pravatar.cc/300'
 window.URL.revokeObjectURL = () => {}
+window.matchMedia = vi.fn(() => ({
+  matches: false,
+  addListener: vi.fn(),
+  removeListener: vi.fn(),
+}))
 
 // navigator mock
 Object.defineProperty(window, 'navigator', {
@@ -49,3 +38,29 @@ Object.defineProperty(window, 'navigator', {
     },
   },
 })
+
+// Object.defineProperty(window, 'matchMedia', {
+//   writable: true,
+//   enumerable: true,
+//   value: vi.fn().mockImplementation(query => ({
+//     matches: false,
+//     media: query,
+//     onchange: null,
+//     addListener: vi.fn(), // deprecated
+//     removeListener: vi.fn(), // deprecated
+//     addEventListener: vi.fn(),
+//     removeEventListener: vi.fn(),
+//     dispatchEvent: vi.fn(),
+//   })),
+// })
+
+window.matchMedia = vi.fn().mockImplementation(query => ({
+  matches: false,
+  media: query,
+  onchange: null,
+  addListener: vi.fn(), // deprecated
+  removeListener: vi.fn(), // deprecated
+  addEventListener: vi.fn(),
+  removeEventListener: vi.fn(),
+  dispatchEvent: vi.fn(),
+}))

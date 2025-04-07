@@ -5,10 +5,10 @@ import * as Sentry from '@sentry/electron/main'
 import { app, BrowserWindow, shell } from 'electron'
 import { autoUpdater } from 'electron-updater'
 
-import { setupIpcADB } from './ipcADB'
-import { setupIpcCommon } from './ipcCommon'
-import { setupIpcDatabase } from './ipcDatabase'
-import { registerVirtualDeviceHandlers } from './ipcVirtualDevices'
+import { setupIpcADB } from './ipc/adb'
+import { setupIpcCommon } from './ipc/common'
+import { setupIpcDatabase } from './ipc/database'
+import { registerVirtualDeviceHandlers } from './ipc/virtualDevices'
 import './autoUpdaterEvents'
 
 Sentry.init({

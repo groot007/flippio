@@ -3,7 +3,7 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import { ipcMain } from 'electron'
-import { parseSimulators } from './utils'
+import { parseSimulators } from './../utils'
 
 interface DatabaseFile {
   path: string

@@ -13,7 +13,9 @@ files:
   - '!**/node_modules/*/{test,__tests__,tests,powered-test,example,examples}'
   - '!**/node_modules/*/{.bin,.editorconfig,.idea,.vscode}'
 asarUnpack:
+  - '**/*.node'
   - resources/**
+asar: true
 compression: maximum
 nsis:
   artifactName: ${name}-${version}-setup.${ext}

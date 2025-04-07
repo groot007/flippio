@@ -1,7 +1,7 @@
 import { Button, Link, Menu, Portal, Text, VStack } from '@chakra-ui/react'
 import { ColorModeButton } from '@renderer/ui/color-mode'
 import { LuExternalLink, LuGithub, LuSettings } from 'react-icons/lu'
-import packageJSON from '../../../../package.json'
+import packageJSON from '../../../../../package.json'
 
 export function Settings() {
   return (

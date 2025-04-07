@@ -7,11 +7,11 @@ import {
   Text,
 } from '@chakra-ui/react'
 import { useDatabaseFiles } from '@renderer/hooks/useDatabaseFiles'
-import { useDatabaseTables } from '@renderer/hooks/useDatabaseTabels'
+import { useDatabaseTables } from '@renderer/hooks/useDatabaseTables'
 import { useCurrentDatabaseSelection, useCurrentDeviceSelection } from '@renderer/store'
 import { toaster } from '@renderer/ui/toaster'
 import { useCallback, useEffect, useMemo } from 'react'
-import FLSelect from './FLSelect'
+import FLSelect from './../common/FLSelect'
 
 export function SubHeader() {
   const selectedDevice = useCurrentDeviceSelection(state => state.selectedDevice)

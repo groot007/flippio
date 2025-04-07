@@ -1,9 +1,9 @@
 import { VStack } from '@chakra-ui/react'
-import AppHeader from '@renderer/components/AppHeader'
-import { DataGrid } from '@renderer/components/DataGrid'
-import { DragAndDropProvider } from '@renderer/components/DragAndDropProvider'
+import { DataGrid } from '@renderer/components/data/DataGrid'
+import { DragAndDropProvider } from '@renderer/components/data/DragAndDropProvider'
+import AppHeader from '@renderer/components/layout/AppHeader'
+import { SubHeader } from '@renderer/components/layout/SubHeader'
 import { SidePanel } from '@renderer/components/SidePanel'
-import { SubHeader } from '@renderer/components/SubHeader'
 
 export function Main() {
   return (

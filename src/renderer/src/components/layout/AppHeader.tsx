@@ -6,9 +6,9 @@ import { useCurrentDatabaseSelection, useCurrentDeviceSelection } from '@rendere
 import { toaster } from '@renderer/ui/toaster'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { LuPackage, LuRefreshCcw, LuSmartphone } from 'react-icons/lu'
-import FLSelect from './FLSelect'
+import FLSelect from './../common/FLSelect'
+import { VirtualDeviceModal } from './../data/VirtualDeviceModal'
 import { Settings } from './Settings'
-import { VirtualDeviceModal } from './VirtualDeviceModal'
 
 function AppHeader() {
   const [isRefreshing, setIsRefreshing] = useState(false)

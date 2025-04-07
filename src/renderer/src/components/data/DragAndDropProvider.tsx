@@ -5,7 +5,7 @@ import { useColorMode } from '@renderer/ui/color-mode'
 // import { webUtils } from 'electron'
 import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react'
 import { LuDatabase, LuFileType, LuUpload } from 'react-icons/lu'
-import { toaster } from '../ui/toaster'
+import { toaster } from '../../ui/toaster'
 
 // Create a context for drag and drop functionality
 interface DragAndDropContextType {
