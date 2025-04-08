@@ -172,7 +172,7 @@ export function SubHeader() {
             Open DB
           </Button>
 
-          <Button onClick={handleExportDB} variant="outline" size="xs" color="flipioPrimary" borderColor="flipioPrimary">
+          <Button onClick={handleExportDB} variant="outline" size="xs" color="flipioPrimary" borderColor="flipioPrimary" disabled={!selectedDatabaseFile?.path}>
             Export
           </Button>
         </HStack>
