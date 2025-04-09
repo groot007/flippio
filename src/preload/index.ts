@@ -22,8 +22,8 @@ const api = {
     ipcRenderer.invoke('db:getTableData', tableName),
   updateTableRow: (tableName: string, row: any, condition: any) =>
     ipcRenderer.invoke('db:updateTableRow', tableName, row, condition),
-  executeQuery: (query: string) =>
-    ipcRenderer.invoke('db:executeQuery', query),
+  executeQuery: (query: string, dbPath: string) =>
+    ipcRenderer.invoke('db:executeQuery', query, dbPath),
   insertTableRow: (tableName: string, row: any) =>
     ipcRenderer.invoke('db:insertTableRow', tableName, row),
   deleteTableRow: (tableName: string, condition: any) =>

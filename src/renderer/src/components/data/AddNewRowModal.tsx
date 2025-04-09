@@ -103,8 +103,8 @@ export const AddNewRowModal: React.FC<AddNewRowModalProps> = ({ isOpen, onClose,
         title: 'Creation failed',
         description: error instanceof Error ? error.message : 'Failed to create new row',
         status: 'error',
-        duration: 5000,
-        isClosable: true,
+        duration: 3000,
+        closable: true,
       })
     }
     finally {

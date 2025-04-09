@@ -10,7 +10,7 @@ function FLModal({
   onReject,
 }) {
   return (
-    <Dialog.Root lazyMount open={isOpen}>
+    <Dialog.Root lazyMount open={isOpen} closeOnInteractOutside={true}>
       <Portal>
         <Dialog.Backdrop />
         <Dialog.Positioner>

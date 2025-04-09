@@ -132,7 +132,7 @@ export function DataGrid() {
       >
         <AgGridReact
           ref={gridRef}
-          rowData={selectedDatabaseTable ? tableData?.rows : []}
+          rowData={tableData?.rows}
           columnDefs={columnDefs}
           defaultColDef={defaultColDef}
           animateRows={true}

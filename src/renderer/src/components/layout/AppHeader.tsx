@@ -1,5 +1,5 @@
 import type { Application } from '@renderer/hooks/useApplications'
-import { Button, HStack, Spacer } from '@chakra-ui/react'
+import { Button, HStack } from '@chakra-ui/react'
 import { useApplications } from '@renderer/hooks/useApplications'
 import { useDevices } from '@renderer/hooks/useDevices'
 import { useCurrentDatabaseSelection, useCurrentDeviceSelection } from '@renderer/store'
@@ -154,25 +154,26 @@ function AppHeader() {
           <LuRefreshCcw />
         </Button>
 
-        <Button
-          onClick={handleOpenVirtualDeviceModal}
-          variant="outline"
-          size="sm"
-          ml={3}
-          color="flipioPrimary"
-          borderColor="flipioPrimary"
-          _hover={{
-            bg: 'flipioAqua.50',
-            _dark: { bg: 'flipioTeal.900' },
-          }}
-        >
-          <LuSmartphone />
-          {' '}
-          Virtual Device
-        </Button>
+        <HStack ml="auto" flex={1} w="full" justifyItems="flex-end">
+          <Button
+            onClick={handleOpenVirtualDeviceModal}
+            variant="outline"
+            size="sm"
+            ml="auto"
+            mr="4"
+            title="Launch Emulator"
+            color="flipioPrimary"
+            borderColor="flipioPrimary"
+            _hover={{
+              bg: 'flipioAqua.50',
+              _dark: { bg: 'flipioTeal.900' },
+            }}
+          >
+            <LuSmartphone />
+          </Button>
 
-        <Spacer />
-        <Settings />
+          <Settings />
+        </HStack>
       </HStack>
 
       <VirtualDeviceModal

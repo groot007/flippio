@@ -21,7 +21,7 @@ declare global {
       openDatabase: (filePath: string) => Promise<any>
       getTableInfo: (tableName: string) => Promise<any>
       updateTableRow: (tableName: string, row: any, condition: any) => Promise<any>
-      executeQuery: (query: string) => Promise<any>
+      executeQuery: (query: string, dbPath: string) => Promise<any>
       getDevices: () => Promise<any>
       getIOSPackages: (deviceId: string) => Promise<any>
       getAndroidPackages: (deviceId: string) => Promise<any>

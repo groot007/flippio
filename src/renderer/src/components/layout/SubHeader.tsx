@@ -10,7 +10,9 @@ import { useDatabaseFiles } from '@renderer/hooks/useDatabaseFiles'
 import { useDatabaseTables } from '@renderer/hooks/useDatabaseTables'
 import { useCurrentDatabaseSelection, useCurrentDeviceSelection } from '@renderer/store'
 import { toaster } from '@renderer/ui/toaster'
-import { useCallback, useEffect, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { LuDatabase, LuFilter, LuFolderOpen, LuTable, LuUpload } from 'react-icons/lu'
+import { CustomQueryModal } from '../data/CustomQueryModal'
 import FLSelect from './../common/FLSelect'
 
 export function SubHeader() {
@@ -21,6 +23,8 @@ export function SubHeader() {
   const setSelectedDatabaseFile = useCurrentDatabaseSelection(state => state.setSelectedDatabaseFile)
   const selectedDatabaseTable = useCurrentDatabaseSelection(state => state.selectedDatabaseTable)
   const setSelectedDatabaseTable = useCurrentDatabaseSelection(state => state.setSelectedDatabaseTable)
+
+  const [isQueryModalOpen, setIsQueryModalOpen] = useState(false)
 
   const {
     databaseFiles,
@@ -64,9 +68,13 @@ export function SubHeader() {
 
   const isNoDB = !databaseFiles?.length && !isDBPulling && selectedApplication?.bundleId && selectedDevice?.id
 
-  // const handleQueryExecution = useCallback(async () => {
-  //   const data = await window.api.executeQuery('SELECT * FROM config')
-  //   console.log('handleQueryExecution__', data)
+  // const handleQueryExecution = useCallback(async (query) => {
+  //   const data = await window.api.executeQuery(query)
+  //   setTableData({
+  //     ...data,
+  //     customQuery: query,
+  //   })
+  //   console.log('handleQueryExecution__', query, data)
   // }, [])
 
   const handleOpenDBFile = useCallback(() => {
@@ -143,6 +151,7 @@ export function SubHeader() {
                   label="Select Database"
                   options={dbFileOptions}
                   value={selectedDatabaseFile}
+                  icon={<LuDatabase color="#47d5c9" />}
                   onChange={handleDatabaseFileChange}
                   isDisabled={!selectedApplication?.bundleId || isDBPulling}
                 />
@@ -153,30 +162,45 @@ export function SubHeader() {
               label="Select Table"
               options={tableOptions}
               value={selectedDatabaseTable}
+              icon={<LuTable color="#47d5c9" />}
               onChange={handleTableChange}
               isDisabled={!selectedDatabaseFile?.path || isDBPulling}
             />
           </Box>
-          {/* <Button onClick={handleQueryExecution}>
-            Custom query
-          </Button> */}
           {isDBPulling && (
             <Spinner size="sm" color="blue.500" />
           )}
+
+          <Button onClick={() => setIsQueryModalOpen(true)} variant="outline" size="xs" color="flipioPrimary" borderColor="flipioPrimary" disabled={!selectedDatabaseFile?.path}>
+            SQL
+            {' '}
+            <LuFilter />
+          </Button>
+
         </HStack>
         <HStack
           ml="auto"
           gap={2}
         >
           <Button onClick={handleOpenDBFile} variant="plain" size="xs" color="flipioPrimary" borderColor="flipioPrimary">
+            <LuFolderOpen />
+            {' '}
             Open DB
           </Button>
 
           <Button onClick={handleExportDB} variant="outline" size="xs" color="flipioPrimary" borderColor="flipioPrimary" disabled={!selectedDatabaseFile?.path}>
+            <LuUpload />
+            {' '}
             Export
           </Button>
         </HStack>
       </Flex>
+      <CustomQueryModal
+        isOpen={isQueryModalOpen}
+        onClose={() => {
+          setIsQueryModalOpen(false)
+        }}
+      />
     </Box>
   )
 }

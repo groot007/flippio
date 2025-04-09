@@ -294,7 +294,7 @@ export function setupIpcDatabase() {
     }
   })
 
-  ipcMain.handle('db:executeQuery', async (_event, query, params = []) => {
+  ipcMain.handle('db:executeQuery', async (_event, query, _dbPath = '', params = []) => {
     if (!db)
       return { success: false, error: 'No database connection' }
 
@@ -310,7 +310,11 @@ export function setupIpcDatabase() {
           })
         })
 
-        return { success: true, rows }
+        const columns = rows.length > 0
+          ? Object.keys(rows[0]).map(name => ({ name, type: '' }))
+          : []
+
+        return { success: true, rows, columns }
       }
       else {
         const result = await new Promise<any>((resolve, reject) => {
