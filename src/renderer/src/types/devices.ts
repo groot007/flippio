@@ -1,4 +1,4 @@
-type DeviceType = 'android' | 'iphone' | 'desktop'
+type DeviceType = 'android' | 'iphone' | 'desktop' | 'iphone-device'
 export interface DeviceInfo {
   deviceType: DeviceType
   id: string

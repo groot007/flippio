@@ -1,5 +1,5 @@
 import type { Application } from '@renderer/hooks/useApplications'
-import { Button, HStack } from '@chakra-ui/react'
+import { Button, HStack, Spinner } from '@chakra-ui/react'
 import { useApplications } from '@renderer/hooks/useApplications'
 import { useDevices } from '@renderer/hooks/useDevices'
 import { useCurrentDatabaseSelection, useCurrentDeviceSelection } from '@renderer/store'
@@ -8,6 +8,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { LuPackage, LuRefreshCcw, LuSmartphone } from 'react-icons/lu'
 import FLSelect from './../common/FLSelect'
 import { VirtualDeviceModal } from './../data/VirtualDeviceModal'
+import { PackageSetModal } from './PackageSetModal'
 import { Settings } from './Settings'
 
 function AppHeader() {
@@ -25,6 +26,17 @@ function AppHeader() {
     devices: devicesList,
     refresh: refreshDevices,
   } = useDevices()
+
+  const [isPackageSetModalOpen, setIsPackageSetModalOpen] = useState(false)
+  const closePackageSeModal = useCallback(() => {
+    setIsPackageSetModalOpen(false)
+  }, [setIsPackageSetModalOpen])
+
+  useEffect(() => {
+    if (selectedDevice?.deviceType === 'iphone-device') {
+      setIsPackageSetModalOpen(true)
+    }
+  }, [selectedDevice])
 
   const handleRefreshDevices = useCallback(() => {
     let timeoutId: NodeJS.Timeout | null = null
@@ -80,13 +92,23 @@ function AppHeader() {
       ...device,
     })), [devicesList])
 
-  const applicationSelectOptions = useMemo(() =>
-    applicationsList.map(app => ({
+  const applicationSelectOptions = useMemo(() => {
+    if (selectedApplication?.bundleId && !applicationsList.length) {
+      return [{
+        label: selectedApplication.name,
+        value: selectedApplication.bundleId,
+        description: selectedApplication.bundleId,
+        ...selectedApplication,
+      }]
+    };
+
+    return applicationsList.map(app => ({
       label: app.name,
       value: app.bundleId,
       description: app.bundleId,
       ...app,
-    })), [applicationsList])
+    }))
+  }, [applicationsList, selectedApplication])
 
   const handleDeviceChange = useCallback((value: any) => {
     setSelectedDevice(value)
@@ -134,6 +156,7 @@ function AppHeader() {
             onChange={handlePackageChange}
             isDisabled={!selectedDevice || isLoading}
           />
+          {isLoading && <Spinner size="sm" color="blue.500" /> }
         </HStack>
         <Button
           data-testid="refresh-devices"
@@ -145,7 +168,7 @@ function AppHeader() {
           _hover={{
             opacity: 0.8,
           }}
-          disabled={isRefreshing || isLoading}
+          disabled={isRefreshing}
           _open={{
             animationName: 'rotate',
             animationDuration: '1100ms',
@@ -179,6 +202,13 @@ function AppHeader() {
       <VirtualDeviceModal
         isOpen={isVirtualDeviceModalOpen}
         onClose={handleCloseVirtualDeviceModal}
+      />
+
+      <PackageSetModal
+        isLoading={isLoading}
+        isOpen={isPackageSetModalOpen}
+        onClose={closePackageSeModal}
+        onPackageSet={closePackageSeModal}
       />
     </>
   )

@@ -1,9 +1,11 @@
-import { exec } from 'node:child_process'
+import { exec, execFile } from 'node:child_process'
 import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
+
+import { promisify } from 'node:util'
 import { ipcMain } from 'electron'
-import { parseSimulators } from './../utils'
+import { getBinariesPath, parseSimulators } from './../utils'
 
 interface DatabaseFile {
   path: string
@@ -12,6 +14,14 @@ interface DatabaseFile {
   location: string
   deviceType: 'android' | 'iphone' | 'desktop'
 }
+
+interface Device {
+  id: string
+  name: string
+  model: string
+  deviceType: string
+}
+// afcclient --appid <APP_BUNDLE_ID> get /Documents/database.db ~/Desktop/database.db
 
 export function setupIpcADB() {
   const tempDirPath = path.join(os.tmpdir(), 'flippio-db-temp')
@@ -42,6 +52,77 @@ export function setupIpcADB() {
       return []
     }
   }
+
+  const getIOsIds = async (): Promise<string[]> => {
+    const binaryPath = `${getBinariesPath()}/idevice_id`
+
+    try {
+      // Convert callback-based execFile to Promise
+      const { stdout } = await promisify(execFile)(binaryPath, ['-l'])
+      const uuids = stdout.trim().split('\n').filter(id => id.length > 0)
+      // console.log('iOS device UUIDs:', stdout)
+      return uuids
+    }
+    catch (error) {
+      console.error('Error listing iOS devices:', error)
+      return [] // Return empty array on error
+    }
+  }
+
+  const getIOsDevices = async (): Promise<Device[]> => {
+    const binaryPath = `${getBinariesPath()}/ideviceinfo`
+    const uuids = await getIOsIds()
+    const devices: Device[] = []
+
+    if (uuids.length === 0) {
+      return devices // Early return if no devices found
+    }
+
+    // Process each device sequentially with proper promise handling
+    try {
+      // Map each UUID to a Promise that resolves with device info
+      const devicePromises = uuids.map(async (uuid) => {
+        try {
+          // IMPORTANT: Fix argument format (-u and uuid as separate items)
+          const { stdout } = await promisify(execFile)(binaryPath, ['-u', uuid])
+
+          const deviceInfo: Record<string, string> = {
+            id: uuid,
+            deviceType: 'iphone-device',
+          }
+
+          stdout.split('\n').forEach((line) => {
+            if (line.includes(':')) {
+              const [key, value] = line.split(':').map(str => str.trim())
+              deviceInfo[key] = value
+            }
+          })
+
+          deviceInfo.model = deviceInfo.DeviceName || deviceInfo.Model || 'Unknown'
+
+          return deviceInfo
+        }
+        catch (error) {
+          console.error(`Error getting device info for ${uuid}:`, error)
+          // Return partial info on error
+          return { id: uuid, deviceType: 'iphone-device', error: (error as Error).message }
+        }
+      })
+
+      // Wait for all device info to be collected
+      const deviceInfoResults = await Promise.all(devicePromises)
+      // @ts-expect-error expanded deviceInfoResults
+      return deviceInfoResults
+    }
+    catch (error) {
+      console.error('Error processing iOS devices:', error)
+      return devices
+    }
+  }
+
+  ipcMain.handle('device:getIOsDevices', async () => {
+    return getIOsDevices()
+  })
 
   ipcMain.handle('device:getIosPackages', async (_event, deviceId) => {
     try {
@@ -117,9 +198,11 @@ export function setupIpcADB() {
         }
       }
 
-      const iosDevices = await getIOsSimulators()
+      const iosEmulators = await getIOsSimulators()
 
-      const allDevices = devices.concat(iosDevices)
+      const iosDevices = await getIOsDevices()
+
+      const allDevices = devices.concat(iosEmulators).concat(iosDevices)
 
       return { success: true, devices: allDevices }
     }

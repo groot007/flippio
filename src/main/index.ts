@@ -8,6 +8,7 @@ import { autoUpdater } from 'electron-updater'
 import { setupIpcADB } from './ipc/adb'
 import { setupIpcCommon } from './ipc/common'
 import { setupIpcDatabase } from './ipc/database'
+import { setupIOsDevice } from './ipc/ios'
 import { registerVirtualDeviceHandlers } from './ipc/virtualDevices'
 import './autoUpdaterEvents'
 
@@ -65,6 +66,7 @@ app.whenReady().then(() => {
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.electron')
 
+  setupIOsDevice()
   setupIpcADB()
   setupIpcCommon()
   setupIpcDatabase()

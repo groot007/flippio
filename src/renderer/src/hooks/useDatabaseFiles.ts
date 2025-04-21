@@ -15,9 +15,13 @@ export function useDatabaseFiles(selectedDevice, selectedApplication) {
       setError(null)
 
       try {
-        const fetchFunction = selectedDevice?.deviceType === 'iphone'
+        let fetchFunction = selectedDevice?.deviceType === 'iphone'
           ? window.api.getIOSDatabaseFiles
           : window.api.getAndroidDatabaseFiles
+
+        if (selectedDevice.deviceType === 'iphone-device') {
+          fetchFunction = window.api.getIOSDeviceDatabaseFiles
+        }
 
         const response = await fetchFunction(selectedDevice.id, selectedApplication.bundleId)
 

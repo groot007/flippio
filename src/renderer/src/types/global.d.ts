@@ -10,9 +10,12 @@ declare global {
       // ADB operations
       getDevices: () => Promise<any>
       getIOSPackages: (id: string) => Promise<any>
+      getIOsDevicePackages: (id: string) => Promise<any>
       getAndroidPackages: (id: string) => Promise<any>
       getAndroidDatabaseFiles: (deviceId: string, applicationId) => Promise<any>
       getIOSDatabaseFiles: (deviceId: string, applicationId) => Promise<any>
+      checkAppExistence: (deviceId: string, applicationId: string) => Promise<any>
+      getIOSDeviceDatabaseFiles: (deviceId: string, applicationId) => Promise<any>
       pullDatabaseFile: (deviceId: string, remotePath: string, localPath?: string) =>
       Promise<any>
       pushDatabaseFile: (deviceId: string, localPath: string, packageName: string, remotePath: string) =>

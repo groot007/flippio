@@ -1,3 +1,7 @@
+import path from 'node:path'
+import process from 'node:process'
+import { app } from 'electron'
+
 export function parseSimulators(input) {
   // Split the input into lines and filter out any empty lines
   const simulators = input.trim().split('\n').filter(line => line.length > 0)
@@ -17,4 +21,16 @@ export function parseSimulators(input) {
     }
     return null // Return null if the format doesn't match
   }).filter(simulator => simulator !== null) // Filter out null values
+}
+
+export function getBinariesPath() {
+  const IS_PROD = process.env.NODE_ENV === 'production'
+  const { isPackaged } = app
+
+  const binariesPath
+    = IS_PROD && isPackaged
+      ? path.join(process.resourcesPath, './bin')
+      : path.join(app.getAppPath(), 'resources')
+
+  return binariesPath
 }

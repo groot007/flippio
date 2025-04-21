@@ -8,10 +8,16 @@ const api = {
   getIOSPackages: (deviceId: string) => ipcRenderer.invoke('device:getIosPackages', deviceId),
   getAndroidPackages: (deviceId: string) =>
     ipcRenderer.invoke('adb:getPackages', deviceId),
+  getIOsDevicePackages: (deviceId: string) =>
+    ipcRenderer.invoke('device:getIosDevicePackages', deviceId),
   getAndroidDatabaseFiles: (deviceId: string, applicationId) =>
     ipcRenderer.invoke('adb:getAndroidDatabaseFiles', deviceId, applicationId),
+  checkAppExistence: (deviceId: string, applicationId: string) =>
+    ipcRenderer.invoke('device:checkAppExistence', deviceId, applicationId),
   getIOSDatabaseFiles: (deviceId: string, applicationId) =>
     ipcRenderer.invoke('adb:getIOSDatabaseFiles', deviceId, applicationId),
+  getIOSDeviceDatabaseFiles: (deviceId: string, applicationId) =>
+    ipcRenderer.invoke('device:getIOSDeviceDatabaseFiles', deviceId, applicationId),
   pullDatabaseFile: (deviceId: string, remotePath: string, localPath: string = '') =>
     ipcRenderer.invoke('adb:pullDatabaseFile', deviceId, remotePath, localPath),
   pushDatabaseFile: (deviceId: string, localPath: string, packageName: string, remotePath: string) =>

@@ -3,6 +3,7 @@ productName: flippio
 directories:
   buildResources: build
 files:
+  - 'resources/*'
   - '!**/.vscode/*'
   - '!src/*'
   - '!electron.vite.config.{js,ts,mjs,cjs}'
@@ -14,7 +15,6 @@ files:
   - '!**/node_modules/*/{.bin,.editorconfig,.idea,.vscode}'
 asarUnpack:
   - '**/*.node'
-  - resources/**
 asar: true
 compression: maximum
 nsis:

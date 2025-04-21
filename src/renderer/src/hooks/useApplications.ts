@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 export interface Device {
   id: string
   model: string
-  deviceType: 'iphone' | 'android' | 'desktop'
+  deviceType: 'iphone' | 'android' | 'desktop' | 'iphone-device'
 }
 
 export interface Application {
@@ -21,6 +21,7 @@ export function useApplications(selectedDevice: Device | null) {
   useEffect(() => {
     async function fetchApplications() {
       if (!selectedDevice?.id) {
+        setIsLoading(false)
         setApplications([])
         setApplicationsListToStore([])
         return
@@ -30,9 +31,13 @@ export function useApplications(selectedDevice: Device | null) {
       setError(null)
 
       try {
-        const fetchFunction = selectedDevice.deviceType === 'iphone'
+        let fetchFunction = selectedDevice.deviceType === 'iphone'
           ? window.api.getIOSPackages
           : window.api.getAndroidPackages
+
+        if (selectedDevice.deviceType === 'iphone-device') {
+          fetchFunction = window.api.getIOsDevicePackages
+        }
 
         const response = await fetchFunction(selectedDevice.id)
 
@@ -63,5 +68,6 @@ export function useApplications(selectedDevice: Device | null) {
     applications,
     isLoading,
     error,
+    setIsLoading,
   }
 }
