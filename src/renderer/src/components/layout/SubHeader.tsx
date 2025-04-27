@@ -11,7 +11,7 @@ import { useDatabaseTables } from '@renderer/hooks/useDatabaseTables'
 import { useCurrentDatabaseSelection, useCurrentDeviceSelection } from '@renderer/store'
 import { toaster } from '@renderer/ui/toaster'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { LuDatabase, LuFilter, LuFolderOpen, LuTable, LuUpload } from 'react-icons/lu'
+import { LuDatabase, LuFilter, LuFolderOpen, LuRefreshCcw, LuTable, LuUpload } from 'react-icons/lu'
 import { CustomQueryModal } from '../data/CustomQueryModal'
 import FLSelect from './../common/FLSelect'
 
@@ -29,12 +29,14 @@ export function SubHeader() {
   const {
     data: databaseFiles = [],
     isLoading,
+    refetch: refetchDatabaseFiles,
   } = useDatabaseFiles(selectedDevice, selectedApplication)
 
   const isDBPulling = !!selectedApplication?.bundleId && !!selectedDevice?.id && isLoading
 
   const {
     data: tablesData,
+    refetch: refetchDatabaseTables,
   } = useDatabaseTables(selectedDatabaseFile, selectedDevice)
 
   const databaseTables = tablesData?.tables
@@ -67,6 +69,31 @@ export function SubHeader() {
       setSelectedDatabaseTable(null)
     }
   }, [selectedDatabaseFile])
+
+  const handleDBRefresh = useCallback(() => {
+    // TODO: Add another logic to update table without deselection
+    setSelectedDatabaseTable(null)
+    refetchDatabaseFiles()
+      .then(() => {
+        toaster.create({
+          title: 'Success',
+          description: 'Database refreshed',
+          status: 'success',
+          duration: 3000,
+          isClosable: true,
+        })
+      })
+      .catch((err) => {
+        toaster.create({
+          title: 'Error refreshing database',
+          description: err.message,
+          status: 'error',
+          duration: 3000,
+          isClosable: true,
+        })
+      })
+    refetchDatabaseTables()
+  }, [])
 
   const isNoDB = !databaseFiles?.length && !isDBPulling && selectedApplication?.bundleId && selectedDevice?.id
 
@@ -150,7 +177,7 @@ export function SubHeader() {
                 />
               )}
 
-          <Box width="250px">
+          <Box>
             <FLSelect
               label="Select Table"
               options={tableOptions}
@@ -160,6 +187,24 @@ export function SubHeader() {
               isDisabled={!selectedDatabaseFile?.path || isDBPulling}
             />
           </Box>
+          <Button
+            data-testid="refresh-db"
+            data-state={isLoading ? 'open' : 'closed'}
+            onClick={handleDBRefresh}
+            bg="transparent"
+            color="flipioSecondary"
+
+            _hover={{
+              opacity: 0.8,
+            }}
+            disabled={isLoading}
+            _open={{
+              animationName: 'rotate',
+              animationDuration: '1100ms',
+            }}
+          >
+            <LuRefreshCcw />
+          </Button>
           {isDBPulling && (
             <Spinner size="sm" color="blue.500" />
           )}
