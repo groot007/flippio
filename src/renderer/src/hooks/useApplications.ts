@@ -1,5 +1,4 @@
-import { useCurrentDeviceSelection } from '@renderer/store'
-import { useEffect, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 
 export interface Device {
   id: string
@@ -7,67 +6,48 @@ export interface Device {
   deviceType: 'iphone' | 'android' | 'desktop' | 'iphone-device'
 }
 
-export interface Application {
+interface Application {
   name: string
   bundleId: string
 }
 
+interface ApplicationsResponse {
+  success: boolean
+  packages: Application[]
+  error?: string
+}
+
 export function useApplications(selectedDevice: Device | null) {
-  const [applications, setApplications] = useState<Application[]>([])
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const setApplicationsListToStore = useCurrentDeviceSelection(state => state.setApplicationsList)
-
-  useEffect(() => {
-    async function fetchApplications() {
+  return useQuery({
+    queryKey: ['applications', selectedDevice?.id, selectedDevice?.deviceType],
+    queryFn: async () => {
       if (!selectedDevice?.id) {
-        setIsLoading(false)
-        setApplications([])
-        setApplicationsListToStore([])
-        return
+        throw new Error('No device selected')
       }
 
-      setIsLoading(true)
-      setError(null)
+      let fetchFunction: (deviceId: string) => Promise<ApplicationsResponse>
 
-      try {
-        let fetchFunction = selectedDevice.deviceType === 'iphone'
-          ? window.api.getIOSPackages
-          : window.api.getAndroidPackages
-
-        if (selectedDevice.deviceType === 'iphone-device') {
-          fetchFunction = window.api.getIOsDevicePackages
-        }
-
-        const response = await fetchFunction(selectedDevice.id)
-
-        if (response.success) {
-          setApplications(response.packages)
-          setApplicationsListToStore(response.packages)
-        }
-        else {
-          setError(response.error || `Failed to load apps for ${selectedDevice.model}`)
-          setApplications([])
-          setApplicationsListToStore([])
-        }
+      if (selectedDevice.deviceType === 'iphone') {
+        fetchFunction = window.api.getIOSPackages
       }
-      catch (err) {
-        setError(err instanceof Error ? err.message : 'Unknown error occurred')
-        setApplications([])
-        setApplicationsListToStore([])
+      else if (selectedDevice.deviceType === 'iphone-device') {
+        fetchFunction = window.api.getIOsDevicePackages
       }
-      finally {
-        setIsLoading(false)
+      else {
+        fetchFunction = window.api.getAndroidPackages
       }
-    }
 
-    fetchApplications()
-  }, [selectedDevice, setApplicationsListToStore])
+      const response = await fetchFunction(selectedDevice.id)
 
-  return {
-    applications,
-    isLoading,
-    error,
-    setIsLoading,
-  }
+      if (!response.success) {
+        throw new Error(response.error || `Failed to load apps for ${selectedDevice.model}`)
+      }
+
+      return response.packages
+    },
+    enabled: !!selectedDevice?.id,
+    gcTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 1000 * 60 * 2, // 2 minutes
+    retry: 1,
+  })
 }

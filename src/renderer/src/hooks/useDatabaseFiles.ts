@@ -1,47 +1,56 @@
 import type { DatabaseFile } from '@renderer/types'
-import { useEffect, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 
-export function useDatabaseFiles(selectedDevice, selectedApplication) {
-  const [databaseFiles, setDatabaseFiles] = useState<DatabaseFile[]>()
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState(null)
+interface Device {
+  id: string
+  deviceType: 'iphone' | 'android' | 'desktop' | 'iphone-device'
+}
 
-  useEffect(() => {
-    async function fetchDatabaseFiles() {
-      if (!selectedDevice?.id || !selectedApplication?.bundleId)
-        return
+interface Application {
+  bundleId: string
+  name: string
+}
 
-      setIsLoading(true)
-      setError(null)
+interface DatabaseFilesResponse {
+  success: boolean
+  files: DatabaseFile[]
+  error?: string
+}
 
-      try {
-        let fetchFunction = selectedDevice?.deviceType === 'iphone'
-          ? window.api.getIOSDatabaseFiles
-          : window.api.getAndroidDatabaseFiles
-
-        if (selectedDevice.deviceType === 'iphone-device') {
-          fetchFunction = window.api.getIOSDeviceDatabaseFiles
-        }
-
-        const response = await fetchFunction(selectedDevice.id, selectedApplication.bundleId)
-
-        if (response.success) {
-          setDatabaseFiles(response.files)
-        }
-        else {
-          setError(response.error || 'Failed to fetch database files')
-        }
+export function useDatabaseFiles(
+  selectedDevice: Device | null,
+  selectedApplication: Application | null,
+) {
+  return useQuery({
+    queryKey: ['databaseFiles', selectedDevice?.id, selectedApplication?.bundleId],
+    queryFn: async () => {
+      if (!selectedDevice?.id || !selectedApplication?.bundleId) {
+        throw new Error('Device or application not selected')
       }
-      catch (err: any) {
-        setError(err.message)
-      }
-      finally {
-        setIsLoading(false)
-      }
-    }
 
-    fetchDatabaseFiles()
-  }, [selectedDevice, selectedApplication])
+      let fetchFunction: (deviceId: string, bundleId: string) => Promise<DatabaseFilesResponse>
 
-  return { databaseFiles, isLoading, error }
+      if (selectedDevice.deviceType === 'iphone') {
+        fetchFunction = window.api.getIOSDatabaseFiles
+      }
+      else if (selectedDevice.deviceType === 'iphone-device') {
+        fetchFunction = window.api.getIOSDeviceDatabaseFiles
+      }
+      else {
+        fetchFunction = window.api.getAndroidDatabaseFiles
+      }
+
+      const response = await fetchFunction(selectedDevice.id, selectedApplication.bundleId)
+
+      if (!response.success) {
+        throw new Error(response.error || 'Failed to fetch database files')
+      }
+
+      return response.files
+    },
+    enabled: !!selectedDevice?.id && !!selectedApplication?.bundleId,
+    gcTime: 1000 * 60 * 5, // 5 minutes cache retention
+    staleTime: 1000 * 60, // 1 minute before refetch
+    retry: 1,
+  })
 }

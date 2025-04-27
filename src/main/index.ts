@@ -31,7 +31,7 @@ function createWindow(): void {
     show: true,
     autoHideMenuBar: true,
     backgroundColor: '#1a202c',
-    title: 'Flipio - database explorer for iOS and Android',
+    title: 'Flippio - database explorer for iOS and Android',
     // ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),

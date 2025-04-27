@@ -27,15 +27,17 @@ export function SubHeader() {
   const [isQueryModalOpen, setIsQueryModalOpen] = useState(false)
 
   const {
-    databaseFiles,
+    data: databaseFiles = [],
     isLoading,
   } = useDatabaseFiles(selectedDevice, selectedApplication)
 
   const isDBPulling = !!selectedApplication?.bundleId && !!selectedDevice?.id && isLoading
 
   const {
-    tables: databaseTables,
+    data: tablesData,
   } = useDatabaseTables(selectedDatabaseFile, selectedDevice)
+
+  const databaseTables = tablesData?.tables
 
   const handleDatabaseFileChange = useCallback((file) => {
     setSelectedDatabaseFile(file)
@@ -67,15 +69,6 @@ export function SubHeader() {
   }, [selectedDatabaseFile])
 
   const isNoDB = !databaseFiles?.length && !isDBPulling && selectedApplication?.bundleId && selectedDevice?.id
-
-  // const handleQueryExecution = useCallback(async (query) => {
-  //   const data = await window.api.executeQuery(query)
-  //   setTableData({
-  //     ...data,
-  //     customQuery: query,
-  //   })
-  //   console.log('handleQueryExecution__', query, data)
-  // }, [])
 
   const handleOpenDBFile = useCallback(() => {
     window.api.openFile().then((file) => {
