@@ -184,7 +184,7 @@ export function SubHeader() {
               value={selectedDatabaseTable}
               icon={<LuTable color="#47d5c9" />}
               onChange={handleTableChange}
-              isDisabled={!selectedDatabaseFile?.path || isDBPulling}
+              isDisabled={!selectedDatabaseFile?.path || !selectedApplication?.bundleId || isDBPulling}
             />
           </Box>
           <Button
