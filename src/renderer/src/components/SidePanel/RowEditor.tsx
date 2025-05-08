@@ -1,5 +1,5 @@
 import { Button, Flex } from '@chakra-ui/react'
-import { useCurrentDatabaseSelection, useTableData } from '@renderer/store'
+import { useCurrentDatabaseSelection, useCurrentDeviceSelection, useTableData } from '@renderer/store'
 import { useRowEditingStore } from '@renderer/store/useRowEditingStore'
 import { toaster } from '@renderer/ui/toaster'
 import { buildUniqueCondition } from '@renderer/utils'
@@ -24,8 +24,9 @@ export const RowEditor: React.FC<RowEditorProps> = ({
   setEditedData,
 }) => {
   const { selectedRow, setSelectedRow } = useRowEditingStore()
-  const { selectedDatabaseTable } = useCurrentDatabaseSelection()
   const tableData = useTableData(state => state.tableData)
+  const { selectedDevice } = useCurrentDeviceSelection()
+  const { selectedDatabaseFile, selectedDatabaseTable, pulledDatabaseFilePath } = useCurrentDatabaseSelection()
 
   const startEditing = useCallback(() => {
     if (selectedRow?.rowData) {
@@ -57,6 +58,20 @@ export const RowEditor: React.FC<RowEditorProps> = ({
 
       if (!result.success) {
         throw new Error(result.error || 'Failed to update row')
+      }
+
+      if (
+        selectedDatabaseFile
+        && selectedDevice
+        && selectedDatabaseFile.packageName
+        && selectedDatabaseFile?.deviceType === 'android'
+      ) {
+        await window.api.pushDatabaseFile(
+          selectedDevice.id,
+          pulledDatabaseFilePath,
+          selectedDatabaseFile.packageName,
+          selectedDatabaseFile.path,
+        )
       }
 
       setSelectedRow({
