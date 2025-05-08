@@ -23,6 +23,7 @@ export function SubHeader() {
   const setSelectedDatabaseFile = useCurrentDatabaseSelection(state => state.setSelectedDatabaseFile)
   const selectedDatabaseTable = useCurrentDatabaseSelection(state => state.selectedDatabaseTable)
   const setSelectedDatabaseTable = useCurrentDatabaseSelection(state => state.setSelectedDatabaseTable)
+  const setPulledPath = useCurrentDatabaseSelection(state => state.setPulledDatabaseFilePath)
 
   const [isQueryModalOpen, setIsQueryModalOpen] = useState(false)
 
@@ -38,6 +39,12 @@ export function SubHeader() {
     data: tablesData,
     refetch: refetchDatabaseTables,
   } = useDatabaseTables(selectedDatabaseFile, selectedDevice)
+
+  useEffect(() => {
+    if (tablesData?.pulledPath) {
+      setPulledPath(tablesData.pulledPath)
+    }
+  }, [tablesData])
 
   const databaseTables = tablesData?.tables
 
