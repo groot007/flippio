@@ -7,12 +7,13 @@ import {
   Text,
   useDisclosure,
 } from '@chakra-ui/react'
+import { useTableDataQuery } from '@renderer/hooks/useTableDataQuery'
 import { useCurrentDatabaseSelection, useTableData } from '@renderer/store'
 import { useRowEditingStore } from '@renderer/store/useRowEditingStore'
 import { useColorMode } from '@renderer/ui/color-mode'
 import { colorSchemeDark, colorSchemeLight, themeQuartz } from 'ag-grid-community'
 import { AgGridReact } from 'ag-grid-react'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { LuPlus } from 'react-icons/lu'
 import { AddNewRowModal } from './AddNewRowModal'
 
@@ -24,51 +25,23 @@ export function DataGrid() {
     tableData,
     setTableData,
   } = useTableData()
-  const { setSelectedRow, selectedRow } = useRowEditingStore()
+  const { setSelectedRow } = useRowEditingStore()
   const { selectedDatabaseTable } = useCurrentDatabaseSelection()
-  const [error, setError] = useState<string | null>(null)
   const gridTheme = themeQuartz.withPart(colorMode === 'dark' ? colorSchemeDark : colorSchemeLight)
   const gridRef = useRef<AgGridReact>(null)
   const { open, onOpen, onClose } = useDisclosure()
 
-  const fetchTableData = useCallback(async (tableName: string) => {
-    setError(null)
-
-    try {
-      const response = await window.api.getTableInfo(tableName)
-
-      if (!response.success) {
-        throw new Error(response.error || 'Failed to fetch table data')
-      }
-
-      if (response.columns && response.rows) {
-        setTableData({
-          columns: response.columns,
-          rows: response.rows,
-        })
-      }
-      else {
-        throw new Error('Invalid data structure received')
-      }
-    }
-    catch (error) {
-      console.error('Error fetching table data:', error)
-      setError(error instanceof Error ? error.message : 'Unknown error occurred')
-      setTableData({ columns: [], rows: [] })
-    }
-    finally {
-      setIsLoadingTableData(false)
-    }
-  }, [setIsLoadingTableData, setTableData])
+  const { data, error, refetch: refetchTableData } = useTableDataQuery(selectedDatabaseTable?.name || '')
 
   useEffect(() => {
-    if (selectedDatabaseTable?.name) {
-      fetchTableData(selectedDatabaseTable.name)
+    if (data) {
+      setTableData({
+        rows: data.rows,
+        columns: data.columns,
+      })
+      setIsLoadingTableData(false)
     }
-    else {
-      setTableData({ columns: [], rows: [] })
-    }
-  }, [selectedDatabaseTable, fetchTableData, selectedRow])
+  }, [data])
 
   const columnDefs = useMemo(() => {
     if (!tableData?.columns?.length)
@@ -118,7 +91,7 @@ export function DataGrid() {
     return (
       <Center height="calc(100vh - 140px)" flexDirection="column">
         <Text fontSize="xl" mb={4} color="red.500">Error loading data</Text>
-        <Text color="gray.500">{error}</Text>
+        <Text color="gray.500">{String(error)}</Text>
       </Center>
     )
   }
@@ -169,9 +142,7 @@ export function DataGrid() {
         isOpen={open}
         onClose={onClose}
         onRowCreated={() => {
-          if (selectedDatabaseTable?.name) {
-            fetchTableData(selectedDatabaseTable.name)
-          }
+          refetchTableData()
         }}
       />
     </Box>

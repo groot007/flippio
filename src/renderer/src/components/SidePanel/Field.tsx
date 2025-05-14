@@ -1,8 +1,7 @@
 import { Box, Input, Text } from '@chakra-ui/react'
-import { isJsonValue, parseJson } from '@renderer/utils'
+import { isJsonValue } from '@renderer/utils'
 import { useMemo } from 'react'
 import { JsonEditor } from './JsonEditor'
-import { JsonViewer } from './JsonViewer'
 
 export function FieldItem({ fieldKey, value, isEditing, onChange, isLoading, isDark }) {
   const isJson = useMemo(() => isJsonValue(value), [value])
@@ -25,7 +24,7 @@ export function FieldItem({ fieldKey, value, isEditing, onChange, isLoading, isD
                   <JsonEditor
                     value={value}
                     onChange={newValue => onChange(fieldKey, newValue)}
-                    isDisabled={isLoading}
+                    isEditing={isEditing}
                     isDark={isDark}
                   />
                 )
@@ -47,7 +46,12 @@ export function FieldItem({ fieldKey, value, isEditing, onChange, isLoading, isD
         : (
             isJson
               ? (
-                  <JsonViewer value={parseJson(value)} isDark={isDark} />
+                  <JsonEditor
+                    value={value}
+                    onChange={newValue => onChange(fieldKey, newValue)}
+                    isEditing={isEditing}
+                    isDark={isDark}
+                  />
                 )
               : (
                   <Text

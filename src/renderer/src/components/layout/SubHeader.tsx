@@ -8,7 +8,8 @@ import {
 } from '@chakra-ui/react'
 import { useDatabaseFiles } from '@renderer/hooks/useDatabaseFiles'
 import { useDatabaseTables } from '@renderer/hooks/useDatabaseTables'
-import { useCurrentDatabaseSelection, useCurrentDeviceSelection } from '@renderer/store'
+import { useTableDataQuery } from '@renderer/hooks/useTableDataQuery'
+import { useCurrentDatabaseSelection, useCurrentDeviceSelection, useTableData } from '@renderer/store'
 import { toaster } from '@renderer/ui/toaster'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { LuDatabase, LuFilter, LuFolderOpen, LuRefreshCcw, LuTable, LuUpload } from 'react-icons/lu'
@@ -18,7 +19,9 @@ import FLSelect from './../common/FLSelect'
 export function SubHeader() {
   const selectedDevice = useCurrentDeviceSelection(state => state.selectedDevice)
   const selectedApplication = useCurrentDeviceSelection(state => state.selectedApplication)
-
+  const {
+    setTableData,
+  } = useTableData()
   const selectedDatabaseFile = useCurrentDatabaseSelection(state => state.selectedDatabaseFile)
   const setSelectedDatabaseFile = useCurrentDatabaseSelection(state => state.setSelectedDatabaseFile)
   const selectedDatabaseTable = useCurrentDatabaseSelection(state => state.selectedDatabaseTable)
@@ -32,6 +35,17 @@ export function SubHeader() {
     isLoading,
     refetch: refetchDatabaseFiles,
   } = useDatabaseFiles(selectedDevice, selectedApplication)
+
+  const { data: tableData, refetch: refetchTable } = useTableDataQuery(selectedDatabaseTable?.name || '')
+
+  useEffect(() => {
+    if (tableData) {
+      setTableData({
+        rows: tableData.rows,
+        columns: tableData.columns,
+      })
+    }
+  }, [tableData])
 
   const isDBPulling = !!selectedApplication?.bundleId && !!selectedDevice?.id && isLoading
 
@@ -77,10 +91,8 @@ export function SubHeader() {
     }
   }, [selectedDatabaseFile])
 
-  const handleDBRefresh = useCallback(() => {
-    // TODO: Add another logic to update table without deselection
-    setSelectedDatabaseTable(null)
-    refetchDatabaseFiles()
+  const handleDBRefresh = useCallback(async () => {
+    await refetchDatabaseFiles()
       .then(() => {
         toaster.create({
           title: 'Success',
@@ -99,7 +111,8 @@ export function SubHeader() {
           isClosable: true,
         })
       })
-    refetchDatabaseTables()
+    await refetchDatabaseTables()
+    await refetchTable()
   }, [])
 
   const isNoDB = !databaseFiles?.length && !isDBPulling && selectedApplication?.bundleId && selectedDevice?.id

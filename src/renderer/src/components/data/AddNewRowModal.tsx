@@ -3,7 +3,7 @@ import {
   Stack,
   VStack,
 } from '@chakra-ui/react'
-import { useCurrentDatabaseSelection, useTableData } from '@renderer/store'
+import { useCurrentDatabaseSelection, useCurrentDeviceSelection, useTableData } from '@renderer/store'
 import { toaster } from '@renderer/ui/toaster'
 import { useCallback, useEffect, useState } from 'react'
 import FLModal from '../common/FLModal'
@@ -15,10 +15,12 @@ interface AddNewRowModalProps {
 }
 
 export const AddNewRowModal: React.FC<AddNewRowModalProps> = ({ isOpen, onClose, onRowCreated }) => {
-  const { selectedDatabaseTable } = useCurrentDatabaseSelection()
   const { tableData } = useTableData()
   const [newRowData, setNewRowData] = useState<Record<string, any>>({})
   const [isCreatingRow, setIsCreatingRow] = useState(false)
+  const { selectedDevice } = useCurrentDeviceSelection()
+
+  const { selectedDatabaseFile, selectedDatabaseTable, pulledDatabaseFilePath } = useCurrentDatabaseSelection()
 
   const initializeNewRowData = useCallback(() => {
     if (!tableData?.columns)
@@ -83,6 +85,20 @@ export const AddNewRowModal: React.FC<AddNewRowModalProps> = ({ isOpen, onClose,
 
       if (!result.success) {
         throw new Error(result.error || 'Failed to create new row')
+      }
+
+      if (
+        selectedDatabaseFile
+        && selectedDevice
+        && selectedDatabaseFile.packageName
+        && selectedDatabaseFile?.deviceType === 'android'
+      ) {
+        await window.api.pushDatabaseFile(
+          selectedDevice.id,
+          pulledDatabaseFilePath,
+          selectedDatabaseFile.packageName,
+          selectedDatabaseFile.path,
+        )
       }
 
       toaster.create({
