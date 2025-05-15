@@ -6,8 +6,7 @@
         "./*"
       ]
     },
-    "strict": true,
-    "noUseBeforeDefine": false
+    "strict": true
   },
   "include": [
     "**/*.ts",

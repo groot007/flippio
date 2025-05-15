@@ -1,17 +1,8 @@
 import { DatabaseItems } from '@/components/DatabaseItems'
 import ParallaxScrollView from '@/components/ParallaxScrollView'
-import { initDatabase } from '@/utils/database'
-import { useEffect } from 'react'
 import { Image, StyleSheet } from 'react-native'
 
 export default function HomeScreen() {
-  // Initialize the database when the component mounts
-  useEffect(() => {
-    initDatabase().catch((error) => {
-      console.error('Failed to initialize database:', error)
-    })
-  }, [])
-
   return (
     <ParallaxScrollView
       headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}

@@ -51,22 +51,22 @@ export async function initDatabase() {
 
     // Insert all mock data rows
     await db.runAsync(
-      `INSERT INTO items (title, description, created_at, json_data) VALUES (?, ?, ?, ?)`,
+      `INSERT INTO items (title, description, created_at) VALUES (?, ?, ?)`,
       ['Product 1', 'Advanced thermostat with energy-saving features', now],
     )
 
     await db.runAsync(
-      `INSERT INTO items (title, description, created_at, json_data) VALUES (?, ?, ?, ?)`,
+      `INSERT INTO items (title, description, created_at) VALUES (?, ?, ?)`,
       ['Product 2', 'Fresh and easy Mediterranean pasta salad', now - 86400000],
     )
 
     await db.runAsync(
-      `INSERT INTO items (title, description, created_at, json_data) VALUES (?, ?, ?, ?)`,
+      `INSERT INTO items (title, description, created_at) VALUES (?, ?, ?)`,
       ['Product 3', 'Intermediate Power Yoga Flow with Sarah', now - 172800000],
     )
 
     await db.runAsync(
-      `INSERT INTO items (title, description, created_at, json_data) VALUES (?, ?, ?, ?)`,
+      `INSERT INTO items (title, description, created_at) VALUES (?, ?, ?)`,
       ['Product 4', 'Version 3.2.1 with dark mode and improvements', now - 259200000],
     )
   }
@@ -91,7 +91,7 @@ export async function getItems() {
 
     // Parse JSON data for each item
     // @ts-expect-error types
-    return items.map(item => ({
+    return items?.map(item => ({
       ...item,
       jsonData: item.json_data ? JSON.parse(item.json_data) : null,
     }))

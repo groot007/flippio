@@ -41,6 +41,7 @@ export function DatabaseItems({ style }: DatabaseItemsProps) {
     }
     catch (error) {
       console.error('Error fetching items:', error)
+      setItems([])
     }
     finally {
       setLoading(false)
