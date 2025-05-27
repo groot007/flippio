@@ -182,7 +182,7 @@ export function SubHeader() {
         <HStack direction="row" gap={5}>
           {selectedDatabaseFile?.deviceType === 'desktop'
             ? (
-                <Text fontSize="sm">
+                <Text fontSize="x-small" maxWidth={300}>
                   {selectedDatabaseFile?.path}
                 </Text>
               )

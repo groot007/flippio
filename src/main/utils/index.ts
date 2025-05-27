@@ -24,13 +24,11 @@ export function parseSimulators(input) {
 }
 
 export function getBinariesPath() {
-  const IS_PROD = process.env.NODE_ENV === 'production'
   const { isPackaged } = app
 
-  const binariesPath
-    = IS_PROD && isPackaged
-      ? path.join(process.resourcesPath, './bin')
-      : path.join(app.getAppPath(), 'resources')
+  const binariesPath = isPackaged
+    ? path.join(process.resourcesPath, './bin')
+    : path.join(app.getAppPath(), 'resources')
 
   return binariesPath
 }

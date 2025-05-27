@@ -173,9 +173,11 @@ export const VirtualDeviceModal: React.FC<VirtualDeviceModalProps> = ({ isOpen, 
     )
   }, [isLaunching, handleLaunchDevice])
 
+  // Sort devices with booted ones first
+  const sortedDevices = (devices: VirtualDevice[]) => devices.sort((a, b) => a.status === 'running' ? -1 : b.status === 'running' ? 1 : 0)
+
   return (
     <HStack wrap="wrap" gap="4">
-
       <Dialog.Root
         key="top"
         open={isOpen}
@@ -210,7 +212,7 @@ export const VirtualDeviceModal: React.FC<VirtualDeviceModalProps> = ({ isOpen, 
 
                             {androidDevices.length > 0
                               ? (
-                                  androidDevices.map(device => (
+                                  sortedDevices(androidDevices).map(device => (
                                     <React.Fragment key={device.id}>
                                       {renderDeviceItem(device)}
                                     </React.Fragment>
@@ -238,7 +240,7 @@ export const VirtualDeviceModal: React.FC<VirtualDeviceModalProps> = ({ isOpen, 
 
                             {iosSimulators.length > 0
                               ? (
-                                  iosSimulators.map(device => (
+                                  sortedDevices(iosSimulators).map(device => (
                                     <React.Fragment key={device.id}>
                                       {renderDeviceItem(device)}
                                     </React.Fragment>

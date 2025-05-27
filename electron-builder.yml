@@ -1,5 +1,5 @@
 appId: com.koliastanis.flippio
-productName: flippio
+productName: Flippio
 directories:
   buildResources: build
 files:
@@ -15,6 +15,7 @@ files:
   - '!example_app/*'
 asarUnpack:
   - '**/*.node'
+  - 'resources/darwin/**'
 asar: true
 compression: maximum
 nsis:

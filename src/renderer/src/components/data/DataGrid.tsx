@@ -61,6 +61,7 @@ export function DataGrid() {
   const defaultColDef = useMemo(() => ({
     filter: true,
     flex: 1,
+    minWidth: 150,
   }), [])
 
   const onRowClicked = useCallback((event: Record<string, any>) => {
@@ -114,6 +115,7 @@ export function DataGrid() {
           rowSelection="single"
           onRowClicked={onRowClicked}
           pagination={true}
+          loading={false}
           paginationPageSize={20}
           suppressCellFocus={false}
         />
