@@ -10,12 +10,14 @@ import { ipcMain } from 'electron'
 
 import { getBinariesPath } from '../utils'
 
+const libdeviceToolsPath = path.join(getBinariesPath(), 'libimobiledevice', 'tools')
+
 const dbLocations = ['Documents', 'Library', 'Library/Caches', 'Library/Preferences']
 /**
  * Gets packages installed on a physical iOS device
  */
 async function getIOsDevicePackages(deviceId: string): Promise<{ name: string, bundleId: string }[]> {
-  const binaryPath = `${getBinariesPath()}/ideviceinstaller`
+  const binaryPath = `${libdeviceToolsPath}/ideviceinstaller`
 
   try {
     // Run ideviceinstaller to get user-installed apps
@@ -65,7 +67,7 @@ async function getIOsDevicePackages(deviceId: string): Promise<{ name: string, b
  */
 async function getIOsDeviceDbFiles(deviceId: string, packageName: string): Promise<any[]> {
   const databaseFiles = [] as any[]
-  const afcPath = `${getBinariesPath()}/afcclient`
+  const afcPath = `${libdeviceToolsPath}/afcclient`
   const tempDirPath = path.join(os.tmpdir(), 'flippio-db-temp')
   if (!fs.existsSync(tempDirPath)) {
     fs.mkdirSync(tempDirPath, { recursive: true })
@@ -156,7 +158,7 @@ export async function setupIOsDevice() {
   })
 
   ipcMain.handle('device:checkAppExistence', async (_event, deviceId: string, packageName: string) => {
-    const afcPath = `${getBinariesPath()}/afcclient`
+    const afcPath = `${libdeviceToolsPath}/afcclient`
     try {
       await promisify(execFile)(
         afcPath,

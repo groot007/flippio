@@ -23,6 +23,8 @@ interface Device {
 }
 // afcclient --appid <APP_BUNDLE_ID> get /Documents/database.db ~/Desktop/database.db
 
+const libdeviceToolsPath = path.join(getBinariesPath(), 'libimobiledevice', 'tools')
+
 export function setupIpcADB() {
   const tempDirPath = path.join(os.tmpdir(), 'flippio-db-temp')
   if (!fs.existsSync(tempDirPath)) {
@@ -54,13 +56,12 @@ export function setupIpcADB() {
   }
 
   const getIOsIds = async (): Promise<string[]> => {
-    const binaryPath = `${getBinariesPath()}/idevice_id`
+    const binaryPath = `${libdeviceToolsPath}/idevice_id`
 
     try {
       // Convert callback-based execFile to Promise
       const { stdout } = await promisify(execFile)(binaryPath, ['-l'])
       const uuids = stdout.trim().split('\n').filter(id => id.length > 0)
-      // console.log('iOS device UUIDs:', stdout)
       return uuids
     }
     catch (error) {
@@ -70,7 +71,7 @@ export function setupIpcADB() {
   }
 
   const getIOsDevices = async (): Promise<Device[]> => {
-    const binaryPath = `${getBinariesPath()}/ideviceinfo`
+    const binaryPath = `${libdeviceToolsPath}/ideviceinfo`
     const uuids = await getIOsIds()
     const devices: Device[] = []
 

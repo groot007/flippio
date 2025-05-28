@@ -41,6 +41,13 @@ export function DataGrid() {
       })
       setIsLoadingTableData(false)
     }
+    else {
+      setTableData({
+        rows: [],
+        columns: [],
+      })
+      setIsLoadingTableData(false)
+    }
   }, [data])
 
   const columnDefs = useMemo(() => {
