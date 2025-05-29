@@ -1,6 +1,7 @@
 import path from 'node:path'
 import process from 'node:process'
 import { app } from 'electron'
+import log from 'electron-log'
 
 export function parseSimulators(input) {
   // Split the input into lines and filter out any empty lines
@@ -29,6 +30,8 @@ export function getBinariesPath() {
   const binariesPath = isPackaged
     ? path.join(process.resourcesPath, './bin')
     : path.join(app.getAppPath(), 'resources')
+
+  log.info('Binaries path:', binariesPath)
 
   return binariesPath
 }

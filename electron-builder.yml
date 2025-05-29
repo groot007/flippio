@@ -12,10 +12,13 @@ files:
   - '!**/node_modules/*/{CHANGELOG.md,README.md,README,readme.md,readme}'
   - '!**/node_modules/*/{test,__tests__,tests,powered-test,example,examples}'
   - '!**/node_modules/*/{.bin,.editorconfig,.idea,.vscode}'
-  - '!example_app/*'
+  - '!example_app/**'
+extraResources:
+  - from: resources
+    to: bin
 asarUnpack:
   - '**/*.node'
-  - 'resources/darwin/**'
+  - 'resources/bin/**'
 asar: true
 compression: maximum
 nsis:
