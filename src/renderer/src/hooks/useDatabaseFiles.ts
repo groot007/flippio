@@ -49,8 +49,8 @@ export function useDatabaseFiles(
       return response.files
     },
     enabled: !!selectedDevice?.id && !!selectedApplication?.bundleId,
-    gcTime: 1000 * 60 * 5, // 5 minutes cache retention
-    staleTime: 1000 * 60, // 1 minute before refetch
+    gcTime: 0,
+    staleTime: 0,
     retry: 1,
   })
 }

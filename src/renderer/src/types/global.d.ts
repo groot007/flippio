@@ -16,8 +16,7 @@ declare global {
       getIOSDatabaseFiles: (deviceId: string, applicationId) => Promise<any>
       checkAppExistence: (deviceId: string, applicationId: string) => Promise<any>
       getIOSDeviceDatabaseFiles: (deviceId: string, applicationId) => Promise<any>
-      pullDatabaseFile: (deviceId: string, remotePath: string, localPath?: string) =>
-      Promise<any>
+
       pushDatabaseFile: (deviceId: string, localPath: string, packageName: string, remotePath: string) =>
       Promise<any>
       getTables: () => Promise<any>
@@ -28,9 +27,9 @@ declare global {
       getDevices: () => Promise<any>
       getIOSPackages: (deviceId: string) => Promise<any>
       getAndroidPackages: (deviceId: string) => Promise<any>
+      uploadIOSDbFile: (deviceId: string, packageName: string, localFilePath: string, remoteLocation: string) => Promise<any>
       getAndroidDatabaseFiles: (deviceId: string, applicationId: string) => Promise<any>
       getIOSDatabaseFiles: (deviceId: string, applicationId: string) => Promise<any>
-      pullDatabaseFile: (deviceId: string, remotePath: string, localPath?: string) => Promise<any>
       pushDatabaseFile: (deviceId: string, localPath: string, packageName: string, remotePath: string) => Promise<any>
       insertTableRow: (table: string, row: any) => Promise<any>
       deleteTableRow: (table: string, condition: any) => Promise<any>

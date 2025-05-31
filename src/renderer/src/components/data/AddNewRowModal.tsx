@@ -20,7 +20,7 @@ export const AddNewRowModal: React.FC<AddNewRowModalProps> = ({ isOpen, onClose,
   const [isCreatingRow, setIsCreatingRow] = useState(false)
   const { selectedDevice } = useCurrentDeviceSelection()
 
-  const { selectedDatabaseFile, selectedDatabaseTable, pulledDatabaseFilePath } = useCurrentDatabaseSelection()
+  const { selectedDatabaseFile, selectedDatabaseTable } = useCurrentDatabaseSelection()
 
   const initializeNewRowData = useCallback(() => {
     if (!tableData?.columns)
@@ -87,17 +87,25 @@ export const AddNewRowModal: React.FC<AddNewRowModalProps> = ({ isOpen, onClose,
         throw new Error(result.error || 'Failed to create new row')
       }
 
+      let uploadFileFunction = selectedDatabaseFile?.deviceType === 'android'
+        ? window.api.pushDatabaseFile
+        : null
+
+      if (selectedDatabaseFile?.deviceType === 'iphone-device') {
+        uploadFileFunction = window.api.uploadIOSDbFile
+      }
+
       if (
         selectedDatabaseFile
         && selectedDevice
         && selectedDatabaseFile.packageName
-        && selectedDatabaseFile?.deviceType === 'android'
+        && uploadFileFunction
       ) {
-        await window.api.pushDatabaseFile(
+        await uploadFileFunction(
           selectedDevice.id,
-          pulledDatabaseFilePath,
-          selectedDatabaseFile.packageName,
           selectedDatabaseFile.path,
+          selectedDatabaseFile.packageName,
+          selectedDatabaseFile.remotePath,
         )
       }
 

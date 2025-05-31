@@ -1,6 +1,7 @@
 import { exec } from 'node:child_process'
 import util from 'node:util'
 import { ipcMain } from 'electron'
+import log from 'electron-log'
 
 const execPromise = util.promisify(exec)
 
@@ -31,7 +32,7 @@ export async function getAndroidEmulators() {
     return { success: true, emulators }
   }
   catch (error) {
-    console.error('Error getting Android emulators:', error)
+    log.error('Error getting Android emulators:', error)
     return { success: false, error: 'Failed to retrieve Android emulators' }
   }
 }
@@ -84,7 +85,7 @@ export async function getIOSSimulators() {
     return { success: true, simulators }
   }
   catch (error) {
-    console.error('Error getting iOS simulators:', error)
+    log.error('Error getting iOS simulators:', error)
     return { success: false, error: 'Failed to retrieve iOS simulators' }
   }
 }
@@ -95,7 +96,7 @@ export async function launchAndroidEmulator(emulatorId: string) {
     // Launch the emulator in the background
     const child = exec(`emulator -avd "${emulatorId}"`, (error) => {
       if (error) {
-        console.error(`Error launching Android emulator: ${error}`)
+        log.error(`Error launching Android emulator: ${error}`)
       }
     })
 
@@ -104,7 +105,7 @@ export async function launchAndroidEmulator(emulatorId: string) {
     return { success: true }
   }
   catch (error) {
-    console.error('Error launching Android emulator:', error)
+    log.error('Error launching Android emulator:', error)
     return { success: false, error: 'Failed to launch Android emulator' }
   }
 }
@@ -129,7 +130,7 @@ export async function launchIOSSimulator(simulatorId: string) {
     return { success: true }
   }
   catch (error) {
-    console.error('Error launching iOS simulator:', error)
+    log.error('Error launching iOS simulator:', error)
     return { success: false, error: 'Failed to launch iOS simulator' }
   }
 }

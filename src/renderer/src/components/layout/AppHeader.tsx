@@ -64,12 +64,15 @@ function AppHeader() {
   } = useApplications(selectedDevice)
 
   const devicesSelectOptions = useMemo(() =>
-    devicesList.map(device => ({
-      label: device.model,
-      value: device.id,
-      description: device.deviceType === 'iphone' ? 'iOS' : 'Android',
-      ...device,
-    })), [devicesList])
+    devicesList.map((device) => {
+      const osVersion = device.deviceType === 'iphone' ? device.iosVersion : ''
+      return {
+        label: `${device.model} ${osVersion}`,
+        value: device.id,
+        description: device.deviceType === 'iphone' ? 'iOS' : 'Android',
+        ...device,
+      }
+    }), [devicesList])
 
   const applicationSelectOptions = useMemo(() => {
     return applicationsList.map(app => ({

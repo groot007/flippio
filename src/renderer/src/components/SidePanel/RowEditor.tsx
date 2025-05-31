@@ -1,4 +1,5 @@
 import { Button, Flex } from '@chakra-ui/react'
+import { useTableDataQuery } from '@renderer/hooks/useTableDataQuery'
 import { useCurrentDatabaseSelection, useCurrentDeviceSelection, useTableData } from '@renderer/store'
 import { useRowEditingStore } from '@renderer/store/useRowEditingStore'
 import { toaster } from '@renderer/ui/toaster'
@@ -26,7 +27,8 @@ export const RowEditor: React.FC<RowEditorProps> = ({
   const { selectedRow, setSelectedRow } = useRowEditingStore()
   const tableData = useTableData(state => state.tableData)
   const { selectedDevice } = useCurrentDeviceSelection()
-  const { selectedDatabaseFile, selectedDatabaseTable, pulledDatabaseFilePath } = useCurrentDatabaseSelection()
+  const { selectedDatabaseFile, selectedDatabaseTable } = useCurrentDatabaseSelection()
+  const { refetch: refetchTable } = useTableDataQuery(selectedDatabaseTable?.name || '')
 
   const startEditing = useCallback(() => {
     if (selectedRow?.rowData) {
@@ -60,17 +62,25 @@ export const RowEditor: React.FC<RowEditorProps> = ({
         throw new Error(result.error || 'Failed to update row')
       }
 
+      let uploadFileFunction = selectedDatabaseFile?.deviceType === 'android'
+        ? window.api.pushDatabaseFile
+        : null
+
+      if (selectedDatabaseFile?.deviceType === 'iphone-device') {
+        uploadFileFunction = window.api.uploadIOSDbFile
+      }
+
       if (
         selectedDatabaseFile
         && selectedDevice
         && selectedDatabaseFile.packageName
-        && selectedDatabaseFile?.deviceType === 'android'
+        && uploadFileFunction
       ) {
-        await window.api.pushDatabaseFile(
+        await uploadFileFunction(
           selectedDevice.id,
-          pulledDatabaseFilePath,
-          selectedDatabaseFile.packageName,
           selectedDatabaseFile.path,
+          selectedDatabaseFile.packageName,
+          selectedDatabaseFile.remotePath,
         )
       }
 
@@ -78,6 +88,7 @@ export const RowEditor: React.FC<RowEditorProps> = ({
         rowData: editedData,
         originalData: { ...editedData },
       })
+      refetchTable()
       setIsEditing(false)
 
       toaster.create({
