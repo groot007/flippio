@@ -26,7 +26,6 @@ export function SubHeader() {
   const setSelectedDatabaseFile = useCurrentDatabaseSelection(state => state.setSelectedDatabaseFile)
   const selectedDatabaseTable = useCurrentDatabaseSelection(state => state.selectedDatabaseTable)
   const setSelectedDatabaseTable = useCurrentDatabaseSelection(state => state.setSelectedDatabaseTable)
-  const setPulledPath = useCurrentDatabaseSelection(state => state.setPulledDatabaseFilePath)
 
   const [isQueryModalOpen, setIsQueryModalOpen] = useState(false)
 
@@ -52,13 +51,20 @@ export function SubHeader() {
   const {
     data: tablesData,
     refetch: refetchDatabaseTables,
+    isError,
   } = useDatabaseTables(selectedDatabaseFile, selectedDevice)
 
   useEffect(() => {
-    if (tablesData?.pulledPath) {
-      setPulledPath(tablesData.pulledPath)
+    if (isError) {
+      toaster.create({
+        title: 'Error fetching database tables',
+        description: 'Failed to fetch tables for the selected database file.',
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      })
     }
-  }, [tablesData])
+  }, [isError])
 
   const databaseTables = tablesData?.tables
 
@@ -126,6 +132,7 @@ export function SubHeader() {
           filename: filePath.split('/').pop() || '',
           deviceType: 'desktop',
           packageName: '',
+          remotePath: filePath,
         })
       }
     })
@@ -144,7 +151,7 @@ export function SubHeader() {
           extensions: ['db', 'sqlite'],
         },
       ],
-      dbFilePath: selectedDatabaseFile?.path,
+      dbFilePath: selectedDatabaseFile.path,
     }).then((savedFilePath) => {
       if (!savedFilePath) {
         return
@@ -154,7 +161,14 @@ export function SubHeader() {
         description: `Database file exported successfully to ${savedFilePath}`,
         status: 'success',
       })
-    })
+    }).catch((error) => {
+      toaster.create({
+        title: 'Error exporting database',
+        description: error.message,
+        status: 'error',
+      })
+    },
+    )
   }, [selectedDatabaseFile])
 
   return (

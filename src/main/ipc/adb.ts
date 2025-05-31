@@ -1,155 +1,85 @@
-import { exec, execFile } from 'node:child_process'
+import { exec } from 'node:child_process'
 import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 
-import { promisify } from 'node:util'
 import { ipcMain } from 'electron'
-import { getBinariesPath, parseSimulators } from './../utils'
+import log from 'electron-log'
+import { getIOsDevices, getIOsSimulators } from './ios'
 
 interface DatabaseFile {
   path: string
   packageName: string
   filename: string
   location: string
+  remotePath?: string
   deviceType: 'android' | 'iphone' | 'desktop'
 }
 
-interface Device {
-  id: string
-  name: string
-  model: string
-  deviceType: string
-}
-// afcclient --appid <APP_BUNDLE_ID> get /Documents/database.db ~/Desktop/database.db
+const tempDirPath = path.join(os.tmpdir(), 'flippio-db-temp')
 
-const libdeviceToolsPath = path.join(getBinariesPath(), 'libimobiledevice', 'tools')
+async function pullAndroidDBFiles(packageName, deviceId, remotePath, localPath = '', location) {
+  try {
+    const filename = path.basename(remotePath)
+
+    // If no local path provided, use a temp path
+    if (!localPath) {
+      localPath = path.join(tempDirPath, `${filename}`)
+      if (await fs.existsSync(tempDirPath)) {
+        // remove the directory if it exists
+        await fs.rmSync(tempDirPath, { recursive: true, force: true })
+        await fs.mkdirSync(tempDirPath, { recursive: true })
+      }
+    }
+
+    // Use run-as to copy the database file to the local machine
+    await new Promise<void>((resolve, reject) => {
+      // Use exec-out to avoid text encoding issues with binary data
+      const adminCmd = location?.admin ? `run-as ${packageName}` : ''
+      const cmd = `adb -s ${deviceId} exec-out ${adminCmd} cat ${remotePath} > ${localPath}`
+      exec(cmd, (error, _stdout, stderr) => {
+        if (error) {
+          reject(error)
+        }
+        else if (stderr && !stderr.includes('pulled')) {
+          reject(new Error(stderr))
+        }
+        else {
+          resolve()
+        }
+      })
+    })
+
+    // Store the origin information with the file
+    const metadataPath = `${localPath}.meta.json`
+    const metadata = {
+      deviceId,
+      packageName,
+      remotePath,
+      timestamp: new Date().toISOString(),
+    }
+    fs.writeFileSync(metadataPath, JSON.stringify(metadata, null, 2))
+
+    return {
+      success: true,
+      path: localPath,
+      metadata: {
+        deviceId,
+        packageName,
+        remotePath,
+      },
+    }
+  }
+  catch (error: any) {
+    log.error('Error pulling android database file', error)
+    return { success: false, error: error.message }
+  }
+}
 
 export function setupIpcADB() {
-  const tempDirPath = path.join(os.tmpdir(), 'flippio-db-temp')
   if (!fs.existsSync(tempDirPath)) {
     fs.mkdirSync(tempDirPath, { recursive: true })
   }
-
-  const getIOsSimulators = async () => {
-    try {
-      const deviceList = await new Promise<string>((resolve, reject) => {
-        exec('xcrun simctl list devices | grep Booted', (error, stdout, stderr) => {
-          if (error) {
-            reject(error)
-          }
-          else if (stderr) {
-            reject(new Error(stderr))
-          }
-          else {
-            resolve(stdout)
-          }
-        })
-      })
-      const devices = parseSimulators(deviceList)
-      return devices
-    }
-    catch (error: any) {
-      console.error('Error getting iOS devices', error)
-      return []
-    }
-  }
-
-  const getIOsIds = async (): Promise<string[]> => {
-    const binaryPath = `${libdeviceToolsPath}/idevice_id`
-
-    try {
-      // Convert callback-based execFile to Promise
-      const { stdout } = await promisify(execFile)(binaryPath, ['-l'])
-      const uuids = stdout.trim().split('\n').filter(id => id.length > 0)
-      return uuids
-    }
-    catch (error) {
-      console.error('Error listing iOS devices:', error)
-      return [] // Return empty array on error
-    }
-  }
-
-  const getIOsDevices = async (): Promise<Device[]> => {
-    const binaryPath = `${libdeviceToolsPath}/ideviceinfo`
-    const uuids = await getIOsIds()
-    const devices: Device[] = []
-
-    if (uuids.length === 0) {
-      return devices // Early return if no devices found
-    }
-
-    // Process each device sequentially with proper promise handling
-    try {
-      // Map each UUID to a Promise that resolves with device info
-      const devicePromises = uuids.map(async (uuid) => {
-        try {
-          // IMPORTANT: Fix argument format (-u and uuid as separate items)
-          const { stdout } = await promisify(execFile)(binaryPath, ['-u', uuid])
-
-          const deviceInfo: Record<string, string> = {
-            id: uuid,
-            deviceType: 'iphone-device',
-          }
-
-          stdout.split('\n').forEach((line) => {
-            if (line.includes(':')) {
-              const [key, value] = line.split(':').map(str => str.trim())
-              deviceInfo[key] = value
-            }
-          })
-
-          deviceInfo.model = deviceInfo.DeviceName || deviceInfo.Model || 'Unknown'
-
-          return deviceInfo
-        }
-        catch (error) {
-          console.error(`Error getting device info for ${uuid}:`, error)
-          // Return partial info on error
-          return { id: uuid, deviceType: 'iphone-device', error: (error as Error).message }
-        }
-      })
-
-      // Wait for all device info to be collected
-      const deviceInfoResults = await Promise.all(devicePromises)
-      // @ts-expect-error expanded deviceInfoResults
-      return deviceInfoResults
-    }
-    catch (error) {
-      console.error('Error processing iOS devices:', error)
-      return devices
-    }
-  }
-
-  ipcMain.handle('device:getIOsDevices', async () => {
-    return getIOsDevices()
-  })
-
-  ipcMain.handle('device:getIosPackages', async (_event, deviceId) => {
-    try {
-      const packages = await new Promise<string>((resolve, reject) => {
-        exec(`xcrun simctl listapps ${deviceId} | plutil -convert json -o - -- - | jq '[to_entries | .[] | {name: .value.CFBundleDisplayName, bundleId: .key}]'`, (error, stdout, stderr) => {
-          if (error) {
-            reject(error)
-          }
-          else if (stderr) {
-            reject(new Error(stderr))
-          }
-          else {
-            resolve(stdout)
-          }
-        })
-      })
-
-      const parsedPackages = JSON.parse(packages)
-
-      return { success: true, packages: parsedPackages }
-    }
-    catch (error: any) {
-      console.error('Error getting IOs packages', error)
-      return { success: false, error: error.message }
-    }
-  })
 
   // find "$(xcrun simctl get_app_container booted com.abbott.adc.polaris.dev data)" -name "*.db"
 
@@ -208,7 +138,7 @@ export function setupIpcADB() {
       return { success: true, devices: allDevices }
     }
     catch (error: any) {
-      console.error('Error getting Android devices', error)
+      log.error('Error getting Android devices', error)
       return { success: false, error: error.message }
     }
   })
@@ -247,70 +177,7 @@ export function setupIpcADB() {
       return { success: true, packages }
     }
     catch (error: any) {
-      console.error('Error getting Android packages', error)
-      return { success: false, error: error.message }
-    }
-  })
-
-  // Get database files for a specific package
-  ipcMain.handle('adb:getIOSDatabaseFiles', async (_event, deviceId, packageName) => {
-    try {
-      const databaseFiles: DatabaseFile[] = []
-
-      // Get the app's data container path
-      const containerPathCmd = `xcrun simctl get_app_container ${deviceId} ${packageName} data`
-      const containerPath = await new Promise<string>((resolve, reject) => {
-        exec(containerPathCmd, (error, stdout, stderr) => {
-          if (error) {
-            reject(error)
-          }
-          else if (stderr) {
-            reject(new Error(stderr))
-          }
-          else {
-            resolve(stdout.trim())
-          }
-        })
-      })
-
-      // Search for database files
-      const fileExtensions = ['db', 'sqlite', 'sqlite3', 'sqlitedb']
-      const findPattern = fileExtensions.map(ext => `-name "*.${ext}"`).join(' -o ')
-      const findCmd = `find "${containerPath}" ${findPattern} 2>/dev/null`
-
-      const filesOutput = await new Promise<string>((resolve, reject) => {
-        exec(findCmd, (error, stdout, _stderr) => {
-          if (error) {
-            reject(error)
-          }
-          else {
-            // We don't reject on stderr since 'find' might have permission warnings
-            resolve(stdout)
-          }
-        })
-      })
-
-      // Process found files
-      const filePaths = filesOutput.split('\n').filter(line => line.trim().length > 0)
-
-      filePaths.forEach((filePath) => {
-        const filename = path.basename(filePath)
-        // Determine relative location from container path
-        const relativePath = filePath.replace(containerPath, '').split('/').filter(p => p).shift() || 'root'
-
-        databaseFiles.push({
-          path: filePath,
-          packageName,
-          filename,
-          location: relativePath,
-          deviceType: 'iphone',
-        })
-      })
-
-      return { success: true, files: databaseFiles }
-    }
-    catch (error: any) {
-      console.error('Error getting iOS database files', error)
+      log.error('Error getting Android packages', error)
       return { success: false, error: error.message }
     }
   })
@@ -321,18 +188,20 @@ export function setupIpcADB() {
       const databaseFiles: DatabaseFile[] = []
 
       // Try to list database files in various common locations
-      const locations = [
-        'databases',
-        'files',
-        'shared_prefs',
-        'app_databases',
-        'app_db',
-      ]
+      const locations = {
+        '/data/data/': {
+          admin: true, // This location requires root or run-as access
+        },
+        '/sdcard/Android/data/': {
+          admin: false,
+        },
+      }
 
-      for (const location of locations) {
+      await Promise.all(Object.entries(locations).map(async ([location, options]) => {
         try {
           // Use run-as to list files in the package's data directory
-          const cmd = `adb -s ${deviceId} shell run-as ${packageName} find /data/data/${packageName}/${location} -name "*.db" -o -name "*.sqlite" -o -name "*.sqlite3" 2>/dev/null`
+          const adminCmd = options.admin ? `run-as ${packageName}` : ''
+          const cmd = `adb -s ${deviceId} shell ${adminCmd} find ${location}${packageName}/ -name "*.db" -o -name "*.sqlite" -o -name "*.sqlite3" 2>/dev/null`
 
           const filesOutput = await new Promise<string>((resolve, _reject) => {
             exec(cmd, (_error, stdout, _stderr) => {
@@ -345,84 +214,32 @@ export function setupIpcADB() {
           // Process found files
           const filePaths = filesOutput.split('\n').filter(line => line.trim().length > 0)
 
-          filePaths.forEach((filePath) => {
+          await Promise.all(filePaths.map(async (filePath) => {
             const filename = path.basename(filePath)
 
+            const pulledFileData = await pullAndroidDBFiles(packageName, deviceId, filePath, '', location)
+
             databaseFiles.push({
-              path: filePath,
+              path: pulledFileData.path || filePath,
               packageName,
               filename,
               location,
+              remotePath: filePath,
               deviceType: 'android',
             })
-          })
+          }),
+          )
         }
         catch (err) {
           // Silently fail for individual locations - we'll still try others
-          console.error(`Could not access ${location} for ${packageName}:`, err)
+          log.error(`Could not access ${location} for ${packageName}:`, err)
         }
-      }
+      }))
 
       return { success: true, files: databaseFiles }
     }
     catch (error: any) {
-      console.error('Error getting database files', error)
-      return { success: false, error: error.message }
-    }
-  })
-
-  // Updated to use temp directory by default
-  ipcMain.handle('adb:pullDatabaseFile', async (_event, deviceId, remotePath, localPath = '') => {
-    try {
-      // Extract package name and file path
-      const parts = remotePath.split('/')
-      const packageName = parts[3] // /data/data/PACKAGE_NAME/...
-      const filename = path.basename(remotePath)
-
-      // If no local path provided, use a temp path
-      if (!localPath) {
-        localPath = path.join(tempDirPath, `${filename}`)
-      }
-
-      // Use run-as to copy the database file to the local machine
-      await new Promise<void>((resolve, reject) => {
-        // Use exec-out to avoid text encoding issues with binary data
-        const cmd = `adb -s ${deviceId} exec-out run-as ${packageName} cat ${remotePath} > ${localPath}`
-        exec(cmd, (error, _stdout, stderr) => {
-          if (error) {
-            reject(error)
-          }
-          else if (stderr && !stderr.includes('pulled')) {
-            reject(new Error(stderr))
-          }
-          else {
-            resolve()
-          }
-        })
-      })
-
-      // Store the origin information with the file
-      const metadataPath = `${localPath}.meta.json`
-      const metadata = {
-        deviceId,
-        packageName,
-        remotePath,
-        timestamp: new Date().toISOString(),
-      }
-      fs.writeFileSync(metadataPath, JSON.stringify(metadata, null, 2))
-
-      return {
-        success: true,
-        path: localPath,
-        metadata: {
-          deviceId,
-          packageName,
-          remotePath,
-        },
-      }
-    }
-    catch (error: any) {
-      console.error('Error pulling database file', error)
+      log.error('Error getting database files', error)
       return { success: false, error: error.message }
     }
   })
@@ -474,7 +291,7 @@ export function setupIpcADB() {
       }
     }
     catch (error: any) {
-      console.error('Error pushing database file', error)
+      log.error('Error pushing database file', error)
       return {
         success: false,
         error: error.message,

@@ -16,21 +16,7 @@ export function useDatabaseTables(
         throw new Error('Database file or device not selected')
       }
 
-      let dbPath = selectedDatabaseFile.path
-
-      if (selectedDatabaseFile.deviceType === 'android') {
-        const pull = await window.api.pullDatabaseFile(
-          selectedDevice.id,
-          selectedDatabaseFile.path,
-        )
-
-        if (!pull.success) {
-          throw new Error(pull.error || 'Failed to pull database file')
-        }
-
-        dbPath = pull.path
-      }
-
+      const dbPath = selectedDatabaseFile.path
       await window.api.openDatabase(dbPath)
 
       const response = await window.api.getTables()
@@ -41,7 +27,6 @@ export function useDatabaseTables(
 
       return {
         tables: response.tables,
-        pulledPath: dbPath,
       }
     },
     enabled: !!selectedDatabaseFile?.path && !!selectedDevice?.id,

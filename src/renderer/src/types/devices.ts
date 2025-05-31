@@ -10,6 +10,7 @@ export interface DatabaseFile {
   path: string
   filename: string
   packageName: string
+  remotePath: string
   deviceType?: DeviceType
 }
 

@@ -18,8 +18,8 @@ const api = {
     ipcRenderer.invoke('adb:getIOSDatabaseFiles', deviceId, applicationId),
   getIOSDeviceDatabaseFiles: (deviceId: string, applicationId) =>
     ipcRenderer.invoke('device:getIOSDeviceDatabaseFiles', deviceId, applicationId),
-  pullDatabaseFile: (deviceId: string, remotePath: string, localPath: string = '') =>
-    ipcRenderer.invoke('adb:pullDatabaseFile', deviceId, remotePath, localPath),
+  uploadIOSDbFile: (deviceId: string, packageName: string, localFilePath: string, remoteLocation: string) =>
+    ipcRenderer.invoke('device:uploadIOSDbFile', deviceId, packageName, localFilePath, remoteLocation),
   pushDatabaseFile: (deviceId: string, localPath: string, packageName: string, remotePath: string) =>
     ipcRenderer.invoke('adb:pushDatabaseFile', deviceId, localPath, packageName, remotePath),
   getTables: () => ipcRenderer.invoke('db:getTables'),

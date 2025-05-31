@@ -2,6 +2,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import process from 'node:process'
 import { app, ipcMain } from 'electron'
+import log from 'electron-log'
 import sqlite3 from 'sqlite3'
 
 export function setupIpcDatabase() {
@@ -67,13 +68,13 @@ export function setupIpcDatabase() {
               }
               catch (fileErr) {
                 // Skip errors for individual files
-                console.error(`Error checking file ${fullPath}:`, fileErr)
+                log.error(`Error checking file ${fullPath}:`, fileErr)
               }
             }
           }
         }
         catch (dirErr) {
-          console.error(`Error scanning directory ${dir}:`, dirErr)
+          log.error(`Error scanning directory ${dir}:`, dirErr)
           // Continue with next directory
         }
       }
@@ -81,7 +82,7 @@ export function setupIpcDatabase() {
       return { success: true, files: dbFiles }
     }
     catch (error: any) {
-      console.error('Error scanning for database files', error)
+      log.error('Error scanning for database files', error)
       return { success: false, error: error.message }
     }
   })
@@ -104,7 +105,7 @@ export function setupIpcDatabase() {
       db = await new Promise<sqlite3.Database>((resolve, reject) => {
         const database = new sqlite3.Database(filePath, (err) => {
           if (err) {
-            console.error('Could not connect to database', err)
+            log.error('Could not connect to database', err)
             reject(err)
           }
           else {
@@ -116,7 +117,7 @@ export function setupIpcDatabase() {
       return { success: true, path: filePath }
     }
     catch (error: any) {
-      console.error('Error opening database', error)
+      log.error('Error opening database', error)
       return { success: false, error: error.message }
     }
   })
@@ -137,7 +138,7 @@ export function setupIpcDatabase() {
       return { success: true, tables }
     }
     catch (error: any) {
-      console.error('Error getting tables', error)
+      log.error('Error getting tables', error)
       return { success: false, error: error.message }
     }
   })
@@ -168,7 +169,7 @@ export function setupIpcDatabase() {
       return { success: true, columns, rows }
     }
     catch (error: any) {
-      console.error(`Error getting data for table ${tableName}`, error)
+      log.error(`Error getting data for table ${tableName}`, error)
       return { success: false, error: error.message }
     }
   })
@@ -211,7 +212,7 @@ export function setupIpcDatabase() {
       }
     }
     catch (error: any) {
-      console.error('Error getting database info', error)
+      log.error('Error getting database info', error)
       return { success: false, error: error.message }
     }
   })
@@ -239,7 +240,7 @@ export function setupIpcDatabase() {
       return { success: true, ...result }
     }
     catch (error: any) {
-      console.error('Error updating row', error)
+      log.error('Error updating row', error)
       return { success: false, error: error.message }
     }
   })
@@ -266,7 +267,7 @@ export function setupIpcDatabase() {
       return { success: true, ...result }
     }
     catch (error: any) {
-      console.error('Error inserting row', error)
+      log.error('Error inserting row', error)
       return { success: false, error: error.message }
     }
   })
@@ -289,7 +290,7 @@ export function setupIpcDatabase() {
       return { success: true, ...result }
     }
     catch (error: any) {
-      console.error('Error deleting row', error)
+      log.error('Error deleting row', error)
       return { success: false, error: error.message }
     }
   })
@@ -329,7 +330,7 @@ export function setupIpcDatabase() {
       }
     }
     catch (error: any) {
-      console.error('Error executing query', error)
+      log.error('Error executing query', error)
       return { success: false, error: error.message }
     }
   })
