@@ -89,6 +89,7 @@ export const DragAndDropProvider: React.FC<DragAndDropProviderProps> = ({ childr
       filename: file.name,
       deviceType: 'desktop',
       packageName: '',
+      remotePath: filePath,
     })
     toaster.create({
       title: 'Database opened',
