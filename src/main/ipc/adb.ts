@@ -34,15 +34,17 @@ async function pullAndroidDBFiles(packageName, deviceId, remotePath, localPath =
 
     // Use run-as to copy the database file to the local machine
     await new Promise<void>((resolve, reject) => {
-      // Use exec-out to avoid text encoding issues with binary data
-      const adminCmd = location?.admin ? `run-as ${packageName}` : ''
-      const cmd = `adb -s ${deviceId} exec-out ${adminCmd} cat ${remotePath} > ${localPath}`
-      exec(cmd, (error, _stdout, stderr) => {
+      let callCmd = `adb -s ${deviceId} exec-out run-as ${packageName} cat ${remotePath} > ${localPath}`
+
+      if (location.admin === false) {
+        // If not admin, we need to pull the file instead
+        callCmd = `adb -s ${deviceId} pull ${remotePath} ${localPath}`
+      }
+
+      log.info(`Running command pull: ${callCmd}`)
+      exec(callCmd, (error, _stdout, _stderr) => {
         if (error) {
           reject(error)
-        }
-        else if (stderr && !stderr.includes('pulled')) {
-          reject(new Error(stderr))
         }
         else {
           resolve()
@@ -203,6 +205,8 @@ export function setupIpcADB() {
           const adminCmd = options.admin ? `run-as ${packageName}` : ''
           const cmd = `adb -s ${deviceId} shell ${adminCmd} find ${location}${packageName}/ -name "*.db" -o -name "*.sqlite" -o -name "*.sqlite3" 2>/dev/null`
 
+          log.info(`Running command: ${cmd}`)
+
           const filesOutput = await new Promise<string>((resolve, _reject) => {
             exec(cmd, (_error, stdout, _stderr) => {
               // We don't reject here because some errors are expected
@@ -214,21 +218,24 @@ export function setupIpcADB() {
           // Process found files
           const filePaths = filesOutput.split('\n').filter(line => line.trim().length > 0)
 
-          await Promise.all(filePaths.map(async (filePath) => {
-            const filename = path.basename(filePath)
+          const pulledFiles = await Promise.all(
+            filePaths.map(async (filePath) => {
+              const filename = path.basename(filePath)
 
-            const pulledFileData = await pullAndroidDBFiles(packageName, deviceId, filePath, '', location)
+              const pulledFileData = await pullAndroidDBFiles(packageName, deviceId, filePath, '', location)
 
-            databaseFiles.push({
-              path: pulledFileData.path || filePath,
-              packageName,
-              filename,
-              location,
-              remotePath: filePath,
-              deviceType: 'android',
-            })
-          }),
+              return {
+                path: pulledFileData.path || filePath,
+                packageName,
+                filename,
+                location,
+                remotePath: filePath,
+                deviceType: 'android',
+              } as DatabaseFile
+            }),
           )
+
+          databaseFiles.push(...pulledFiles)
         }
         catch (err) {
           // Silently fail for individual locations - we'll still try others
@@ -250,6 +257,21 @@ export function setupIpcADB() {
       // First, push to /data/local/tmp which is accessible via adb
       const filename = path.basename(localPath)
       const tmpPath = `/data/local/tmp/${filename}`
+
+      if (remotePath.includes('sdcard') || remotePath.includes('external')) {
+        await new Promise<void>((resolve, reject) => {
+          exec(`adb -s ${deviceId} push ${localPath} ${remotePath}`, (error, _stdout, _stderr) => {
+            if (error) {
+              reject(error)
+            }
+            else {
+              resolve()
+            }
+          })
+        })
+
+        return
+      }
 
       // Push the file to device tmp directory
       await new Promise<void>((resolve, reject) => {
