@@ -13,6 +13,9 @@ files:
   - '!**/node_modules/*/{test,__tests__,tests,powered-test,example,examples}'
   - '!**/node_modules/*/{.bin,.editorconfig,.idea,.vscode}'
   - '!example_app/**'
+  - '!scripts/**'
+  - '!{.github,docs}/**'
+  - '!coverage/**'
 extraResources:
   - from: resources
     to: bin
@@ -31,8 +34,6 @@ mac:
   hardenedRuntime: true
   gatekeeperAssess: false
   extendInfo:
-    - NSCameraUsageDescription: Application requests access to the device's camera.
-    - NSMicrophoneUsageDescription: Application requests access to the device's microphone.
     - NSDocumentsFolderUsageDescription: Application requests access to the user's Documents folder.
     - NSDownloadsFolderUsageDescription: Application requests access to the user's Downloads folder.
   notarize: true
