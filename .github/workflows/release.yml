@@ -46,6 +46,7 @@ jobs:
       - name: Run release
         run: |
           export CSC_LINK=mac_cert.p12
+          export GH_TOKEN=${{ secrets.GH_TOKEN }}
           export CSC_KEY_PASSWORD=${{ secrets.MAC_CERTIFICATE_PASSWORD }}
           yarn release-ci
 
