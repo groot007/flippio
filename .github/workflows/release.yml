@@ -23,7 +23,6 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '23.10'
-          cache: false
 
       - name: Install dependencies
         run: yarn install --frozen-lockfile
