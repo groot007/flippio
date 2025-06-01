@@ -47,6 +47,9 @@ jobs:
         run: |
           export CSC_LINK=mac_cert.p12
           export GH_TOKEN=${{ secrets.GH_TOKEN }}
+          export APPLE_ID=${{ secrets.APPLE_ID }}
+          export APPLE_APP_SPECIFIC_PASSWORD=${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          export APPLE_TEAM_ID=${{ secrets.APPLE_TEAM_ID }}
           export CSC_KEY_PASSWORD=${{ secrets.MAC_CERTIFICATE_PASSWORD }}
           yarn release-ci
 
