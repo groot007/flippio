@@ -22,25 +22,22 @@ async function pullAndroidDBFiles(packageName, deviceId, remotePath, localPath =
   try {
     const filename = path.basename(remotePath)
 
-    // If no local path provided, use a temp path
-    if (!localPath) {
-      localPath = path.join(tempDirPath, `${filename}`)
-      if (await fs.existsSync(tempDirPath)) {
-        // remove the directory if it exists
-        await fs.rmSync(tempDirPath, { recursive: true, force: true })
-        await fs.mkdirSync(tempDirPath, { recursive: true })
-      }
+    if (fs.existsSync(tempDirPath)) {
+      fs.rmSync(tempDirPath, { recursive: true, force: true })
+      fs.mkdirSync(tempDirPath, { recursive: true })
     }
 
-    // Use run-as to copy the database file to the local machine
+    if (!localPath) {
+      localPath = path.join(tempDirPath, `${filename}`)
+    }
+
+    let callCmd = `adb -s ${deviceId} exec-out run-as ${packageName} cat ${remotePath} > ${localPath}`
+
+    if (location.admin === false) {
+      callCmd = `adb -s ${deviceId} pull ${remotePath} ${localPath}`
+    }
+
     await new Promise<void>((resolve, reject) => {
-      let callCmd = `adb -s ${deviceId} exec-out run-as ${packageName} cat ${remotePath} > ${localPath}`
-
-      if (location.admin === false) {
-        // If not admin, we need to pull the file instead
-        callCmd = `adb -s ${deviceId} pull ${remotePath} ${localPath}`
-      }
-
       log.info(`Running command pull: ${callCmd}`)
       exec(callCmd, (error, _stdout, _stderr) => {
         if (error) {
@@ -60,7 +57,7 @@ async function pullAndroidDBFiles(packageName, deviceId, remotePath, localPath =
       remotePath,
       timestamp: new Date().toISOString(),
     }
-    fs.writeFileSync(metadataPath, JSON.stringify(metadata, null, 2))
+    await fs.writeFileSync(metadataPath, JSON.stringify(metadata, null, 2))
 
     return {
       success: true,

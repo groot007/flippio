@@ -17,6 +17,19 @@ import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { LuPlus } from 'react-icons/lu'
 import { AddNewRowModal } from './AddNewRowModal'
 
+export function CustomHeaderComponent(props: any) {
+  return (
+    <Box display="flex" alignItems="center" height="100%" padding="0 2px">
+      <Text fontWeight="medium">{props.displayName}</Text>
+      <Text fontSize="xs" color="gray.500" ml={1}>
+        (
+        {props.columnType?.toLowerCase()}
+        )
+      </Text>
+    </Box>
+  )
+}
+
 export function DataGrid() {
   const { colorMode } = useColorMode()
   const {
@@ -56,7 +69,11 @@ export function DataGrid() {
 
     return tableData.columns?.map(col => ({
       field: col.name,
-      headerName: `${col.name} (${col.type})`,
+      headerComponent: CustomHeaderComponent,
+      headerComponentParams: {
+        displayName: col.name,
+        columnType: col.type,
+      },
       sortable: true,
       filter: true,
       resizable: true,

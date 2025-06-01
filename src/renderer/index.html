@@ -1,178 +1,208 @@
 <!doctype html>
 <html>
-  <head>
-    <meta charset="UTF-8" />
-    <!-- <title>Flippio - database explorer for iOS and Android</title> -->
-    <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
-    <meta
-      http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:"
-    />
-    <style>
-      body {
-        margin: 0;
-        padding: 0;
-        background-color: #1a202c;
-      }
-      #preloader {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: #1a202c;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        z-index: 9999;
-        opacity: 1;
-        transition: opacity 0.6s ease-out;
-        pointer-events: none;
-      }
-      #preloader.fade {
-        opacity: 0;
-      }
-      #app-title {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        color: #47d5c9;
-        font-size: 24px;
-        margin-top: 24px;
-        font-weight: bold;
-        letter-spacing: 1px;
-      }
-      .database-animation {
-        width: 120px;
-        height: 120px;
-      }
-      .database-container {
-        position: relative;
-        width: 100%;
-        height: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-      .circle-pulse {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        border-radius: 50%;
-        border: 2px solid #47d5c9;
-        opacity: 0;
-        animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
-      }
-      .circle-pulse:nth-child(2) {
-        animation-delay: 0.5s;
-      }
-      @keyframes pulse-ring {
-        0% {
-          transform: scale(0.7);
-          opacity: 0;
-        }
-        50% {
-          opacity: 0.5;
-        }
-        100% {
-          transform: scale(1.2);
-          opacity: 0;
-        }
-      }
-      .server-icon {
-        width: 60px;
-        height: 60px;
-        animation: float 3s ease-in-out infinite;
-        filter: drop-shadow(0 0 8px rgba(71, 213, 201, 0.3));
-      }
-      @keyframes float {
-        0% {
-          transform: translateY(0px);
-        }
-        50% {
-          transform: translateY(-10px);
-        }
-        100% {
-          transform: translateY(0px);
-        }
-      }
-      .data-particle {
-        position: absolute;
-        width: 4px;
-        height: 4px;
-        background-color: #47d5c9;
-        border-radius: 50%;
-        opacity: 0;
-      }
-      .data-particle:nth-child(4) {
-        transform: translate(20px, 20px);
-        animation: particle-animation 1.5s linear infinite;
-      }
-      .data-particle:nth-child(5) {
-        transform: translate(-20px, 15px);
-        animation: particle-animation 2s linear infinite 0.3s;
-      }
-      .data-particle:nth-child(6) {
-        transform: translate(15px, -25px);
-        animation: particle-animation 1.8s linear infinite 0.7s;
-      }
-      .data-particle:nth-child(7) {
-        transform: translate(-25px, -15px);
-        animation: particle-animation 2.2s linear infinite 0.5s;
-      }
-      @keyframes particle-animation {
-        0% {
-          opacity: 0;
-          transform: translateY(0) scale(0.5);
-        }
-        20% {
-          opacity: 1;
-          transform: translateY(-5px) scale(1);
-        }
-        80% {
-          opacity: 1;
-          transform: translateY(-40px) scale(1);
-        }
-        100% {
-          opacity: 0;
-          transform: translateY(-50px) scale(0.5);
-        }
-      }
-    </style>
-  </head>
 
-  <body>
-    <div id="preloader" >
-      <div class="database-animation">
-        <div class="database-container">
-          <div class="circle-pulse"></div>
-          <div class="circle-pulse"></div>
-          <svg class="server-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path d="M4,1H20a1,1,0,0,1,1,1V6a1,1,0,0,1-1,1H4A1,1,0,0,1,3,6V2A1,1,0,0,1,4,1Z" fill="#47d5c9"/>
-            <path d="M4,9H20a1,1,0,0,1,1,1v4a1,1,0,0,1-1,1H4a1,1,0,0,1-1-1V10A1,1,0,0,1,4,9Z" fill="#47d5c9"/>
-            <path d="M4,17H20a1,1,0,0,1,1,1v4a1,1,0,0,1-1,1H4a1,1,0,0,1-1-1V18A1,1,0,0,1,4,17Z" fill="#47d5c9"/>
-            <circle cx="7.5" cy="3.5" r="0.8" fill="#1a202c"/>
-            <circle cx="7.5" cy="11.5" r="0.8" fill="#1a202c"/>
-            <circle cx="7.5" cy="19.5" r="0.8" fill="#1a202c"/>
-          </svg>
-          <div class="data-particle"></div>
-          <div class="data-particle"></div>
-          <div class="data-particle"></div>
-          <div class="data-particle"></div>
-        </div>
-      </div>
-      <div id="app-title">FLIPPIO</div>
-    </div>
-    <div id="root"></div>
-    <script type="module">
-       window.onload = () => {
-        const preloader = document.getElementById('preloader');
-        if (preloader) {
-          setTimeout(() => {
-            preloader.classList.add('fade');
-          }, 1000); 
-        }
+<head>
+  <meta charset="UTF-8" />
+  <!-- <title>Flippio - database explorer for iOS and Android</title> -->
+  <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
+  <meta http-equiv="Content-Security-Policy"
+    content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:" />
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #1a202c;
+    }
+
+    #preloader {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: #1a202c;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      opacity: 1;
+      transition: opacity 0.6s ease-out;
+      pointer-events: none;
+    }
+
+    #preloader.fade {
+      opacity: 0;
+      transition: opacity 0.6s ease-out;
+    }
+
+    #app-title {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: #47d5c9;
+      font-size: 24px;
+      margin-top: 24px;
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+
+    .database-animation {
+      width: 120px;
+      height: 120px;
+    }
+
+    .database-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .circle-pulse {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      border: 2px solid #47d5c9;
+      opacity: 0;
+      animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+    }
+
+    .circle-pulse:nth-child(2) {
+      animation-delay: 0.5s;
+    }
+
+    @keyframes pulse-ring {
+      0% {
+        transform: scale(0.7);
+        opacity: 0;
       }
-    </script>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+
+      50% {
+        opacity: 0.5;
+      }
+
+      100% {
+        transform: scale(1.2);
+        opacity: 0;
+      }
+    }
+
+    .server-icon {
+      width: 60px;
+      height: 60px;
+      animation: float 3s ease-in-out infinite;
+      filter: drop-shadow(0 0 8px rgba(71, 213, 201, 0.3));
+    }
+
+    @keyframes float {
+      0% {
+        transform: translateY(0px);
+      }
+
+      50% {
+        transform: translateY(-10px);
+      }
+
+      100% {
+        transform: translateY(0px);
+      }
+    }
+
+    .data-particle {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      background-color: #47d5c9;
+      border-radius: 50%;
+      opacity: 0;
+    }
+
+    .data-particle:nth-child(4) {
+      transform: translate(20px, 20px);
+      animation: particle-animation 1.5s linear infinite;
+    }
+
+    .data-particle:nth-child(5) {
+      transform: translate(-20px, 15px);
+      animation: particle-animation 2s linear infinite 0.3s;
+    }
+
+    .data-particle:nth-child(6) {
+      transform: translate(15px, -25px);
+      animation: particle-animation 1.8s linear infinite 0.7s;
+    }
+
+    .data-particle:nth-child(7) {
+      transform: translate(-25px, -15px);
+      animation: particle-animation 2.2s linear infinite 0.5s;
+    }
+
+    @keyframes particle-animation {
+      0% {
+        opacity: 0;
+        transform: translateY(0) scale(0.5);
+      }
+
+      20% {
+        opacity: 1;
+        transform: translateY(-5px) scale(1);
+      }
+
+      80% {
+        opacity: 1;
+        transform: translateY(-40px) scale(1);
+      }
+
+      100% {
+        opacity: 0;
+        transform: translateY(-50px) scale(0.5);
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="preloader">
+    <div class="database-animation">
+      <div class="database-container">
+        <div class="circle-pulse"></div>
+        <div class="circle-pulse"></div>
+        <svg class="server-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4,1H20a1,1,0,0,1,1,1V6a1,1,0,0,1-1,1H4A1,1,0,0,1,3,6V2A1,1,0,0,1,4,1Z" fill="#47d5c9" />
+          <path d="M4,9H20a1,1,0,0,1,1,1v4a1,1,0,0,1-1,1H4a1,1,0,0,1-1-1V10A1,1,0,0,1,4,9Z" fill="#47d5c9" />
+          <path d="M4,17H20a1,1,0,0,1,1,1v4a1,1,0,0,1-1,1H4a1,1,0,0,1-1-1V18A1,1,0,0,1,4,17Z" fill="#47d5c9" />
+          <circle cx="7.5" cy="3.5" r="0.8" fill="#1a202c" />
+          <circle cx="7.5" cy="11.5" r="0.8" fill="#1a202c" />
+          <circle cx="7.5" cy="19.5" r="0.8" fill="#1a202c" />
+        </svg>
+        <div class="data-particle"></div>
+        <div class="data-particle"></div>
+        <div class="data-particle"></div>
+        <div class="data-particle"></div>
+      </div>
+    </div>
+    <div id="app-title">FLIPPIO</div>
+  </div>
+  <div id="root"></div>
+  <script type="module">
+    document.addEventListener('DOMContentLoaded', () => {
+          setTimeout(() => {
+      const preloader = document.getElementById('preloader');
+      if (preloader) {
+        // Add the fade class to trigger transition
+        preloader.classList.add('fade');
+        
+        // Remove from DOM after transition completes
+        preloader.addEventListener('transitionend', () => {
+          preloader.remove();
+        }, {once: true});
+      }
+    }, 100);
+    });
+  </script>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
+
 </html>

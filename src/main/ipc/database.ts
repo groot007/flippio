@@ -1,91 +1,10 @@
 import fs from 'node:fs'
-import path from 'node:path'
-import process from 'node:process'
-import { app, ipcMain } from 'electron'
+import { ipcMain } from 'electron'
 import log from 'electron-log'
 import sqlite3 from 'sqlite3'
 
 export function setupIpcDatabase() {
   let db: sqlite3.Database | null = null
-
-  ipcMain.handle('db:scanForDatabases', async (_event, directory = '') => {
-    try {
-      let baseDirs: string[] = []
-
-      // If no directory specified, use some default locations
-      if (!directory) {
-        if (process.platform === 'darwin') { // macOS
-          const homeDir = app.getPath('home')
-          baseDirs = [
-            homeDir,
-            path.join(homeDir, 'Documents'),
-            path.join(homeDir, 'Downloads'),
-          ]
-        }
-        else if (process.platform === 'win32') { // Windows
-          baseDirs = [
-            app.getPath('documents'),
-            app.getPath('downloads'),
-            'C:\\',
-            'D:\\',
-          ]
-        }
-        else { // Linux and others
-          const homeDir = app.getPath('home')
-          baseDirs = [
-            homeDir,
-            '/var/lib',
-          ]
-        }
-      }
-      else {
-        baseDirs = [directory]
-      }
-
-      const dbFiles: { path: string, name: string, size: number, modifiedTime: string }[] = []
-      const extensions = ['.db', '.sqlite', '.sqlite3', '.db3']
-
-      // Scan directories for database files (only first level)
-      for (const dir of baseDirs) {
-        try {
-          if (fs.existsSync(dir)) {
-            const files = fs.readdirSync(dir)
-
-            for (const file of files) {
-              const fullPath = path.join(dir, file)
-
-              try {
-                // Check if it's a file and has the right extension
-                const stat = fs.statSync(fullPath)
-                if (stat.isFile() && extensions.some(ext => file.toLowerCase().endsWith(ext))) {
-                  dbFiles.push({
-                    path: fullPath,
-                    name: file,
-                    size: stat.size,
-                    modifiedTime: stat.mtime.toISOString(),
-                  })
-                }
-              }
-              catch (fileErr) {
-                // Skip errors for individual files
-                log.error(`Error checking file ${fullPath}:`, fileErr)
-              }
-            }
-          }
-        }
-        catch (dirErr) {
-          log.error(`Error scanning directory ${dir}:`, dirErr)
-          // Continue with next directory
-        }
-      }
-
-      return { success: true, files: dbFiles }
-    }
-    catch (error: any) {
-      log.error('Error scanning for database files', error)
-      return { success: false, error: error.message }
-    }
-  })
 
   ipcMain.handle('db:open', async (_event, filePath) => {
     try {
@@ -149,6 +68,7 @@ export function setupIpcDatabase() {
 
     try {
       // Get column info
+
       const columns = await new Promise<any[]>((resolve, reject) => {
         db!.all(`PRAGMA table_info(${tableName})`, (err, rows) => {
           if (err)
