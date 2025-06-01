@@ -28,5 +28,14 @@ jobs:
       - name: Run linting
         run: yarn lint
 
+      - name: Decode macOS certificate
+        run: |
+          echo "$MAC_CERTIFICATE" | base64 --decode > mac_cert.p12
+        env:
+          MAC_CERTIFICATE: ${{ secrets.MAC_CERTIFICATE }}
+
       - name: Run release
         run: yarn release
+        env:
+          CSC_LINK: ./mac_cert.p12
+          CSC_KEY_PASSWORD: ${{ secrets.MAC_CERTIFICATE_PASSWORD }}
