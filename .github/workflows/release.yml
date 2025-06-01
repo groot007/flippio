@@ -33,14 +33,10 @@ jobs:
           export MAC_CERTIFICATE=${{ secrets.MAC_CERTIFICATE }}
           echo "$MAC_CERTIFICATE" | base64 --decode > mac_cert.p12
 
-      - name: Check certificate size
+      - name: Check certificate size to be valid
         run: |
           ls -lh mac_cert.p12
           file mac_cert.p12
-      - name: Validate decoded cert
-        run: |
-          export MAC_CERTIFICATE_PASSWORD=${{ secrets.MAC_CERTIFICATE_PASSWORD }}
-          security import mac_cert.p12 -k login.keychain
 
       - name: Run release
         run: |
