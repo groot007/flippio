@@ -36,6 +36,14 @@ function AppHeader() {
     }
   }, [selectedDevice])
 
+  useEffect(() => {
+    if (!devicesList.find(device => device.id === selectedDevice?.id)) {
+      setSelectedApplication(null)
+      setSelectedDevice(null)
+      setSelectedDatabaseFile(null)
+    }
+  }, [devicesList, selectedDevice, setSelectedApplication, setSelectedDevice])
+
   const handleRefreshDevices = useCallback(() => {
     refreshDevices()
       .then(() => {
