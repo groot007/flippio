@@ -30,17 +30,17 @@ jobs:
 
       - name: Decode macOS certificate
         run: |
+          export MAC_CERTIFICATE=${{ secrets.MAC_CERTIFICATE }}
           echo "$MAC_CERTIFICATE" | base64 --decode > mac_cert.p12
-        env:
-          MAC_CERTIFICATE: ${{ secrets.MAC_CERTIFICATE }}
 
-      - name: Validate decoded cert
+      - name: Check certificate size
         run: |
           ls -lh mac_cert.p12
           file mac_cert.p12
+      - name: Validate decoded cert
+        run: |
+          export MAC_CERTIFICATE_PASSWORD=${{ secrets.MAC_CERTIFICATE_PASSWORD }}
           security import mac_cert.p12 -k login.keychain
-        env:
-          MAC_CERTIFICATE_PASSWORD: ${{ secrets.MAC_CERTIFICATE_PASSWORD }}
 
       - name: Run release
         run: |
