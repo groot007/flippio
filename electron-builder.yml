@@ -35,6 +35,7 @@ mac:
       arch:
         - arm64
   entitlementsInherit: build/entitlements.mac.plist
+  hardenedRuntime: true
   gatekeeperAssess: false
   extendInfo:
     - NSDocumentsFolderUsageDescription: Application requests access to the user's Documents folder.
