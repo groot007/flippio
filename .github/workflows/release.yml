@@ -13,6 +13,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Check disk space
+        run: df -h
+
       - name: Write .env file
         run: echo "${{ secrets.FLIPPIO }}" > .env
 
@@ -20,7 +23,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '23.10'
-          cache: yarn
+          cache: false
 
       - name: Install dependencies
         run: yarn install --frozen-lockfile
@@ -37,6 +40,9 @@ jobs:
         run: |
           ls -lh mac_cert.p12
           file mac_cert.p12
+
+      - name: Check disk space
+        run: df -h
 
       - name: Run release
         run: |
