@@ -19,7 +19,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '22'
+          node-version: '23.10'
           cache: yarn
 
       - name: Install dependencies
@@ -35,10 +35,10 @@ jobs:
           MAC_CERTIFICATE: ${{ secrets.MAC_CERTIFICATE }}
 
       - name: Run release
-        run: yarn release
-        env:
-          CSC_LINK: mac_cert.p12
-          CSC_KEY_PASSWORD: ${{ secrets.MAC_CERTIFICATE_PASSWORD }}
+        run: |
+          export CSC_LINK=mac_cert.p12
+          export CSC_KEY_PASSWORD=${{ secrets.MAC_CERTIFICATE_PASSWORD }}
+          yarn release
 
       - name: Cleanup cert
         run: rm -f mac_cert.p12
