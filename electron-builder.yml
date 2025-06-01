@@ -40,7 +40,6 @@ mac:
 dmg:
   artifactName: ${name}-${version}.${ext}
   sign: true
-  size: 6000000
 appImage:
   artifactName: ${name}-${version}.${ext}
 npmRebuild: false
