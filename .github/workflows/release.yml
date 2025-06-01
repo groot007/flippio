@@ -51,6 +51,7 @@ jobs:
           export APPLE_APP_SPECIFIC_PASSWORD=${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
           export APPLE_TEAM_ID=${{ secrets.APPLE_TEAM_ID }}
           export CSC_KEY_PASSWORD=${{ secrets.MAC_CERTIFICATE_PASSWORD }}
+          export VITE_POSTHOG_API_KEY=${{ secrets.VITE_POSTHOG_API_KEY }}
           yarn release-ci
 
       - name: Cleanup cert
