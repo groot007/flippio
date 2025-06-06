@@ -25,16 +25,33 @@ function AppHeader() {
     isFetching: isRefreshing,
   } = useDevices()
 
+  const {
+    isLoading,
+    data: applicationsList = [],
+  } = useApplications(selectedDevice)
+
   const [isPackageSetModalOpen, setIsPackageSetModalOpen] = useState(false)
   const closePackageSeModal = useCallback(() => {
     setIsPackageSetModalOpen(false)
   }, [setIsPackageSetModalOpen])
 
   useEffect(() => {
-    if (selectedDevice?.deviceType === 'iphone-device') {
-      setIsPackageSetModalOpen(true)
+    let timer
+    if (
+      selectedDevice?.deviceType === 'iphone-device'
+      && isLoading
+    ) {
+      timer = setTimeout(() => {
+        setIsPackageSetModalOpen(true)
+      }, 2000)
     }
-  }, [selectedDevice])
+    else {
+      setIsPackageSetModalOpen(false)
+    }
+    return () => {
+      clearTimeout(timer)
+    }
+  }, [selectedDevice, isLoading])
 
   useEffect(() => {
     if (!devicesList.find(device => device.id === selectedDevice?.id)) {
@@ -65,11 +82,6 @@ function AppHeader() {
         })
       })
   }, [])
-
-  const {
-    isLoading,
-    data: applicationsList = [],
-  } = useApplications(selectedDevice)
 
   const devicesSelectOptions = useMemo(() =>
     devicesList.map((device) => {

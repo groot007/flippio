@@ -149,7 +149,7 @@ export function SidePanel() {
             </Drawer.Header>
             <Drawer.Body>
               {selectedRow && (
-                <Stack gap="4">
+                <Stack gap="0">
                   {Object.entries(selectedRow.rowData || {}).map(([key, value]) => (
                     <FieldItem
                       key={key}
@@ -173,6 +173,8 @@ export function SidePanel() {
                     }}
                     size="md"
                     width="full"
+                    mt={8}
+                    mb={4}
                     _hover={{ bg: 'red.50', _dark: { bg: 'red.900' } }}
                   >
                     Remove Row

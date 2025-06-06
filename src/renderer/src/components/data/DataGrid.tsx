@@ -20,8 +20,8 @@ import { AddNewRowModal } from './AddNewRowModal'
 export function CustomHeaderComponent(props: any) {
   return (
     <Box display="flex" alignItems="center" height="100%" padding="0 2px">
-      <Text fontWeight="medium">{props.displayName}</Text>
-      <Text fontSize="xs" color="gray.500" ml={1}>
+      <Text fontWeight="medium" fontSize="14px">{props.displayName}</Text>
+      <Text fontSize="10px" color="gray.500" ml={1}>
         (
         {props.columnType?.toLowerCase()}
         )
@@ -63,6 +63,12 @@ export function DataGrid() {
     }
   }, [data])
 
+  useEffect(() => {
+    if (tableData?.rows?.length) {
+      gridRef.current?.api?.autoSizeAllColumns()
+    }
+  }, [tableData])
+
   const columnDefs = useMemo(() => {
     if (!tableData?.columns?.length)
       return []
@@ -78,14 +84,14 @@ export function DataGrid() {
       filter: true,
       resizable: true,
       editable: true,
+
       tooltipValueGetter: params => params.value,
     }))
   }, [tableData?.columns])
 
   const defaultColDef = useMemo(() => ({
     filter: true,
-    flex: 1,
-    minWidth: 150,
+    maxWidth: 300,
   }), [])
 
   const onRowClicked = useCallback((event: Record<string, any>) => {
@@ -95,9 +101,15 @@ export function DataGrid() {
   }, [setSelectedRow])
 
   const getRowStyle = useCallback((params) => {
-    return params.node.rowIndex % 2 === 0
+    const mainStyle = {
+      fontSize: '12px',
+    }
+
+    const bg = params.node.rowIndex % 2 === 0
       ? { backgroundColor: colorMode === 'dark' ? '#1A202C' : '#FFFFFF' }
       : { backgroundColor: colorMode === 'dark' ? '#121212' : '#F7FAFC' }
+
+    return { ...mainStyle, ...bg }
   }, [colorMode])
 
   if (isLoadingTableData) {

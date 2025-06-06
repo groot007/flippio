@@ -9,7 +9,10 @@ ul {
   list-style: none;
 }
 
-
+::selection {
+  background: #B4D5FE;
+  color: #000;
+}
 
 body {
   min-height: 100vh;

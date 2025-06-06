@@ -7,10 +7,10 @@ export function FieldItem({ fieldKey, value, isEditing, onChange, isLoading, isD
   const isJson = useMemo(() => isJsonValue(value), [value])
 
   return (
-    <Box mb={4}>
+    <Box mb={3} borderBottom="1px solid" borderBottomColor="gray.800" pb={2}>
       <Text
         fontWeight="bold"
-        fontSize="sm"
+        fontSize="md"
         mb={1}
         color={isDark ? 'gray.200' : 'gray.700'}
       >
