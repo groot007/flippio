@@ -13,6 +13,7 @@ import {
   Spinner,
   Text,
 } from '@chakra-ui/react'
+import { api } from '@renderer/lib/api-adapter'
 import { toaster } from '@renderer/ui/toaster'
 import React, { useCallback, useEffect, useState } from 'react'
 import { FaAndroid } from 'react-icons/fa'
@@ -43,13 +44,13 @@ export const VirtualDeviceModal: React.FC<VirtualDeviceModalProps> = ({ isOpen, 
         setIsLoading(true)
 
         // Fetch Android emulators
-        const androidEmulators = await window.api.getAndroidEmulators()
+        const androidEmulators = await api.getAndroidEmulators()
         if (androidEmulators.success) {
           setAndroidDevices(androidEmulators.emulators || [])
         }
 
         // Fetch iOS simulators
-        const iosDevices = await window.api.getIOSSimulators()
+        const iosDevices = await api.getIOSSimulators()
         if (iosDevices.success) {
           setIosSimulators(iosDevices.simulators || [])
         }
@@ -81,13 +82,13 @@ export const VirtualDeviceModal: React.FC<VirtualDeviceModalProps> = ({ isOpen, 
 
       // Launch based on platform
       if (device.platform === 'android') {
-        const result = await window.api.launchAndroidEmulator(device.id)
+        const result = await api.launchAndroidEmulator(device.id)
         if (!result.success) {
           throw new Error(result.error || 'Failed to launch Android emulator')
         }
       }
       else {
-        const result = await window.api.launchIOSSimulator(device.id)
+        const result = await api.launchIOSSimulator(device.id)
         if (!result.success) {
           throw new Error(result.error || 'Failed to launch iOS simulator')
         }

@@ -25,6 +25,8 @@ function AppHeader() {
     isFetching: isRefreshing,
   } = useDevices()
 
+  console.log('[AppHeader] selectedDevice:', selectedDevice)
+
   const {
     isLoading,
     data: applicationsList = [],
@@ -83,18 +85,26 @@ function AppHeader() {
       })
   }, [])
 
-  const devicesSelectOptions = useMemo(() =>
-    devicesList.map((device) => {
+  const devicesSelectOptions = useMemo(() => {
+    console.error('[AppHeader] Raw devicesList:', devicesList)
+    const options = devicesList.map((device) => {
+      console.error('[AppHeader] Processing device:', device)
       const osVersion = device.deviceType === 'iphone' ? device.iosVersion : ''
-      return {
-        label: `${device.model} ${osVersion}`,
+      const option = {
+        label: `${device.model || device.name || 'Unknown Device'} ${osVersion}`,
         value: device.id,
         description: device.deviceType === 'iphone' ? 'iOS' : 'Android',
         ...device,
       }
-    }), [devicesList])
+      console.error('[AppHeader] Created option:', option)
+      return option
+    })
+    console.error('[AppHeader] Final devicesSelectOptions:', options)
+    return options
+  }, [devicesList])
 
   const applicationSelectOptions = useMemo(() => {
+    console.error('[AppHeader] Raw applicationsList:', applicationsList)
     return applicationsList.map(app => ({
       label: app.name,
       value: app.bundleId,

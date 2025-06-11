@@ -1,4 +1,5 @@
 import type { DatabaseFile } from '@renderer/types'
+import { api } from '@renderer/lib/api-adapter'
 import { useQuery } from '@tanstack/react-query'
 
 interface Device {
@@ -16,10 +17,11 @@ export function useDatabaseTables(
         throw new Error('Database file or device not selected')
       }
 
+      console.log('[useDatabaseTables] Opening database:', selectedDatabaseFile.path)
       const dbPath = selectedDatabaseFile.path
-      await window.api.openDatabase(dbPath)
+      await api.openDatabase(dbPath)
 
-      const response = await window.api.getTables()
+      const response = await api.getTables()
 
       if (!response.success) {
         throw new Error(response.error || 'Failed to fetch tables')

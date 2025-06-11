@@ -1,7 +1,7 @@
 import { join } from 'node:path'
 import process from 'node:process'
 import { electronApp, is, optimizer } from '@electron-toolkit/utils'
-import * as Sentry from '@sentry/electron/main'
+// import * as Sentry from '@sentry/electron/main'
 import { app, BrowserWindow, shell } from 'electron'
 import { autoUpdater } from 'electron-updater'
 
@@ -12,9 +12,9 @@ import { setupIOsDevice } from './ipc/ios'
 import { registerVirtualDeviceHandlers } from './ipc/virtualDevices'
 import './autoUpdaterEvents'
 
-Sentry.init({
-  dsn: 'https://561d196b910f78c86856522f199f9ef6@o4509048883970048.ingest.de.sentry.io/4509048886132816',
-});
+// Sentry.init({
+//   dsn: 'https://561d196b910f78c86856522f199f9ef6@o4509048883970048.ingest.de.sentry.io/4509048886132816',
+// })
 
 (async () => {
   const { default: fixPath } = await import('fix-path')

@@ -1,5 +1,6 @@
 import { Box, Flex, Icon, Text } from '@chakra-ui/react'
 import { keyframes } from '@emotion/react'
+import { api } from '@renderer/lib/api-adapter'
 import { useCurrentDatabaseSelection } from '@renderer/store'
 import { useColorMode } from '@renderer/ui/color-mode'
 // import { webUtils } from 'electron'
@@ -82,7 +83,7 @@ export const DragAndDropProvider: React.FC<DragAndDropProviderProps> = ({ childr
 
     setIsProcessingFile(true)
 
-    const filePath = window.api.webUtils.getPathForFile(file)
+    const filePath = api.webUtils.getPathForFile(file)
 
     setSelectedDatabaseFile({
       path: filePath,

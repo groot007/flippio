@@ -6,6 +6,7 @@ import {
   Portal,
   Stack,
 } from '@chakra-ui/react'
+import { api } from '@renderer/lib/api-adapter'
 import { useCurrentDatabaseSelection, useCurrentDeviceSelection, useTableData } from '@renderer/store'
 import { useRowEditingStore } from '@renderer/store/useRowEditingStore'
 import { useColorMode } from '@renderer/ui/color-mode'
@@ -45,7 +46,7 @@ export function SidePanel() {
         tableData?.columns,
         selectedRow?.originalData || selectedRow?.rowData,
       )
-      const result = await window.api.deleteTableRow(
+      const result = await api.deleteTableRow(
         selectedDatabaseTable?.name || '',
         condition,
       )
@@ -61,7 +62,7 @@ export function SidePanel() {
         && selectedDatabaseFile.packageName
         && selectedDatabaseFile?.deviceType === 'android'
       ) {
-        await window.api.pushDatabaseFile(
+        await api.pushDatabaseFile(
           selectedDevice.id,
           pulledDatabaseFilePath,
           selectedDatabaseFile.packageName,
@@ -85,7 +86,7 @@ export function SidePanel() {
 
       // Refresh table data to reflect deletion
       if (selectedDatabaseTable?.name) {
-        const response = await window.api.getTableInfo(selectedDatabaseTable.name)
+        const response = await api.getTableInfo(selectedDatabaseTable.name)
         if (response.success && response.columns && response.rows) {
           setTableData({
             columns: response.columns,

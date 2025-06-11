@@ -5,6 +5,7 @@ import {
   Text,
   VStack,
 } from '@chakra-ui/react'
+import { api } from '@renderer/lib/api-adapter'
 import { useCurrentDeviceSelection } from '@renderer/store'
 import { toaster } from '@renderer/ui/toaster'
 import { useCallback, useEffect, useState } from 'react'
@@ -73,7 +74,7 @@ export const PackageSetModal: React.FC<PackageSetModalProps> = ({ isOpen, isLoad
       return
     }
 
-    const { success } = await window.api.checkAppExistence(selectedDevice?.id, bundleIDInput)
+    const { success } = await api.checkAppExistence(selectedDevice?.id, bundleIDInput)
     if (success) {
       addRecentBundleId(bundleIDInput)
 

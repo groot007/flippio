@@ -1,3 +1,4 @@
+import { api } from '@renderer/lib/api-adapter'
 import { useQuery } from '@tanstack/react-query'
 
 interface TableDataResponse {
@@ -15,7 +16,7 @@ export function useTableDataQuery(tableName: string) {
         throw new Error('No table selected')
       }
 
-      const response: TableDataResponse = await window.api.getTableInfo(tableName)
+      const response: TableDataResponse = await api.getTableInfo(tableName)
 
       if (!response.success) {
         throw new Error(response.error || 'Failed to fetch table data')

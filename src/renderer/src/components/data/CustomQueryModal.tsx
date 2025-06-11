@@ -2,6 +2,7 @@ import {
 
   Textarea,
 } from '@chakra-ui/react'
+import { api } from '@renderer/lib/api-adapter'
 import { useCurrentDatabaseSelection, useTableData } from '@renderer/store'
 import { toaster } from '@renderer/ui/toaster'
 import { useState } from 'react'
@@ -22,7 +23,7 @@ export function CustomQueryModal({ isOpen, onClose }: CustomQueryModalProps) {
       return
 
     try {
-      const result = await window.api.executeQuery(query, selectedDatabaseFile?.path)
+      const result = await api.executeQuery(query, selectedDatabaseFile?.path)
 
       if (!result.success) {
         throw new Error(result.error || 'Failed to execute query')

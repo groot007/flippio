@@ -1,5 +1,6 @@
 import { Button, Flex } from '@chakra-ui/react'
 import { useTableDataQuery } from '@renderer/hooks/useTableDataQuery'
+import { api } from '@renderer/lib/api-adapter'
 import { useCurrentDatabaseSelection, useCurrentDeviceSelection, useTableData } from '@renderer/store'
 import { useRowEditingStore } from '@renderer/store/useRowEditingStore'
 import { toaster } from '@renderer/ui/toaster'
@@ -52,7 +53,7 @@ export const RowEditor: React.FC<RowEditorProps> = ({
         tableData?.columns,
         selectedRow?.originalData || selectedRow?.rowData,
       )
-      const result = await window.api.updateTableRow(
+      const result = await api.updateTableRow(
         selectedDatabaseTable?.name || '',
         editedData,
         condition,
@@ -63,11 +64,11 @@ export const RowEditor: React.FC<RowEditorProps> = ({
       }
 
       let uploadFileFunction = selectedDatabaseFile?.deviceType === 'android'
-        ? window.api.pushDatabaseFile
+        ? api.pushDatabaseFile
         : null
 
       if (selectedDatabaseFile?.deviceType === 'iphone-device') {
-        uploadFileFunction = window.api.uploadIOSDbFile
+        uploadFileFunction = api.uploadIOSDbFile
       }
 
       if (

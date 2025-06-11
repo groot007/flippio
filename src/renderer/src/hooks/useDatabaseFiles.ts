@@ -1,4 +1,5 @@
 import type { DatabaseFile } from '@renderer/types'
+import { api } from '@renderer/lib/api-adapter'
 import { useQuery } from '@tanstack/react-query'
 
 interface Device {
@@ -31,15 +32,16 @@ export function useDatabaseFiles(
       let fetchFunction: (deviceId: string, bundleId: string) => Promise<DatabaseFilesResponse>
 
       if (selectedDevice.deviceType === 'iphone') {
-        fetchFunction = window.api.getIOSDatabaseFiles
+        fetchFunction = api.getIOSDatabaseFiles
       }
       else if (selectedDevice.deviceType === 'iphone-device') {
-        fetchFunction = window.api.getIOSDeviceDatabaseFiles
+        fetchFunction = api.getIOSDeviceDatabaseFiles
       }
       else {
-        fetchFunction = window.api.getAndroidDatabaseFiles
+        fetchFunction = api.getAndroidDatabaseFiles
       }
 
+      console.log('[useDatabaseFiles] API response:', selectedDevice)
       const response = await fetchFunction(selectedDevice.id, selectedApplication.bundleId)
 
       if (!response.success) {
@@ -48,6 +50,7 @@ export function useDatabaseFiles(
 
       return response.files
     },
+
     enabled: !!selectedDevice?.id && !!selectedApplication?.bundleId,
     gcTime: 0,
     staleTime: 0,

@@ -3,6 +3,7 @@ import {
   Stack,
   VStack,
 } from '@chakra-ui/react'
+import { api } from '@renderer/lib/api-adapter'
 import { useCurrentDatabaseSelection, useCurrentDeviceSelection, useTableData } from '@renderer/store'
 import { toaster } from '@renderer/ui/toaster'
 import { useCallback, useEffect, useState } from 'react'
@@ -81,18 +82,18 @@ export const AddNewRowModal: React.FC<AddNewRowModalProps> = ({ isOpen, onClose,
     try {
       setIsCreatingRow(true)
 
-      const result = await window.api.insertTableRow(selectedDatabaseTable.name, newRowData)
+      const result = await api.insertTableRow(selectedDatabaseTable.name, newRowData)
 
       if (!result.success) {
         throw new Error(result.error || 'Failed to create new row')
       }
 
       let uploadFileFunction = selectedDatabaseFile?.deviceType === 'android'
-        ? window.api.pushDatabaseFile
+        ? api.pushDatabaseFile
         : null
 
       if (selectedDatabaseFile?.deviceType === 'iphone-device') {
-        uploadFileFunction = window.api.uploadIOSDbFile
+        uploadFileFunction = api.uploadIOSDbFile
       }
 
       if (
@@ -147,7 +148,7 @@ export const AddNewRowModal: React.FC<AddNewRowModalProps> = ({ isOpen, onClose,
               {' '}
               <span style={{ fontSize: '0.8em', color: 'gray' }}>
                 (
-                {column.type}
+                {column.data_type}
                 )
               </span>
               <Input
@@ -155,13 +156,13 @@ export const AddNewRowModal: React.FC<AddNewRowModalProps> = ({ isOpen, onClose,
                 onChange={e => handleNewRowInputChange(column.name, e.target.value)}
                 placeholder={`Enter value for ${column.name}`}
                 type={
-                  column.type.toLowerCase().includes('int')
+                  column.data_type.toLowerCase().includes('int')
                     ? 'number'
-                    : column.type.toLowerCase().includes('real')
-                      || column.type.toLowerCase().includes('float')
-                      || column.type.toLowerCase().includes('double')
+                    : column.data_type.toLowerCase().includes('real')
+                      || column.data_type.toLowerCase().includes('float')
+                      || column.data_type.toLowerCase().includes('double')
                       ? 'number'
-                      : column.type.toLowerCase().includes('date')
+                      : column.data_type.toLowerCase().includes('date')
                         ? 'datetime-local'
                         : 'text'
                 }

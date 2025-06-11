@@ -46,6 +46,8 @@ export function DataGrid() {
 
   const { data, error, refetch: refetchTableData } = useTableDataQuery(selectedDatabaseTable?.name || '')
 
+  console.log('DataGrid rendered with data:', data)
+
   useEffect(() => {
     if (data) {
       setTableData({
@@ -78,7 +80,7 @@ export function DataGrid() {
       headerComponent: CustomHeaderComponent,
       headerComponentParams: {
         displayName: col.name,
-        columnType: col.type,
+        columnType: col.data_type,
       },
       sortable: true,
       filter: true,

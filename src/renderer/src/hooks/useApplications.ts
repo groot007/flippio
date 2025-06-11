@@ -1,3 +1,4 @@
+import { api } from '@renderer/lib/api-adapter'
 import { useQuery } from '@tanstack/react-query'
 
 export interface Device {
@@ -28,13 +29,13 @@ export function useApplications(selectedDevice: Device | null) {
       let fetchFunction: (deviceId: string) => Promise<ApplicationsResponse>
 
       if (selectedDevice.deviceType === 'iphone') {
-        fetchFunction = window.api.getIOSPackages
+        fetchFunction = api.getIOSPackages
       }
       else if (selectedDevice.deviceType === 'iphone-device') {
-        fetchFunction = window.api.getIOsDevicePackages
+        fetchFunction = api.getIOsDevicePackages
       }
       else {
-        fetchFunction = window.api.getAndroidPackages
+        fetchFunction = api.getAndroidPackages
       }
 
       const response = await fetchFunction(selectedDevice.id)

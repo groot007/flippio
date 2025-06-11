@@ -9,10 +9,12 @@ import {
 import { useDatabaseFiles } from '@renderer/hooks/useDatabaseFiles'
 import { useDatabaseTables } from '@renderer/hooks/useDatabaseTables'
 import { useTableDataQuery } from '@renderer/hooks/useTableDataQuery'
+import { api } from '@renderer/lib/api-adapter'
 import { useCurrentDatabaseSelection, useCurrentDeviceSelection, useTableData } from '@renderer/store'
 import { toaster } from '@renderer/ui/toaster'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { LuDatabase, LuFilter, LuFolderOpen, LuRefreshCcw, LuTable, LuUpload } from 'react-icons/lu'
+import { useDevices } from '../../hooks/useDevices'
 import { CustomQueryModal } from '../data/CustomQueryModal'
 import FLSelect from './../common/FLSelect'
 
@@ -77,19 +79,25 @@ export function SubHeader() {
     setSelectedDatabaseTable(table)
   }, [databaseTables, setSelectedDatabaseTable])
 
-  const dbFileOptions = useMemo(() =>
-    databaseFiles?.map(file => ({
+  const dbFileOptions = useMemo(() => {
+    const opts = databaseFiles?.map(file => ({
       label: file.filename,
       value: file.path,
       ...file,
-    })) ?? [], [databaseFiles])
+    })) ?? []
+    console.error('[SubHeader] dbFileOptions', opts, databaseFiles)
+    return opts
+  }, [databaseFiles])
 
-  const tableOptions = useMemo(() =>
-    databaseTables?.map(table => ({
+  const tableOptions = useMemo(() => {
+    const opts = databaseTables?.map(table => ({
       label: table.name,
       value: table.name,
       ...table,
-    })) ?? [], [databaseTables])
+    })) ?? []
+    console.error('[SubHeader] tableOptions', opts, databaseTables)
+    return opts
+  }, [databaseTables])
 
   useEffect(() => {
     if (!selectedDatabaseFile?.filename) {
@@ -123,27 +131,26 @@ export function SubHeader() {
 
   const isNoDB = !databaseFiles?.length && !isDBPulling && selectedApplication?.bundleId && selectedDevice?.id
 
-  const handleOpenDBFile = useCallback(() => {
-    window.api.openFile().then((file) => {
-      if (!file.canceled && file.filePaths.length) {
-        const filePath = file.filePaths[0]
-        setSelectedDatabaseFile({
-          path: filePath,
-          filename: filePath.split('/').pop() || '',
-          deviceType: 'desktop',
-          packageName: '',
-          remotePath: filePath,
-        })
-      }
-    })
-  }, [])
+  const handleOpenDBFile = useCallback(async () => {
+    const file = await api.openFile?.()
+    if (!file?.canceled && file?.filePaths?.length) {
+      const filePath = file.filePaths[0]
+      setSelectedDatabaseFile({
+        path: filePath,
+        filename: filePath.split('/').pop() || '',
+        deviceType: 'desktop',
+        packageName: '',
+        remotePath: filePath,
+      })
+    }
+  }, [setSelectedDatabaseFile])
 
-  const handleExportDB = useCallback(() => {
+  const handleExportDB = useCallback(async () => {
     if (!selectedDatabaseFile?.path) {
       return
     }
 
-    window.api.exportFile({
+    const savedFilePath = await api.exportFile?.({
       defaultPath: selectedDatabaseFile?.filename,
       filters: [
         {
@@ -152,24 +159,32 @@ export function SubHeader() {
         },
       ],
       dbFilePath: selectedDatabaseFile.path,
-    }).then((savedFilePath) => {
-      if (!savedFilePath) {
-        return
-      }
-      toaster.create({
-        title: 'Success',
-        description: `Database file exported successfully to ${savedFilePath}`,
-        status: 'success',
-      })
-    }).catch((error) => {
-      toaster.create({
-        title: 'Error exporting database',
-        description: error.message,
-        status: 'error',
-      })
-    },
-    )
+    })
+    if (!savedFilePath) {
+      return
+    }
+    toaster.create({
+      title: 'Success',
+      description: `Database file exported successfully to ${savedFilePath}`,
+      status: 'success',
+    })
   }, [selectedDatabaseFile])
+
+  const {
+    isLoading: isDevicesLoading,
+    data: devices = [],
+  } = useDevices()
+
+  // Debug logging for devices
+  console.log('🔍 SubHeader Debug - devices:', devices)
+  console.log('🔍 SubHeader Debug - devices length:', devices.length)
+  console.log('🔍 SubHeader Debug - first device:', devices[0])
+  console.log('🔍 SubHeader Debug - selectedDevice:', selectedDevice)
+
+  useEffect(() => {
+    console.error('[SubHeader] selectedDatabaseFile', selectedDatabaseFile)
+    console.error('[SubHeader] selectedDatabaseTable', selectedDatabaseTable)
+  }, [selectedDatabaseFile, selectedDatabaseTable])
 
   return (
     <Box
