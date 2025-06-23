@@ -12,7 +12,7 @@ fn get_temp_dir_path() -> PathBuf {
     std::env::temp_dir().join("flippio-db-temp")
 }
 
-fn ensure_temp_dir() -> Result<PathBuf, Box<dyn std::error::Error>> {
+fn ensure_temp_dir() -> Result<PathBuf, Box<dyn std::error::Error + Send + Sync>> {
     let temp_dir = get_temp_dir_path();
     
     // Only create temp directory if it doesn't exist
@@ -23,7 +23,7 @@ fn ensure_temp_dir() -> Result<PathBuf, Box<dyn std::error::Error>> {
     Ok(temp_dir)
 }
 
-fn clean_temp_dir() -> Result<PathBuf, Box<dyn std::error::Error>> {
+fn clean_temp_dir() -> Result<PathBuf, Box<dyn std::error::Error + Send + Sync>> {
     let temp_dir = get_temp_dir_path();
     
     // Remove existing temp directory if it exists
@@ -52,33 +52,119 @@ async fn pull_android_db_file(
     package_name: &str,
     remote_path: &str,
     admin_access: bool,
-) -> Result<String, Box<dyn std::error::Error>> {
+) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
+    info!("=== Starting pull_android_db_file ===");
+    info!("Device ID: {}", device_id);
+    info!("Package: {}", package_name);
+    info!("Remote path: {}", remote_path);
+    info!("Admin access: {}", admin_access);
+    
     let temp_dir = ensure_temp_dir()?;
+    info!("Temp directory: {:?}", temp_dir);
+    
     let filename = Path::new(remote_path).file_name()
         .ok_or("Invalid remote path")?
         .to_string_lossy();
     let local_path = temp_dir.join(&*filename);
+    info!("Local path will be: {:?}", local_path);
     
-    // Construct ADB command based on admin access
-    let adb_cmd = if admin_access {
-        format!("adb -s {} exec-out run-as {} cat {} > {}", 
-                device_id, package_name, remote_path, local_path.display())
+    // Execute ADB command based on admin access
+    if admin_access {
+        info!("Using admin access (run-as) mode");
+        
+        // Use shell command with redirection like in Electron
+        // Important: Use exec-out with run-as and redirect to local file
+        let adb_path = get_adb_path();
+        let shell_cmd = format!("{} -s {} exec-out run-as {} cat {} > \"{}\"", 
+                               adb_path, device_id, package_name, remote_path, local_path.display());
+        
+        info!("Executing shell command: {}", shell_cmd);
+        
+        // Use std::process::Command directly like in Electron for better compatibility
+        let output = std::process::Command::new("sh")
+            .arg("-c")
+            .arg(&shell_cmd)
+            .output()?;
+        
+        info!("Shell command completed");
+        info!("Exit status: {:?}", output.status);
+        
+        if !output.stderr.is_empty() {
+            let stderr_str = String::from_utf8_lossy(&output.stderr);
+            info!("Stderr content: {}", stderr_str);
+            // Note: stderr might contain non-error messages from adb
+        }
+        
+        // For exec-out with redirection, check if file was created successfully
+        // rather than relying solely on exit status
+        if !local_path.exists() {
+            let error_msg = String::from_utf8_lossy(&output.stderr);
+            error!("Shell command failed - file not created: {}", error_msg);
+            return Err(format!("ADB exec-out failed to create file: {}", error_msg).into());
+        }
+        
     } else {
-        format!("adb -s {} pull {} {}", 
-                device_id, remote_path, local_path.display())
-    };
+        info!("Using standard pull mode");
+        
+        // For standard access, use adb pull
+        info!("Executing: adb -s {} pull {} {}", device_id, remote_path, local_path.display());
+        
+        let output = execute_adb_command(&["-s", device_id, "pull", remote_path, &local_path.to_string_lossy()]).await?;
+        
+        info!("ADB pull command completed");
+        info!("Exit status: {:?}", output.status);
+        info!("Stdout: {}", String::from_utf8_lossy(&output.stdout));
+        
+        if !output.stderr.is_empty() {
+            let stderr_str = String::from_utf8_lossy(&output.stderr);
+            info!("Stderr content: {}", stderr_str);
+        }
+        
+        if !output.status.success() {
+            let error_msg = String::from_utf8_lossy(&output.stderr);
+            error!("ADB pull failed: {}", error_msg);
+            return Err(format!("ADB pull failed: {}", error_msg).into());
+        }
+    }
     
-    info!("Running command pull: {}", adb_cmd);
-    
-    // Execute the command using system shell
-    let output = std::process::Command::new("sh")
-        .arg("-c")
-        .arg(&adb_cmd)
-        .output()?;
-    
-    if !output.status.success() {
-        let error_msg = String::from_utf8_lossy(&output.stderr);
-        return Err(format!("ADB pull failed: {}", error_msg).into());
+    // Verify the file was created and has content
+    match fs::metadata(&local_path) {
+        Ok(metadata) => {
+            info!("File successfully created: {:?}", local_path);
+            info!("File size: {} bytes", metadata.len());
+            
+            if metadata.len() == 0 {
+                error!("Created file is empty!");
+                return Err("Pulled database file is empty".into());
+            }
+            
+            // Check if it looks like a SQLite file (first 16 bytes should be SQLite header)
+            if metadata.len() >= 16 {
+                match fs::File::open(&local_path) {
+                    Ok(mut file) => {
+                        use std::io::Read;
+                        let mut header = [0u8; 16];
+                        if let Ok(_) = file.read_exact(&mut header) {
+                            let header_str = String::from_utf8_lossy(&header[..15]); // First 15 bytes
+                            info!("File header: {:?}", header_str);
+                            
+                            if header_str.starts_with("SQLite format") {
+                                info!("✅ File appears to be a valid SQLite database");
+                            } else {
+                                info!("⚠️  File does not appear to be a SQLite database");
+                            }
+                        }
+                    }
+                    Err(e) => {
+                        error!("Could not read file header: {}", e);
+                    }
+                }
+            }
+        }
+        Err(e) => {
+            error!("File was not created: {}", e);
+            return Err(format!("File was not created: {}", e).into());
+        }
     }
     
     // Store metadata
@@ -92,7 +178,9 @@ async fn pull_android_db_file(
     let metadata_path = format!("{}.meta.json", local_path.display());
     let metadata_json = serde_json::to_string_pretty(&metadata)?;
     fs::write(&metadata_path, metadata_json)?;
+    info!("Metadata written to: {}", metadata_path);
     
+    info!("=== pull_android_db_file completed successfully ===");
     Ok(local_path.to_string_lossy().to_string())
 }
 
@@ -102,7 +190,7 @@ async fn push_android_db_file(
     local_path: &str,
     package_name: &str,
     remote_path: &str,
-) -> Result<String, Box<dyn std::error::Error>> {
+) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
     let filename = Path::new(local_path).file_name()
         .ok_or("Invalid local path")?
         .to_string_lossy();
@@ -113,13 +201,9 @@ async fn push_android_db_file(
     // Check if remote path is on external storage (sdcard)
     if remote_path.contains("sdcard") || remote_path.contains("external") {
         // Direct push to external storage
-        let adb_cmd = format!("adb -s {} push {} {}", device_id, local_path, remote_path);
-        info!("Running direct push command: {}", adb_cmd);
+        info!("Pushing directly to external storage");
         
-        let output = std::process::Command::new("sh")
-            .arg("-c")
-            .arg(&adb_cmd)
-            .output()?;
+        let output = execute_adb_command(&["-s", device_id, "push", local_path, remote_path]).await?;
         
         if !output.status.success() {
             let error_msg = String::from_utf8_lossy(&output.stderr);
@@ -127,13 +211,9 @@ async fn push_android_db_file(
         }
     } else {
         // Push to tmp directory first
-        let push_cmd = format!("adb -s {} push \"{}\" {}", device_id, local_path, tmp_path);
-        info!("Running push to tmp command: {}", push_cmd);
+        info!("Pushing to tmp directory first");
         
-        let output = std::process::Command::new("sh")
-            .arg("-c")
-            .arg(&push_cmd)
-            .output()?;
+        let output = execute_adb_command(&["-s", device_id, "push", local_path, &tmp_path]).await?;
         
         if !output.status.success() {
             let error_msg = String::from_utf8_lossy(&output.stderr);
@@ -141,14 +221,9 @@ async fn push_android_db_file(
         }
         
         // Copy from tmp to app's data directory using run-as
-        let copy_cmd = format!("adb -s {} shell run-as {} cp {} {}", 
-                               device_id, package_name, tmp_path, remote_path);
-        info!("Running copy command: {}", copy_cmd);
+        info!("Copying from tmp to app data directory");
         
-        let output = std::process::Command::new("sh")
-            .arg("-c")
-            .arg(&copy_cmd)
-            .output()?;
+        let output = execute_adb_command(&["-s", device_id, "shell", "run-as", package_name, "cp", &tmp_path, remote_path]).await?;
         
         if !output.status.success() {
             let error_msg = String::from_utf8_lossy(&output.stderr);
@@ -156,11 +231,7 @@ async fn push_android_db_file(
         }
         
         // Clean up temp file on device
-        let cleanup_cmd = format!("adb -s {} shell rm {}", device_id, tmp_path);
-        let _ = std::process::Command::new("sh")
-            .arg("-c")
-            .arg(&cleanup_cmd)
-            .output();
+        let _ = execute_adb_command(&["-s", device_id, "shell", "rm", &tmp_path]).await;
     }
     
     Ok(format!("Database successfully pushed to {}", remote_path))
@@ -173,13 +244,19 @@ async fn push_ios_db_file(
     package_name: &str,
     remote_path: &str,
     is_device: bool,
-) -> Result<String, Box<dyn std::error::Error>> {
+) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
     info!("Pushing iOS database file {} to device {}", local_path, device_id);
     
     if is_device {
-        // For physical iOS devices - use idevice tools
-        let ios_cmd = format!("idevice_afc --documents {} -u {} put {} {}", 
-                              package_name, device_id, local_path, remote_path);
+        // For physical iOS devices - use bundled idevice_afc
+        let idevice_afc_path = get_libimobiledevice_tool_path("idevice_afc");
+        let idevice_afc_cmd = idevice_afc_path
+            .as_ref()
+            .map(|p| p.to_string_lossy().to_string())
+            .unwrap_or_else(|| "idevice_afc".to_string());
+        
+        let ios_cmd = format!("{} --documents {} -u {} put {} {}", 
+                              idevice_afc_cmd, package_name, device_id, local_path, remote_path);
         
         info!("Running iOS device push command: {}", ios_cmd);
         
@@ -224,7 +301,7 @@ async fn pull_ios_db_file(
     package_name: &str,
     remote_path: &str,
     is_device: bool,
-) -> Result<String, Box<dyn std::error::Error>> {
+) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
     let temp_dir = ensure_temp_dir()?;
     let filename = Path::new(remote_path).file_name()
         .ok_or("Invalid remote path")?
@@ -233,9 +310,15 @@ async fn pull_ios_db_file(
     
     // Construct iOS command
     let ios_cmd = if is_device {
-        // For physical iOS devices
-        format!("idevice_afc --documents {} -u {} get {} {}", 
-                package_name, device_id, remote_path, local_path.display())
+        // For physical iOS devices - use bundled idevice_afc
+        let idevice_afc_path = get_libimobiledevice_tool_path("idevice_afc");
+        let idevice_afc_cmd = idevice_afc_path
+            .as_ref()
+            .map(|p| p.to_string_lossy().to_string())
+            .unwrap_or_else(|| "idevice_afc".to_string());
+        
+        format!("{} --documents {} -u {} get {} {}", 
+                idevice_afc_cmd, package_name, device_id, remote_path, local_path.display())
     } else {
         // For iOS simulators
         format!("xcrun simctl spawn {} cat {} > {}", 
@@ -314,18 +397,83 @@ pub struct VirtualDevice {
     pub state: Option<String>,
 }
 
+// Helper function to get ADB executable path
+fn get_adb_path() -> String {
+    // Try to find ADB in common locations
+    let possible_paths = vec![
+        "adb",  // System PATH
+        "/usr/local/bin/adb",  // Homebrew on macOS
+        "/opt/homebrew/bin/adb",  // Homebrew on Apple Silicon
+        "/usr/bin/adb",  // Linux
+        "/Android/Sdk/platform-tools/adb",  // Android SDK
+        "~/Library/Android/sdk/platform-tools/adb",  // macOS Android SDK
+        "~/Android/Sdk/platform-tools/adb",  // User Android SDK
+    ];
+    
+    for path in possible_paths {
+        let expanded_path = if path.starts_with("~") {
+            if let Some(home) = std::env::var("HOME").ok() {
+                path.replace("~", &home)
+            } else {
+                path.to_string()
+            }
+        } else {
+            path.to_string()
+        };
+        
+        // Check if the path exists and is executable
+        if let Ok(output) = std::process::Command::new(&expanded_path)
+            .arg("version")
+            .output()
+        {
+            if output.status.success() {
+                info!("Found ADB at: {}", expanded_path);
+                return expanded_path;
+            }
+        }
+    }
+    
+    // Fallback to just "adb" and hope it's in PATH
+    info!("Using fallback ADB path: adb");
+    "adb".to_string()
+}
+
+// Execute ADB command with proper error handling
+async fn execute_adb_command(args: &[&str]) -> Result<std::process::Output, Box<dyn std::error::Error + Send + Sync>> {
+    let adb_path = get_adb_path();
+    
+    info!("Executing ADB command: {} {}", adb_path, args.join(" "));
+    
+    let output = std::process::Command::new(&adb_path)
+        .args(args)
+        .output()?;
+    
+    if !output.status.success() {
+        let error_msg = String::from_utf8_lossy(&output.stderr);
+        if !error_msg.is_empty() {
+            error!("ADB command failed: {}", error_msg);
+        }
+    }
+    
+    Ok(output)
+}
+
 // ADB Commands
 
 #[tauri::command]
-pub async fn adb_get_devices(app_handle: tauri::AppHandle) -> Result<DeviceResponse<Vec<Device>>, String> {
+pub async fn adb_get_devices(_app_handle: tauri::AppHandle) -> Result<DeviceResponse<Vec<Device>>, String> {
     log::info!("Getting Android devices");
     
-    let shell = app_handle.shell();
-    let output = shell.command("adb")
-        .args(["devices", "-l"])
-        .output()
-        .await
-        .map_err(|e| format!("Failed to execute adb command: {}", e))?;
+    let output = match execute_adb_command(&["devices", "-l"]).await {
+        Ok(output) => output,
+        Err(e) => {
+            return Ok(DeviceResponse {
+                success: false,
+                data: None,
+                error: Some(format!("Failed to execute adb command: {}. Make sure Android SDK is installed and ADB is in your PATH.", e)),
+            });
+        }
+    };
     
     if output.status.success() {
         let devices_output = String::from_utf8_lossy(&output.stdout);
@@ -374,15 +522,19 @@ pub async fn adb_get_devices(app_handle: tauri::AppHandle) -> Result<DeviceRespo
 }
 
 #[tauri::command]
-pub async fn adb_get_packages(app_handle: tauri::AppHandle, device_id: String) -> Result<DeviceResponse<Vec<Package>>, String> {
+pub async fn adb_get_packages(_app_handle: tauri::AppHandle, device_id: String) -> Result<DeviceResponse<Vec<Package>>, String> {
     log::info!("Getting packages for device: {}", device_id);
     
-    let shell = app_handle.shell();
-    let output = shell.command("adb")
-        .args(["-s", &device_id, "shell", "pm", "list", "packages", "-3"])
-        .output()
-        .await
-        .map_err(|e| format!("Failed to execute adb command: {}", e))?;
+    let output = match execute_adb_command(&["-s", &device_id, "shell", "pm", "list", "packages", "-3"]).await {
+        Ok(output) => output,
+        Err(e) => {
+            return Ok(DeviceResponse {
+                success: false,
+                data: None,
+                error: Some(format!("Failed to execute adb command: {}. Make sure the device is connected and ADB is working.", e)),
+            });
+        }
+    };
     
     if output.status.success() {
         let packages_output = String::from_utf8_lossy(&output.stdout);
@@ -419,7 +571,7 @@ pub async fn adb_get_packages(app_handle: tauri::AppHandle, device_id: String) -
 
 #[tauri::command]
 pub async fn adb_get_android_database_files(
-    app_handle: tauri::AppHandle,
+    _app_handle: tauri::AppHandle,
     device_id: String,
     package_name: String,
 ) -> Result<DeviceResponse<Vec<DatabaseFile>>, String> {
@@ -430,7 +582,6 @@ pub async fn adb_get_android_database_files(
         error!("Failed to clean temp directory: {}", e);
     }
     
-    let shell = app_handle.shell();
     let mut database_files = Vec::new();
     
     // Search in multiple locations
@@ -444,15 +595,9 @@ pub async fn adb_get_android_database_files(
         let path = format!("{}{}/", location, package_name);
         
         let output = if admin_required {
-            shell.command("adb")
-                .args(["-s", &device_id, "shell", "run-as", &package_name, "find", &path, "-name", "*.db", "-o", "-name", "*.sqlite", "-o", "-name", "*.sqlite3"])
-                .output()
-                .await
+            execute_adb_command(&["-s", &device_id, "shell", "run-as", &package_name, "find", &path, "-name", "*.db", "-o", "-name", "*.sqlite", "-o", "-name", "*.sqlite3"]).await
         } else {
-            shell.command("adb")
-                .args(["-s", &device_id, "shell", "find", &path, "-name", "*.db", "-o", "-name", "*.sqlite", "-o", "-name", "*.sqlite3"])
-                .output()
-                .await
+            execute_adb_command(&["-s", &device_id, "shell", "find", &path, "-name", "*.db", "-o", "-name", "*.sqlite", "-o", "-name", "*.sqlite3"]).await
         };
         
         if let Ok(result) = output {
@@ -519,16 +664,73 @@ pub async fn adb_get_android_database_files(
 
 // iOS Commands
 
+// Helper function to get path to bundled libimobiledevice tools
+fn get_libimobiledevice_tool_path(tool_name: &str) -> Option<std::path::PathBuf> {
+    // Try to get the resource directory path
+    if let Ok(exe_path) = std::env::current_exe() {
+        if let Some(exe_dir) = exe_path.parent() {
+            // In development, tools are in resources/libimobiledevice/tools/
+            let dev_path = exe_dir
+                .parent()
+                .and_then(|p| p.parent())
+                .map(|p| p.join("resources").join("libimobiledevice").join("tools").join(tool_name));
+            
+            if let Some(ref path) = dev_path {
+                if path.exists() {
+                    info!("Using bundled {} from: {:?}", tool_name, path);
+                    return Some(path.clone());
+                }
+            }
+            
+            // In production (macOS app bundle), tools might be in Contents/Resources/
+            let prod_path = exe_dir
+                .join("../Resources/libimobiledevice/tools")
+                .join(tool_name);
+            
+            if prod_path.exists() {
+                info!("Using bundled {} from: {:?}", tool_name, prod_path);
+                return Some(prod_path);
+            }
+        }
+    }
+    
+    // Fallback: try system PATH
+    info!("Using system {} from PATH", tool_name);
+    None
+}
+
 #[tauri::command]
 pub async fn device_get_ios_devices(app_handle: tauri::AppHandle) -> Result<DeviceResponse<Vec<Device>>, String> {
     log::info!("Getting iOS devices");
     
     let shell = app_handle.shell();
-    let output = shell.command("idevice_id")
+    
+    // Try to use bundled idevice_id first, then fall back to system
+    let idevice_id_path = get_libimobiledevice_tool_path("idevice_id");
+    let idevice_id_cmd = idevice_id_path
+        .as_ref()
+        .map(|p| p.to_string_lossy().to_string())
+        .unwrap_or_else(|| "idevice_id".to_string());
+    
+    info!("Using idevice_id command: {}", idevice_id_cmd);
+    
+    let output = shell.command(&idevice_id_cmd)
         .args(["-l"])
         .output()
-        .await
-        .map_err(|e| format!("Failed to execute idevice_id: {}", e))?;
+        .await;
+    
+    let output = match output {
+        Ok(output) => output,
+        Err(e) => {
+            log::warn!("Failed to execute idevice_id: {}", e);
+            // Return empty list if tool is not available
+            return Ok(DeviceResponse {
+                success: true,
+                data: Some(Vec::new()),
+                error: None,
+            });
+        }
+    };
     
     if output.status.success() {
         let devices_output = String::from_utf8_lossy(&output.stdout);
@@ -537,8 +739,14 @@ pub async fn device_get_ios_devices(app_handle: tauri::AppHandle) -> Result<Devi
         for line in devices_output.lines() {
             let device_id = line.trim();
             if !device_id.is_empty() {
-                // Get device name
-                let name_output = shell.command("ideviceinfo")
+                // Get device name using bundled ideviceinfo
+                let ideviceinfo_path = get_libimobiledevice_tool_path("ideviceinfo");
+                let ideviceinfo_cmd = ideviceinfo_path
+                    .as_ref()
+                    .map(|p| p.to_string_lossy().to_string())
+                    .unwrap_or_else(|| "ideviceinfo".to_string());
+                
+                let name_output = shell.command(&ideviceinfo_cmd)
                     .args(["-u", device_id, "-k", "DeviceName"])
                     .output()
                     .await;
@@ -631,7 +839,17 @@ pub async fn device_get_ios_device_packages(app_handle: tauri::AppHandle, device
     log::info!("Getting iOS device packages for device: {}", device_id);
     
     let shell = app_handle.shell();
-    let output = shell.command("ideviceinstaller")
+    
+    // Try to use bundled ideviceinstaller first, then fall back to system
+    let ideviceinstaller_path = get_libimobiledevice_tool_path("ideviceinstaller");
+    let ideviceinstaller_cmd = ideviceinstaller_path
+        .as_ref()
+        .map(|p| p.to_string_lossy().to_string())
+        .unwrap_or_else(|| "ideviceinstaller".to_string());
+    
+    info!("Using ideviceinstaller command: {}", ideviceinstaller_cmd);
+    
+    let output = shell.command(&ideviceinstaller_cmd)
         .args(["-u", &device_id, "-l"])
         .output()
         .await;
@@ -660,6 +878,7 @@ pub async fn device_get_ios_device_packages(app_handle: tauri::AppHandle, device
             })
         }
         _ => {
+            log::warn!("Failed to get iOS device packages for device: {}", device_id);
             Ok(DeviceResponse {
                 success: true,
                 data: Some(Vec::new()),
@@ -684,8 +903,16 @@ pub async fn device_get_ios_device_database_files(
     let locations = vec!["Documents", "Library", "tmp"];
     
     for location in locations {
-        // Use idevice tools to list files in the app's container
-        let output = shell.command("idevice_afc")
+        // Use bundled idevice_afc tool to list files in the app's container
+        let idevice_afc_path = get_libimobiledevice_tool_path("idevice_afc");
+        let idevice_afc_cmd = idevice_afc_path
+            .as_ref()
+            .map(|p| p.to_string_lossy().to_string())
+            .unwrap_or_else(|| "idevice_afc".to_string());
+        
+        info!("Using idevice_afc command: {}", idevice_afc_cmd);
+        
+        let output = shell.command(&idevice_afc_cmd)
             .args(["--documents", &package_name, "-u", &device_id, "ls", location])
             .output()
             .await;
