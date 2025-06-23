@@ -17,10 +17,6 @@ jobs:
             args: --target aarch64-apple-darwin
           - platform: macos-latest
             args: --target x86_64-apple-darwin
-          - platform: ubuntu-20.04
-            args: ''
-          - platform: windows-latest
-            args: ''
 
     runs-on: ${{ matrix.platform }}
     steps:
@@ -96,10 +92,10 @@ jobs:
           TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
           TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
         run: |
-          # Build the app without signing bundled resources (we'll do that manually)
-          npx tauri build ${{ matrix.args }} --config "bundle.macOS.signingIdentity=null"
+          # Build the app - bundled resources and frameworks won't be auto-signed, we'll handle that manually
+          npx tauri build ${{ matrix.args }}
 
-      - name: Sign bundled binaries (macOS only)
+      - name: Sign bundled binaries and frameworks (macOS only)
         if: matrix.platform == 'macos-latest'
         run: |
           # Determine the correct app path based on target
@@ -114,11 +110,20 @@ jobs:
           echo "Looking for app at: $APP_PATH"
 
           if [ -d "$APP_PATH" ]; then
-            echo "✅ Found app bundle, signing bundled binaries..."
+            echo "🔍 App bundle structure:"
+            ls -la "$APP_PATH/Contents/"
+
+            echo "🔍 Resources directory:"
+            ls -la "$APP_PATH/Contents/Resources/" 2>/dev/null || echo "No Resources directory"
+
+            echo "🔍 Frameworks directory:"
+            ls -la "$APP_PATH/Contents/Frameworks/" 2>/dev/null || echo "No Frameworks directory"
+
+            echo "✅ Found app bundle, signing bundled binaries and frameworks..."
             node scripts/sign-bundled-binaries.js "$APP_PATH" "${{ secrets.APPLE_SIGNING_IDENTITY }}"
 
-            echo "✅ Bundled binaries signed, now signing main app..."
-            # Sign the main app bundle after signing bundled binaries
+            echo "✅ Bundled binaries and frameworks signed, now signing main app..."
+            # Sign the main app bundle after signing bundled binaries and frameworks
             codesign --force --sign "${{ secrets.APPLE_SIGNING_IDENTITY }}" --options runtime --timestamp "$APP_PATH"
 
             # Verify the app signature

@@ -26,40 +26,59 @@ function findBundledBinaries(appPath) {
   }
 
   const binaries = []
+  const dylibsInFrameworks = new Set() // Track dylibs in Frameworks to avoid duplicates
 
-  if (!binariesPath) {
-    console.log('No libimobiledevice binaries found. Tried paths:')
-    possiblePaths.forEach(p => console.log(' -', p))
-    return binaries
+  // First, check for frameworks bundled via Tauri's frameworks config
+  // These would be placed in Contents/Frameworks/ and take priority
+  const frameworksPath = path.join(appPath, 'Contents', 'Frameworks')
+  if (fs.existsSync(frameworksPath)) {
+    console.log('Found Frameworks directory, checking for dylibs...')
+    const frameworks = fs.readdirSync(frameworksPath)
+    for (const framework of frameworks) {
+      if (framework.endsWith('.dylib')) {
+        const frameworkPath = path.join(frameworksPath, framework)
+        binaries.push(frameworkPath)
+        dylibsInFrameworks.add(framework) // Track this dylib name
+      }
+    }
   }
 
-  // Find all executables in tools directory
-  const toolsPath = path.join(binariesPath, 'tools')
-  if (fs.existsSync(toolsPath)) {
-    const tools = fs.readdirSync(toolsPath)
-    for (const tool of tools) {
-      const toolPath = path.join(toolsPath, tool)
-      try {
-        const stat = fs.statSync(toolPath)
-        if (stat.isFile() && (stat.mode & 0o111) && !tool.includes('.')) {
-          binaries.push(toolPath)
+  if (binariesPath) {
+    // Find all executables in tools directory (these don't get duplicated)
+    const toolsPath = path.join(binariesPath, 'tools')
+    if (fs.existsSync(toolsPath)) {
+      const tools = fs.readdirSync(toolsPath)
+      for (const tool of tools) {
+        const toolPath = path.join(toolsPath, tool)
+        try {
+          const stat = fs.statSync(toolPath)
+          if (stat.isFile() && (stat.mode & 0o111) && !tool.includes('.')) {
+            binaries.push(toolPath)
+          }
+        }
+        catch (error) {
+          console.warn(`Could not stat ${toolPath}:`, error.message)
         }
       }
-      catch (error) {
-        console.warn(`Could not stat ${toolPath}:`, error.message)
+    }
+
+    // Find all dynamic libraries in libs directory, but skip ones already in Frameworks
+    const libsPath = path.join(binariesPath, 'libs')
+    if (fs.existsSync(libsPath)) {
+      const libs = fs.readdirSync(libsPath)
+      for (const lib of libs) {
+        if (lib.endsWith('.dylib') && !dylibsInFrameworks.has(lib)) {
+          binaries.push(path.join(libsPath, lib))
+        }
+        else if (lib.endsWith('.dylib') && dylibsInFrameworks.has(lib)) {
+          console.log(`Skipping ${lib} from Resources (already in Frameworks)`)
+        }
       }
     }
   }
-
-  // Find all dynamic libraries in libs directory
-  const libsPath = path.join(binariesPath, 'libs')
-  if (fs.existsSync(libsPath)) {
-    const libs = fs.readdirSync(libsPath)
-    for (const lib of libs) {
-      if (lib.endsWith('.dylib')) {
-        binaries.push(path.join(libsPath, lib))
-      }
-    }
+  else {
+    console.log('No libimobiledevice binaries found. Tried paths:')
+    possiblePaths.forEach(p => console.log(' -', p))
   }
 
   return binaries

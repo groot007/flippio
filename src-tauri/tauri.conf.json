@@ -37,7 +37,20 @@
     ],
     "resources": [
       "../resources/libimobiledevice/**/*"
-    ]
+    ],
+    "macOS": {
+      "frameworks": [
+        "../resources/libimobiledevice/libs/libimobiledevice-1.0.6.dylib",
+        "../resources/libimobiledevice/libs/libimobiledevice-glue-1.0.0.dylib",
+        "../resources/libimobiledevice/libs/libplist-2.0.4.dylib",
+        "../resources/libimobiledevice/libs/libusbmuxd-2.0.7.dylib",
+        "../resources/libimobiledevice/libs/libzip.5.5.dylib",
+        "../resources/libimobiledevice/libs/libcrypto.3.dylib",
+        "../resources/libimobiledevice/libs/libssl.3.dylib",
+        "../resources/libimobiledevice/libs/liblzma.5.dylib",
+        "../resources/libimobiledevice/libs/libzstd.1.5.7.dylib"
+      ]
+    }
   },
   "plugins": {
     "updater": {
