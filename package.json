@@ -1,6 +1,6 @@
 {
   "name": "flippio",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Database viewer with device connection",
   "author": "koliastanis",
   "homepage": "https://github.com/groot007/flippio",
@@ -32,7 +32,10 @@
     "release-ci": "npm run build && electron-builder --publish always --mac",
     "tauri:dev": "tauri dev",
     "tauri:build": "tauri build",
-    "tauri:build:debug": "tauri build --debug"
+    "tauri:build:debug": "tauri build --debug",
+    "tauri:sign-binaries": "export $(cat .env | xargs) && node scripts/sign-bundled-binaries.js",
+    "tauri:build:signed": "export $(cat .env | xargs) && tauri build && npm run tauri:post-sign",
+    "tauri:post-sign": "export $(cat .env | xargs) && node scripts/sign-bundled-binaries.js \"$PWD/src-tauri/target/release/bundle/macos/Flippio.app\" \"$APPLE_SIGNING_IDENTITY\""
   },
   "dependencies": {
     "@chakra-ui/react": "^3.13.0",
