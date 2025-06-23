@@ -1,8 +1,10 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AllCommunityModule, ModuleRegistry } from 'ag-grid-community'
+import { useEffect } from 'react'
+import { useAutoUpdater } from './hooks/useAutoUpdater'
 import Main from './pages/Main'
 import { Provider } from './ui/provider'
-import { Toaster } from './ui/toaster'
+import { Toaster, toaster } from './ui/toaster'
 
 /* eslint-disable */
 // @ts-expect-error include PostHog script 
@@ -31,6 +33,24 @@ const queryClient = new QueryClient({
 })
 
 function App(): JSX.Element {
+  const { updateInfo, downloadAndInstall } = useAutoUpdater()
+
+  // Show update notification when available
+  useEffect(() => {
+    if (updateInfo?.available && updateInfo.version) {
+      toaster.create({
+        title: 'Update Available',
+        description: `Version ${updateInfo.version} is available. Click Update to install.`,
+        type: 'info',
+        duration: 15000, // 15 seconds
+        action: {
+          label: 'Update Now',
+          onClick: downloadAndInstall,
+        },
+      })
+    }
+  }, [updateInfo, downloadAndInstall])
+
   return (
     <QueryClientProvider client={queryClient}>
       <Provider>

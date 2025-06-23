@@ -4,10 +4,12 @@ export default antfu({
   ignores: [
     'example_app/**', // For a specific build directory
     'resources/**', // For a specific resources directory
+    '**/*.toml',
   ],
   rules: {
     'no-use-before-define': 'off',
     '@typescript-eslint/no-use-before-define': 'off',
     'eslint-comments/no-unlimited-disable': 'off',
+    'no-console': 'off',
   },
 })

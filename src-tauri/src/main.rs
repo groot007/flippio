@@ -12,7 +12,7 @@ pub fn run() {
     // Initialize database connection pool state
     let db_pool: DbPool = Arc::new(RwLock::new(None));
     
-    tauri::Builder::default()
+    let mut builder = tauri::Builder::default()
         .setup(|app| {
             if cfg!(debug_assertions) {
                 app.handle().plugin(
@@ -26,7 +26,15 @@ pub fn run() {
         .manage(db_pool)
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
-        .plugin(tauri_plugin_shell::init())
+        .plugin(tauri_plugin_shell::init());
+
+    // Add updater plugin only for desktop platforms
+    #[cfg(not(any(target_os = "android", target_os = "ios")))]
+    {
+        builder = builder.plugin(tauri_plugin_updater::Builder::new().build());
+    }
+
+    builder
         .invoke_handler(tauri::generate_handler![
             // Device commands (ADB)
             commands::device::adb_get_devices,
@@ -59,7 +67,10 @@ pub fn run() {
             commands::database::db_execute_query,
             // Common commands (file dialogs)
             commands::common::dialog_select_file,
-            commands::common::dialog_save_file
+            commands::common::dialog_save_file,
+            // Updater commands
+            commands::updater::check_for_updates,
+            commands::updater::download_and_install_update
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

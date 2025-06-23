@@ -175,7 +175,7 @@ export const api = {
   // Database methods
   getTables: async () => {
     try {
-      const response = await invoke<DbResponse<any>>('db_get_tables')
+      const response = await invoke<any>('db_get_tables')
       if (response.success && response.data) {
         return {
           success: true,
@@ -193,7 +193,7 @@ export const api = {
 
   openDatabase: async (filePath: string) => {
     try {
-      const response = await invoke<DbResponse<any>>('db_open', { filePath })
+      const response = await invoke<any>('db_open', { filePath })
       return {
         success: response.success,
         path: response.data,
@@ -286,6 +286,39 @@ export const api = {
 
   launchIOSSimulator: (simulatorId: string) =>
     invokeCommandWithResponse('launchIOSSimulator', 'result', simulatorId),
+
+  // Auto-updater methods
+  checkForUpdates: async () => {
+    try {
+      const response = await invoke<any>('check_for_updates')
+      return {
+        success: response.success,
+        updateAvailable: response.data?.available || false,
+        version: response.data?.version,
+        releaseNotes: response.data?.notes,
+        releaseDate: response.data?.date,
+        error: response.error,
+      }
+    }
+    catch (error) {
+      console.error('Error checking for updates:', error)
+      return { success: false, error: (error as Error).message, updateAvailable: false }
+    }
+  },
+
+  downloadAndInstallUpdate: async () => {
+    try {
+      const response = await invoke<any>('download_and_install_update')
+      return {
+        success: response.success,
+        error: response.error,
+      }
+    }
+    catch (error) {
+      console.error('Error downloading update:', error)
+      return { success: false, error: (error as Error).message }
+    }
+  },
 
   // Add webUtils placeholder for compatibility
   webUtils: {

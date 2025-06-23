@@ -35,5 +35,15 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ]
+  },
+  "plugins": {
+    "updater": {
+      "active": true,
+      "endpoints": [
+        "https://api.github.com/repos/{{owner}}/{{repo}}/releases/latest"
+      ],
+      "dialog": false,
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDc5QzdFQUU5NkQ1MDMxRTAKUldUZ01WQnQ2ZXJIZVlQNjJUTFVKMENZYVpJNk1rSytYRHNuUFkwRjVJbDh5eEZ3WjBtZTBmS0YK"
+    }
   }
 }

@@ -3,3 +3,4 @@
 pub mod common;
 pub mod database;
 pub mod device;
+pub mod updater;

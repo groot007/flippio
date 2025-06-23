@@ -73,6 +73,21 @@ declare global {
         success: boolean
         error?: string
       }>
+
+      // Auto-updater methods
+      checkForUpdates: () => Promise<{
+        success: boolean
+        updateAvailable: boolean
+        version?: string
+        releaseNotes?: string
+        releaseDate?: string
+        error?: string
+      }>
+
+      downloadAndInstallUpdate: () => Promise<{
+        success: boolean
+        error?: string
+      }>
     }
   }
 }

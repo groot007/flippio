@@ -64,5 +64,6 @@ if (process.contextIsolated) {
 }
 else {
   window.electron = electronAPI
+  // @ts-expect-error change to tauri
   window.api = api
 }

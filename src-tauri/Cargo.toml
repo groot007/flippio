@@ -4,6 +4,7 @@ version = "0.2.17"
 description = "Database viewer with device connection"
 authors = ["koliastanis"]
 edition = "2021"
+repository = "https://github.com/groot007/flippio"
 
 [build-dependencies]
 tauri-build = { version = "2.0", features = [] }
