@@ -51,24 +51,7 @@ jobs:
       - name: Write .env file
         run: echo "${{ secrets.FLIPPIO }}" > .env
 
-      - name: Sign source binaries (macOS only)
-        if: matrix.platform == 'macos-latest'
-        run: |
-          echo "🔐 Signing libimobiledevice binaries at source..."
-          node scripts/sign-source-binaries.js "${{ secrets.APPLE_SIGNING_IDENTITY }}"
-
-          # Verify signatures were applied
-          echo "🔍 Verifying source signatures..."
-          for tool in idevice_id ideviceinfo ideviceinstaller afcclient; do
-            if codesign -dv "resources/libimobiledevice/tools/$tool" 2>&1 | grep -q "Developer ID"; then
-              echo "✅ $tool properly signed"
-            else
-              echo "❌ $tool signature failed"
-              exit 1
-            fi
-          done
-
-      - name: Build Tauri app
+      - name: Build and release Tauri app
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -87,78 +70,3 @@ jobs:
           releaseDraft: true
           prerelease: false
           args: ${{ matrix.args }}
-
-      - name: Verify and fix bundled signatures (macOS only)
-        if: matrix.platform == 'macos-latest'
-        run: |
-          # Find the app bundle
-          if [[ "${{ matrix.args }}" == *"aarch64-apple-darwin"* ]]; then
-            APP_PATH="src-tauri/target/aarch64-apple-darwin/release/bundle/macos/Flippio.app"
-          elif [[ "${{ matrix.args }}" == *"x86_64-apple-darwin"* ]]; then
-            APP_PATH="src-tauri/target/x86_64-apple-darwin/release/bundle/macos/Flippio.app"
-          else
-            APP_PATH="src-tauri/target/release/bundle/macos/Flippio.app"
-          fi
-
-          if [ -d "$APP_PATH" ]; then
-            echo "🔍 Checking bundled binary signatures..."
-
-            # Find where Tauri placed the binaries
-            BUNDLED_TOOLS_PATH=""
-            for possible_path in \
-              "$APP_PATH/Contents/Resources/_up_/resources/libimobiledevice/tools" \
-              "$APP_PATH/Contents/Resources/resources/libimobiledevice/tools" \
-              "$APP_PATH/Contents/Resources/libimobiledevice/tools"; do
-              if [ -d "$possible_path" ]; then
-                BUNDLED_TOOLS_PATH="$possible_path"
-                echo "📁 Found bundled tools at: $BUNDLED_TOOLS_PATH"
-                break
-              fi
-            done
-
-            if [ -n "$BUNDLED_TOOLS_PATH" ]; then
-              # Check and re-sign if necessary
-              for tool in idevice_id ideviceinfo ideviceinstaller afcclient; do
-                tool_path="$BUNDLED_TOOLS_PATH/$tool"
-                if [ -f "$tool_path" ]; then
-                  if ! codesign -dv "$tool_path" 2>&1 | grep -q "Developer ID"; then
-                    echo "⚠️ $tool not properly signed, re-signing..."
-                    codesign --force --sign "${{ secrets.APPLE_SIGNING_IDENTITY }}" --options runtime --timestamp "$tool_path"
-                  else
-                    echo "✅ $tool signature preserved"
-                  fi
-                fi
-              done
-
-              # Also check dylibs in Frameworks
-              FRAMEWORKS_PATH="$APP_PATH/Contents/Frameworks"
-              if [ -d "$FRAMEWORKS_PATH" ]; then
-                echo "🔍 Checking framework signatures..."
-                for dylib in "$FRAMEWORKS_PATH"/*.dylib; do
-                  if [ -f "$dylib" ]; then
-                    if ! codesign -dv "$dylib" 2>&1 | grep -q "Developer ID"; then
-                      echo "⚠️ $(basename "$dylib") not properly signed, re-signing..."
-                      codesign --force --sign "${{ secrets.APPLE_SIGNING_IDENTITY }}" --options runtime --timestamp "$dylib"
-                    else
-                      echo "✅ $(basename "$dylib") signature preserved"
-                    fi
-                  fi
-                done
-              fi
-
-              # Final app re-signing
-              echo "🔐 Final app bundle signing..."
-              codesign --force --sign "${{ secrets.APPLE_SIGNING_IDENTITY }}" --options runtime --timestamp "$APP_PATH"
-
-              # Deep verification
-              echo "🔍 Deep verification..."
-              codesign --verify --deep --verbose "$APP_PATH"
-              echo "✅ App bundle verification complete"
-            else
-              echo "❌ Could not find bundled tools directory"
-              exit 1
-            fi
-          else
-            echo "❌ App bundle not found at: $APP_PATH"
-            exit 1
-          fi

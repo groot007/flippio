@@ -682,14 +682,31 @@ fn get_libimobiledevice_tool_path(tool_name: &str) -> Option<std::path::PathBuf>
                 }
             }
             
-            // In production (macOS app bundle), tools might be in Contents/Resources/
-            let prod_path = exe_dir
+            // In production (macOS app bundle), tools are now in Contents/MacOS/
+            let macos_path = exe_dir.join(tool_name);
+            if macos_path.exists() {
+                info!("Using bundled {} from MacOS directory: {:?}", tool_name, macos_path);
+                return Some(macos_path);
+            }
+            
+            // Fallback: check old Resources location for compatibility
+            let old_resources_path = exe_dir
                 .join("../Resources/libimobiledevice/tools")
                 .join(tool_name);
             
-            if prod_path.exists() {
-                info!("Using bundled {} from: {:?}", tool_name, prod_path);
-                return Some(prod_path);
+            if old_resources_path.exists() {
+                info!("Using bundled {} from legacy Resources location: {:?}", tool_name, old_resources_path);
+                return Some(old_resources_path);
+            }
+            
+            // Also check the _up_ path that was causing issues
+            let up_path = exe_dir
+                .join("../Resources/_up_/resources/libimobiledevice/tools")
+                .join(tool_name);
+            
+            if up_path.exists() {
+                info!("Using bundled {} from _up_ location: {:?}", tool_name, up_path);
+                return Some(up_path);
             }
         }
     }

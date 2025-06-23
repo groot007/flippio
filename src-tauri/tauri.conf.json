@@ -35,13 +35,6 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
-    "resources": [
-      "../resources/libimobiledevice/libs/*",
-      "../resources/libimobiledevice/tools/idevice_id",
-      "../resources/libimobiledevice/tools/ideviceinfo",
-      "../resources/libimobiledevice/tools/ideviceinstaller",
-      "../resources/libimobiledevice/tools/afcclient"
-    ],
     "macOS": {
       "frameworks": [
         "../resources/libimobiledevice/libs/libimobiledevice-1.0.6.dylib",
