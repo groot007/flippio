@@ -248,15 +248,15 @@ async fn push_ios_db_file(
     info!("Pushing iOS database file {} to device {}", local_path, device_id);
     
     if is_device {
-        // For physical iOS devices - use bundled idevice_afc
-        let idevice_afc_path = get_libimobiledevice_tool_path("idevice_afc");
-        let idevice_afc_cmd = idevice_afc_path
+        // For physical iOS devices - use bundled afcclient
+        let afcclient_path = get_libimobiledevice_tool_path("afcclient");
+        let afcclient_cmd = afcclient_path
             .as_ref()
             .map(|p| p.to_string_lossy().to_string())
-            .unwrap_or_else(|| "idevice_afc".to_string());
+            .unwrap_or_else(|| "afcclient".to_string());
         
         let ios_cmd = format!("{} --documents {} -u {} put {} {}", 
-                              idevice_afc_cmd, package_name, device_id, local_path, remote_path);
+                              afcclient_cmd, package_name, device_id, local_path, remote_path);
         
         info!("Running iOS device push command: {}", ios_cmd);
         
@@ -310,15 +310,15 @@ async fn pull_ios_db_file(
     
     // Construct iOS command
     let ios_cmd = if is_device {
-        // For physical iOS devices - use bundled idevice_afc
-        let idevice_afc_path = get_libimobiledevice_tool_path("idevice_afc");
-        let idevice_afc_cmd = idevice_afc_path
+        // For physical iOS devices - use bundled afcclient
+        let afcclient_path = get_libimobiledevice_tool_path("afcclient");
+        let afcclient_cmd = afcclient_path
             .as_ref()
             .map(|p| p.to_string_lossy().to_string())
-            .unwrap_or_else(|| "idevice_afc".to_string());
+            .unwrap_or_else(|| "afcclient".to_string());
         
         format!("{} --documents {} -u {} get {} {}", 
-                idevice_afc_cmd, package_name, device_id, remote_path, local_path.display())
+                afcclient_cmd, package_name, device_id, remote_path, local_path.display())
     } else {
         // For iOS simulators
         format!("xcrun simctl spawn {} cat {} > {}", 
@@ -903,16 +903,16 @@ pub async fn device_get_ios_device_database_files(
     let locations = vec!["Documents", "Library", "tmp"];
     
     for location in locations {
-        // Use bundled idevice_afc tool to list files in the app's container
-        let idevice_afc_path = get_libimobiledevice_tool_path("idevice_afc");
-        let idevice_afc_cmd = idevice_afc_path
+        // Use bundled afcclient tool to list files in the app's container
+        let afcclient_path = get_libimobiledevice_tool_path("afcclient");
+        let afcclient_cmd = afcclient_path
             .as_ref()
             .map(|p| p.to_string_lossy().to_string())
-            .unwrap_or_else(|| "idevice_afc".to_string());
+            .unwrap_or_else(|| "afcclient".to_string());
         
-        info!("Using idevice_afc command: {}", idevice_afc_cmd);
+        info!("Using afcclient command: {}", afcclient_cmd);
         
-        let output = shell.command(&idevice_afc_cmd)
+        let output = shell.command(&afcclient_cmd)
             .args(["--documents", &package_name, "-u", &device_id, "ls", location])
             .output()
             .await;

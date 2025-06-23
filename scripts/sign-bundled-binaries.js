@@ -44,16 +44,28 @@ function findBundledBinaries(appPath) {
   }
 
   if (binariesPath) {
-    // Find all executables in tools directory (these don't get duplicated)
+    // Define the specific tools that should be bundled and signed
+    const requiredTools = [
+      'idevice_id',
+      'ideviceinfo',
+      'ideviceinstaller',
+      'afcclient',
+    ]
+
+    // Find all executables in tools directory (only required ones)
     const toolsPath = path.join(binariesPath, 'tools')
     if (fs.existsSync(toolsPath)) {
-      const tools = fs.readdirSync(toolsPath)
-      for (const tool of tools) {
+      for (const tool of requiredTools) {
         const toolPath = path.join(toolsPath, tool)
         try {
-          const stat = fs.statSync(toolPath)
-          if (stat.isFile() && (stat.mode & 0o111) && !tool.includes('.')) {
-            binaries.push(toolPath)
+          if (fs.existsSync(toolPath)) {
+            const stat = fs.statSync(toolPath)
+            if (stat.isFile() && (stat.mode & 0o111)) {
+              binaries.push(toolPath)
+            }
+          }
+          else {
+            console.warn(`Warning: Required tool ${tool} not found at ${toolPath}`)
           }
         }
         catch (error) {
