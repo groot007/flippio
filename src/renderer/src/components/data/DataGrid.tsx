@@ -5,17 +5,16 @@ import {
   Flex,
   Spinner,
   Text,
-  useDisclosure,
 } from '@chakra-ui/react'
 import { useTableDataQuery } from '@renderer/hooks/useTableDataQuery'
-import { useCurrentDatabaseSelection, useTableData } from '@renderer/store'
+import { useCurrentDatabaseSelection, useCurrentDeviceSelection, useTableData } from '@renderer/store'
 import { useRowEditingStore } from '@renderer/store/useRowEditingStore'
 import { useColorMode } from '@renderer/ui/color-mode'
+import { toaster } from '@renderer/ui/toaster'
 import { colorSchemeDark, colorSchemeLight, themeQuartz } from 'ag-grid-community'
 import { AgGridReact } from 'ag-grid-react'
-import { useCallback, useEffect, useMemo, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { LuPlus } from 'react-icons/lu'
-import { AddNewRowModal } from './AddNewRowModal'
 
 export function CustomHeaderComponent(props: any) {
   return (
@@ -39,12 +38,71 @@ export function DataGrid() {
     setTableData,
   } = useTableData()
   const { setSelectedRow } = useRowEditingStore()
-  const { selectedDatabaseTable } = useCurrentDatabaseSelection()
+  const { selectedDatabaseTable, selectedDatabaseFile } = useCurrentDatabaseSelection()
+  const { selectedDevice } = useCurrentDeviceSelection()
   const gridTheme = themeQuartz.withPart(colorMode === 'dark' ? colorSchemeDark : colorSchemeLight)
   const gridRef = useRef<AgGridReact>(null)
-  const { open, onOpen, onClose } = useDisclosure()
+  const [isAddingRow, setIsAddingRow] = useState(false)
 
   const { data, error, refetch: refetchTableData } = useTableDataQuery(selectedDatabaseTable?.name || '')
+
+  // Function to create a new row with null values
+  const handleAddNewRow = useCallback(async () => {
+    if (!selectedDatabaseTable?.name || isAddingRow)
+      return
+
+    try {
+      setIsAddingRow(true)
+
+      // Use the new addNewRowWithDefaults method to let SQLite handle default values
+      const result = await window.api.addNewRowWithDefaults(selectedDatabaseTable.name)
+
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to create new row')
+      }
+
+      // Push changes back to device if needed
+      if (
+        selectedDatabaseFile
+        && selectedDevice
+        && selectedDatabaseFile.packageName
+        && (selectedDatabaseFile?.deviceType === 'android'
+          || selectedDatabaseFile?.deviceType === 'iphone'
+          || selectedDatabaseFile?.deviceType === 'iphone-device')
+      ) {
+        await window.api.pushDatabaseFile(
+          selectedDevice.id,
+          selectedDatabaseFile.path,
+          selectedDatabaseFile.packageName,
+          selectedDatabaseFile.remotePath || selectedDatabaseFile.path,
+          selectedDatabaseFile.deviceType,
+        )
+      }
+
+      // Refresh the table data
+      refetchTableData()
+
+      toaster.create({
+        title: 'Row created',
+        description: 'New row has been successfully created with default values',
+        status: 'success',
+        duration: 3000,
+        isClosable: true,
+      })
+    }
+    catch (error: any) {
+      toaster.create({
+        title: 'Error',
+        description: error.message || 'Failed to create new row',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      })
+    }
+    finally {
+      setIsAddingRow(false)
+    }
+  }, [selectedDatabaseTable, tableData?.columns, isAddingRow, selectedDatabaseFile, selectedDevice, refetchTableData])
 
   useEffect(() => {
     if (data) {
@@ -168,21 +226,14 @@ export function DataGrid() {
           boxShadow="lg"
           borderRadius="full"
           p={0}
-          onClick={onOpen}
+          onClick={handleAddNewRow}
+          loading={isAddingRow}
           _hover={{ transform: 'scale(1.05)' }}
           transition="all 0.2s"
         >
           <LuPlus size={24} />
         </Button>
       )}
-
-      <AddNewRowModal
-        isOpen={open}
-        onClose={onClose}
-        onRowCreated={() => {
-          refetchTableData()
-        }}
-      />
     </Box>
   )
 }

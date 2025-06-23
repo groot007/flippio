@@ -25,6 +25,8 @@ function AppHeader() {
     isFetching: isRefreshing,
   } = useDevices()
 
+  console.log('devicesList', devicesList)
+
   const {
     isLoading,
     data: applicationsList = [],

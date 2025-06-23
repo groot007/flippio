@@ -1,4 +1,5 @@
 import type { DatabaseFile } from '@renderer/types'
+import { transformToCamelCase } from '@renderer/utils/caseTransformer'
 import { useQuery } from '@tanstack/react-query'
 
 interface Device {
@@ -46,7 +47,7 @@ export function useDatabaseFiles(
         throw new Error(response.error || 'Failed to fetch database files')
       }
 
-      return response.files
+      return transformToCamelCase(response.files)
     },
     enabled: !!selectedDevice?.id && !!selectedApplication?.bundleId,
     gcTime: 0,

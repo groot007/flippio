@@ -59,13 +59,16 @@ export function SidePanel() {
         selectedDatabaseFile
         && selectedDevice
         && selectedDatabaseFile.packageName
-        && selectedDatabaseFile?.deviceType === 'android'
+        && (selectedDatabaseFile?.deviceType === 'android'
+          || selectedDatabaseFile?.deviceType === 'iphone'
+          || selectedDatabaseFile?.deviceType === 'iphone-device')
       ) {
         await window.api.pushDatabaseFile(
           selectedDevice.id,
           pulledDatabaseFilePath,
           selectedDatabaseFile.packageName,
           selectedDatabaseFile.path,
+          selectedDatabaseFile.deviceType,
         )
       }
 

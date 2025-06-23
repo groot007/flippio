@@ -1,3 +1,4 @@
+import { transformToCamelCase } from '@renderer/utils/caseTransformer'
 import { useQuery } from '@tanstack/react-query'
 
 export interface Device {
@@ -43,7 +44,7 @@ export function useApplications(selectedDevice: Device | null) {
         throw new Error(response.error || `Failed to load apps for ${selectedDevice.model}`)
       }
 
-      return response.packages
+      return transformToCamelCase(response.packages)
     },
     enabled: !!selectedDevice?.id,
     gcTime: 1000 * 60 * 5, // 5 minutes

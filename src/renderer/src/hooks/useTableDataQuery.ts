@@ -16,6 +16,7 @@ export function useTableDataQuery(tableName: string) {
       }
 
       const response: TableDataResponse = await window.api.getTableInfo(tableName)
+      console.log('Table data response:', response)
 
       if (!response.success) {
         throw new Error(response.error || 'Failed to fetch table data')

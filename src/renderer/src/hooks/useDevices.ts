@@ -1,3 +1,4 @@
+import { transformToCamelCase } from '@renderer/utils/caseTransformer'
 import { useQuery } from '@tanstack/react-query'
 
 export function useDevices() {
@@ -8,7 +9,7 @@ export function useDevices() {
       if (!response.success) {
         throw new Error(response.error || 'Failed to load devices')
       }
-      return response.devices
+      return transformToCamelCase(response.devices)
     },
     retry: 1,
     staleTime: 1000 * 60 * 5,

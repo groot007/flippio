@@ -68,6 +68,7 @@ export function SubHeader() {
 
   const databaseTables = tablesData?.tables
 
+  console.log('Selected tablesData file:', !selectedDatabaseFile?.path, !selectedApplication?.bundleId, isDBPulling)
   const handleDatabaseFileChange = useCallback((file) => {
     setSelectedDatabaseFile(file)
     setSelectedDatabaseTable(null)
@@ -127,6 +128,7 @@ export function SubHeader() {
     window.api.openFile().then((file) => {
       if (!file.canceled && file.filePaths.length) {
         const filePath = file.filePaths[0]
+        console.log('FILELE', filePath)
         setSelectedDatabaseFile({
           path: filePath,
           filename: filePath.split('/').pop() || '',
@@ -136,7 +138,7 @@ export function SubHeader() {
         })
       }
     })
-  }, [])
+  }, [setSelectedDatabaseFile])
 
   const handleExportDB = useCallback(() => {
     if (!selectedDatabaseFile?.path) {
@@ -218,7 +220,7 @@ export function SubHeader() {
               value={selectedDatabaseTable}
               icon={<LuTable color="#47d5c9" />}
               onChange={handleTableChange}
-              isDisabled={!selectedDatabaseFile?.path || !selectedApplication?.bundleId || isDBPulling}
+              isDisabled={!selectedDatabaseFile?.path || isDBPulling}
             />
           </Box>
           <Button
