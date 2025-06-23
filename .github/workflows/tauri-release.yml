@@ -51,27 +51,18 @@ jobs:
       - name: Write .env file
         run: echo "${{ secrets.FLIPPIO }}" > .env
 
-      - name: Setup macOS certificate and keychain
-        if: matrix.platform == 'macos-latest'
-        run: |
-          # Decode and setup certificate
-          export MAC_CERTIFICATE=${{ secrets.MAC_CERTIFICATE }}
-          echo "$MAC_CERTIFICATE" | base64 --decode > mac_cert.p12
-
-          # Create keychain and import certificate
-          security create-keychain -p actions build.keychain
-          security default-keychain -s build.keychain
-          security unlock-keychain -p actions build.keychain
-          security import mac_cert.p12 -k build.keychain -P "${{ secrets.MAC_CERTIFICATE_PASSWORD }}" -T /usr/bin/codesign
-          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k actions build.keychain
-
-      - name: Build Tauri app (non-macOS)
-        if: matrix.platform != 'macos-latest'
+      - name: Build and release Tauri app
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
           TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
+          APPLE_CERTIFICATE: ${{ secrets.MAC_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.MAC_CERTIFICATE_PASSWORD }}
+          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         with:
           tagName: ${{ github.ref_name }}
           releaseName: Flippio v__VERSION__
@@ -80,25 +71,10 @@ jobs:
           prerelease: false
           args: ${{ matrix.args }}
 
-      - name: Build Tauri app (macOS)
-        if: matrix.platform == 'macos-latest'
-        env:
-          APPLE_CERTIFICATE: ${{ secrets.MAC_CERTIFICATE }}
-          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.MAC_CERTIFICATE_PASSWORD }}
-          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-          TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
-          TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
-        run: |
-          # Build the app - bundled resources and frameworks won't be auto-signed, we'll handle that manually
-          npx tauri build ${{ matrix.args }}
-
-      - name: Sign bundled binaries and frameworks (macOS only)
+      - name: Sign bundled binaries (macOS only)
         if: matrix.platform == 'macos-latest'
         run: |
-          # Determine the correct app path based on target
+          # Find the app bundle created by Tauri action
           if [[ "${{ matrix.args }}" == *"aarch64-apple-darwin"* ]]; then
             APP_PATH="src-tauri/target/aarch64-apple-darwin/release/bundle/macos/Flippio.app"
           elif [[ "${{ matrix.args }}" == *"x86_64-apple-darwin"* ]]; then
@@ -107,104 +83,18 @@ jobs:
             APP_PATH="src-tauri/target/release/bundle/macos/Flippio.app"
           fi
 
-          echo "Looking for app at: $APP_PATH"
-
+          # Sign bundled libimobiledevice binaries if they exist
           if [ -d "$APP_PATH" ]; then
-            echo "🔍 App bundle structure:"
-            ls -la "$APP_PATH/Contents/"
+            echo "🔐 Signing bundled libimobiledevice binaries..."
+            node scripts/sign-bundled-binaries.js "$APP_PATH" "${{ secrets.APPLE_SIGNING_IDENTITY }}" || echo "⚠️ No bundled binaries found or signing failed"
 
-            echo "🔍 Resources directory:"
-            ls -la "$APP_PATH/Contents/Resources/" 2>/dev/null || echo "No Resources directory"
-
-            echo "🔍 Frameworks directory:"
-            ls -la "$APP_PATH/Contents/Frameworks/" 2>/dev/null || echo "No Frameworks directory"
-
-            echo "✅ Found app bundle, signing bundled binaries and frameworks..."
-            node scripts/sign-bundled-binaries.js "$APP_PATH" "${{ secrets.APPLE_SIGNING_IDENTITY }}"
-
-            echo "✅ Bundled binaries and frameworks signed, now signing main app..."
-            # Sign the main app bundle after signing bundled binaries and frameworks
+            # Re-sign the main app after signing bundled binaries
+            echo "🔐 Re-signing main app bundle..."
             codesign --force --sign "${{ secrets.APPLE_SIGNING_IDENTITY }}" --options runtime --timestamp "$APP_PATH"
 
-            # Verify the app signature
-            echo "Verifying app signature..."
+            # Verify the final signature
             codesign --verify --deep --verbose "$APP_PATH"
-            echo "✅ App signature verified"
+            echo "✅ App bundle signature verified"
           else
-            echo "❌ App bundle not found at: $APP_PATH"
-            echo "Available files:"
-            find src-tauri/target -name "*.app" -type d || echo "No .app bundles found"
-            exit 1
+            echo "⚠️ App bundle not found at: $APP_PATH"
           fi
-
-      - name: Create and sign DMG (macOS only)
-        if: matrix.platform == 'macos-latest'
-        run: |
-          # Determine paths based on target
-          if [[ "${{ matrix.args }}" == *"aarch64-apple-darwin"* ]]; then
-            APP_PATH="src-tauri/target/aarch64-apple-darwin/release/bundle/macos/Flippio.app"
-            DMG_DIR="src-tauri/target/aarch64-apple-darwin/release/bundle/dmg"
-            ARCH_SUFFIX="_aarch64"
-          elif [[ "${{ matrix.args }}" == *"x86_64-apple-darwin"* ]]; then
-            APP_PATH="src-tauri/target/x86_64-apple-darwin/release/bundle/macos/Flippio.app"
-            DMG_DIR="src-tauri/target/x86_64-apple-darwin/release/bundle/dmg"
-            ARCH_SUFFIX="_x86_64"
-          else
-            APP_PATH="src-tauri/target/release/bundle/macos/Flippio.app"
-            DMG_DIR="src-tauri/target/release/bundle/dmg"
-            ARCH_SUFFIX=""
-          fi
-
-          # Create DMG directory
-          mkdir -p "$DMG_DIR"
-
-          # Create DMG with signed app
-          DMG_NAME="Flippio_${{ github.ref_name }}${ARCH_SUFFIX}.dmg"
-          DMG_PATH="$DMG_DIR/$DMG_NAME"
-
-          echo "Creating DMG: $DMG_PATH"
-          hdiutil create -volname "Flippio" -srcfolder "$APP_PATH" -ov -format UDZO "$DMG_PATH"
-
-          # Sign the DMG
-          echo "Signing DMG..."
-          codesign --force --sign "${{ secrets.APPLE_SIGNING_IDENTITY }}" --timestamp "$DMG_PATH"
-
-          echo "✅ DMG created and signed: $DMG_PATH"
-
-          # Store DMG path for upload
-          echo "DMG_PATH=$DMG_PATH" >> $GITHUB_ENV
-
-      - name: Notarize DMG (macOS only)
-        if: matrix.platform == 'macos-latest'
-        run: |
-          echo "Notarizing DMG: $DMG_PATH"
-
-          # Submit for notarization
-          xcrun notarytool submit "$DMG_PATH" \
-            --apple-id "${{ secrets.APPLE_ID }}" \
-            --password "${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}" \
-            --team-id "${{ secrets.APPLE_TEAM_ID }}" \
-            --wait
-
-          # Staple the notarization
-          xcrun stapler staple "$DMG_PATH"
-          echo "✅ DMG notarized and stapled successfully"
-
-      - name: Upload DMG to release (macOS only)
-        if: matrix.platform == 'macos-latest'
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: ${{ github.ref_name }}
-          name: Flippio v${{ github.ref_name }}
-          body: See the assets to download this version and install.
-          draft: true
-          prerelease: false
-          files: ${{ env.DMG_PATH }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Cleanup macOS keychain
-        if: matrix.platform == 'macos-latest'
-        run: |
-          security delete-keychain build.keychain
-          rm -f mac_cert.p12
