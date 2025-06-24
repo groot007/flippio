@@ -122,7 +122,34 @@ function getParameterNames(command: string): string[] {
 // API object that matches the Electron preload API exactly
 export const api = {
   // Device methods
-  getDevices: () => invokeCommandWithResponse('adb:getDevices', 'devices'),
+  // Returns all devices: Android, iOS simulators, and iPhone devices
+  getDevices: async () => {
+    try {
+      // Fetch Android devices
+      const androidResp = await invokeCommandWithResponse('adb:getDevices', 'devices')
+      // Fetch iOS devices (simulators and physical)
+      const iosResp = await invokeCommandWithResponse('device:getIOsDevices', 'devices')
+
+      console.log('Android devices:', androidResp)
+      console.log('iOS devices:', iosResp)
+      if (androidResp.success && iosResp.success) {
+        // Merge both device arrays
+        return { success: true, devices: [...(androidResp.devices || []), ...(iosResp.devices || [])] }
+      }
+      else if (androidResp.success) {
+        return { success: true, devices: androidResp.devices || [] }
+      }
+      else if (iosResp.success) {
+        return { success: true, devices: iosResp.devices || [] }
+      }
+      else {
+        return { success: false, error: androidResp.error || iosResp.error }
+      }
+    }
+    catch (error) {
+      return { success: false, error: (error as Error).message }
+    }
+  },
 
   getIOSPackages: (deviceId: string) =>
     invokeCommandWithResponse('device:getIosPackages', 'packages', deviceId),

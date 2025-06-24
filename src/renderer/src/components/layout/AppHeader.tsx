@@ -3,6 +3,7 @@ import { useApplications } from '@renderer/hooks/useApplications'
 import { useDevices } from '@renderer/hooks/useDevices'
 import { useCurrentDatabaseSelection, useCurrentDeviceSelection } from '@renderer/store'
 import { toaster } from '@renderer/ui/toaster'
+import { invoke } from '@tauri-apps/api/core'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { LuPackage, LuRefreshCcw, LuSmartphone } from 'react-icons/lu'
 import FLSelect from './../common/FLSelect'
@@ -64,6 +65,7 @@ function AppHeader() {
   }, [devicesList, selectedDevice, setSelectedApplication, setSelectedDevice])
 
   const handleRefreshDevices = useCallback(() => {
+    invoke('test_rust_log')
     refreshDevices()
       .then(() => {
         toaster.create({

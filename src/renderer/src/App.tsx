@@ -1,4 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { listen } from '@tauri-apps/api/event'
+
 import { AllCommunityModule, ModuleRegistry } from 'ag-grid-community'
 import { useEffect } from 'react'
 import { useAutoUpdater } from './hooks/useAutoUpdater'
@@ -19,6 +21,7 @@ if (posthogApiKey && typeof window !== 'undefined' && (window as any).posthog) {
       person_profiles: 'always', // or 'always' to create profiles for anonymous users as well
   })
 }
+
 /* eslint-enable */
 
 // Register all Community features
@@ -34,6 +37,18 @@ const queryClient = new QueryClient({
 
 function App(): JSX.Element {
   const { updateInfo, downloadAndInstall } = useAutoUpdater()
+
+  useEffect(() => {
+    const unlisten = listen('tauri://log', (event) => {
+    // event.payload contains the Rust log message
+      window.alert(`Rust log: ${JSON.stringify(event.payload)}`)
+      console.log('[Rust]', event.payload)
+    })
+    return () => {
+    // Clean up the listener on unmount
+      unlisten.then(fn => fn())
+    }
+  }, [])
 
   // Show update notification when available
   useEffect(() => {

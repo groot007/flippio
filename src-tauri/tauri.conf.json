@@ -5,6 +5,7 @@
   "build": {
     "beforeDevCommand": "npm run dev:renderer",
     "beforeBuildCommand": "npm run build:renderer",
+    "beforeBundleCommand": "npm run build:renderer && ./scripts/fix_libimobiledevice_bundle.sh",
     "devUrl": "http://localhost:5173",
     "frontendDist": "../src/renderer/dist"
   },
@@ -57,6 +58,7 @@
       ],
       "dialog": false,
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDc5QzdFQUU5NkQ1MDMxRTAKUldUZ01WQnQ2ZXJIZVlQNjJUTFVKMENZYVpJNk1rSytYRHNuUFkwRjVJbDh5eEZ3WjBtZTBmS0YK"
-    }
+    },
+    "log": null
   }
 }

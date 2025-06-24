@@ -25,9 +25,12 @@ export function useDatabaseFiles(
   return useQuery({
     queryKey: ['databaseFiles', selectedDevice?.id, selectedApplication?.bundleId],
     queryFn: async () => {
+      console.log('Fetching database files for device:', selectedDevice, 'and application:', selectedApplication)
       if (!selectedDevice?.id || !selectedApplication?.bundleId) {
         throw new Error('Device or application not selected')
       }
+
+      console.log('Selected device:', selectedDevice)
 
       let fetchFunction: (deviceId: string, bundleId: string) => Promise<DatabaseFilesResponse>
 

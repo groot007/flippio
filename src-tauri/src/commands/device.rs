@@ -668,13 +668,24 @@ pub async fn adb_get_android_database_files(
 fn get_libimobiledevice_tool_path(tool_name: &str) -> Option<std::path::PathBuf> {
     // Try to get the resource directory path
     if let Ok(exe_path) = std::env::current_exe() {
+        info!("exe_path: {:?}", exe_path);
+
         if let Some(exe_dir) = exe_path.parent() {
             // In development, tools are in resources/libimobiledevice/tools/
+            let prod_path = exe_dir.join(tool_name);
+            if prod_path.exists() {
+                log::info!("Using bundled {} from MacOS directory: {:?}", tool_name, prod_path);
+                return Some(prod_path);
+            }
+            
             let dev_path = exe_dir
                 .parent()
+                .and_then(|b| b.parent())
                 .and_then(|p| p.parent())
                 .map(|p| p.join("resources").join("libimobiledevice").join("tools").join(tool_name));
             
+            info!("dev_path: {:?}", dev_path);
+
             if let Some(ref path) = dev_path {
                 if path.exists() {
                     info!("Using bundled {} from: {:?}", tool_name, path);
@@ -729,12 +740,15 @@ pub async fn device_get_ios_devices(app_handle: tauri::AppHandle) -> Result<Devi
         .map(|p| p.to_string_lossy().to_string())
         .unwrap_or_else(|| "idevice_id".to_string());
     
-    info!("Using idevice_id command: {}", idevice_id_cmd);
-    
+    info!("Using idevice_id path: {:?}", idevice_id_path);
+    info!("Using idevice_id command: {:?}", idevice_id_cmd);
+
     let output = shell.command(&idevice_id_cmd)
         .args(["-l"])
         .output()
         .await;
+
+    info!("idevice_id command output: {:?}", output);
     
     let output = match output {
         Ok(output) => output,
@@ -922,6 +936,8 @@ pub async fn device_get_ios_device_database_files(
     for location in locations {
         // Use bundled afcclient tool to list files in the app's container
         let afcclient_path = get_libimobiledevice_tool_path("afcclient");
+        info!("Using afcclient tool at: {:?}", afcclient_path);
+
         let afcclient_cmd = afcclient_path
             .as_ref()
             .map(|p| p.to_string_lossy().to_string())

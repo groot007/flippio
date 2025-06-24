@@ -29,6 +29,8 @@ export function SubHeader() {
 
   const [isQueryModalOpen, setIsQueryModalOpen] = useState(false)
 
+  console.log('SubHeader selectedDevice:', selectedDevice, selectedApplication)
+
   const {
     data: databaseFiles = [],
     isLoading,

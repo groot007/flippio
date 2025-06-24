@@ -44,6 +44,7 @@
     "@sentry/electron": "^6.3.0",
     "@tanstack/react-query": "^5.74.7",
     "@tauri-apps/api": "^2.0.0",
+    "@tauri-apps/plugin-log": "^2.5.1",
     "@uiw/react-json-view": "^2.0.0-alpha.30",
     "ag-grid-community": "^33.1.1",
     "ag-grid-react": "^33.1.1",
