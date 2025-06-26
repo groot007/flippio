@@ -1,3 +1,8 @@
+// Tauri command to expose the resolved libimobiledevice tool path to the frontend
+#[tauri::command]
+pub async fn get_libimobiledevice_tool_path_cmd(tool_name: String) -> Option<String> {
+    get_libimobiledevice_tool_path(&tool_name).map(|p| p.to_string_lossy().to_string())
+}
 // Device commands module
 // Implements all device-related IPC commands (ADB, iOS, Virtual devices)
 
@@ -662,70 +667,54 @@ pub async fn adb_get_android_database_files(
     })
 }
 
-// iOS Commands
-
-// Helper function to get path to bundled libimobiledevice tools
-fn get_libimobiledevice_tool_path(tool_name: &str) -> Option<std::path::PathBuf> {
-    // Try to get the resource directory path
+pub fn get_libimobiledevice_tool_path(tool_name: &str) -> Option<PathBuf> {
     if let Ok(exe_path) = std::env::current_exe() {
-        info!("exe_path: {:?}", exe_path);
+        log::info!("[libimobiledevice] current_exe: {:?}", exe_path);
 
         if let Some(exe_dir) = exe_path.parent() {
-            // In development, tools are in resources/libimobiledevice/tools/
-            let prod_path = exe_dir.join(tool_name);
-            if prod_path.exists() {
-                log::info!("Using bundled {} from MacOS directory: {:?}", tool_name, prod_path);
-                return Some(prod_path);
+            // ✅ 1. Production: Contents/Resources/macos-deps/<tool>
+            if let Some(resources_path) = exe_dir
+                .parent() // Contents/
+                .map(|p| p.join("Resources/macos-deps").join(tool_name))
+            {
+                if resources_path.exists() {
+                    log::info!(
+                        "[libimobiledevice] Using bundled '{}' from Contents/Resources/macos-deps/: {:?}",
+                        tool_name,
+                        resources_path
+                    );
+                    return Some(resources_path);
+                }
             }
+
             
             let dev_path = exe_dir
                 .parent()
-                .and_then(|b| b.parent())
-                .and_then(|p| p.parent())
-                .map(|p| p.join("resources").join("libimobiledevice").join("tools").join(tool_name));
-            
-            info!("dev_path: {:?}", dev_path);
+                .and_then(|p| p.parent())  // target/debug/
+                .and_then(|p| p.parent())  // target/
+                .map(|p| p.join("resources/libimobiledevice/tools").join(tool_name));
 
-            if let Some(ref path) = dev_path {
-                if path.exists() {
-                    info!("Using bundled {} from: {:?}", tool_name, path);
-                    return Some(path.clone());
+            if let Some(ref dev_path) = dev_path {
+                if dev_path.exists() {
+                    log::info!(
+                        "[libimobiledevice] Using dev '{}' from: {:?}",
+                        tool_name,
+                        dev_path
+                    );
+                    return Some(dev_path.clone());
                 }
-            }
-            
-            // In production (macOS app bundle), tools are now in Contents/MacOS/
-            let macos_path = exe_dir.join(tool_name);
-            if macos_path.exists() {
-                info!("Using bundled {} from MacOS directory: {:?}", tool_name, macos_path);
-                return Some(macos_path);
-            }
-            
-            // Fallback: check old Resources location for compatibility
-            let old_resources_path = exe_dir
-                .join("../Resources/libimobiledevice/tools")
-                .join(tool_name);
-            
-            if old_resources_path.exists() {
-                info!("Using bundled {} from legacy Resources location: {:?}", tool_name, old_resources_path);
-                return Some(old_resources_path);
-            }
-            
-            // Also check the _up_ path that was causing issues
-            let up_path = exe_dir
-                .join("../Resources/_up_/resources/libimobiledevice/tools")
-                .join(tool_name);
-            
-            if up_path.exists() {
-                info!("Using bundled {} from _up_ location: {:?}", tool_name, up_path);
-                return Some(up_path);
             }
         }
     }
-    
-    // Fallback: try system PATH
-    info!("Using system {} from PATH", tool_name);
+
+    // ❗ Fallback: system PATH
+    log::warn!(
+        "[libimobiledevice] Falling back to system '{}' from PATH",
+        tool_name
+    );
     None
 }
+
 
 #[tauri::command]
 pub async fn device_get_ios_devices(app_handle: tauri::AppHandle) -> Result<DeviceResponse<Vec<Device>>, String> {

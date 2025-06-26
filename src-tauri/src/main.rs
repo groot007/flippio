@@ -6,11 +6,6 @@ use tokio::sync::RwLock;
 use tauri_plugin_log;
 
 mod commands;
-// Test log command for verifying log output in webview
-#[tauri::command]
-fn test_rust_log() {
-    log::info!("TEST LOG FROM RUST: If you see this, logging to webview works!");
-}
 use commands::database::DbPool;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -19,12 +14,7 @@ pub fn run() {
     let db_pool: DbPool = Arc::new(RwLock::new(None));
     
     let mut builder = tauri::Builder::default()
-        .plugin(
-            tauri_plugin_log::Builder::new()
-                .level(log::LevelFilter::Trace)
-                .targets([tauri_plugin_log::Target::new(tauri_plugin_log::TargetKind::Webview)])
-                .build()
-        )
+        .plugin(tauri_plugin_log::Builder::new().build())
         .manage(db_pool)
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
@@ -73,8 +63,7 @@ pub fn run() {
             // Updater commands
             commands::updater::check_for_updates,
             commands::updater::download_and_install_update,
-            // Test log command
-            test_rust_log,
+            commands::device::get_libimobiledevice_tool_path_cmd
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

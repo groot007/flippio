@@ -5,7 +5,7 @@
   "build": {
     "beforeDevCommand": "npm run dev:renderer",
     "beforeBuildCommand": "npm run build:renderer",
-    "beforeBundleCommand": "npm run build:renderer && ./scripts/fix_libimobiledevice_bundle.sh",
+    "beforeBundleCommand": "./scripts/post-bundle.sh",
     "devUrl": "http://localhost:5173",
     "frontendDist": "../src/renderer/dist"
   },
@@ -36,20 +36,25 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
+    "resources": [
+      "macos-deps/idevice_id",
+      "macos-deps/ideviceinfo",
+      "macos-deps/afcclient",
+      "macos-deps/ideviceinstaller"
+    ],
     "macOS": {
       "frameworks": [
-        "../resources/libimobiledevice/libs/libimobiledevice-1.0.6.dylib",
-        "../resources/libimobiledevice/libs/libimobiledevice-glue-1.0.0.dylib",
-        "../resources/libimobiledevice/libs/libplist-2.0.4.dylib",
-        "../resources/libimobiledevice/libs/libusbmuxd-2.0.7.dylib",
-        "../resources/libimobiledevice/libs/libzip.5.5.dylib",
-        "../resources/libimobiledevice/libs/libcrypto.3.dylib",
-        "../resources/libimobiledevice/libs/libssl.3.dylib",
-        "../resources/libimobiledevice/libs/liblzma.5.dylib",
-        "../resources/libimobiledevice/libs/libzstd.1.5.7.dylib"
+        "macos-deps/libcrypto.3.dylib",
+        "macos-deps/libssl.3.dylib",
+        "macos-deps/libusbmuxd-2.0.7.dylib",
+        "macos-deps/libimobiledevice-glue-1.0.0.dylib",
+        "macos-deps/libplist-2.0.4.dylib",
+        "macos-deps/libzip.5.5.dylib",
+        "macos-deps/libimobiledevice-1.0.6.dylib"
       ]
     }
   },
+
   "plugins": {
     "updater": {
       "active": true,

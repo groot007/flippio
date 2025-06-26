@@ -65,7 +65,13 @@ function AppHeader() {
   }, [devicesList, selectedDevice, setSelectedApplication, setSelectedDevice])
 
   const handleRefreshDevices = useCallback(() => {
-    invoke('test_rust_log')
+    invoke('get_libimobiledevice_tool_path_cmd', { toolName: 'idevice_id' })
+      .then((toolPath: string) => {
+        console.log('Libimobiledevice tool path:', toolPath)
+      })
+      .catch((err) => {
+        console.error('Error getting libimobiledevice tool path:', err)
+      })
     refreshDevices()
       .then(() => {
         toaster.create({
