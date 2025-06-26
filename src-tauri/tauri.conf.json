@@ -36,12 +36,6 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
-    "resources": [
-      "macos-deps/idevice_id",
-      "macos-deps/ideviceinfo",
-      "macos-deps/afcclient",
-      "macos-deps/ideviceinstaller"
-    ],
     "macOS": {
       "signingIdentity": "Developer ID Application: Mykola Stanislavchuk (4SVA48D93U)",
       "frameworks": [
