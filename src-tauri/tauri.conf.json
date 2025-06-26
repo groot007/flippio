@@ -43,6 +43,7 @@
       "macos-deps/ideviceinstaller"
     ],
     "macOS": {
+      "signingIdentity": "Developer ID Application: Mykola Stanislavchuk (4SVA48D93U)",
       "frameworks": [
         "macos-deps/libcrypto.3.dylib",
         "macos-deps/libssl.3.dylib",
