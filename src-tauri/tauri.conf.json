@@ -5,7 +5,6 @@
   "build": {
     "beforeDevCommand": "npm run dev:renderer",
     "beforeBuildCommand": "npm run build:renderer",
-    "beforeBundleCommand": "sh scripts/move-binaries.sh",
     "devUrl": "http://localhost:5173",
     "frontendDist": "../src/renderer/dist"
   },
@@ -35,6 +34,12 @@
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
+    ],
+    "externalBin": [
+      "macos-deps/idevice_id",
+      "macos-deps/ideviceinfo",
+      "macos-deps/afcclient",
+      "macos-deps/ideviceinstaller"
     ],
     "macOS": {
       "signingIdentity": "Developer ID Application: Mykola Stanislavchuk (4SVA48D93U)",
