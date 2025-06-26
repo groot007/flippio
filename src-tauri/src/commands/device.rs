@@ -675,7 +675,7 @@ pub fn get_libimobiledevice_tool_path(tool_name: &str) -> Option<PathBuf> {
             // ✅ 1. Production: Contents/Resources/macos-deps/<tool>
             if let Some(resources_path) = exe_dir
                 .parent() // Contents/
-                .map(|p| p.join("Resources/macos-deps").join(tool_name))
+                .map(|p| p.join("MacOs").join(tool_name))
             {
                 if resources_path.exists() {
                     log::info!(
@@ -687,7 +687,7 @@ pub fn get_libimobiledevice_tool_path(tool_name: &str) -> Option<PathBuf> {
                 }
             }
 
-            
+
             let dev_path = exe_dir
                 .parent()
                 .and_then(|p| p.parent())  // target/debug/

@@ -5,7 +5,7 @@
   "build": {
     "beforeDevCommand": "npm run dev:renderer",
     "beforeBuildCommand": "npm run build:renderer",
-    "beforeBundleCommand": "./scripts/post-bundle.sh",
+    "beforeBundleCommand": "sh scripts/move-binaries.sh",
     "devUrl": "http://localhost:5173",
     "frontendDist": "../src/renderer/dist"
   },
