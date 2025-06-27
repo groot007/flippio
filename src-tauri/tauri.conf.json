@@ -1,6 +1,6 @@
 {
   "productName": "Flippio",
-  "version": "0.3.6",
+  "version": "0.3.7",
   "identifier": "com.flippio.app",
   "build": {
     "beforeDevCommand": "npm run dev:renderer",
@@ -84,7 +84,7 @@
         "https://api.github.com/repos/groot007/flippio/releases/latest"
       ],
       "dialog": false,
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDE4OEFCRjdFNjU1NjRGNUYKUldSZlQxWmxmcitLR0FldFhIcWRNVEUxVjN5QlJYenZYTytwS1BLYWhFSjJhRUdsVW1LZ2srelgK"
+      "pubkey": "ZFc1MGNuVnpkR1ZrSUdOdmJXMWxiblE2SUcxcGJtbHphV2R1SUhCMVlteHBZeUJyWlhrNklEaEdNelk1TjBJNE9EUTBNamd3TnpJS1VsZFNlV2RGUzBWMVNtTXlhbmhoVEdKbFYyaG9ORnByZUVsaVExVlNjVXBYVW1wcVdEWmlUQ3RRSzFaNFRXMDFiR0pJUWt0Nk5Ya0s="
     },
     "log": null
   }
