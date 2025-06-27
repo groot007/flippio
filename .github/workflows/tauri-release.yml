@@ -52,11 +52,11 @@ jobs:
         run: echo "${{ secrets.FLIPPIO }}" > .env
 
       - name: Build and release Tauri app
-        uses: tauri-apps/tauri-action@v0
+        uses: tauri-apps/tauri-action@v0.5.20
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
-          TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
           APPLE_CERTIFICATE: ${{ secrets.MAC_CERTIFICATE }}
           APPLE_CERTIFICATE_PASSWORD: ${{ secrets.MAC_CERTIFICATE_PASSWORD }}
           APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
@@ -66,9 +66,21 @@ jobs:
         with:
           tagName: ${{ github.ref_name }}
           releaseName: Flippio v__VERSION__
+          releaseBody: |
+            ## What's Changed
+            
+            This release includes auto-updater support with proper signature verification.
+            
+            ## Installation
+            
+            Download the appropriate installer for your system:
+            - **Apple Silicon Macs**: `Flippio_*_aarch64.dmg`
+            - **Intel Macs**: `Flippio_*_x64.dmg`
+            
+            ## Auto-Updates
+            
+            This version supports automatic updates. The app will check for new versions and prompt you to update when available.
           releaseDraft: false
           prerelease: false
           args: ${{ matrix.args }}
           includeUpdaterJson: true
-          updaterJsonPreferNsis: true
-          includeDebug: true

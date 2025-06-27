@@ -1,6 +1,6 @@
 {
   "productName": "Flippio",
-  "version": "0.3.7",
+  "version": "0.3.8",
   "identifier": "com.flippio.app",
   "build": {
     "beforeDevCommand": "npm run dev:renderer",
@@ -48,6 +48,7 @@
   "bundle": {
     "active": true,
     "targets": "all",
+    "createUpdaterArtifacts": true,
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
