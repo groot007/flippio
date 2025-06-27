@@ -17,7 +17,14 @@
     body {
       margin: 0;
       padding: 0;
-      background-color: #1a202c;
+      background-color: #FFFFFF;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      body {
+        background-color: #1C1C1E;
+      }
     }
 
     #preloader {
@@ -26,7 +33,7 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background-color: #1a202c;
+      background-color: #FFFFFF;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -37,18 +44,30 @@
       pointer-events: none;
     }
 
+    @media (prefers-color-scheme: dark) {
+      #preloader {
+        background-color: #1C1C1E;
+      }
+    }
+
     #preloader.fade {
       opacity: 0;
       transition: opacity 0.6s ease-out;
     }
 
     #app-title {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      color: #47d5c9;
-      font-size: 24px;
-      margin-top: 24px;
-      font-weight: bold;
-      letter-spacing: 1px;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif;
+      color: #007AFF;
+      font-size: 28px;
+      margin-top: 32px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      #app-title {
+        color: #0A84FF;
+      }
     }
 
     .database-animation {
@@ -70,28 +89,32 @@
       width: 100%;
       height: 100%;
       border-radius: 50%;
-      border: 2px solid #47d5c9;
-      opacity: 0;
-      animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+      background: linear-gradient(45deg, #007AFF20, #0A84FF20);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .circle-pulse {
+        background: linear-gradient(45deg, #0A84FF20, #007AFF20);
+      }
     }
 
     .circle-pulse:nth-child(2) {
       animation-delay: 0.5s;
     }
 
-    @keyframes pulse-ring {
+    @keyframes pulse {
       0% {
-        transform: scale(0.7);
-        opacity: 0;
+        transform: scale(0.8);
+        opacity: 0.3;
       }
-
       50% {
-        opacity: 0.5;
+        transform: scale(1.1);
+        opacity: 0.6;
       }
-
       100% {
-        transform: scale(1.2);
-        opacity: 0;
+        transform: scale(0.8);
+        opacity: 0.3;
       }
     }
 
@@ -99,7 +122,13 @@
       width: 60px;
       height: 60px;
       animation: float 3s ease-in-out infinite;
-      filter: drop-shadow(0 0 8px rgba(71, 213, 201, 0.3));
+      filter: drop-shadow(0 0 8px rgba(0, 122, 255, 0.3));
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .server-icon {
+        filter: drop-shadow(0 0 8px rgba(10, 132, 255, 0.3));
+      }
     }
 
     @keyframes float {
@@ -176,12 +205,12 @@
         <div class="circle-pulse"></div>
         <div class="circle-pulse"></div>
         <svg class="server-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path d="M4,1H20a1,1,0,0,1,1,1V6a1,1,0,0,1-1,1H4A1,1,0,0,1,3,6V2A1,1,0,0,1,4,1Z" fill="#47d5c9" />
-          <path d="M4,9H20a1,1,0,0,1,1,1v4a1,1,0,0,1-1,1H4a1,1,0,0,1-1-1V10A1,1,0,0,1,4,9Z" fill="#47d5c9" />
-          <path d="M4,17H20a1,1,0,0,1,1,1v4a1,1,0,0,1-1,1H4a1,1,0,0,1-1-1V18A1,1,0,0,1,4,17Z" fill="#47d5c9" />
-          <circle cx="7.5" cy="3.5" r="0.8" fill="#1a202c" />
-          <circle cx="7.5" cy="11.5" r="0.8" fill="#1a202c" />
-          <circle cx="7.5" cy="19.5" r="0.8" fill="#1a202c" />
+          <path d="M4,1H20a1,1,0,0,1,1,1V6a1,1,0,0,1-1,1H4A1,1,0,0,1,3,6V2A1,1,0,0,1,4,1Z" fill="#007AFF" />
+          <path d="M4,9H20a1,1,0,0,1,1,1v4a1,1,0,0,1-1,1H4a1,1,0,0,1-1-1V10A1,1,0,0,1,4,9Z" fill="#007AFF" />
+          <path d="M4,17H20a1,1,0,0,1,1,1v4a1,1,0,0,1-1,1H4a1,1,0,0,1-1-1V18A1,1,0,0,1,4,17Z" fill="#007AFF" />
+          <circle cx="7.5" cy="3.5" r="0.8" fill="#FFFFFF" />
+          <circle cx="7.5" cy="11.5" r="0.8" fill="#FFFFFF" />
+          <circle cx="7.5" cy="19.5" r="0.8" fill="#FFFFFF" />
         </svg>
         <div class="data-particle"></div>
         <div class="data-particle"></div>

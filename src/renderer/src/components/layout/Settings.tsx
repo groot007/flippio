@@ -1,4 +1,4 @@
-import { Button, Link, Menu, Portal, Text, VStack } from '@chakra-ui/react'
+import { Box, Button, Link, Menu, Portal, Text } from '@chakra-ui/react'
 import { ColorModeButton } from '@renderer/ui/color-mode'
 import { LuExternalLink, LuGithub, LuSettings } from 'react-icons/lu'
 import packageJSON from '../../../../../package.json'
@@ -6,48 +6,78 @@ import packageJSON from '../../../../../package.json'
 export function Settings() {
   return (
     <Menu.Root>
-      {/* @ts-expect-error chakra types */}
       <Menu.Trigger asChild>
         <Button
-          variant="outline"
+          variant="ghost"
           size="sm"
-          borderColor="gray.300"
-          _dark={{ borderColor: 'gray.600' }}
-          _hover={{ borderColor: 'flipioPrimary' }}
+          color="textSecondary"
+          _hover={{ 
+            bg: 'bgTertiary',
+            color: 'flipioPrimary',
+          }}
+          title="Settings"
         >
-          <LuSettings color="flipioPrimary" />
+          <LuSettings size={16} />
         </Button>
       </Menu.Trigger>
       <Portal>
         <Menu.Positioner>
-          <Menu.Content>
-            {/* @ts-expect-error chakra types */}
-            <Menu.Item value="new-txt" justifyContent="center" justifyItems="center">
+          <Menu.Content
+            bg="bgPrimary"
+            border="1px solid"
+            borderColor="borderPrimary"
+            borderRadius="md"
+            boxShadow="lg"
+            py={2}
+            minW="200px"
+          >
+            <Menu.Item 
+              value="theme-toggle" 
+              px={3}
+              py={2}
+              _hover={{
+                bg: 'bgTertiary',
+              }}
+              _focus={{
+                bg: 'bgTertiary',
+              }}
+            >
               <ColorModeButton />
             </Menu.Item>
-            {/* @ts-expect-error chakra types */}
-            <Menu.Item value="version" justifyContent="center" justifyItems="center">
+            <Menu.Item 
+              value="github-link" 
+              px={3}
+              py={2}
+              _hover={{
+                bg: 'bgTertiary',
+              }}
+              _focus={{
+                bg: 'bgTertiary',
+              }}
+            >
               <Link
                 target="_blank"
                 href="https://github.com/groot007/flippio"
                 variant="plain"
                 outline="none"
-                color="gray.600"
-                _dark={{ color: 'gray.300' }}
+                color="textPrimary"
                 _hover={{ color: 'flipioPrimary' }}
+                display="flex"
+                alignItems="center"
+                gap={2}
+                fontSize="sm"
+                fontWeight="medium"
               >
-                <LuGithub />
-                {' '}
-                <LuExternalLink />
+                <LuGithub size={16} />
+                <Text>GitHub</Text>
+                <LuExternalLink size={12} />
               </Link>
             </Menu.Item>
-            <VStack>
-              <Text fontSize="sm" color="gray.500" _dark={{ color: 'gray.400' }}>
-                v:
-                {' '}
-                {packageJSON.version}
+            <Box px={3} py={2} borderTop="1px solid" borderColor="borderSecondary" mt={1}>
+              <Text fontSize="xs" color="textTertiary">
+                v{packageJSON.version}
               </Text>
-            </VStack>
+            </Box>
           </Menu.Content>
         </Menu.Positioner>
       </Portal>

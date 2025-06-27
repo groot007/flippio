@@ -1,4 +1,4 @@
-import { HStack } from '@chakra-ui/react'
+import { HStack, Text } from '@chakra-ui/react'
 import { chakraComponents, Select } from 'chakra-react-select'
 
 interface CustomSelectProps {
@@ -26,20 +26,33 @@ const FLSelect: React.FC<CustomSelectProps> = ({
   onChange,
   label,
   isDisabled = false,
-  width = '200px',
+  width = '220px',
   icon = null,
   placeholder,
   searchable = true,
   noOptionsMessage = 'No options available',
 }) => {
   const customComponents = {
-    Control: ({ children, ...props }) => {
+    Control: ({ children, ...props }: any) => {
       return (
-        // @ts-expect-error chakra-react-select types
         <chakraComponents.Control {...props}>
-          <HStack mr={1}>{icon}</HStack>
+          <HStack ml={3} mr={1}>{icon}</HStack>
           {children}
         </chakraComponents.Control>
+      )
+    },
+    Option: ({ children, ...props }: any) => {
+      return (
+        <chakraComponents.Option {...props}>
+          <Text fontSize="sm" fontWeight="medium" color="textPrimary">
+            {props.data.label}
+          </Text>
+          {props.data.description && (
+            <Text fontSize="xs" color="textSecondary" mt={0.5}>
+              {props.data.description}
+            </Text>
+          )}
+        </chakraComponents.Option>
       )
     },
   }
@@ -61,37 +74,85 @@ const FLSelect: React.FC<CustomSelectProps> = ({
         menu: provided => ({
           ...provided,
           zIndex: 100,
-
+          bg: 'bgPrimary',
+          border: '1px solid',
+          borderColor: 'borderPrimary',
+          borderRadius: 'md',
+          boxShadow: 'lg',
+          py: 1,
         }),
-
         option: provided => ({
           ...provided,
+          bg: 'transparent',
+          py: 2,
+          px: 3,
           _selected: {
-            background: 'flipioPrimary',
+            bg: 'flipioPrimary',
+            color: 'white',
           },
-          _hover: { cursor: 'pointer' },
+          _hover: { 
+            bg: 'bgTertiary',
+            cursor: 'pointer',
+          },
+          _focus: {
+            bg: 'bgTertiary',
+          },
         }),
         container: provided => ({
           ...provided,
           width,
-          _hover: { cursor: 'pointer' },
         }),
         dropdownIndicator: provided => ({
           ...provided,
-          color: 'flipioPrimary',
+          color: 'textSecondary',
+          _hover: {
+            color: 'flipioPrimary',
+          },
         }),
-        valueContainer: provided => ({
+        indicatorSeparator: provided => ({
           ...provided,
-          color: 'flipioPrimary',
+          display: 'none',
         }),
-
         control: provided => ({
           ...provided,
-
-          borderColor: 'flipioPrimary',
+          bg: 'bgPrimary',
+          borderColor: 'borderPrimary',
           borderWidth: '1px',
-          _hover: { borderColor: 'flipioPrimary' },
-          _focus: { borderColor: 'flipioPrimary', outline: 'none', borderWidth: '2px' },
+          borderRadius: 'sm',
+          minH: '40px',
+          fontSize: 'sm',
+          fontWeight: 'medium',
+          transition: 'all 0.2s',
+          _hover: { 
+            borderColor: 'flipioPrimary',
+            boxShadow: '0 0 0 1px var(--chakra-colors-flipioPrimary)',
+          },
+          _focus: { 
+            borderColor: 'flipioPrimary', 
+            outline: 'none', 
+            boxShadow: '0 0 0 2px var(--chakra-colors-flipioPrimary)',
+          },
+          _disabled: {
+            bg: 'bgTertiary',
+            borderColor: 'borderSecondary',
+            opacity: 0.6,
+            cursor: 'not-allowed',
+          },
+        }),
+        placeholder: provided => ({
+          ...provided,
+          color: 'textTertiary',
+          fontSize: 'sm',
+        }),
+        singleValue: provided => ({
+          ...provided,
+          color: 'textPrimary',
+          fontSize: 'sm',
+          fontWeight: 'medium',
+        }),
+        input: provided => ({
+          ...provided,
+          color: 'textPrimary',
         }),
       }}
     />
