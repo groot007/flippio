@@ -202,8 +202,6 @@ function AppHeader() {
 
           {/* Actions */}
           <HStack gap={3} alignItems="center">
-            <UpdateChecker />
-
             <Button
               onClick={handleOpenVirtualDeviceModal}
               variant="outline"
