@@ -20,14 +20,16 @@ export function Settings() {
         type: 'info',
         duration: 3000,
       })
-    } catch (error) {
+    }
+    catch (error) {
       toaster.create({
         title: 'Update Check Failed',
         description: 'Unable to check for updates. Please try again later.',
         type: 'error',
         duration: 5000,
       })
-    } finally {
+    }
+    finally {
       setIsChecking(false)
     }
   }
@@ -72,7 +74,7 @@ export function Settings() {
             >
               <ColorModeButton />
             </Menu.Item>
-            
+
             <Menu.Item
               value="check-updates"
               px={3}
@@ -105,7 +107,7 @@ export function Settings() {
                 <Text>Check for Updates</Text>
               </Button>
             </Menu.Item>
-            
+
             <Menu.Item
               value="github-link"
               px={3}
