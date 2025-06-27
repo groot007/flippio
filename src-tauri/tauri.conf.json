@@ -50,6 +50,7 @@
         "macos-deps/libimobiledevice-glue-1.0.0.dylib",
         "macos-deps/libplist-2.0.4.dylib",
         "macos-deps/libzip.5.5.dylib",
+        "macos-deps/liblzma.5.dylib",
         "macos-deps/libimobiledevice-1.0.6.dylib"
       ]
     }

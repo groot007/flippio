@@ -30,8 +30,12 @@ function AppHeader() {
 
   const {
     isLoading,
+    error,
     data: applicationsList = [],
   } = useApplications(selectedDevice)
+
+  console.log('applicationsList__', applicationsList)
+  console.log('applicationsList__error', error)
 
   const [isPackageSetModalOpen, setIsPackageSetModalOpen] = useState(false)
   const closePackageSeModal = useCallback(() => {

@@ -40,6 +40,8 @@ export function useApplications(selectedDevice: Device | null) {
 
       const response = await fetchFunction(selectedDevice.id)
 
+      console.log('RESPONSE:', response)
+
       if (!response.success) {
         throw new Error(response.error || `Failed to load apps for ${selectedDevice.model}`)
       }
