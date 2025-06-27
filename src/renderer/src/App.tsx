@@ -48,14 +48,15 @@ function App(): JSX.Element {
           console.log('[Rust]', event.payload)
         })
         return unlisten
-      } catch (error) {
+      }
+      catch (error) {
         console.warn('Failed to setup log listener:', error)
         return null
       }
     }
 
     let unlistenPromise: Promise<(() => void) | null> | null = null
-    
+
     // Small delay to ensure event system is initialized
     const timeoutId = setTimeout(() => {
       unlistenPromise = setupLogListener()
@@ -65,8 +66,9 @@ function App(): JSX.Element {
       clearTimeout(timeoutId)
       // Clean up the listener on unmount
       if (unlistenPromise) {
-        unlistenPromise.then(fn => {
-          if (fn) fn()
+        unlistenPromise.then((fn) => {
+          if (fn)
+            fn()
         })
       }
     }

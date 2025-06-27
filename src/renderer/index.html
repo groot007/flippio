@@ -7,12 +7,14 @@
   <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
   <meta http-equiv="Content-Security-Policy" content="
   default-src 'self'; 
-  script-src 'self' https://*.i.posthog.com 'unsafe-eval'; 
-  connect-src 'self' https://us.i.posthog.com https://*.i.posthog.com https://*.ingest.de.sentry.io ipc: tauri: https: blob:;
-  style-src 'self' 'unsafe-inline' data:; 
-  font-src 'self' data:;
+  script-src 'self' https://*.i.posthog.com 'unsafe-eval' 'unsafe-inline'; 
+  connect-src 'self' https: https://us.i.posthog.com https://*.i.posthog.com https://*.ingest.de.sentry.io ipc: tauri: blob: data:;
+  style-src 'self' 'unsafe-inline' data: blob:; 
+  font-src 'self' data: https:;
   img-src 'self' data: https: blob:;
   worker-src 'self' blob:;
+  object-src 'none';
+  base-uri 'self';
 " />
   <style>
     body {

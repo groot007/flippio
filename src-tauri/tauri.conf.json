@@ -10,7 +10,7 @@
   },
   "app": {
     "security": {
-      "csp": "default-src 'self'; script-src 'self' https://*.i.posthog.com 'unsafe-eval'; connect-src 'self' https: https://*.ingest.de.sentry.io tauri: ipc: blob:; style-src 'self' 'unsafe-inline' data:; font-src 'self' data:; img-src 'self' data: https: blob:; worker-src 'self' blob:;",
+      "csp": "default-src 'self'; script-src 'self' https://*.i.posthog.com 'unsafe-eval' 'unsafe-inline'; connect-src 'self' https: https://us.i.posthog.com https://*.i.posthog.com https://*.ingest.de.sentry.io ipc: tauri: blob: data:; style-src 'self' 'unsafe-inline' data: blob:; font-src 'self' data: https:; img-src 'self' data: https: blob:; worker-src 'self' blob:; object-src 'none'; base-uri 'self';",
       "capabilities": [
         {
           "identifier": "main-capability",
