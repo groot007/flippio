@@ -1,4 +1,5 @@
-import * as Sentry from '@sentry/electron/main'
+// NOTE: This file is from the Electron version and is not used in Tauri
+// import * as Sentry from '@sentry/electron/main'
 import { dialog } from 'electron'
 import { autoUpdater } from 'electron-updater'
 
@@ -14,7 +15,8 @@ autoUpdater.on('update-downloaded', () => {
 
 autoUpdater.on('error', (err) => {
   console.error('Update error:', err)
-  Sentry.captureException(err) // Capture update errors in Sentry
+  // NOTE: Sentry not used in Tauri version
+  // Sentry.captureException(err) // Capture update errors in Sentry
 })
 
 autoUpdater.on('update-available', (info) => {

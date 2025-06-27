@@ -10,7 +10,7 @@
   },
   "app": {
     "security": {
-      "csp": null
+      "csp": "default-src 'self'; script-src 'self' https://*.i.posthog.com; connect-src 'self' https: tauri: ipc: sentry-ipc: blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; worker-src 'self' blob:;"
     },
     "windows": [
       {
@@ -64,7 +64,7 @@
         "https://api.github.com/repos/{{owner}}/{{repo}}/releases/latest"
       ],
       "dialog": false,
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDc5QzdFQUU5NkQ1MDMxRTAKUldUZ01WQnQ2ZXJIZVlQNjJUTFVKMENZYVpJNk1rSytYRHNuUFkwRjVJbDh5eEZ3WjBtZTBmS0YK"
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDE4OEFCRjdFNjU1NjRGNUYKUldSZlQxWmxmcitLR0FldFhIcWRNVEUxVjN5QlJYenZYTytwS1BLYWhFSjJhRUdsVW1LZ2srelgK"
     },
     "log": null
   }

@@ -8,7 +8,7 @@
   <meta http-equiv="Content-Security-Policy" content="
   default-src 'self'; 
   script-src 'self' https://*.i.posthog.com; 
-  connect-src 'self' https://us.i.posthog.com https://*.i.posthog.com;
+  connect-src 'self' https://us.i.posthog.com https://*.i.posthog.com https://*.ingest.de.sentry.io ipc: sentry-ipc: tauri: https: blob:;
   style-src 'self' 'unsafe-inline'; 
   img-src 'self' data:;
   worker-src 'self' blob:;

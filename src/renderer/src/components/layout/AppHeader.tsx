@@ -8,6 +8,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { LuPackage, LuRefreshCcw, LuSmartphone } from 'react-icons/lu'
 import FLSelect from './../common/FLSelect'
 import { VirtualDeviceModal } from './../data/VirtualDeviceModal'
+import { UpdateChecker } from './../updater/UpdateChecker'
 import { PackageSetModal } from './PackageSetModal'
 import { Settings } from './Settings'
 
@@ -201,6 +202,7 @@ function AppHeader() {
 
           {/* Actions */}
           <HStack gap={3} alignItems="center">
+            <UpdateChecker />
 
             <Button
               onClick={handleOpenVirtualDeviceModal}
