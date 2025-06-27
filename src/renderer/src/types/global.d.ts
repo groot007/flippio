@@ -1,11 +1,11 @@
-import type { WebUtils } from 'electron'
+// import type { WebUtils } from 'electron' // Not used in Tauri
 
 export {}
 
 declare global {
   interface Window {
     env: any
-    electron: Electron
+    // electron: Electron // Not used in Tauri
     api: {
       // Device operations
       getDevices: () => Promise<any>

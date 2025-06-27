@@ -2,6 +2,23 @@
 // This allows the frontend to work unchanged between Electron and Tauri
 
 import { invoke } from '@tauri-apps/api/core'
+import { listen } from '@tauri-apps/api/event'
+
+// Initialize event system early
+async function initializeEventSystem() {
+  try {
+    // Test basic event functionality to ensure the plugin internals are loaded
+    const unlisten = await listen('tauri://test-event', () => {})
+    await unlisten()
+    console.log('Event system initialized successfully')
+  }
+  catch (error) {
+    console.warn('Event system initialization failed:', error)
+  }
+}
+
+// Initialize events immediately
+initializeEventSystem()
 
 // Types to match the Electron API
 interface DeviceResponse<T> {

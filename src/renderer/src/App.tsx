@@ -39,14 +39,36 @@ function App(): JSX.Element {
   const { updateInfo, downloadAndInstall } = useAutoUpdater()
 
   useEffect(() => {
-    const unlisten = listen('tauri://log', (event) => {
-    // event.payload contains the Rust log message
-      window.alert(`Rust log: ${JSON.stringify(event.payload)}`)
-      console.log('[Rust]', event.payload)
-    })
+    // Wait for event system to be ready before setting up listeners
+    const setupLogListener = async () => {
+      try {
+        const unlisten = await listen('tauri://log', (event) => {
+          // event.payload contains the Rust log message
+          console.log('[Rust Log]', JSON.stringify(event.payload))
+          console.log('[Rust]', event.payload)
+        })
+        return unlisten
+      } catch (error) {
+        console.warn('Failed to setup log listener:', error)
+        return null
+      }
+    }
+
+    let unlistenPromise: Promise<(() => void) | null> | null = null
+    
+    // Small delay to ensure event system is initialized
+    const timeoutId = setTimeout(() => {
+      unlistenPromise = setupLogListener()
+    }, 100)
+
     return () => {
-    // Clean up the listener on unmount
-      unlisten.then(fn => fn())
+      clearTimeout(timeoutId)
+      // Clean up the listener on unmount
+      if (unlistenPromise) {
+        unlistenPromise.then(fn => {
+          if (fn) fn()
+        })
+      }
     }
   }, [])
 

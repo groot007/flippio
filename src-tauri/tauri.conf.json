@@ -10,10 +10,30 @@
   },
   "app": {
     "security": {
-      "csp": "default-src 'self'; script-src 'self' https://*.i.posthog.com; connect-src 'self' https: tauri: ipc: sentry-ipc: blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; worker-src 'self' blob:;"
+      "csp": "default-src 'self'; script-src 'self' https://*.i.posthog.com 'unsafe-eval'; connect-src 'self' https: https://*.ingest.de.sentry.io tauri: ipc: blob:; style-src 'self' 'unsafe-inline' data:; font-src 'self' data:; img-src 'self' data: https: blob:; worker-src 'self' blob:;",
+      "capabilities": [
+        {
+          "identifier": "main-capability",
+          "description": "Main window capabilities",
+          "windows": ["main"],
+          "permissions": [
+            "core:default",
+            "core:event:default",
+            "core:event:allow-listen",
+            "core:event:allow-emit",
+            "core:event:allow-unlisten",
+            "core:window:default",
+            "shell:allow-open",
+            "fs:default",
+            "dialog:default",
+            "updater:default"
+          ]
+        }
+      ]
     },
     "windows": [
       {
+        "label": "main",
         "title": "Flippio - database explorer for iOS and Android",
         "width": 900,
         "height": 670,
