@@ -66,7 +66,21 @@ jobs:
         with:
           tagName: ${{ github.ref_name }}
           releaseName: Flippio v__VERSION__
-          releaseBody: See the assets to download this version and install.
-          releaseDraft: true
+          releaseBody: |
+            ## What's Changed
+            
+            This release includes auto-updater support with proper signature verification.
+            
+            ## Installation
+            
+            Download the appropriate installer for your system:
+            - **Apple Silicon Macs**: `Flippio_*_aarch64.dmg`
+            - **Intel Macs**: `Flippio_*_x64.dmg`
+            
+            ## Auto-Updates
+            
+            This version supports automatic updates. The app will check for new versions and prompt you to update when available.
+          releaseDraft: false
           prerelease: false
           args: ${{ matrix.args }}
+          includeUpdaterJson: true

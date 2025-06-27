@@ -1,6 +1,6 @@
 {
   "productName": "Flippio",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "identifier": "com.flippio.app",
   "build": {
     "beforeDevCommand": "npm run dev:renderer",
@@ -10,7 +10,7 @@
   },
   "app": {
     "security": {
-      "csp": "default-src 'self'; script-src 'self' https://*.i.posthog.com 'unsafe-eval' 'unsafe-inline'; connect-src 'self' https: https://us.i.posthog.com https://*.i.posthog.com https://*.ingest.de.sentry.io ipc: tauri: blob: data:; style-src 'self' 'unsafe-inline' data: blob:; font-src 'self' data: https:; img-src 'self' data: https: blob:; worker-src 'self' blob:; object-src 'none'; base-uri 'self';",
+      "csp": "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https:; style-src 'self' 'unsafe-inline' data: blob: https:; font-src 'self' data: blob: https:; img-src 'self' data: blob: https:; connect-src 'self' data: blob: https: wss: ws: tauri: ipc:; worker-src 'self' data: blob: https:; child-src 'self' data: blob: https:; frame-src 'self' data: blob: https:; object-src 'none'; base-uri 'self';",
       "capabilities": [
         {
           "identifier": "main-capability",
@@ -81,7 +81,7 @@
     "updater": {
       "active": true,
       "endpoints": [
-        "https://api.github.com/repos/{{owner}}/{{repo}}/releases/latest"
+        "https://api.github.com/repos/groot007/flippio/releases/latest"
       ],
       "dialog": false,
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDE4OEFCRjdFNjU1NjRGNUYKUldSZlQxWmxmcitLR0FldFhIcWRNVEUxVjN5QlJYenZYTytwS1BLYWhFSjJhRUdsVW1LZ2srelgK"

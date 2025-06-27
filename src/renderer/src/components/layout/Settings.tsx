@@ -1,9 +1,37 @@
 import { Box, Button, Link, Menu, Portal, Text } from '@chakra-ui/react'
+import { useAutoUpdater } from '@renderer/hooks/useAutoUpdater'
 import { ColorModeButton } from '@renderer/ui/color-mode'
-import { LuExternalLink, LuGithub, LuSettings } from 'react-icons/lu'
+import { toaster } from '@renderer/ui/toaster'
+import { useState } from 'react'
+import { LuDownload, LuExternalLink, LuGithub, LuSettings } from 'react-icons/lu'
 import packageJSON from '../../../../../package.json'
 
 export function Settings() {
+  const [isChecking, setIsChecking] = useState(false)
+  const { checkForUpdates } = useAutoUpdater()
+
+  const handleCheckForUpdates = async () => {
+    setIsChecking(true)
+    try {
+      await checkForUpdates()
+      toaster.create({
+        title: 'Update Check Complete',
+        description: 'Check complete. You will be notified if an update is available.',
+        type: 'info',
+        duration: 3000,
+      })
+    } catch (error) {
+      toaster.create({
+        title: 'Update Check Failed',
+        description: 'Unable to check for updates. Please try again later.',
+        type: 'error',
+        duration: 5000,
+      })
+    } finally {
+      setIsChecking(false)
+    }
+  }
+
   return (
     <Menu.Root>
       <Menu.Trigger asChild>
@@ -44,6 +72,40 @@ export function Settings() {
             >
               <ColorModeButton />
             </Menu.Item>
+            
+            <Menu.Item
+              value="check-updates"
+              px={3}
+              py={2}
+              _hover={{
+                bg: 'bgTertiary',
+              }}
+              _focus={{
+                bg: 'bgTertiary',
+              }}
+              onClick={handleCheckForUpdates}
+              disabled={isChecking}
+            >
+              <Button
+                variant="ghost"
+                size="sm"
+                color="textPrimary"
+                _hover={{ color: 'flipioPrimary' }}
+                display="flex"
+                alignItems="center"
+                gap={2}
+                fontSize="sm"
+                fontWeight="medium"
+                loading={isChecking}
+                p={0}
+                h="auto"
+                minH="auto"
+              >
+                <LuDownload size={16} />
+                <Text>Check for Updates</Text>
+              </Button>
+            </Menu.Item>
+            
             <Menu.Item
               value="github-link"
               px={3}

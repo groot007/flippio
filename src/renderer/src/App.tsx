@@ -36,6 +36,7 @@ const queryClient = new QueryClient({
 })
 
 function App(): JSX.Element {
+  // Re-enable auto-updater with better error handling
   const { updateInfo, downloadAndInstall } = useAutoUpdater()
 
   useEffect(() => {
