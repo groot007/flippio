@@ -71,14 +71,16 @@ for bin in "$DEPS_PATH"/*; do
     install_name_tool -change "@executable_path/../libs/$base" "@executable_path/../Frameworks/$base" "$bin" || true
   done
 
-  # Auto-duplicate missing arch-specific copies
-  for arch in x86_64 aarch64; do
-    arch_file="${DEPS_PATH}/${name}-${arch}-apple-darwin"
-    if [[ ! -f "$arch_file" ]]; then
-      echo "    ➕ Creating arch-specific copy: $(basename "$arch_file")"
-      cp "$bin" "$arch_file"
-    fi
-  done
+  # Auto-duplicate missing arch-specific copies (only if binary doesn't already have arch suffix)
+  if [[ ! "$name" =~ -(x86_64|aarch64)-apple-darwin$ ]]; then
+    for arch in x86_64 aarch64; do
+      arch_file="${DEPS_PATH}/${name}-${arch}-apple-darwin"
+      if [[ ! -f "$arch_file" ]]; then
+        echo "    ➕ Creating arch-specific copy: $(basename "$arch_file")"
+        cp "$bin" "$arch_file"
+      fi
+    done
+  fi
 done
 
 echo ""

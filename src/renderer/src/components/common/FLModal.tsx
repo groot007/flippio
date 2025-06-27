@@ -67,8 +67,8 @@ function FLModal({
               justifyContent="flex-end"
             >
               <Dialog.ActionTrigger asChild>
-                <Button 
-                  variant="ghost" 
+                <Button
+                  variant="ghost"
                   onClick={onReject}
                   color="textSecondary"
                   _hover={{
@@ -78,7 +78,7 @@ function FLModal({
                   {rejectBtn}
                 </Button>
               </Dialog.ActionTrigger>
-              <Button 
+              <Button
                 onClick={onAccept}
                 bg="flipioPrimary"
                 color="white"
@@ -91,8 +91,8 @@ function FLModal({
               </Button>
             </Dialog.Footer>
             <Dialog.CloseTrigger asChild>
-              <CloseButton 
-                onClick={onReject} 
+              <CloseButton
+                onClick={onReject}
                 size="sm"
                 position="absolute"
                 top={4}

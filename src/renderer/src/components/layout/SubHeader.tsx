@@ -200,9 +200,9 @@ export function SubHeader() {
         <HStack gap={4}>
           {selectedDatabaseFile?.deviceType === 'desktop'
             ? (
-                <Text 
-                  fontSize="xs" 
-                  maxWidth={300} 
+                <Text
+                  fontSize="xs"
+                  maxWidth={300}
                   color="textSecondary"
                   fontFamily="mono"
                   bg="bgTertiary"
@@ -263,11 +263,11 @@ export function SubHeader() {
             <Spinner size="sm" color="flipioPrimary" />
           )}
 
-          <Button 
-            onClick={() => setIsQueryModalOpen(true)} 
-            variant="outline" 
-            size="sm" 
-            color="flipioPrimary" 
+          <Button
+            onClick={() => setIsQueryModalOpen(true)}
+            variant="outline"
+            size="sm"
+            color="flipioPrimary"
             borderColor="borderPrimary"
             _hover={{
               borderColor: 'flipioPrimary',
@@ -286,10 +286,10 @@ export function SubHeader() {
           ml="auto"
           gap={3}
         >
-          <Button 
-            onClick={handleOpenDBFile} 
-            variant="ghost" 
-            size="sm" 
+          <Button
+            onClick={handleOpenDBFile}
+            variant="ghost"
+            size="sm"
             color="flipioPrimary"
             fontSize="xs"
             fontWeight="medium"
@@ -301,11 +301,11 @@ export function SubHeader() {
             <Text ml={1}>Open</Text>
           </Button>
 
-          <Button 
-            onClick={handleExportDB} 
-            variant="outline" 
-            size="sm" 
-            color="flipioPrimary" 
+          <Button
+            onClick={handleExportDB}
+            variant="outline"
+            size="sm"
+            color="flipioPrimary"
             borderColor="borderPrimary"
             _hover={{
               borderColor: 'flipioPrimary',

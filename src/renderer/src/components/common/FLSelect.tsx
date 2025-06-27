@@ -90,7 +90,7 @@ const FLSelect: React.FC<CustomSelectProps> = ({
             bg: 'flipioPrimary',
             color: 'white',
           },
-          _hover: { 
+          _hover: {
             bg: 'bgTertiary',
             cursor: 'pointer',
           },
@@ -123,13 +123,13 @@ const FLSelect: React.FC<CustomSelectProps> = ({
           fontSize: 'sm',
           fontWeight: 'medium',
           transition: 'all 0.2s',
-          _hover: { 
+          _hover: {
             borderColor: 'flipioPrimary',
             boxShadow: '0 0 0 1px var(--chakra-colors-flipioPrimary)',
           },
-          _focus: { 
-            borderColor: 'flipioPrimary', 
-            outline: 'none', 
+          _focus: {
+            borderColor: 'flipioPrimary',
+            outline: 'none',
             boxShadow: '0 0 0 2px var(--chakra-colors-flipioPrimary)',
           },
           _disabled: {

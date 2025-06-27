@@ -64,11 +64,11 @@ const flipioTheme = defineConfig({
         body: { value: '-apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif' },
       },
       fontSizes: {
-        xs: { value: '11px' }, // Caption
-        sm: { value: '13px' }, // Body
-        md: { value: '15px' }, // Body emphasized
-        lg: { value: '17px' }, // Headline
-        xl: { value: '22px' }, // Title 3
+        'xs': { value: '11px' }, // Caption
+        'sm': { value: '13px' }, // Body
+        'md': { value: '15px' }, // Body emphasized
+        'lg': { value: '17px' }, // Headline
+        'xl': { value: '22px' }, // Title 3
         '2xl': { value: '28px' }, // Title 1
         '3xl': { value: '34px' }, // Large title
       },

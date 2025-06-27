@@ -11,7 +11,7 @@ export function Settings() {
           variant="ghost"
           size="sm"
           color="textSecondary"
-          _hover={{ 
+          _hover={{
             bg: 'bgTertiary',
             color: 'flipioPrimary',
           }}
@@ -31,8 +31,8 @@ export function Settings() {
             py={2}
             minW="200px"
           >
-            <Menu.Item 
-              value="theme-toggle" 
+            <Menu.Item
+              value="theme-toggle"
               px={3}
               py={2}
               _hover={{
@@ -44,8 +44,8 @@ export function Settings() {
             >
               <ColorModeButton />
             </Menu.Item>
-            <Menu.Item 
-              value="github-link" 
+            <Menu.Item
+              value="github-link"
               px={3}
               py={2}
               _hover={{
@@ -75,7 +75,8 @@ export function Settings() {
             </Menu.Item>
             <Box px={3} py={2} borderTop="1px solid" borderColor="borderSecondary" mt={1}>
               <Text fontSize="xs" color="textTertiary">
-                v{packageJSON.version}
+                v
+                {packageJSON.version}
               </Text>
             </Box>
           </Menu.Content>
