@@ -46,7 +46,7 @@ jobs:
           cache: npm
 
       - name: Install frontend dependencies
-        run: npm install
+        run: npm ci
 
       - name: Write .env file
         run: echo "${{ secrets.FLIPPIO }}" > .env
