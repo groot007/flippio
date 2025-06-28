@@ -1231,18 +1231,82 @@ pub async fn device_upload_ios_db_file(
     }
 }
 
+// Helper function to find Android emulator executable
+fn find_android_emulator_path() -> String {
+    // Try to find emulator in common Android SDK locations
+    let mut possible_paths = vec![
+        "emulator".to_string(),  // System PATH
+        "/usr/local/bin/emulator".to_string(),  // Homebrew on macOS
+        "/opt/homebrew/bin/emulator".to_string(),  // Homebrew on Apple Silicon
+        "/usr/bin/emulator".to_string(),  // Linux
+    ];
+    
+    // Try environment variable for Android SDK
+    if let Ok(android_home) = std::env::var("ANDROID_HOME") {
+        let android_emulator = format!("{}/emulator/emulator", android_home);
+        possible_paths.insert(0, android_emulator);
+    }
+    
+    if let Ok(android_sdk_root) = std::env::var("ANDROID_SDK_ROOT") {
+        let android_emulator = format!("{}/emulator/emulator", android_sdk_root);
+        possible_paths.insert(0, android_emulator);
+    }
+    
+    // Try common user locations
+    if let Ok(home) = std::env::var("HOME") {
+        let user_android_paths = vec![
+            format!("{}/Library/Android/sdk/emulator/emulator", home),  // macOS
+            format!("{}/Android/Sdk/emulator/emulator", home),  // User Android SDK
+            format!("{}/android-sdk/emulator/emulator", home),  // Alternative location
+        ];
+        for path in user_android_paths {
+            possible_paths.insert(0, path);
+        }
+    }
+    
+    for path in &possible_paths {
+        let expanded_path = if path.starts_with("~") {
+            if let Ok(home) = std::env::var("HOME") {
+                path.replace("~", &home)
+            } else {
+                path.clone()
+            }
+        } else {
+            path.clone()
+        };
+        
+        // Check if the path exists and is executable
+        if let Ok(output) = std::process::Command::new(&expanded_path)
+            .arg("-help")
+            .output()
+        {
+            if output.status.success() || String::from_utf8_lossy(&output.stderr).contains("Android Emulator") {
+                info!("Found Android emulator at: {}", expanded_path);
+                return expanded_path;
+            }
+        }
+    }
+    
+    // Fallback to just "emulator" and hope it's in PATH
+    info!("Using fallback emulator path: emulator");
+    "emulator".to_string()
+}
+
 // Virtual Device Commands
 
 #[tauri::command]
 pub async fn get_android_emulators(app_handle: tauri::AppHandle) -> Result<DeviceResponse<Vec<VirtualDevice>>, String> {
     log::info!("Getting Android emulators");
     
+    // Try to find emulator in common Android SDK locations
+    let emulator_path = find_android_emulator_path();
+    
     let shell = app_handle.shell();
-    let output = shell.command("emulator")
+    let output = shell.command(&emulator_path)
         .args(["-list-avds"])
         .output()
         .await
-        .map_err(|e| format!("Failed to execute emulator command: {}", e))?;
+        .map_err(|e| format!("Failed to execute emulator command at {}: {}. Make sure Android SDK is installed and emulator is available.", emulator_path, e))?;
     
     if output.status.success() {
         let emulators_output = String::from_utf8_lossy(&output.stdout);
@@ -1330,10 +1394,11 @@ pub async fn get_ios_simulators(app_handle: tauri::AppHandle) -> Result<DeviceRe
 pub async fn launch_android_emulator(app_handle: tauri::AppHandle, emulator_id: String) -> Result<DeviceResponse<String>, String> {
     log::info!("Launching Android emulator: {}", emulator_id);
     
+    let emulator_path = find_android_emulator_path();
     let shell = app_handle.shell();
     
     // Launch emulator in background
-    let command = shell.command("emulator")
+    let command = shell.command(&emulator_path)
         .args(["-avd", &emulator_id]);
     
     match command.spawn() {

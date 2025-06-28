@@ -54,7 +54,20 @@ export function Settings() {
 
   useEffect(() => {
     setTimeout(() => {
-      handleCheckForUpdates()
+      checkForUpdates().then(rez => {
+        if (rez.data?.available) {
+          toaster.create({
+          title: 'Update Available',
+          description: `Version ${rez.data.version} is available!`,
+          type: 'success',
+          duration: 5000,
+          action: {
+            label: 'Install Now',
+            onClick: downloadAndInstall,
+          },
+        })
+        }
+      })
     }, 5000)
   }, [])
 
