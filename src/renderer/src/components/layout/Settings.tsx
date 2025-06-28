@@ -1,9 +1,10 @@
-import { Box, Button, Link, Menu, Portal, Text } from '@chakra-ui/react'
+import { Box, Button, HStack, Link, Menu, Portal, Text } from '@chakra-ui/react'
 import { useAutoUpdater } from '@renderer/hooks/useAutoUpdater'
 import { ColorModeButton } from '@renderer/ui/color-mode'
 import { toaster } from '@renderer/ui/toaster'
 import { LuDownload, LuExternalLink, LuGithub, LuSettings } from 'react-icons/lu'
 import packageJSON from '../../../../../package.json'
+import { useEffect } from 'react'
 
 export function Settings() {
   const { updateInfo, isChecking, checkForUpdates, downloadAndInstall } = useAutoUpdater()
@@ -51,6 +52,12 @@ export function Settings() {
     }
   }
 
+  useEffect(() => {
+    setTimeout(() => {
+      handleCheckForUpdates()
+    }, 5000)
+  }, [])
+
   return (
     <Menu.Root>
       <Menu.Trigger asChild>
@@ -78,20 +85,6 @@ export function Settings() {
             py={2}
             minW="200px"
           >
-            <Menu.Item
-              value="theme-toggle"
-              px={3}
-              py={2}
-              _hover={{
-                bg: 'bgTertiary',
-              }}
-              _focus={{
-                bg: 'bgTertiary',
-              }}
-            >
-              <ColorModeButton />
-            </Menu.Item>
-
             <Menu.Item
               value="check-updates"
               px={3}
@@ -154,12 +147,13 @@ export function Settings() {
                 <LuExternalLink size={12} />
               </Link>
             </Menu.Item>
-            <Box px={3} py={2} borderTop="1px solid" borderColor="borderSecondary" mt={1}>
+            <HStack px={3} py={2} justifyContent="space-between" borderTop="1px solid" borderColor="borderSecondary" mt={1}>
               <Text fontSize="xs" color="textTertiary">
                 v
                 {packageJSON.version}
               </Text>
-            </Box>
+              <ColorModeButton />
+            </HStack>
           </Menu.Content>
         </Menu.Positioner>
       </Portal>
