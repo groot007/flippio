@@ -11,7 +11,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Check disk space
         run: df -h
@@ -20,15 +20,16 @@ jobs:
         run: echo "${{ secrets.FLIPPIO }}" > .env
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: '23.10'
+          cache: npm
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: npm ci
 
       - name: Run linting
-        run: yarn lint
+        run: npm run lint
 
       - name: Decode macOS certificate
         run: |
@@ -52,7 +53,7 @@ jobs:
           export APPLE_TEAM_ID=${{ secrets.APPLE_TEAM_ID }}
           export CSC_KEY_PASSWORD=${{ secrets.MAC_CERTIFICATE_PASSWORD }}
           export VITE_POSTHOG_API_KEY=${{ secrets.VITE_POSTHOG_API_KEY }}
-          yarn release-ci
+          npm run release-ci
 
       - name: Cleanup cert
         run: rm -f mac_cert.p12
