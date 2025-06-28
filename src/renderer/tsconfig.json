@@ -15,12 +15,12 @@
     "allowImportingTsExtensions": true,
     "strict": false,
     "noFallthroughCasesInSwitch": true,
+    "noImplicitAny": false,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "noEmit": true,
     "isolatedModules": true,
-    "skipLibCheck": true,
-    "noImplicitAny": false
+    "skipLibCheck": true
   },
   "include": ["src"]
 }

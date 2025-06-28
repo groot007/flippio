@@ -11,5 +11,9 @@ export default antfu({
     '@typescript-eslint/no-use-before-define': 'off',
     'eslint-comments/no-unlimited-disable': 'off',
     'no-console': 'off',
+    // Disable strict JSON key ordering
+    'jsonc/sort-keys': 'off',
+    // Disable trailing spaces rule for JSON files
+    'style/no-trailing-spaces': 'off',
   },
 })

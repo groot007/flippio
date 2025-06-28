@@ -1,28 +1,28 @@
 {
   "compilerOptions": {
+    "composite": true,
     "target": "ES2020",
+    "jsx": "react-jsx",
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
-    "allowJs": false,
-    "skipLibCheck": true,
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "strict": false,
-    "forceConsistentCasingInFileNames": true,
+    "baseUrl": ".",
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noEmit": true,
-    "jsx": "react-jsx",
-    "composite": true,
-    "baseUrl": ".",
-    "noImplicitAny": false,
     "paths": {
       "@renderer/*": [
         "src/renderer/src/*"
       ]
     },
-    "typeRoots": ["./node_modules/@types", "./src/renderer/src/types"]
+    "resolveJsonModule": true,
+    "typeRoots": ["./node_modules/@types", "./src/renderer/src/types"],
+    "allowJs": false,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "noImplicitAny": false,
+    "skipLibCheck": true,
+    "strict": false
   },
   "include": [
     "src/renderer/src/**/*",
