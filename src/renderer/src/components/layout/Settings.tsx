@@ -1,10 +1,10 @@
-import { Box, Button, HStack, Link, Menu, Portal, Text } from '@chakra-ui/react'
+import { Button, HStack, Link, Menu, Portal, Text } from '@chakra-ui/react'
 import { useAutoUpdater } from '@renderer/hooks/useAutoUpdater'
 import { ColorModeButton } from '@renderer/ui/color-mode'
 import { toaster } from '@renderer/ui/toaster'
-import { LuDownload, LuExternalLink, LuGithub, LuSettings } from 'react-icons/lu'
-import packageJSON from '../../../../../package.json'
 import { useEffect } from 'react'
+import { LuDownload, LuExternalLink, LuGithub, LuSettings } from 'react-icons/lu'
+import packageJSON from '../../../../../package.json' with { type: 'json' }
 
 export function Settings() {
   const { updateInfo, isChecking, checkForUpdates, downloadAndInstall } = useAutoUpdater()
@@ -12,7 +12,7 @@ export function Settings() {
   const handleCheckForUpdates = async () => {
     try {
       const result = await checkForUpdates()
-      
+
       // The updateInfo will be automatically updated via the hook
       // Show appropriate message based on the result
       if (result.error) {
@@ -22,7 +22,8 @@ export function Settings() {
           type: 'error',
           duration: 5000,
         })
-      } else if (updateInfo?.available) {
+      }
+      else if (updateInfo?.available) {
         toaster.create({
           title: 'Update Available',
           description: `Version ${updateInfo.version} is available!`,
@@ -33,7 +34,8 @@ export function Settings() {
             onClick: downloadAndInstall,
           },
         })
-      } else {
+      }
+      else {
         toaster.create({
           title: 'No Updates',
           description: 'You are running the latest version.',
@@ -54,18 +56,18 @@ export function Settings() {
 
   useEffect(() => {
     setTimeout(() => {
-      checkForUpdates().then(rez => {
+      checkForUpdates().then((rez) => {
         if (rez.data?.available) {
           toaster.create({
-          title: 'Update Available',
-          description: `Version ${rez.data.version} is available!`,
-          type: 'success',
-          duration: 5000,
-          action: {
-            label: 'Install Now',
-            onClick: downloadAndInstall,
-          },
-        })
+            title: 'Update Available',
+            description: `Version ${rez.data.version} is available!`,
+            type: 'success',
+            duration: 5000,
+            action: {
+              label: 'Install Now',
+              onClick: downloadAndInstall,
+            },
+          })
         }
       })
     }, 5000)

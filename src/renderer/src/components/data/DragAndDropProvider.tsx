@@ -73,9 +73,8 @@ export const DragAndDropProvider: React.FC<DragAndDropProviderProps> = ({ childr
       toaster.create({
         title: 'Unsupported file type',
         description: 'Please drop SQLite database files only (.db, .sqlite, .sql)',
-        status: 'warning',
+        type: 'warning',
         duration: 3000,
-        isClosable: true,
       })
       return
     }
@@ -94,9 +93,8 @@ export const DragAndDropProvider: React.FC<DragAndDropProviderProps> = ({ childr
     toaster.create({
       title: 'Database opened',
       description: `Successfully opened ${file.name}`,
-      status: 'success',
+      type: 'success',
       duration: 3000,
-      isClosable: true,
     })
 
     setIsProcessingFile(false)

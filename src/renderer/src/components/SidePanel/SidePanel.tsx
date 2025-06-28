@@ -78,9 +78,8 @@ export function SidePanel() {
       toaster.create({
         title: 'Row deleted',
         description: 'The row has been successfully deleted',
-        status: 'success',
+        type: 'success',
         duration: 3000,
-        isClosable: true,
       })
 
       // Close the panel
@@ -102,9 +101,8 @@ export function SidePanel() {
       toaster.create({
         title: 'Delete failed',
         description: error instanceof Error ? error.message : 'Failed to delete row',
-        status: 'error',
+        type: 'error',
         duration: 5000,
-        isClosable: true,
       })
     }
   }, [
@@ -118,12 +116,10 @@ export function SidePanel() {
   ])
 
   return (
-    <Drawer.Root open={isOpen} onOpenChange={() => closePanel()}>
+    <Drawer.Root open={isOpen} onOpenChange={() => closePanel()} placement="end">
       <Portal>
         <Drawer.Backdrop />
-        {/* @ts-expect-error chakra types */}
-        <Drawer.Positioner placement="right">
-          {/* @ts-expect-error chakra types */}
+        <Drawer.Positioner>
           <Drawer.Content maxWidth="500px" width="100%">
             <Drawer.Header pr={16}>
               <Drawer.Title>{isEditing ? 'Edit Row Data' : 'Row Details'}</Drawer.Title>
@@ -136,7 +132,6 @@ export function SidePanel() {
                   editedData={editedData}
                   setEditedData={setEditedData}
                 />
-                {/* @ts-expect-error chakra types */}
                 <Drawer.CloseTrigger asChild>
                   <IconButton
                     aria-label="Close panel"

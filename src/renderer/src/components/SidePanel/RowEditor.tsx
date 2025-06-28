@@ -91,9 +91,8 @@ export const RowEditor: React.FC<RowEditorProps> = ({
       toaster.create({
         title: 'Data updated',
         description: 'Row data has been successfully updated',
-        status: 'success',
+        type: 'success',
         duration: 3000,
-        isClosable: true,
       })
     }
     catch (error) {
@@ -101,9 +100,8 @@ export const RowEditor: React.FC<RowEditorProps> = ({
       toaster.create({
         title: 'Update failed',
         description: error instanceof Error ? error.message : 'Failed to update data',
-        status: 'error',
+        type: 'error',
         duration: 5000,
-        isClosable: true,
       })
       cancelEditing()
     }

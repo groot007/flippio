@@ -27,7 +27,7 @@ export const AddNewRowModal: React.FC<AddNewRowModalProps> = ({ isOpen, onClose,
       return
 
     const initialData: Record<string, any> = {}
-    tableData.columns.forEach((col) => {
+    tableData.columns.forEach((col: any) => {
       switch (col.type.toLowerCase()) {
         case 'integer':
         case 'int':
@@ -108,9 +108,8 @@ export const AddNewRowModal: React.FC<AddNewRowModalProps> = ({ isOpen, onClose,
       toaster.create({
         title: 'Row created',
         description: 'New row has been successfully created',
-        status: 'success',
+        type: 'success',
         duration: 3000,
-        isClosable: true,
       })
 
       onRowCreated()
@@ -122,9 +121,8 @@ export const AddNewRowModal: React.FC<AddNewRowModalProps> = ({ isOpen, onClose,
       toaster.create({
         title: 'Creation failed',
         description: error instanceof Error ? error.message : 'Failed to create new row',
-        status: 'error',
+        type: 'error',
         duration: 3000,
-        closable: true,
       })
     }
     finally {
@@ -137,7 +135,7 @@ export const AddNewRowModal: React.FC<AddNewRowModalProps> = ({ isOpen, onClose,
       isOpen={isOpen}
       body={(
         <VStack gap={4} align="stretch">
-          {tableData?.columns?.map(column => (
+          {tableData?.columns?.map((column: any) => (
             <Stack key={column.name}>
               {column.name}
               {' '}

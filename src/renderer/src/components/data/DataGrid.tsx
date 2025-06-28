@@ -85,18 +85,16 @@ export function DataGrid() {
       toaster.create({
         title: 'Row created',
         description: 'New row has been successfully created with default values',
-        status: 'success',
+        type: 'success',
         duration: 3000,
-        isClosable: true,
       })
     }
     catch (error: any) {
       toaster.create({
         title: 'Error',
         description: error.message || 'Failed to create new row',
-        status: 'error',
+        type: 'error',
         duration: 5000,
-        isClosable: true,
       })
     }
     finally {

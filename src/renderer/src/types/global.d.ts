@@ -39,7 +39,7 @@ declare global {
           extensions: string[]
         }>
       }) => Promise<any>
-      webUtils: WebUtils
+      webUtils: any // Changed from WebUtils to any
 
       // Virtual device methods
       getAndroidEmulators: () => Promise<{

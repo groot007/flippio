@@ -61,9 +61,8 @@ export function SubHeader() {
       toaster.create({
         title: 'Error fetching database tables',
         description: 'Failed to fetch tables for the selected database file.',
-        status: 'error',
+        type: 'error',
         duration: 3000,
-        isClosable: true,
       })
     }
   }, [isError])
@@ -106,18 +105,16 @@ export function SubHeader() {
         toaster.create({
           title: 'Success',
           description: 'Database refreshed',
-          status: 'success',
+          type: 'success',
           duration: 3000,
-          isClosable: true,
         })
       })
       .catch((err) => {
         toaster.create({
           title: 'Error refreshing database',
           description: err.message,
-          status: 'error',
+          type: 'error',
           duration: 3000,
-          isClosable: true,
         })
       })
     await refetchDatabaseTables()
@@ -163,13 +160,13 @@ export function SubHeader() {
       toaster.create({
         title: 'Success',
         description: `Database file exported successfully to ${savedFilePath}`,
-        status: 'success',
+        type: 'success',
       })
     }).catch((error) => {
       toaster.create({
         title: 'Error exporting database',
         description: error.message,
-        status: 'error',
+        type: 'error',
       })
     },
     )

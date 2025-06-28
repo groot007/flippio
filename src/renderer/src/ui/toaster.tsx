@@ -17,7 +17,6 @@ export const toaster = createToaster({
 export function Toaster() {
   return (
     <Portal>
-      {/* @ts-expect-error chakra types */}
       <ChakraToaster toaster={toaster}>
         {toast => (
           <Toast.Root width={{ md: 'sm' }}>

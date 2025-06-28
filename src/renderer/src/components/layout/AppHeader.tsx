@@ -8,7 +8,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { LuPackage, LuRefreshCcw, LuSmartphone } from 'react-icons/lu'
 import FLSelect from './../common/FLSelect'
 import { VirtualDeviceModal } from './../data/VirtualDeviceModal'
-import { UpdateChecker } from './../updater/UpdateChecker'
 import { PackageSetModal } from './PackageSetModal'
 import { Settings } from './Settings'
 
@@ -27,16 +26,10 @@ function AppHeader() {
     isFetching: isRefreshing,
   } = useDevices()
 
-  console.log('devicesList', devicesList)
-
   const {
     isLoading,
-    error,
     data: applicationsList = [],
   } = useApplications(selectedDevice)
-
-  console.log('applicationsList__', applicationsList)
-  console.log('applicationsList__error', error)
 
   const [isPackageSetModalOpen, setIsPackageSetModalOpen] = useState(false)
   const closePackageSeModal = useCallback(() => {
@@ -44,7 +37,7 @@ function AppHeader() {
   }, [setIsPackageSetModalOpen])
 
   useEffect(() => {
-    let timer
+    let timer: NodeJS.Timeout
     if (
       selectedDevice?.deviceType === 'iphone-device'
       && isLoading
@@ -71,7 +64,7 @@ function AppHeader() {
 
   const handleRefreshDevices = useCallback(() => {
     invoke('get_libimobiledevice_tool_path_cmd', { toolName: 'idevice_id' })
-      .then((toolPath: string) => {
+      .then((toolPath) => {
         console.log('Libimobiledevice tool path:', toolPath)
       })
       .catch((err) => {
@@ -82,18 +75,22 @@ function AppHeader() {
         toaster.create({
           title: 'Success',
           description: 'Device list refreshed',
-          status: 'success',
+          type: 'success',
           duration: 3000,
-          isClosable: true,
+          meta: {
+            closable: true,
+          },
         })
       })
       .catch((err) => {
         toaster.create({
           title: 'Error refreshing devices',
           description: err.message,
-          status: 'error',
+          type: 'error',
           duration: 3000,
-          isClosable: true,
+          meta: {
+            closable: true,
+          },
         })
       })
   }, [])
