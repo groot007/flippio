@@ -59,13 +59,16 @@ export function SidePanel() {
         selectedDatabaseFile
         && selectedDevice
         && selectedDatabaseFile.packageName
-        && selectedDatabaseFile?.deviceType === 'android'
+        && (selectedDatabaseFile?.deviceType === 'android'
+          || selectedDatabaseFile?.deviceType === 'iphone'
+          || selectedDatabaseFile?.deviceType === 'iphone-device')
       ) {
         await window.api.pushDatabaseFile(
           selectedDevice.id,
           pulledDatabaseFilePath,
           selectedDatabaseFile.packageName,
           selectedDatabaseFile.path,
+          selectedDatabaseFile.deviceType,
         )
       }
 
@@ -75,9 +78,8 @@ export function SidePanel() {
       toaster.create({
         title: 'Row deleted',
         description: 'The row has been successfully deleted',
-        status: 'success',
+        type: 'success',
         duration: 3000,
-        isClosable: true,
       })
 
       // Close the panel
@@ -99,9 +101,8 @@ export function SidePanel() {
       toaster.create({
         title: 'Delete failed',
         description: error instanceof Error ? error.message : 'Failed to delete row',
-        status: 'error',
+        type: 'error',
         duration: 5000,
-        isClosable: true,
       })
     }
   }, [
@@ -115,12 +116,10 @@ export function SidePanel() {
   ])
 
   return (
-    <Drawer.Root open={isOpen} onOpenChange={() => closePanel()}>
+    <Drawer.Root open={isOpen} onOpenChange={() => closePanel()} placement="end">
       <Portal>
         <Drawer.Backdrop />
-        {/* @ts-expect-error chakra types */}
-        <Drawer.Positioner placement="right">
-          {/* @ts-expect-error chakra types */}
+        <Drawer.Positioner>
           <Drawer.Content maxWidth="500px" width="100%">
             <Drawer.Header pr={16}>
               <Drawer.Title>{isEditing ? 'Edit Row Data' : 'Row Details'}</Drawer.Title>
@@ -133,7 +132,6 @@ export function SidePanel() {
                   editedData={editedData}
                   setEditedData={setEditedData}
                 />
-                {/* @ts-expect-error chakra types */}
                 <Drawer.CloseTrigger asChild>
                   <IconButton
                     aria-label="Close panel"
@@ -149,7 +147,7 @@ export function SidePanel() {
             </Drawer.Header>
             <Drawer.Body>
               {selectedRow && (
-                <Stack gap="4">
+                <Stack gap="0">
                   {Object.entries(selectedRow.rowData || {}).map(([key, value]) => (
                     <FieldItem
                       key={key}
@@ -173,6 +171,8 @@ export function SidePanel() {
                     }}
                     size="md"
                     width="full"
+                    mt={8}
+                    mb={4}
                     _hover={{ bg: 'red.50', _dark: { bg: 'red.900' } }}
                   >
                     Remove Row

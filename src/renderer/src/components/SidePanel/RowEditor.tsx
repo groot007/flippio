@@ -52,6 +52,7 @@ export const RowEditor: React.FC<RowEditorProps> = ({
         tableData?.columns,
         selectedRow?.originalData || selectedRow?.rowData,
       )
+      console.log('Saving edited data:', condition, selectedRow)
       const result = await window.api.updateTableRow(
         selectedDatabaseTable?.name || '',
         editedData,
@@ -62,25 +63,21 @@ export const RowEditor: React.FC<RowEditorProps> = ({
         throw new Error(result.error || 'Failed to update row')
       }
 
-      let uploadFileFunction = selectedDatabaseFile?.deviceType === 'android'
-        ? window.api.pushDatabaseFile
-        : null
-
-      if (selectedDatabaseFile?.deviceType === 'iphone-device') {
-        uploadFileFunction = window.api.uploadIOSDbFile
-      }
-
+      // Push changes back to device if needed
       if (
         selectedDatabaseFile
         && selectedDevice
         && selectedDatabaseFile.packageName
-        && uploadFileFunction
+        && (selectedDatabaseFile?.deviceType === 'android'
+          || selectedDatabaseFile?.deviceType === 'iphone'
+          || selectedDatabaseFile?.deviceType === 'iphone-device')
       ) {
-        await uploadFileFunction(
+        await window.api.pushDatabaseFile(
           selectedDevice.id,
           selectedDatabaseFile.path,
           selectedDatabaseFile.packageName,
-          selectedDatabaseFile.remotePath,
+          selectedDatabaseFile.remotePath || selectedDatabaseFile.path,
+          selectedDatabaseFile.deviceType,
         )
       }
 
@@ -94,9 +91,8 @@ export const RowEditor: React.FC<RowEditorProps> = ({
       toaster.create({
         title: 'Data updated',
         description: 'Row data has been successfully updated',
-        status: 'success',
+        type: 'success',
         duration: 3000,
-        isClosable: true,
       })
     }
     catch (error) {
@@ -104,9 +100,8 @@ export const RowEditor: React.FC<RowEditorProps> = ({
       toaster.create({
         title: 'Update failed',
         description: error instanceof Error ? error.message : 'Failed to update data',
-        status: 'error',
+        type: 'error',
         duration: 5000,
-        isClosable: true,
       })
       cancelEditing()
     }

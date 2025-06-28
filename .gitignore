@@ -9,6 +9,26 @@ out
 # Sentry Config File
 .env.sentry-build-plugin
 
+# Tauri
+src-tauri/target/
+src-tauri/Cargo.lock
+src-tauri/bundle/
+src-tauri/gen/
+src-tauri/WixTools
+.tauri/
+*.exe
+*.msi
+*.dmg
+*.deb
+*.AppImage
+*.app
+
+# Rust
+Cargo.lock
+target/
+**/*.rs.bk
+*.pdb
+
 # Expo
 .expo/
 dist/

@@ -29,6 +29,8 @@ export function SubHeader() {
 
   const [isQueryModalOpen, setIsQueryModalOpen] = useState(false)
 
+  console.log('SubHeader selectedDevice:', selectedDevice, selectedApplication)
+
   const {
     data: databaseFiles = [],
     isLoading,
@@ -59,15 +61,15 @@ export function SubHeader() {
       toaster.create({
         title: 'Error fetching database tables',
         description: 'Failed to fetch tables for the selected database file.',
-        status: 'error',
+        type: 'error',
         duration: 3000,
-        isClosable: true,
       })
     }
   }, [isError])
 
   const databaseTables = tablesData?.tables
 
+  console.log('Selected tablesData file:', !selectedDatabaseFile?.path, !selectedApplication?.bundleId, isDBPulling)
   const handleDatabaseFileChange = useCallback((file) => {
     setSelectedDatabaseFile(file)
     setSelectedDatabaseTable(null)
@@ -103,18 +105,16 @@ export function SubHeader() {
         toaster.create({
           title: 'Success',
           description: 'Database refreshed',
-          status: 'success',
+          type: 'success',
           duration: 3000,
-          isClosable: true,
         })
       })
       .catch((err) => {
         toaster.create({
           title: 'Error refreshing database',
           description: err.message,
-          status: 'error',
+          type: 'error',
           duration: 3000,
-          isClosable: true,
         })
       })
     await refetchDatabaseTables()
@@ -127,6 +127,7 @@ export function SubHeader() {
     window.api.openFile().then((file) => {
       if (!file.canceled && file.filePaths.length) {
         const filePath = file.filePaths[0]
+        console.log('FILELE', filePath)
         setSelectedDatabaseFile({
           path: filePath,
           filename: filePath.split('/').pop() || '',
@@ -136,7 +137,7 @@ export function SubHeader() {
         })
       }
     })
-  }, [])
+  }, [setSelectedDatabaseFile])
 
   const handleExportDB = useCallback(() => {
     if (!selectedDatabaseFile?.path) {
@@ -159,13 +160,13 @@ export function SubHeader() {
       toaster.create({
         title: 'Success',
         description: `Database file exported successfully to ${savedFilePath}`,
-        status: 'success',
+        type: 'success',
       })
     }).catch((error) => {
       toaster.create({
         title: 'Error exporting database',
         description: error.message,
-        status: 'error',
+        type: 'error',
       })
     },
     )
@@ -174,29 +175,38 @@ export function SubHeader() {
   return (
     <Box
       width="full"
-      pb={3}
-      px={4}
+      py={4}
+      px={6}
       borderBottomWidth="1px"
-      borderColor="app.border"
-      bg="app.subheader.bg"
+      borderColor="borderPrimary"
+      bg="bgSecondary"
     >
       {isNoDB
         ? (
             <Box
               width="full"
-              pb={7}
+              pb={4}
             >
-              <Text fontWeight="medium" color="red.400">
+              <Text fontSize="sm" fontWeight="medium" color="error">
                 No database files available
               </Text>
             </Box>
           )
         : null}
       <Flex justifyContent="flex-start" alignItems="center">
-        <HStack direction="row" gap={5}>
+        <HStack gap={4}>
           {selectedDatabaseFile?.deviceType === 'desktop'
             ? (
-                <Text fontSize="x-small" maxWidth={300}>
+                <Text
+                  fontSize="xs"
+                  maxWidth={300}
+                  color="textSecondary"
+                  fontFamily="mono"
+                  bg="bgTertiary"
+                  px={2}
+                  py={1}
+                  borderRadius="sm"
+                >
                   {selectedDatabaseFile?.path}
                 </Text>
               )
@@ -205,7 +215,7 @@ export function SubHeader() {
                   label="Select Database"
                   options={dbFileOptions}
                   value={selectedDatabaseFile}
-                  icon={<LuDatabase color="#47d5c9" />}
+                  icon={<LuDatabase color="var(--chakra-colors-flipioPrimary)" />}
                   onChange={handleDatabaseFileChange}
                   isDisabled={!selectedApplication?.bundleId || isDBPulling}
                 />
@@ -216,54 +226,94 @@ export function SubHeader() {
               label="Select Table"
               options={tableOptions}
               value={selectedDatabaseTable}
-              icon={<LuTable color="#47d5c9" />}
+              icon={<LuTable color="var(--chakra-colors-flipioPrimary)" />}
               onChange={handleTableChange}
-              isDisabled={!selectedDatabaseFile?.path || !selectedApplication?.bundleId || isDBPulling}
+              isDisabled={!selectedDatabaseFile?.path || isDBPulling}
             />
           </Box>
+
           <Button
             data-testid="refresh-db"
             data-state={isLoading ? 'open' : 'closed'}
             onClick={handleDBRefresh}
-            bg="transparent"
-            color="flipioSecondary"
-
+            variant="ghost"
+            size="sm"
+            color="textSecondary"
             _hover={{
-              opacity: 0.8,
+              bg: 'bgTertiary',
+              color: 'flipioPrimary',
             }}
-            disabled={isLoading}
+            disabled={isLoading || !selectedDatabaseTable}
+            _disabled={{
+              opacity: 0.5,
+            }}
             _open={{
               animationName: 'rotate',
               animationDuration: '1100ms',
             }}
+            title="Refresh database"
           >
-            <LuRefreshCcw />
+            <LuRefreshCcw size={16} />
           </Button>
+
           {isDBPulling && (
-            <Spinner size="sm" color="blue.500" />
+            <Spinner size="sm" color="flipioPrimary" />
           )}
 
-          <Button onClick={() => setIsQueryModalOpen(true)} variant="outline" size="xs" color="flipioPrimary" borderColor="flipioPrimary" disabled={!selectedDatabaseFile?.path}>
-            SQL
-            {' '}
-            <LuFilter />
+          <Button
+            onClick={() => setIsQueryModalOpen(true)}
+            variant="outline"
+            size="sm"
+            color="flipioPrimary"
+            borderColor="borderPrimary"
+            _hover={{
+              borderColor: 'flipioPrimary',
+              bg: 'bgTertiary',
+            }}
+            disabled={!selectedDatabaseFile?.path}
+            fontSize="xs"
+            fontWeight="medium"
+          >
+            <LuFilter size={14} />
+            <Text ml={1}>SQL</Text>
           </Button>
 
         </HStack>
         <HStack
           ml="auto"
-          gap={2}
+          gap={3}
         >
-          <Button onClick={handleOpenDBFile} variant="plain" size="xs" color="flipioPrimary" borderColor="flipioPrimary">
-            <LuFolderOpen />
-            {' '}
-            Open DB
+          <Button
+            onClick={handleOpenDBFile}
+            variant="ghost"
+            size="sm"
+            color="flipioPrimary"
+            fontSize="xs"
+            fontWeight="medium"
+            _hover={{
+              bg: 'bgTertiary',
+            }}
+          >
+            <LuFolderOpen size={14} />
+            <Text ml={1}>Open</Text>
           </Button>
 
-          <Button onClick={handleExportDB} variant="outline" size="xs" color="flipioPrimary" borderColor="flipioPrimary" disabled={!selectedDatabaseFile?.path}>
-            <LuUpload />
-            {' '}
-            Export
+          <Button
+            onClick={handleExportDB}
+            variant="outline"
+            size="sm"
+            color="flipioPrimary"
+            borderColor="borderPrimary"
+            _hover={{
+              borderColor: 'flipioPrimary',
+              bg: 'bgTertiary',
+            }}
+            disabled={!selectedDatabaseFile?.path}
+            fontSize="xs"
+            fontWeight="medium"
+          >
+            <LuUpload size={14} />
+            <Text ml={1}>Export</Text>
           </Button>
         </HStack>
       </Flex>

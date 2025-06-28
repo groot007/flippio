@@ -42,7 +42,7 @@ export function CustomQueryModal({ isOpen, onClose }: CustomQueryModalProps) {
       toaster.create({
         title: 'Query error',
         description: error.message,
-        status: 'error',
+        type: 'error',
         duration: 5000,
       })
     }

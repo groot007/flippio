@@ -4,14 +4,55 @@ body {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  ;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  font-feature-settings: "liga" 1, "calt" 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-.rag-green {
-  color: 'green';
-  background-color: 'red'
+/* Smooth transitions for all interactive elements */
+* {
+  transition: background-color 0.2s ease-out, border-color 0.2s ease-out, color 0.2s ease-out, opacity 0.2s ease-out;
 }
 
+/* Custom scrollbars for macOS feel */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+/* Dark mode scrollbars */
+@media (prefers-color-scheme: dark) {
+  ::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+  }
+}
+
+/* Focus styles for accessibility */
+*:focus-visible {
+  outline: 2px solid var(--chakra-colors-flipioPrimary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Animation keyframes */
 @keyframes rotate {
   0% {
     transform: rotate(0deg);
@@ -19,4 +60,35 @@ body {
   100% {
     transform: rotate(360deg);
   }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Apply animations to components */
+.fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.slide-down {
+  animation: slideDown 0.2s ease-out;
 }

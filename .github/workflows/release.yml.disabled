@@ -1,0 +1,59 @@
+name: release
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  lint:
+    name: Make a release
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check disk space
+        run: df -h
+
+      - name: Write .env file
+        run: echo "${{ secrets.FLIPPIO }}" > .env
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '23.10'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run linting
+        run: npm run lint
+
+      - name: Decode macOS certificate
+        run: |
+          export MAC_CERTIFICATE=${{ secrets.MAC_CERTIFICATE }}
+          echo "$MAC_CERTIFICATE" | base64 --decode > mac_cert.p12
+
+      - name: Check certificate size to be valid
+        run: |
+          ls -lh mac_cert.p12
+          file mac_cert.p12
+
+      - name: Check disk space
+        run: df -h
+
+      - name: Run release
+        run: |
+          export CSC_LINK=mac_cert.p12
+          export GH_TOKEN=${{ secrets.GH_TOKEN }}
+          export APPLE_ID=${{ secrets.APPLE_ID }}
+          export APPLE_APP_SPECIFIC_PASSWORD=${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          export APPLE_TEAM_ID=${{ secrets.APPLE_TEAM_ID }}
+          export CSC_KEY_PASSWORD=${{ secrets.MAC_CERTIFICATE_PASSWORD }}
+          export VITE_POSTHOG_API_KEY=${{ secrets.VITE_POSTHOG_API_KEY }}
+          npm run release-ci
+
+      - name: Cleanup cert
+        run: rm -f mac_cert.p12

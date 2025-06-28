@@ -12,6 +12,8 @@ export function Main() {
         height="100vh"
         bg="bgPrimary"
         overflow="hidden"
+        gap={0}
+        fontFamily="body"
       >
         <AppHeader />
         <SubHeader />

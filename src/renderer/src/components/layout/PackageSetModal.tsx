@@ -65,10 +65,10 @@ export const PackageSetModal: React.FC<PackageSetModalProps> = ({ isOpen, isLoad
   const [bundleIDInput, setBundleIdInput] = useState('')
   const handleBundleIdChange = useCallback(async () => {
     if (!selectedDevice?.id) {
-      toaster({
+      toaster.create({
         title: 'Error',
         description: 'No device selected',
-        status: 'error',
+        type: 'error',
       })
       return
     }
@@ -89,10 +89,10 @@ export const PackageSetModal: React.FC<PackageSetModalProps> = ({ isOpen, isLoad
       onPackageSet()
     }
     else {
-      toaster({
+      toaster.create({
         title: 'Error',
         description: 'Bundle ID not found. Please check the Bundle ID and try again.',
-        status: 'error',
+        type: 'error',
       })
     }
   }, [selectedDevice, bundleIDInput, setSelectedApplication, onPackageSet])

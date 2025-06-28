@@ -28,7 +28,12 @@ window.matchMedia = vi.fn(() => ({
   matches: false,
   addListener: vi.fn(),
   removeListener: vi.fn(),
-}))
+  media: '',
+  onchange: null,
+  addEventListener: vi.fn(),
+  removeEventListener: vi.fn(),
+  dispatchEvent: vi.fn(),
+})) as any
 
 // navigator mock
 Object.defineProperty(window, 'navigator', {
