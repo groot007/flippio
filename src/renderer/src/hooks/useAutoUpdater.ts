@@ -1,3 +1,4 @@
+import { invoke } from '@tauri-apps/api/core'
 import { useCallback, useEffect, useState } from 'react'
 
 interface UpdateInfo {
@@ -27,21 +28,24 @@ export function useAutoUpdater(): UseAutoUpdaterReturn {
     setError(null)
 
     try {
-      // Check if window.api is available (might not be in dev mode or browser)
-      if (!window.api || !window.api.checkForUpdates) {
-        console.warn('Auto-updater not available in this environment')
-        setError('Auto-updater not available')
-        return
-      }
+      // Use Tauri's invoke to call the check_for_updates command
+      const result = await invoke<{
+        success: boolean
+        data?: {
+          available: boolean
+          version?: string
+          notes?: string
+          date?: string
+        }
+        error?: string
+      }>('check_for_updates')
 
-      const result = await window.api.checkForUpdates()
-
-      if (result.success) {
+      if (result.success && result.data) {
         setUpdateInfo({
-          available: result.updateAvailable,
-          version: result.version,
-          releaseNotes: result.releaseNotes,
-          releaseDate: result.releaseDate,
+          available: result.data.available,
+          version: result.data.version,
+          releaseNotes: result.data.notes,
+          releaseDate: result.data.date,
         })
       }
       else {
@@ -63,14 +67,11 @@ export function useAutoUpdater(): UseAutoUpdaterReturn {
     setError(null)
 
     try {
-      // Check if window.api is available
-      if (!window.api || !window.api.downloadAndInstallUpdate) {
-        console.warn('Auto-updater not available in this environment')
-        setError('Auto-updater not available')
-        return
-      }
-
-      const result = await window.api.downloadAndInstallUpdate()
+      // Use Tauri's invoke to call the download_and_install_update command
+      const result = await invoke<{
+        success: boolean
+        error?: string
+      }>('download_and_install_update')
 
       if (!result.success) {
         console.warn('Update download failed:', result.error)
@@ -87,14 +88,13 @@ export function useAutoUpdater(): UseAutoUpdaterReturn {
     }
   }, [])
 
-  // Check for updates on app start (only in Tauri environment)
+  // Check for updates on app start (only in production Tauri environment)
   useEffect(() => {
-    // Only check for updates if we're in a Tauri environment
+    // Only check for updates if we're in production
     const isProduction = import.meta.env.PROD
-    const isTauri = typeof window !== 'undefined' && window.api && typeof window.api.checkForUpdates === 'function'
 
-    if (!isProduction || !isTauri) {
-      console.log('Skipping auto-update check in development/browser mode')
+    if (!isProduction) {
+      console.log('Skipping auto-update check in development mode')
       return
     }
 

@@ -2,35 +2,52 @@ import { Box, Button, Link, Menu, Portal, Text } from '@chakra-ui/react'
 import { useAutoUpdater } from '@renderer/hooks/useAutoUpdater'
 import { ColorModeButton } from '@renderer/ui/color-mode'
 import { toaster } from '@renderer/ui/toaster'
-import { useState } from 'react'
 import { LuDownload, LuExternalLink, LuGithub, LuSettings } from 'react-icons/lu'
 import packageJSON from '../../../../../package.json'
 
 export function Settings() {
-  const [isChecking, setIsChecking] = useState(false)
-  const { checkForUpdates } = useAutoUpdater()
+  const { updateInfo, isChecking, checkForUpdates, downloadAndInstall, error } = useAutoUpdater()
 
   const handleCheckForUpdates = async () => {
-    setIsChecking(true)
     try {
       await checkForUpdates()
-      toaster.create({
-        title: 'Update Check Complete',
-        description: 'Check complete. You will be notified if an update is available.',
-        type: 'info',
-        duration: 3000,
-      })
+      
+      // The updateInfo will be automatically updated via the hook
+      // Show appropriate message based on the result
+      if (error) {
+        toaster.create({
+          title: 'Update Check Failed',
+          description: error,
+          type: 'error',
+          duration: 5000,
+        })
+      } else if (updateInfo?.available) {
+        toaster.create({
+          title: 'Update Available',
+          description: `Version ${updateInfo.version} is available!`,
+          type: 'success',
+          duration: 5000,
+          action: {
+            label: 'Install Now',
+            onClick: downloadAndInstall,
+          },
+        })
+      } else {
+        toaster.create({
+          title: 'No Updates',
+          description: 'You are running the latest version.',
+          type: 'info',
+          duration: 3000,
+        })
+      }
     }
-    catch (error) {
+    catch {
       toaster.create({
         title: 'Update Check Failed',
         description: 'Unable to check for updates. Please try again later.',
         type: 'error',
         duration: 5000,
       })
-    }
-    finally {
-      setIsChecking(false)
     }
   }
 
