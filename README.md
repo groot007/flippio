@@ -2,12 +2,12 @@
   <h1>Flippio</h1>
   <p>A modern database viewer for mobile applications</p>
 
-  <img src="https://github.com/user-attachments/assets/535bfa7d-1d74-4c9a-9048-1ef9461cc339" alt="Flippio Demo" width="600"/>
+  ![alt text](image.png)
 </div>
 
 ## Overview
 
-Flippio is an Electron-based application designed to help developers inspect and modify database files on iOS and Android devices. It provides a streamlined interface for connecting to devices, browsing applications, and exploring their databases.
+Flippio is a modern cross-platform application built with Tauri and React, designed to help developers inspect and modify database files on iOS and Android devices. It provides a streamlined interface for connecting to devices, browsing applications, and exploring their databases.
 
 ## Features
 
@@ -35,12 +35,10 @@ cd flippio
 npm install
 
 # Run in development mode
-npm run dev
+npm run tauri:dev
 
 # Build for your platform
-npm run build:mac    # For macOS
-npm run build:win    # For Windows
-npm run build:linux  # For Linux
+npm run tauri:build
 ```
 
 ## Requirements
@@ -94,7 +92,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Acknowledgments
 
-- [Electron](https://www.electronjs.org/)
+- [Tauri](https://tauri.app/)
 - [React](https://reactjs.org/)
 - [Chakra UI](https://chakra-ui.com/)
 - [AG Grid](https://www.ag-grid.com/)

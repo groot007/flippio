@@ -1,9 +1,0 @@
-{
-  "extends": "@electron-toolkit/tsconfig/tsconfig.node.json",
-  "compilerOptions": {
-    "composite": true,
-    "typeRoots": ["./node_modules/@types", "./src/renderer/src/types"],
-    "esModuleInterop": true
-  },
-  "include": ["electron.vite.config.*", "src/main/**/*", "src/preload/**/*", "**/*.d.ts"]
-}
