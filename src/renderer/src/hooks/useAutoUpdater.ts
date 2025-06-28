@@ -12,7 +12,16 @@ interface UseAutoUpdaterReturn {
   updateInfo: UpdateInfo | null
   isChecking: boolean
   isDownloading: boolean
-  checkForUpdates: () => Promise<void>
+  checkForUpdates: () => Promise<{
+    success: boolean
+    data?: {
+      available: boolean
+      version?: string
+      notes?: string
+      date?: string
+    }
+    error?: string
+  }>
   downloadAndInstall: () => Promise<void>
   error: string | null
 }
@@ -41,21 +50,25 @@ export function useAutoUpdater(): UseAutoUpdaterReturn {
       }>('check_for_updates')
 
       if (result.success && result.data) {
-        setUpdateInfo({
+        const updateData: UpdateInfo = {
           available: result.data.available,
           version: result.data.version,
           releaseNotes: result.data.notes,
           releaseDate: result.data.date,
-        })
+        }
+        setUpdateInfo(updateData)
+        return result
       }
       else {
         console.warn('Update check failed:', result.error)
         setError(result.error || 'Failed to check for updates')
+        return result
       }
     }
     catch (err) {
       console.warn('Update check error:', err)
       setError(err instanceof Error ? err.message : 'Failed to check for updates')
+      throw err
     }
     finally {
       setIsChecking(false)

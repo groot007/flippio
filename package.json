@@ -1,6 +1,6 @@
 {
   "name": "flippio",
-  "version": "0.3.4",
+  "version": "0.3.3",
   "description": "Database viewer with device connection",
   "author": "koliastanis",
   "homepage": "https://github.com/groot007/flippio",
@@ -18,7 +18,7 @@
     "test:coverage": "vitest run --coverage --config vitest.config.ts",
     "tauri:dev": "tauri dev",
     "tauri:build": "tauri build && ./scripts/post-bundle.sh",
-    "tauri:build:debug": "tauri build --debug",
+    "tauri:build:debug": "export $(cat .env | xargs) && tauri build --debug",
     "tauri:sign-source": "export $(cat .env | xargs) && node scripts/sign-source-binaries.js \"$APPLE_SIGNING_IDENTITY\"",
     "tauri:sign-binaries": "export $(cat .env | xargs) && node scripts/sign-bundled-binaries.js",
     "tauri:build:signed": "export $(cat .env | xargs) && npm run tauri:sign-source && tauri build",

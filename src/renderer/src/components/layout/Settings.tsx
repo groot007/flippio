@@ -6,18 +6,18 @@ import { LuDownload, LuExternalLink, LuGithub, LuSettings } from 'react-icons/lu
 import packageJSON from '../../../../../package.json'
 
 export function Settings() {
-  const { updateInfo, isChecking, checkForUpdates, downloadAndInstall, error } = useAutoUpdater()
+  const { updateInfo, isChecking, checkForUpdates, downloadAndInstall } = useAutoUpdater()
 
   const handleCheckForUpdates = async () => {
     try {
-      await checkForUpdates()
+      const result = await checkForUpdates()
       
       // The updateInfo will be automatically updated via the hook
       // Show appropriate message based on the result
-      if (error) {
+      if (result.error) {
         toaster.create({
           title: 'Update Check Failed',
-          description: error,
+          description: result.error,
           type: 'error',
           duration: 5000,
         })
