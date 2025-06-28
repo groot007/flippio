@@ -36,7 +36,7 @@ const FLSelect: React.FC<CustomSelectProps> = ({
     Control: ({ children, ...props }: any) => {
       return (
         <chakraComponents.Control {...props}>
-          <HStack ml={3} mr={1}>{icon}</HStack>
+          <HStack ml={3} mr={1} color="textSecondary">{icon}</HStack>
           {children}
         </chakraComponents.Control>
       )
@@ -75,11 +75,16 @@ const FLSelect: React.FC<CustomSelectProps> = ({
           ...provided,
           zIndex: 100,
           bg: 'bgPrimary',
-          border: '1px solid',
-          borderColor: 'borderPrimary',
+          border: 'none',
           borderRadius: 'md',
           boxShadow: 'lg',
           py: 1,
+        }),
+        menuList: provided => ({
+          ...provided,
+          border: 'none',
+          borderRadius: 'md',
+          boxShadow: 'none',
         }),
         option: provided => ({
           ...provided,

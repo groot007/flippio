@@ -58,9 +58,8 @@ export const VirtualDeviceModal: React.FC<VirtualDeviceModalProps> = ({ isOpen, 
         toaster.create({
           title: 'Error',
           description: 'Failed to fetch virtual devices',
-          status: 'error',
+          type: 'error',
           duration: 3000,
-          isClosable: true,
         })
         console.error('Error fetching virtual devices:', error)
       }
@@ -96,9 +95,8 @@ export const VirtualDeviceModal: React.FC<VirtualDeviceModalProps> = ({ isOpen, 
       toaster.create({
         title: 'Launching device',
         description: `${device.name} is starting up...`,
-        status: 'success',
+        type: 'success',
         duration: 3000,
-        isClosable: true,
       })
 
       // Close the modal after successful launch
@@ -108,9 +106,8 @@ export const VirtualDeviceModal: React.FC<VirtualDeviceModalProps> = ({ isOpen, 
       toaster.create({
         title: 'Error',
         description: error instanceof Error ? error.message : 'Failed to launch device',
-        status: 'error',
+        type: 'error',
         duration: 5000,
-        isClosable: true,
       })
       console.error('Error launching virtual device:', error)
     }
@@ -130,8 +127,8 @@ export const VirtualDeviceModal: React.FC<VirtualDeviceModalProps> = ({ isOpen, 
         mb={2}
         borderWidth="1px"
         borderRadius="md"
-        borderColor={device.status === 'running' ? 'flipioPrimary' : 'gray.200'}
-        _dark={{ borderColor: device.status === 'running' ? 'flipioPrimary' : 'gray.600' }}
+        borderColor={device.status === 'running' ? 'flipioPrimary' : 'borderPrimary'}
+        _dark={{ borderColor: device.status === 'running' ? 'flipioPrimary' : 'borderSecondary' }}
         bg="transparent"
         _hover={{
           bg: 'flipioAqua.50',
@@ -142,13 +139,13 @@ export const VirtualDeviceModal: React.FC<VirtualDeviceModalProps> = ({ isOpen, 
         <Flex alignItems="center">
           <Icon
             as={device.platform === 'android' ? FaAndroid : LuApple}
-            color={device.platform === 'android' ? 'green.500' : 'gray.500'}
+            color={device.platform === 'android' ? 'flipioAccent.green' : 'textSecondary'}
             boxSize={6}
             mr={3}
           />
           <Flex direction="column" flex={1}>
-            <Text fontWeight="medium">{device.name}</Text>
-            <Text fontSize="sm" color="gray.500" _dark={{ color: 'gray.400' }}>
+            <Text fontWeight="medium" color="textPrimary">{device.name}</Text>
+            <Text fontSize="sm" color="textSecondary">
               {device.status === 'running' ? 'Running' : 'Ready to launch'}
             </Text>
           </Flex>
@@ -181,7 +178,7 @@ export const VirtualDeviceModal: React.FC<VirtualDeviceModalProps> = ({ isOpen, 
       <Dialog.Root
         key="top"
         open={isOpen}
-        onClose={onClose}
+        onInteractOutside={onClose}
         placement="top"
         motionPreset="slide-in-bottom"
       >
@@ -189,8 +186,8 @@ export const VirtualDeviceModal: React.FC<VirtualDeviceModalProps> = ({ isOpen, 
           <Dialog.Backdrop />
           <Dialog.Positioner>
             <Dialog.Content>
-              <Dialog.Header>
-                <Icon as={LuSmartphone} mr={2} />
+              <Dialog.Header color="textPrimary">
+                <Icon as={LuSmartphone} mr={2} color="textSecondary" />
                 Virtual Devices
               </Dialog.Header>
               <Dialog.Body>
@@ -206,8 +203,8 @@ export const VirtualDeviceModal: React.FC<VirtualDeviceModalProps> = ({ isOpen, 
                           {/* Android Section */}
                           <Box mb={5}>
                             <Flex align="center" mb={3}>
-                              <Icon as={FaAndroid} color="green.500" mr={2} />
-                              <Heading size="sm">Android Emulators</Heading>
+                              <Icon as={FaAndroid} color="flipioAccent.green" mr={2} />
+                              <Heading size="sm" color="textPrimary">Android Emulators</Heading>
                             </Flex>
 
                             {androidDevices.length > 0
@@ -224,18 +221,18 @@ export const VirtualDeviceModal: React.FC<VirtualDeviceModalProps> = ({ isOpen, 
                                     alignItems="center"
                                     justifyContent="center"
                                     py={4}
-                                    color="gray.500"
+                                    color="textSecondary"
                                   >
-                                    <Text>No Android emulators found</Text>
-                                    <Text fontSize="sm" mt={1}>Install Android Studio to create emulators</Text>
+                                    <Text color="textPrimary">No Android emulators found</Text>
+                                    <Text fontSize="sm" mt={1} color="textSecondary">Install Android Studio to create emulators</Text>
                                   </Flex>
                                 )}
                           </Box>
                           {/* iOS Section */}
                           <Box>
                             <Flex align="center" mb={3}>
-                              <Icon as={LuApple} color="gray.500" mr={2} />
-                              <Heading size="sm">iOS Simulators</Heading>
+                              <Icon as={LuApple} color="textSecondary" mr={2} />
+                              <Heading size="sm" color="textPrimary">iOS Simulators</Heading>
                             </Flex>
 
                             {iosSimulators.length > 0
@@ -252,10 +249,10 @@ export const VirtualDeviceModal: React.FC<VirtualDeviceModalProps> = ({ isOpen, 
                                     alignItems="center"
                                     justifyContent="center"
                                     py={4}
-                                    color="gray.500"
+                                    color="textSecondary"
                                   >
-                                    <Text>No iOS simulators found</Text>
-                                    <Text fontSize="sm" mt={1}>Install Xcode to create iOS simulators</Text>
+                                    <Text color="textPrimary">No iOS simulators found</Text>
+                                    <Text fontSize="sm" mt={1} color="textSecondary">Install Xcode to create iOS simulators</Text>
                                   </Flex>
                                 )}
                           </Box>

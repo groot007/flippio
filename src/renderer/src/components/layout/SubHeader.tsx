@@ -246,7 +246,7 @@ export function SubHeader() {
               bg: 'bgTertiary',
               color: 'flipioPrimary',
             }}
-            disabled={isLoading}
+            disabled={isLoading || !selectedDatabaseTable}
             _disabled={{
               opacity: 0.5,
             }}

@@ -1,5 +1,4 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { listen } from '@tauri-apps/api/event'
 
 import { AllCommunityModule, ModuleRegistry } from 'ag-grid-community'
 import { useEffect } from 'react'
@@ -38,42 +37,6 @@ const queryClient = new QueryClient({
 function App(): JSX.Element {
   // Re-enable auto-updater with better error handling
   const { updateInfo, downloadAndInstall } = useAutoUpdater()
-
-  useEffect(() => {
-    // Wait for event system to be ready before setting up listeners
-    const setupLogListener = async () => {
-      try {
-        const unlisten = await listen('tauri://log', (event) => {
-          // event.payload contains the Rust log message
-          console.log('[Rust Log]', JSON.stringify(event.payload))
-          console.log('[Rust]', event.payload)
-        })
-        return unlisten
-      }
-      catch (error) {
-        console.warn('Failed to setup log listener:', error)
-        return null
-      }
-    }
-
-    let unlistenPromise: Promise<(() => void) | null> | null = null
-
-    // Small delay to ensure event system is initialized
-    const timeoutId = setTimeout(() => {
-      unlistenPromise = setupLogListener()
-    }, 100)
-
-    return () => {
-      clearTimeout(timeoutId)
-      // Clean up the listener on unmount
-      if (unlistenPromise) {
-        unlistenPromise.then((fn) => {
-          if (fn)
-            fn()
-        })
-      }
-    }
-  }, [])
 
   // Show update notification when available
   useEffect(() => {

@@ -18,15 +18,15 @@ const colors = {
   // macOS gray scale
   flipioGray: {
     50: { value: '#F9FAFB' },
-    100: { value: '#F2F2F7' }, // macOS light gray
-    200: { value: '#E5E5EA' }, // macOS separator
-    300: { value: '#D1D1D6' }, // macOS tertiary label
-    400: { value: '#C7C7CC' }, // macOS quaternary label
-    500: { value: '#AEAEB2' }, // macOS placeholder
-    600: { value: '#8E8E93' }, // macOS secondary label
-    700: { value: '#6D6D70' },
-    800: { value: '#48484A' }, // macOS label (dark)
-    900: { value: '#1C1C1E' }, // macOS background (dark)
+    100: { value: '#F5F5F5' }, // Improved contrast - darker than before (#F2F2F7)
+    200: { value: '#E0E0E0' }, // Improved contrast - darker than before (#E5E5EA)
+    300: { value: '#C8C8C8' }, // Improved contrast - darker than before (#D1D1D6)
+    400: { value: '#B8B8B8' }, // Improved contrast - darker than before (#C7C7CC)
+    500: { value: '#9E9E9E' }, // Improved contrast - darker than before (#AEAEB2)
+    600: { value: '#757575' }, // Improved contrast - darker than before (#8E8E93)
+    700: { value: '#616161' }, // Improved contrast - darker than before (#6D6D70)
+    800: { value: '#424242' }, // Improved contrast - darker than before (#48484A)
+    900: { value: '#212121' }, // Improved contrast - darker than before (#1C1C1E)
   },
   // Dark mode backgrounds
   flipioDark: {
@@ -40,9 +40,9 @@ const colors = {
   // Light mode backgrounds
   flipioLight: {
     100: { value: '#FFFFFF' }, // macOS pure white
-    200: { value: '#F2F2F7' }, // macOS secondary background
+    200: { value: '#F8F8F8' }, // Improved contrast - darker than before (#F2F2F7)
     300: { value: '#FFFFFF' }, // macOS elevated background
-    400: { value: '#F9F9F9' }, // macOS tertiary background
+    400: { value: '#F0F0F0' }, // Improved contrast - darker than before (#F9F9F9)
   },
   // Accent colors
   flipioAccent: {
@@ -136,13 +136,13 @@ const flipioTheme = defineConfig({
         },
         textSecondary: {
           value: {
-            base: `{colors.flipioGray.600}`,
+            base: `{colors.flipioGray.700}`,
             _dark: `{colors.flipioGray.400}`,
           },
         },
         textTertiary: {
           value: {
-            base: `{colors.flipioGray.500}`,
+            base: `{colors.flipioGray.600}`,
             _dark: `{colors.flipioGray.500}`,
           },
         },
@@ -162,13 +162,13 @@ const flipioTheme = defineConfig({
         // Border colors
         borderPrimary: {
           value: {
-            base: `{colors.flipioGray.200}`,
+            base: `{colors.flipioGray.300}`,
             _dark: `{colors.flipioDark.500}`,
           },
         },
         borderSecondary: {
           value: {
-            base: `{colors.flipioGray.300}`,
+            base: `{colors.flipioGray.400}`,
             _dark: `{colors.flipioDark.400}`,
           },
         },
