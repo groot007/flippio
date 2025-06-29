@@ -61,13 +61,21 @@ export function useAutoUpdater(): UseAutoUpdaterReturn {
       }
       else {
         console.warn('Update check failed:', result.error)
-        setError(result.error || 'Failed to check for updates')
+        const errorMessage = result.error?.includes('platform') && result.error?.includes('darwin-aarch64')
+          ? 'Auto-updates are temporarily unavailable for Apple Silicon. Please check for updates manually on GitHub.'
+          : result.error || 'Failed to check for updates'
+        setError(errorMessage)
         return result
       }
     }
     catch (err) {
       console.warn('Update check error:', err)
-      setError(err instanceof Error ? err.message : 'Failed to check for updates')
+      const errorMessage = err instanceof Error 
+        ? (err.message.includes('platform') && err.message.includes('darwin-aarch64')
+            ? 'Auto-updates are temporarily unavailable for Apple Silicon. Please check for updates manually on GitHub.'
+            : err.message)
+        : 'Failed to check for updates'
+      setError(errorMessage)
       throw err
     }
     finally {
