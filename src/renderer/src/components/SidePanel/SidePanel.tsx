@@ -148,21 +148,27 @@ export function SidePanel() {
             <Drawer.Body>
               {selectedRow && (
                 <Stack gap="0">
-                  {Object.entries(selectedRow.rowData || {}).map(([key, value]) => (
-                    <FieldItem
-                      key={key}
-                      fieldKey={key}
-                      value={isEditing ? editedData[key] : value}
-                      isEditing={isEditing}
-                      onChange={(key, value) =>
-                        setEditedData(prev => ({
-                          ...prev,
-                          [key]: value,
-                        }))}
-                      isLoading={isLoading}
-                      isDark={isDark}
-                    />
-                  ))}
+                  {Object.entries(selectedRow.rowData || {}).map(([key, value]) => {
+                    // Find the column type for this field
+                    const columnInfo = selectedRow.columnInfo?.find(col => col.name === key)
+                    
+                    return (
+                      <FieldItem
+                        key={key}
+                        fieldKey={key}
+                        fieldType={columnInfo?.type || 'unknown'}
+                        value={isEditing ? editedData[key] : value}
+                        isEditing={isEditing}
+                        onChange={(key, value) =>
+                          setEditedData(prev => ({
+                            ...prev,
+                            [key]: value,
+                          }))}
+                        isLoading={isLoading}
+                        isDark={isDark}
+                      />
+                    )
+                  })}
                   <Button
                     colorScheme="red"
                     variant="outline"

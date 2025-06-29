@@ -12,7 +12,7 @@ import { useTableDataQuery } from '@renderer/hooks/useTableDataQuery'
 import { useCurrentDatabaseSelection, useCurrentDeviceSelection, useTableData } from '@renderer/store'
 import { toaster } from '@renderer/ui/toaster'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { LuDatabase, LuFilter, LuFolderOpen, LuRefreshCcw, LuTable, LuUpload } from 'react-icons/lu'
+import { LuDatabase, LuFilter, LuFolderOpen, LuRefreshCcw, LuTable, LuUpload, LuX } from 'react-icons/lu'
 import { CustomQueryModal } from '../data/CustomQueryModal'
 import FLSelect from './../common/FLSelect'
 
@@ -22,6 +22,7 @@ export function SubHeader() {
   const {
     setTableData,
   } = useTableData()
+  const tableDataStore = useTableData()
   const selectedDatabaseFile = useCurrentDatabaseSelection(state => state.selectedDatabaseFile)
   const setSelectedDatabaseFile = useCurrentDatabaseSelection(state => state.setSelectedDatabaseFile)
   const selectedDatabaseTable = useCurrentDatabaseSelection(state => state.selectedDatabaseTable)
@@ -40,13 +41,15 @@ export function SubHeader() {
   const { data: tableData, refetch: refetchTable } = useTableDataQuery(selectedDatabaseTable?.name || '')
 
   useEffect(() => {
-    if (tableData) {
+    if (tableData && !tableDataStore.tableData?.isCustomQuery) {
       setTableData({
         rows: tableData.rows,
         columns: tableData.columns,
+        isCustomQuery: false,
+        tableName: selectedDatabaseTable?.name,
       })
     }
-  }, [tableData])
+  }, [tableData, selectedDatabaseTable, tableDataStore.tableData?.isCustomQuery])
 
   const isDBPulling = !!selectedApplication?.bundleId && !!selectedDevice?.id && isLoading
 
@@ -73,11 +76,11 @@ export function SubHeader() {
   const handleDatabaseFileChange = useCallback((file) => {
     setSelectedDatabaseFile(file)
     setSelectedDatabaseTable(null)
-  }, [databaseFiles, setSelectedDatabaseFile])
+  }, [setSelectedDatabaseFile, setSelectedDatabaseTable])
 
   const handleTableChange = useCallback((table) => {
     setSelectedDatabaseTable(table)
-  }, [databaseTables, setSelectedDatabaseTable])
+  }, [setSelectedDatabaseTable])
 
   const dbFileOptions = useMemo(() =>
     databaseFiles?.map(file => ({
@@ -92,6 +95,20 @@ export function SubHeader() {
       value: table.name,
       ...table,
     })) ?? [], [databaseTables])
+
+  // Handler to clear custom query and show default table rows
+  const handleClearCustomQuery = useCallback(() => {
+    if (!selectedDatabaseTable) 
+      return
+    refetchTable()
+    tableDataStore.setTableData({
+      rows: [],
+      columns: [],
+      isCustomQuery: false,
+      customQuery: '',
+      tableName: selectedDatabaseTable.name,
+    })
+  }, [selectedDatabaseTable, tableDataStore, refetchTable])
 
   useEffect(() => {
     if (!selectedDatabaseFile?.filename) {
@@ -119,7 +136,7 @@ export function SubHeader() {
       })
     await refetchDatabaseTables()
     await refetchTable()
-  }, [])
+  }, [refetchDatabaseFiles, refetchDatabaseTables, refetchTable])
 
   const isNoDB = !databaseFiles?.length && !isDBPulling && selectedApplication?.bundleId && selectedDevice?.id
 
@@ -260,23 +277,43 @@ export function SubHeader() {
             <Spinner size="sm" color="flipioPrimary" />
           )}
 
-          <Button
-            onClick={() => setIsQueryModalOpen(true)}
-            variant="outline"
-            size="sm"
-            color="flipioPrimary"
-            borderColor="borderPrimary"
-            _hover={{
-              borderColor: 'flipioPrimary',
-              bg: 'bgTertiary',
-            }}
-            disabled={!selectedDatabaseFile?.path}
-            fontSize="xs"
-            fontWeight="medium"
-          >
-            <LuFilter size={14} />
-            <Text ml={1}>SQL</Text>
-          </Button>
+          <HStack>
+            {/* Show SQL button always */}
+            <Button
+              onClick={() => setIsQueryModalOpen(true)}
+              variant="outline"
+              size="sm"
+              color="flipioPrimary"
+              borderColor="borderPrimary"
+              _hover={{
+                borderColor: 'flipioPrimary',
+                bg: 'bgTertiary',
+              }}
+              disabled={!selectedDatabaseFile?.path}
+              fontSize="xs"
+              fontWeight="medium"
+            >
+              <LuFilter size={14} />
+              <Text ml={1}>SQL</Text>
+            </Button>
+
+            {/* Show clear (times) icon if a custom query is active */}
+            {tableDataStore.tableData?.isCustomQuery && (
+              <Button
+                onClick={handleClearCustomQuery}
+                variant="ghost"
+                size="sm"
+                color="red.400"
+                fontSize="xs"
+                fontWeight="medium"
+                p={0}
+                title="Clear SQL query and show default table rows"
+                _hover={{ bg: 'bgTertiary', color: 'red.600' }}
+              >
+                <LuX size={12} />
+              </Button>
+            )}
+          </HStack>
 
         </HStack>
         <HStack

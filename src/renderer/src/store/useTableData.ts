@@ -1,8 +1,16 @@
 import { create } from 'zustand'
 
+interface TableData {
+  rows: any[]
+  columns: any[]
+  isCustomQuery?: boolean
+  customQuery?: string
+  tableName?: string
+}
+
 interface TableDataHook {
-  tableData: Record<string, any> | null
-  setTableData: (data: Record<string, any>) => void
+  tableData: TableData | null
+  setTableData: (data: TableData) => void
   isLoadingTableData: boolean
   setIsLoadingTableData: (loading: boolean) => void
 }

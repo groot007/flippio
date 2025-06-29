@@ -1,4 +1,5 @@
 import * as Sentry from '@sentry/react'
+import { getCurrentWindow } from '@tauri-apps/api/window'
 // import { attachConsole } from '@tauri-apps/plugin-log'
 import React from 'react'
 import ReactDOM from 'react-dom/client'
@@ -23,6 +24,9 @@ Sentry.init({
   replaysSessionSampleRate: 0.1,
   replaysOnErrorSampleRate: 1.0,
 })
+
+const version = __APP_VERSION__
+getCurrentWindow().setTitle(`Flippio - database explorer for iOS and Android v${version}`)
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>

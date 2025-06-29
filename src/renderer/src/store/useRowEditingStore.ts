@@ -1,8 +1,14 @@
 import { create } from 'zustand'
 
+interface ColumnInfo {
+  name: string
+  type: string
+}
+
 interface SelectedRow {
   rowData: Record<string, any> | null
   originalData?: Record<string, any> | null
+  columnInfo?: ColumnInfo[]
 }
 
 interface RowEditing {

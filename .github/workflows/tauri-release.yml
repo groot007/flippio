@@ -49,7 +49,9 @@ jobs:
         run: npm ci
 
       - name: Write .env file
-        run: echo "${{ secrets.FLIPPIO }}" > .env
+        run: |
+          echo "${{ secrets.FLIPPIO }}" > .env
+          echo "VITE_POSTHOG_API_KEY=${{ secrets.VITE_POSTHOG_API_KEY }}" >> .env
 
       - name: Build and release Tauri app
         uses: tauri-apps/tauri-action@v0.5.20
@@ -63,6 +65,7 @@ jobs:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          VITE_POSTHOG_API_KEY: ${{ secrets.VITE_POSTHOG_API_KEY }}
         with:
           tagName: ${{ github.ref_name }}
           releaseName: Flippio v__VERSION__

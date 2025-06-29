@@ -1,6 +1,6 @@
 {
   "productName": "Flippio",
-  "version": "0.3.5",
+  "version": "0.3.6",
   "identifier": "com.flippio.app",
   "build": {
     "beforeDevCommand": "npm run dev:renderer",
@@ -23,6 +23,7 @@
             "core:event:allow-emit",
             "core:event:allow-unlisten",
             "core:window:default",
+            "core:window:allow-set-title",
             "shell:allow-open",
             "fs:default",
             "dialog:default",
@@ -34,8 +35,8 @@
     "windows": [
       {
         "label": "main",
-        "title": "Flippio - database explorer for iOS and Android",
-        "width": 900,
+        "title": "Flippio",
+        "width": 950,
         "height": 670,
         "minWidth": 500,
         "minHeight": 600,
