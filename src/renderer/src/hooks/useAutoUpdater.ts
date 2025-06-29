@@ -1,5 +1,5 @@
 import { invoke } from '@tauri-apps/api/core'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 
 interface UpdateInfo {
   available: boolean
@@ -100,24 +100,6 @@ export function useAutoUpdater(): UseAutoUpdaterReturn {
       setIsDownloading(false)
     }
   }, [])
-
-  // Check for updates on app start (only in production Tauri environment)
-  useEffect(() => {
-    // Only check for updates if we're in production
-    const isProduction = import.meta.env.PROD
-
-    if (!isProduction) {
-      console.log('Skipping auto-update check in development mode')
-      return
-    }
-
-    const timeoutId = setTimeout(() => {
-      console.log('Starting auto-update check...')
-      checkForUpdates()
-    }, 5000) // Wait 5 seconds after app start
-
-    return () => clearTimeout(timeoutId)
-  }, [checkForUpdates])
 
   return {
     updateInfo,

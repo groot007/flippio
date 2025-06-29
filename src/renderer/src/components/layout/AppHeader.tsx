@@ -97,9 +97,9 @@ function AppHeader() {
 
   const devicesSelectOptions = useMemo(() =>
     devicesList.map((device) => {
-      const osVersion = device.deviceType === 'iphone' ? device.iosVersion : ''
+      const osVersion = device.deviceType === 'iphone' ? device.iosVersion || '' : ''
       return {
-        label: `${device.model} ${osVersion}`,
+        label: `${device.name} ${osVersion}`,
         value: device.id,
         description: device.deviceType.includes('iphone') ? 'iOS' : 'Android',
         ...device,

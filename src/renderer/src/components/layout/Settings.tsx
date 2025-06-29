@@ -7,7 +7,7 @@ import { LuDownload, LuExternalLink, LuGithub, LuSettings } from 'react-icons/lu
 import packageJSON from '../../../../../package.json' with { type: 'json' }
 
 export function Settings() {
-  const { updateInfo, isChecking, checkForUpdates, downloadAndInstall } = useAutoUpdater()
+  const { isChecking, checkForUpdates, downloadAndInstall } = useAutoUpdater()
 
   const handleCheckForUpdates = async () => {
     try {
@@ -23,10 +23,10 @@ export function Settings() {
           duration: 5000,
         })
       }
-      else if (updateInfo?.available) {
+      else if (result?.data?.available) {
         toaster.create({
           title: 'Update Available',
-          description: `Version ${updateInfo.version} is available!`,
+          description: `Version ${result.data.version} is available!`,
           type: 'success',
           duration: 5000,
           action: {
