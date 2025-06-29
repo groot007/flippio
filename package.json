@@ -16,7 +16,7 @@
     "build:renderer": "cd src/renderer && vite build",
     "test": "vitest run --config vitest.config.ts",
     "test:coverage": "vitest run --coverage --config vitest.config.ts",
-    "tauri": "tauri build",
+    "tauri": "tauri",
     "tauri:dev": "tauri dev",
     "tauri:build": "tauri build && ./scripts/post-bundle.sh",
     "tauri:build:debug": "export $(cat .env | xargs) && tauri build --debug",
