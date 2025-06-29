@@ -28,9 +28,12 @@ export function CustomQueryModal({ isOpen, onClose }: CustomQueryModalProps) {
         throw new Error(result.error || 'Failed to execute query')
       }
 
+      // Extract the actual data from the nested result structure
+      const queryData = result.result || result
+
       setTableData({
-        rows: result.rows || [],
-        columns: result.columns || [],
+        rows: queryData.rows || [],
+        columns: queryData.columns || [],
         isCustomQuery: true,
         customQuery: query,
         tableName: 'Custom Query Result',
@@ -39,6 +42,7 @@ export function CustomQueryModal({ isOpen, onClose }: CustomQueryModalProps) {
       onClose()
     }
     catch (error: any) {
+      console.error('CustomQueryModal - Query error:', error)
       toaster.create({
         title: 'Query error',
         description: error.message,

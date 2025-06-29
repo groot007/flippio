@@ -45,6 +45,11 @@ export function DataGrid() {
   const gridRef = useRef<AgGridReact>(null)
   const [isAddingRow, setIsAddingRow] = useState(false)
 
+  console.log('DataGrid render - tableData:', tableData)
+  console.log('DataGrid render - rows count:', tableData?.rows?.length)
+  console.log('DataGrid render - columns count:', tableData?.columns?.length)
+  console.log('DataGrid render - isCustomQuery:', tableData?.isCustomQuery)
+
   const { data, error, refetch: refetchTableData } = useTableDataQuery(selectedDatabaseTable?.name || '')
 
   // Function to create a new row with null values
@@ -104,21 +109,26 @@ export function DataGrid() {
   }, [selectedDatabaseTable, tableData?.columns, isAddingRow, selectedDatabaseFile, selectedDevice, refetchTableData])
 
   useEffect(() => {
-    if (data) {
+    // Only update table data from the query hook if it's not a custom query
+    if (data && !tableData?.isCustomQuery) {
       setTableData({
         rows: data.rows,
         columns: data.columns,
+        isCustomQuery: false,
+        tableName: selectedDatabaseTable?.name,
       })
       setIsLoadingTableData(false)
     }
-    else {
+    else if (!data && !tableData?.isCustomQuery) {
       setTableData({
         rows: [],
         columns: [],
+        isCustomQuery: false,
+        tableName: selectedDatabaseTable?.name,
       })
       setIsLoadingTableData(false)
     }
-  }, [data])
+  }, [data, selectedDatabaseTable, tableData?.isCustomQuery, setTableData, setIsLoadingTableData])
 
   useEffect(() => {
     if (tableData?.rows?.length) {
