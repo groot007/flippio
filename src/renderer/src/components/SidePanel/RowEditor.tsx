@@ -84,6 +84,7 @@ export const RowEditor: React.FC<RowEditorProps> = ({
       setSelectedRow({
         rowData: editedData,
         originalData: { ...editedData },
+        columnInfo: selectedRow.columnInfo, // Preserve column information
       })
       refetchTable()
       setIsEditing(false)

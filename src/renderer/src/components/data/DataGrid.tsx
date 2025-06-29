@@ -5,6 +5,7 @@ import {
   Flex,
   Spinner,
   Text,
+  VStack,
 } from '@chakra-ui/react'
 import { useTableDataQuery } from '@renderer/hooks/useTableDataQuery'
 import { useCurrentDatabaseSelection, useCurrentDeviceSelection, useTableData } from '@renderer/store'
@@ -18,14 +19,14 @@ import { LuPlus } from 'react-icons/lu'
 
 export function CustomHeaderComponent(props: any) {
   return (
-    <Box display="flex" alignItems="center" height="100%" padding="0 2px">
+    <VStack display="flex" alignItems="center" justifyContent="center" gap={0}>
       <Text fontWeight="medium" fontSize="14px">{props.displayName}</Text>
-      <Text fontSize="10px" color="gray.500" ml={1}>
+      <Text fontSize="10px" color="gray.500" mt={0}>
         (
         {props.columnType?.toLowerCase()}
         )
       </Text>
-    </Box>
+    </VStack>
   )
 }
 
@@ -131,7 +132,7 @@ export function DataGrid() {
 
     return tableData.columns?.map(col => ({
       field: col.name,
-      headerComponent: CustomHeaderComponent,
+      // headerComponent: CustomHeaderComponent,
       headerComponentParams: {
         displayName: col.name,
         columnType: col.type,
@@ -151,10 +152,12 @@ export function DataGrid() {
   }), [])
 
   const onRowClicked = useCallback((event: Record<string, any>) => {
+    console.log('Row clicked:', event.data)
     setSelectedRow({
       rowData: event.data,
+      columnInfo: tableData?.columns || [],
     })
-  }, [setSelectedRow])
+  }, [setSelectedRow, tableData?.columns])
 
   const getRowStyle = useCallback((params) => {
     const mainStyle = {
