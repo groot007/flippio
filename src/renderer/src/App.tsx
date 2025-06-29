@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-
 import { AllCommunityModule, ModuleRegistry } from 'ag-grid-community'
+
 import Main from './pages/Main'
 import { Provider } from './ui/provider'
 import { Toaster } from './ui/toaster'

@@ -1,6 +1,7 @@
 import { resolve } from 'node:path'
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
+import packageJson from '../../package.json'
 
 // https://vite.dev/config/
 export default defineConfig(() => {
@@ -23,6 +24,8 @@ export default defineConfig(() => {
     define: {
       // Ensure compatibility with Tauri
       __TAURI__: JSON.stringify(true),
+      // Inject app version from package.json
+      __APP_VERSION__: JSON.stringify(packageJson.version),
     },
     server: {
       port: 5173,

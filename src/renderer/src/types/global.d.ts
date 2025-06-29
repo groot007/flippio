@@ -3,6 +3,9 @@
 export {}
 
 declare global {
+  // Vite injected constants
+  const __APP_VERSION__: string
+
   interface Window {
     env: any
     // electron: Electron // Not used in Tauri
