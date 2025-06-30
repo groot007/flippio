@@ -4,7 +4,8 @@ import { useQuery } from '@tanstack/react-query'
 export interface Device {
   id: string
   model: string
-  deviceType: 'iphone' | 'android' | 'desktop' | 'iphone-device'
+  deviceType: 'iphone' | 'android' | 'desktop' | 'iphone-device' | 'emulator' | 'simulator'
+  platform?: string
 }
 
 interface Application {
@@ -26,21 +27,27 @@ export function useApplications(selectedDevice: Device | null) {
         throw new Error('No device selected')
       }
 
+      console.log('Getting applications for device:', selectedDevice)
+
       let fetchFunction: (deviceId: string) => Promise<ApplicationsResponse>
 
-      if (selectedDevice.deviceType === 'iphone') {
+      if (selectedDevice.deviceType === 'iphone' || selectedDevice.deviceType === 'simulator') {
+        console.log('Using getIOSPackages for simulator')
         fetchFunction = window.api.getIOSPackages
       }
       else if (selectedDevice.deviceType === 'iphone-device') {
+        console.log('Using getIOsDevicePackages for physical iOS device')
         fetchFunction = window.api.getIOsDevicePackages
       }
       else {
+        console.log('Using getAndroidPackages for Android device/emulator')
+        // Handle Android devices and emulators
         fetchFunction = window.api.getAndroidPackages
       }
 
       const response = await fetchFunction(selectedDevice.id)
 
-      console.log('RESPONSE:', response)
+      console.log('Applications response:', response)
 
       if (!response.success) {
         throw new Error(response.error || `Failed to load apps for ${selectedDevice.model}`)

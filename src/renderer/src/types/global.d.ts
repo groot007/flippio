@@ -51,7 +51,7 @@ declare global {
           name: string
           id: string
           platform: 'android'
-          status?: 'running' | 'stopped'
+          state?: string
         }>
         error?: string
       }>
@@ -62,7 +62,7 @@ declare global {
           name: string
           id: string
           platform: 'ios'
-          status?: 'running' | 'stopped'
+          state?: string
         }>
         error?: string
       }>

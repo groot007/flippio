@@ -11,6 +11,7 @@ import { useRowEditingStore } from '@renderer/store/useRowEditingStore'
 import { useColorMode } from '@renderer/ui/color-mode'
 import { toaster } from '@renderer/ui/toaster'
 import { buildUniqueCondition } from '@renderer/utils'
+import { useQueryClient } from '@tanstack/react-query'
 import { useCallback, useState } from 'react'
 import { LuX } from 'react-icons/lu'
 import { DeleteRowDialog } from './DeleteRowDialog'
@@ -22,10 +23,11 @@ export function SidePanel() {
   const isDark = colorMode === 'dark'
   const { selectedRow, setSelectedRow } = useRowEditingStore()
   const isOpen = !!selectedRow
-  const { selectedDevice } = useCurrentDeviceSelection()
+  const { selectedDevice, selectedApplication } = useCurrentDeviceSelection()
   const { selectedDatabaseFile, selectedDatabaseTable, pulledDatabaseFilePath } = useCurrentDatabaseSelection()
   const tableData = useTableData(state => state.tableData)
   const setTableData = useTableData(state => state.setTableData)
+  const queryClient = useQueryClient()
   const [isLoading, setIsLoading] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [editedData, setEditedData] = useState<Record<string, any>>({})
@@ -54,22 +56,42 @@ export function SidePanel() {
         throw new Error(result.error || 'Failed to delete row')
       }
 
+      console.log('Row deleted successfully:', selectedDatabaseFile)
       // Push changes back to device if needed
       if (
         selectedDatabaseFile
         && selectedDevice
         && selectedDatabaseFile.packageName
+        && selectedDatabaseFile.path // Ensure we have the local file path
         && (selectedDatabaseFile?.deviceType === 'android'
           || selectedDatabaseFile?.deviceType === 'iphone'
-          || selectedDatabaseFile?.deviceType === 'iphone-device')
+          || selectedDatabaseFile?.deviceType === 'iphone-device'
+          || selectedDatabaseFile?.deviceType === 'simulator')
       ) {
+        // Use the correct paths: local temp file and remote path on device
+        const localPath = selectedDatabaseFile.path // This is the local temp file path
+        const remotePath = selectedDatabaseFile.remotePath || `/${selectedDatabaseFile.location}/${selectedDatabaseFile.filename}`
+        
+        console.log('Pushing database file:', {
+          deviceId: selectedDevice.id,
+          localPath,
+          packageName: selectedDatabaseFile.packageName,
+          remotePath,
+          deviceType: selectedDatabaseFile.deviceType,
+        })
+        
         await window.api.pushDatabaseFile(
           selectedDevice.id,
-          pulledDatabaseFilePath,
+          localPath,
           selectedDatabaseFile.packageName,
-          selectedDatabaseFile.path,
+          remotePath,
           selectedDatabaseFile.deviceType,
         )
+        
+        // Invalidate and refetch database files to get updated data
+        await queryClient.invalidateQueries({
+          queryKey: ['databaseFiles', selectedDevice.id, selectedApplication?.bundleId],
+        })
       }
 
       setIsDeleteDialogOpen(false)
@@ -146,9 +168,11 @@ export function SidePanel() {
               </Flex>
             </Drawer.Header>
             <Drawer.Body>
-              {selectedRow && (
+              {selectedRow && tableData?.columns && (
                 <Stack gap="0">
-                  {Object.entries(selectedRow.rowData || {}).map(([key, value]) => {
+                  {tableData.columns.map((column) => {
+                    const key = column.name || column
+                    const value = selectedRow.rowData?.[key]
                     // Find the column type for this field
                     const columnInfo = selectedRow.columnInfo?.find(col => col.name === key)
                     

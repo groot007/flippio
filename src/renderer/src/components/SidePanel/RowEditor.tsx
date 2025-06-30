@@ -70,7 +70,8 @@ export const RowEditor: React.FC<RowEditorProps> = ({
         && selectedDatabaseFile.packageName
         && (selectedDatabaseFile?.deviceType === 'android'
           || selectedDatabaseFile?.deviceType === 'iphone'
-          || selectedDatabaseFile?.deviceType === 'iphone-device')
+          || selectedDatabaseFile?.deviceType === 'iphone-device'
+          || selectedDatabaseFile?.deviceType === 'simulator')
       ) {
         await window.api.pushDatabaseFile(
           selectedDevice.id,

@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 
 interface Device {
   id: string
-  deviceType: 'iphone' | 'android' | 'desktop' | 'iphone-device'
+  deviceType: 'iphone' | 'android' | 'desktop' | 'iphone-device' | 'emulator' | 'simulator'
 }
 
 interface Application {
@@ -34,7 +34,7 @@ export function useDatabaseFiles(
 
       let fetchFunction: (deviceId: string, bundleId: string) => Promise<DatabaseFilesResponse>
 
-      if (selectedDevice.deviceType === 'iphone') {
+      if (selectedDevice.deviceType === 'iphone' || selectedDevice.deviceType === 'simulator') {
         fetchFunction = window.api.getIOSDatabaseFiles
       }
       else if (selectedDevice.deviceType === 'iphone-device') {
