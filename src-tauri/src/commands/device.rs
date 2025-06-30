@@ -1361,33 +1361,39 @@ fn find_android_emulator_path() -> String {
 #[tauri::command]
 pub async fn get_android_emulators(app_handle: tauri::AppHandle) -> Result<DeviceResponse<Vec<VirtualDevice>>, String> {
     log::info!("Getting Android emulators");
-    
-    // Try to find emulator in common Android SDK locations
+
     let emulator_path = find_android_emulator_path();
-    
+    let adb_path = get_adb_path();
     let shell = app_handle.shell();
-    let output = shell.command(&emulator_path)
+
+    // Step 1: List all configured AVDs
+    let avd_list_output = shell.command(&emulator_path)
         .args(["-list-avds"])
         .output()
         .await
-        .map_err(|e| format!("Failed to execute emulator command at {}: {}. Make sure Android SDK is installed and emulator is available.", emulator_path, e))?;
-    
-    if output.status.success() {
-        let emulators_output = String::from_utf8_lossy(&output.stdout);
-        let mut emulators = Vec::new();
-        
-        // Get list of running emulators
-        let adb_path = get_adb_path();
-        let running_output = shell.command(&adb_path)
-            .args(["devices"])
-            .output()
-            .await;
-        
-        let running_emulator_ports: Vec<String> = if let Ok(output) = running_output {
-            if output.status.success() {
-                String::from_utf8_lossy(&output.stdout)
-                    .lines()
-                    .skip(1) // Skip header line
+        .map_err(|e| format!("Failed to list AVDs using '{}': {}", emulator_path, e))?;
+
+    if !avd_list_output.status.success() {
+        return Err("Failed to get list of Android Virtual Devices (AVDs).".into());
+    }
+
+    let all_avds: Vec<String> = String::from_utf8_lossy(&avd_list_output.stdout)
+        .lines()
+        .map(|line| line.trim().to_string())
+        .filter(|s| !s.is_empty())
+        .collect();
+
+    // Step 2: List running emulator devices via `adb devices`
+    let adb_devices_output = shell.command(&adb_path)
+        .args(["devices"])
+        .output()
+        .await;
+
+    let running_ports: Vec<String> = if let Ok(output) = adb_devices_output {
+        if output.status.success() {
+            String::from_utf8_lossy(&output.stdout)
+                .lines()
+                .skip(1)
                 .filter_map(|line| {
                     let parts: Vec<&str> = line.split_whitespace().collect();
                     if parts.len() >= 2 && parts[0].starts_with("emulator-") && parts[1] == "device" {
@@ -1397,42 +1403,68 @@ pub async fn get_android_emulators(app_handle: tauri::AppHandle) -> Result<Devic
                     }
                 })
                 .collect()
-            } else {
-                Vec::new()
-            }
         } else {
             Vec::new()
-        };
+        }
+    } else {
+        Vec::new()
+    };
+
+    // Step 3: Map running emulator port to its AVD name
+    let mut running_avds = std::collections::HashSet::new();
+    for port in &running_ports {
+        log::info!("Checking AVD name for running emulator port: {}", port);
         
-        for line in emulators_output.lines() {
-            let emulator_id = line.trim();
-            if !emulator_id.is_empty() {
-                // For simplicity, if any emulator is running, we'll need to check each one individually
-                // This is a basic implementation - ideally we'd match specific AVD names to running instances
-                let has_running_emulators = !running_emulator_ports.is_empty();
-                
-                emulators.push(VirtualDevice {
-                    id: emulator_id.to_string(),
-                    name: emulator_id.to_string(),
-                    platform: "android".to_string(),
-                    state: Some(if has_running_emulators { "running".to_string() } else { "stopped".to_string() }),
-                    model: Some(emulator_id.to_string()),
-                });
+        let avd_name_output = shell.command(&adb_path)
+            .args(["-s", port, "emu", "avd", "name"])
+            .output()
+            .await;
+
+        match avd_name_output {
+            Ok(output) => {
+                if output.status.success() {
+                    let output_text = String::from_utf8_lossy(&output.stdout);
+                    // Take the first line as the AVD name (ignore "OK" and other lines)
+                    let name = output_text.lines().next().unwrap_or("").trim().to_string();
+                    log::info!("Found running AVD: '{}' on port {}", name, port);
+                    if !name.is_empty() && name != "OK" {
+                        running_avds.insert(name);
+                    }
+                } else {
+                    let stderr = String::from_utf8_lossy(&output.stderr);
+                    log::warn!("Failed to get AVD name for port {}: {}", port, stderr);
+                }
+            }
+            Err(e) => {
+                log::warn!("Error executing AVD name command for port {}: {}", port, e);
             }
         }
-        
-        Ok(DeviceResponse {
-            success: true,
-            data: Some(emulators),
-            error: None,
-        })
-    } else {
-        Ok(DeviceResponse {
-            success: true,
-            data: Some(Vec::new()),
-            error: None,
-        })
     }
+    
+    log::info!("Running AVDs found: {:?}", running_avds);
+    log::info!("All AVDs: {:?}", all_avds);
+
+    // Step 4: Build device list with running/stopped status
+    let emulators: Vec<VirtualDevice> = all_avds
+        .into_iter()
+        .map(|avd| VirtualDevice {
+            id: avd.clone(),
+            name: avd.clone(),
+            platform: "android".to_string(),
+            model: Some(avd.clone()),
+            state: Some(if running_avds.contains(&avd) {
+                "running".to_string()
+            } else {
+                "stopped".to_string()
+            }),
+        })
+        .collect();
+
+    Ok(DeviceResponse {
+        success: true,
+        data: Some(emulators),
+        error: None,
+    })
 }
 
 #[tauri::command]
