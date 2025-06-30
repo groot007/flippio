@@ -45,11 +45,6 @@ export function DataGrid() {
   const gridRef = useRef<AgGridReact>(null)
   const [isAddingRow, setIsAddingRow] = useState(false)
 
-  console.log('DataGrid render - tableData:', tableData)
-  console.log('DataGrid render - rows count:', tableData?.rows?.length)
-  console.log('DataGrid render - columns count:', tableData?.columns?.length)
-  console.log('DataGrid render - isCustomQuery:', tableData?.isCustomQuery)
-
   const { data, error, refetch: refetchTableData } = useTableDataQuery(selectedDatabaseTable?.name || '')
 
   // Function to create a new row with null values
@@ -74,7 +69,8 @@ export function DataGrid() {
         && selectedDatabaseFile.packageName
         && (selectedDatabaseFile?.deviceType === 'android'
           || selectedDatabaseFile?.deviceType === 'iphone'
-          || selectedDatabaseFile?.deviceType === 'iphone-device')
+          || selectedDatabaseFile?.deviceType === 'iphone-device'
+          || selectedDatabaseFile?.deviceType === 'simulator')
       ) {
         await window.api.pushDatabaseFile(
           selectedDevice.id,

@@ -22,7 +22,7 @@ export interface VirtualDevice {
   name: string
   id: string
   platform: 'android' | 'ios'
-  status?: 'running' | 'stopped'
+  state?: string // Backend sends 'state', not 'status'
 }
 
 interface VirtualDeviceModalProps {
@@ -35,6 +35,14 @@ export const VirtualDeviceModal: React.FC<VirtualDeviceModalProps> = ({ isOpen, 
   const [iosSimulators, setIosSimulators] = useState<VirtualDevice[]>([])
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [isLaunching, setIsLaunching] = useState<string | null>(null)
+
+  // Helper function to check if device is running/booted
+  const isDeviceRunning = (device: VirtualDevice): boolean => {
+    if (!device.state) 
+      return false
+    // iOS simulators use "Booted", Android emulators might use "running" or other states
+    return device.state.toLowerCase() === 'booted' || device.state.toLowerCase() === 'running'
+  }
 
   // Fetch the list of available virtual devices
   useEffect(() => {
@@ -119,6 +127,7 @@ export const VirtualDeviceModal: React.FC<VirtualDeviceModalProps> = ({ isOpen, 
   // Render a device list item
   const renderDeviceItem = useCallback((device: VirtualDevice) => {
     const isLaunchingThis = isLaunching === device.id
+    const isRunning = isDeviceRunning(device)
 
     return (
       <ListItem
@@ -127,14 +136,14 @@ export const VirtualDeviceModal: React.FC<VirtualDeviceModalProps> = ({ isOpen, 
         mb={2}
         borderWidth="1px"
         borderRadius="md"
-        borderColor={device.status === 'running' ? 'flipioPrimary' : 'borderPrimary'}
-        _dark={{ borderColor: device.status === 'running' ? 'flipioPrimary' : 'borderSecondary' }}
+        borderColor={isRunning ? 'flipioPrimary' : 'borderPrimary'}
+        _dark={{ borderColor: isRunning ? 'flipioPrimary' : 'borderSecondary' }}
         bg="transparent"
         _hover={{
           bg: 'flipioAqua.50',
         }}
-        cursor="pointer"
-        onClick={() => device.status === 'running' ? undefined : handleLaunchDevice(device)}
+        cursor={isRunning ? 'default' : 'pointer'}
+        onClick={() => isRunning ? undefined : handleLaunchDevice(device)}
       >
         <Flex alignItems="center">
           <Icon
@@ -146,7 +155,7 @@ export const VirtualDeviceModal: React.FC<VirtualDeviceModalProps> = ({ isOpen, 
           <Flex direction="column" flex={1}>
             <Text fontWeight="medium" color="textPrimary">{device.name}</Text>
             <Text fontSize="sm" color="textSecondary">
-              {device.status === 'running' ? 'Running' : 'Ready to launch'}
+              {isRunning ? 'Booted' : 'Ready to launch'}
             </Text>
           </Flex>
           {isLaunchingThis
@@ -156,22 +165,32 @@ export const VirtualDeviceModal: React.FC<VirtualDeviceModalProps> = ({ isOpen, 
             : (
                 <Button
                   size="sm"
-                  colorScheme={device.status === 'running' ? 'green' : 'blue'}
-                  bg={device.status === 'running' ? 'green.500' : 'flipioPrimary'}
+                  colorScheme={isRunning ? 'green' : 'blue'}
+                  bg={isRunning ? 'green.500' : 'flipioPrimary'}
+                  disabled={isRunning}
                   _hover={{
-                    bg: device.status === 'running' ? 'green.600' : 'flipioSecondary',
+                    bg: isRunning ? 'green.600' : 'flipioSecondary',
+                  }}
+                  _disabled={{
+                    opacity: 0.6,
+                    cursor: 'not-allowed',
                   }}
                 >
-                  {device.status === 'running' ? 'booted' : 'Launch'}
+                  {isRunning ? 'Launched' : 'Launch'}
                 </Button>
               )}
         </Flex>
       </ListItem>
     )
-  }, [isLaunching, handleLaunchDevice])
+  }, [isLaunching, handleLaunchDevice, isDeviceRunning])
 
   // Sort devices with booted ones first
-  const sortedDevices = (devices: VirtualDevice[]) => devices.sort((a, b) => a.status === 'running' ? -1 : b.status === 'running' ? 1 : 0)
+  const sortedDevices = (devices: VirtualDevice[]) => 
+    devices.sort((a, b) => {
+      const aRunning = isDeviceRunning(a)
+      const bRunning = isDeviceRunning(b)
+      return aRunning && !bRunning ? -1 : !aRunning && bRunning ? 1 : 0
+    })
 
   return (
     <HStack wrap="wrap" gap="4">

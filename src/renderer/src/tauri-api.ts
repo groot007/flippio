@@ -81,7 +81,9 @@ async function invokeCommandWithResponse<T>(electronCommand: string, dataFieldNa
       parameters[paramNames[i]] = args[i]
     }
 
+    console.log(`Invoking ${tauriCommand} with parameters:`, parameters)
     const response = await invoke<DeviceResponse<T>>(tauriCommand, parameters)
+    console.log(`Response from ${tauriCommand}:`, response)
 
     if (response.success) {
       return { success: true, [dataFieldName]: response.data }
@@ -104,6 +106,7 @@ function getParameterNames(command: string): string[] {
     adb_get_packages: ['deviceId'],
     adb_get_android_database_files: ['deviceId', 'packageName'],
     adb_push_database_file: ['deviceId', 'localPath', 'packageName', 'remotePath'],
+    device_push_ios_database_file: ['deviceId', 'localPath', 'packageName', 'remotePath'],
     device_get_ios_packages: ['deviceId'],
     device_get_ios_device_packages: ['deviceId'],
     device_get_ios_device_database_files: ['deviceId', 'packageName'],
@@ -139,37 +142,94 @@ function getParameterNames(command: string): string[] {
 // API object that matches the Electron preload API exactly
 export const api = {
   // Device methods
-  // Returns all devices: Android, iOS simulators, and iPhone devices
+  // Returns all devices: Android, iOS simulators, iPhone devices, and running emulators
   getDevices: async () => {
     try {
-      // Fetch Android devices
+      // Fetch physical Android devices
       const androidResp = await invokeCommandWithResponse('adb:getDevices', 'devices')
-      // Fetch iOS devices (simulators and physical)
+      // Fetch physical iOS devices (simulators and physical)
       const iosResp = await invokeCommandWithResponse('device:getIOsDevices', 'devices')
+      // Fetch Android emulators
+      const androidEmulatorsResp = await invokeCommandWithResponse('getAndroidEmulators', 'emulators')
+      // Fetch iOS simulators
+      const iosSimulatorsResp = await invokeCommandWithResponse('getIOSSimulators', 'simulators')
 
       console.log('Android devices:', androidResp)
       console.log('iOS devices:', iosResp)
-      if (androidResp.success && iosResp.success) {
-        // Merge both device arrays
-        return { success: true, devices: [...(androidResp.devices || []), ...(iosResp.devices || [])] }
+      console.log('Android emulators:', androidEmulatorsResp)
+      console.log('iOS simulators:', iosSimulatorsResp)
+
+      const allDevices = []
+
+      // Add physical Android devices with labels
+      if (androidResp.success && androidResp.devices) {
+        androidResp.devices.forEach((device: any) => {
+          allDevices.push({
+            ...device,
+            label: `${device.name || device.id}`,
+            description: 'Android Device',
+          })
+        })
       }
-      else if (androidResp.success) {
-        return { success: true, devices: androidResp.devices || [] }
+
+      // Add physical iOS devices with labels
+      if (iosResp.success && iosResp.devices) {
+        iosResp.devices.forEach((device: any) => {
+          allDevices.push({
+            ...device,
+            label: `${device.name || device.id}`,
+            description: 'iOS Device',
+          })
+        })
       }
-      else if (iosResp.success) {
-        return { success: true, devices: iosResp.devices || [] }
+
+      // Add Android emulators (only running ones)
+      if (androidEmulatorsResp.success && androidEmulatorsResp.emulators) {
+        androidEmulatorsResp.emulators
+          .filter((emulator: any) => emulator.state === 'running')
+          .forEach((emulator: any) => {
+            allDevices.push({
+              id: emulator.id,
+              name: emulator.name,
+              model: emulator.name, // Add model field for Device interface compatibility
+              label: `${emulator.name}`,
+              description: 'Android Emulator',
+              platform: 'android',
+              deviceType: 'emulator',
+            })
+          })
       }
-      else {
-        return { success: false, error: androidResp.error || iosResp.error }
+
+      // Add iOS simulators (only booted ones)
+      if (iosSimulatorsResp.success && iosSimulatorsResp.simulators) {
+        console.log('iOS simulators:', iosSimulatorsResp.simulators)
+        iosSimulatorsResp.simulators
+          .filter((simulator: any) => simulator.state === 'Booted')
+          .forEach((simulator: any) => {
+            allDevices.push({
+              id: simulator.id,
+              name: simulator.name,
+              model: simulator.name, // Add model field for Device interface compatibility
+              label: `${simulator.model}`,
+              description: 'iOS Simulator',
+              platform: 'ios',
+              deviceType: 'simulator',
+            })
+          })
       }
+
+      return { success: true, devices: allDevices }
     }
     catch (error) {
+      console.error('Error getting devices:', error)
       return { success: false, error: (error as Error).message }
     }
   },
 
-  getIOSPackages: (deviceId: string) =>
-    invokeCommandWithResponse('device:getIosPackages', 'packages', deviceId),
+  getIOSPackages: (deviceId: string) => {
+    console.log('getIOSPackages called with deviceId:', deviceId)
+    return invokeCommandWithResponse('device:getIosPackages', 'packages', deviceId)
+  },
 
   getAndroidPackages: (deviceId: string) =>
     invokeCommandWithResponse('adb:getPackages', 'packages', deviceId),
@@ -200,7 +260,7 @@ export const api = {
         deviceType = 'iphone-device' // Physical iOS device
       }
       else if (deviceId.match(/^[A-F0-9-]{8,}$/i)) {
-        deviceType = 'iphone' // iOS simulator
+        deviceType = 'simulator' // iOS simulator
       }
       else {
         deviceType = 'android' // Default to Android

@@ -250,9 +250,54 @@ async fn push_ios_db_file(
     remote_path: &str,
     is_device: bool,
 ) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
-    info!("Pushing iOS database file {} to device {}", local_path, device_id);
+    info!("=== PUSH_IOS_DB_FILE FUNCTION CALLED ===");
+    info!("Device ID: {}", device_id);
+    info!("Local path: {}", local_path);
+    info!("Package name: {}", package_name);
+    info!("Remote path: {}", remote_path);
+    info!("Is device: {}", is_device);
+    
+    // Check if local file exists first
+    if !std::path::Path::new(local_path).exists() {
+        error!("Local file does not exist: {}", local_path);
+        return Err(format!("Local file does not exist: {}", local_path).into());
+    }
+    
+    // Validate that the local file is not empty and appears to be a SQLite file
+    match std::fs::metadata(local_path) {
+        Ok(metadata) => {
+            if metadata.len() == 0 {
+                error!("Local file is empty: {}", local_path);
+                return Err("Local file is empty".into());
+            }
+            info!("Local file size: {} bytes", metadata.len());
+            
+            // Quick check if it looks like a SQLite file
+            if metadata.len() >= 16 {
+                if let Ok(mut file) = std::fs::File::open(local_path) {
+                    use std::io::Read;
+                    let mut header = [0u8; 16];
+                    if let Ok(_) = file.read_exact(&mut header) {
+                        let header_str = String::from_utf8_lossy(&header[..15]);
+                        if !header_str.starts_with("SQLite format") {
+                            error!("Local file does not appear to be a SQLite database: {}", local_path);
+                            return Err("Local file is not a valid SQLite database".into());
+                        }
+                        info!("✅ Local file appears to be a valid SQLite database");
+                    }
+                }
+            }
+        }
+        Err(e) => {
+            error!("Cannot access local file metadata: {}", e);
+            return Err(format!("Cannot access local file: {}", e).into());
+        }
+    }
+    
+    info!("Local file exists and is valid: {}", local_path);
     
     if is_device {
+        info!("Using physical iOS device path (afcclient)");
         // For physical iOS devices - use bundled afcclient
         let afcclient_path = get_libimobiledevice_tool_path("afcclient");
         let afcclient_cmd = afcclient_path
@@ -275,26 +320,70 @@ async fn push_ios_db_file(
             return Err(format!("iOS device push failed: {}", error_msg).into());
         }
     } else {
-        // For iOS simulators - direct file copy to container
-        // First get the container path
-        let container_cmd = format!("xcrun simctl get_app_container {} {} data", 
-                                   device_id, package_name);
+        info!("=== USING iOS SIMULATOR PATH ===");
+        // For iOS simulators - direct file replacement (like Electron)
+        // local_path is the temp file with changes, remote_path is the original file in simulator
         
-        let output = std::process::Command::new("sh")
-            .arg("-c")
-            .arg(&container_cmd)
-            .output()?;
+        info!("Local source path (edited file): {}", local_path);
+        info!("Remote target path (original simulator file): {}", remote_path);
         
-        if !output.status.success() {
-            let error_msg = String::from_utf8_lossy(&output.stderr);
-            return Err(format!("Failed to get iOS simulator container: {}", error_msg).into());
+        // Check if the destination file exists
+        if std::path::Path::new(remote_path).exists() {
+            info!("✅ Target file exists - replacing with modified version");
+        } else {
+            info!("⚠️  Target file does not exist at: {}", remote_path);
+            return Err(format!("Target file does not exist: {}", remote_path).into());
         }
         
-        let container_path = String::from_utf8_lossy(&output.stdout).trim().to_string();
-        let full_remote_path = format!("{}{}", container_path, remote_path);
+        // Direct file replacement for simulator (simple copy like Electron)
+        info!("Replacing original file with modified version...");
         
-        // Direct file copy for simulator
-        std::fs::copy(local_path, &full_remote_path)?;
+        // First, create a backup of the original file
+        let backup_path = format!("{}.backup", remote_path);
+        if let Err(e) = std::fs::copy(remote_path, &backup_path) {
+            error!("Failed to create backup of original file: {}", e);
+            return Err(format!("Failed to create backup: {}", e).into());
+        }
+        info!("Created backup at: {}", backup_path);
+        
+        match std::fs::copy(local_path, remote_path) {
+            Ok(bytes_copied) => {
+                info!("Successfully replaced {} bytes in simulator file: {}", bytes_copied, remote_path);
+                
+                // Verify the copied file has valid content
+                match std::fs::metadata(remote_path) {
+                    Ok(metadata) => {
+                        if metadata.len() == 0 {
+                            error!("Copied file is empty! Restoring from backup");
+                            let _ = std::fs::copy(&backup_path, remote_path);
+                            return Err("Copied file is empty, operation failed".into());
+                        }
+                        info!("Verified copied file size: {} bytes", metadata.len());
+                    }
+                    Err(e) => {
+                        error!("Failed to verify copied file: {}", e);
+                    }
+                }
+                
+                // Clean up backup file
+                let _ = std::fs::remove_file(&backup_path);
+                
+                info!("Database file replacement completed successfully");
+            },
+            Err(e) => {
+                error!("Failed to replace simulator file: {}", e);
+                error!("Source: {}", local_path);
+                error!("Target: {}", remote_path);
+                
+                // Restore from backup
+                if let Err(restore_err) = std::fs::copy(&backup_path, remote_path) {
+                    error!("Failed to restore from backup: {}", restore_err);
+                }
+                let _ = std::fs::remove_file(&backup_path);
+                
+                return Err(format!("Failed to replace simulator file: {}", e).into());
+            }
+        }
     }
     
     Ok(format!("Database successfully pushed to {}", remote_path))
@@ -398,6 +487,7 @@ pub struct DatabaseFile {
 pub struct VirtualDevice {
     pub id: String,
     pub name: String,
+    pub model: Option<String>,
     pub platform: String,
     pub state: Option<String>,
 }
@@ -808,46 +898,77 @@ pub async fn device_get_ios_packages(app_handle: tauri::AppHandle, device_id: St
     
     let shell = app_handle.shell();
     
-    // Use xcrun simctl for simulators
-    let output = shell.command("xcrun")
-        .args(["simctl", "listapps", &device_id])
+    // Use xcrun simctl for simulators with plutil to convert plist to JSON
+    log::info!("Executing: xcrun simctl listapps {} | plutil -convert json -o - -", device_id);
+    let output = shell.command("sh")
+        .args(["-c", &format!("xcrun simctl listapps {} | plutil -convert json -o - -", device_id)])
         .output()
         .await;
     
     match output {
-        Ok(result) if result.status.success() => {
-            let packages_output = String::from_utf8_lossy(&result.stdout);
-            let mut packages = Vec::new();
+        Ok(result) => {
+            log::info!("simctl listapps command completed with status: {:?}", result.status);
             
-            // Parse the JSON output from simctl
-            if let Ok(apps_json) = serde_json::from_str::<serde_json::Value>(&packages_output) {
-                if let Some(apps_obj) = apps_json.as_object() {
-                    for (bundle_id, app_info) in apps_obj {
-                        if let Some(name) = app_info.get("CFBundleDisplayName")
-                            .or_else(|| app_info.get("CFBundleName"))
-                            .and_then(|v| v.as_str()) 
-                        {
-                            packages.push(Package {
-                                name: name.to_string(),
-                                bundle_id: bundle_id.clone(),
-                            });
+            if result.status.success() {
+                let packages_output = String::from_utf8_lossy(&result.stdout);
+                log::info!("simctl stdout length: {} characters", packages_output.len());
+                log::info!("simctl stdout preview (first 500 chars): {}", 
+                    packages_output.chars().take(500).collect::<String>());
+                
+                let mut packages = Vec::new();
+                
+                // Parse the JSON output from simctl
+                match serde_json::from_str::<serde_json::Value>(&packages_output) {
+                    Ok(apps_json) => {
+                        log::info!("Successfully parsed JSON from simctl output");
+                        
+                        if let Some(apps_obj) = apps_json.as_object() {
+                            log::info!("Found {} apps in JSON object", apps_obj.len());
+                            
+                            for (bundle_id, app_info) in apps_obj {
+                                if let Some(name) = app_info.get("CFBundleDisplayName")
+                                    .or_else(|| app_info.get("CFBundleName"))
+                                    .and_then(|v| v.as_str()) 
+                                {
+                                    log::info!("Found app: {} ({})", name, bundle_id);
+                                    packages.push(Package {
+                                        name: name.to_string(),
+                                        bundle_id: bundle_id.clone(),
+                                    });
+                                }
+                            }
+                        } else {
+                            log::warn!("JSON object is not an object type");
                         }
                     }
+                    Err(e) => {
+                        log::error!("Failed to parse JSON from simctl output: {}", e);
+                        log::error!("Raw output: {}", packages_output);
+                    }
                 }
+                
+                log::info!("Returning {} packages for iOS simulator", packages.len());
+                Ok(DeviceResponse {
+                    success: true,
+                    data: Some(packages),
+                    error: None,
+                })
+            } else {
+                let stderr = String::from_utf8_lossy(&result.stderr);
+                log::error!("simctl listapps failed with stderr: {}", stderr);
+                Ok(DeviceResponse {
+                    success: false,
+                    data: None,
+                    error: Some(format!("simctl listapps failed: {}", stderr)),
+                })
             }
-            
-            Ok(DeviceResponse {
-                success: true,
-                data: Some(packages),
-                error: None,
-            })
         }
-        _ => {
-            // Fallback: return empty list
+        Err(e) => {
+            log::error!("Failed to execute simctl listapps command: {}", e);
             Ok(DeviceResponse {
-                success: true,
-                data: Some(Vec::new()),
-                error: None,
+                success: false,
+                data: None,
+                error: Some(format!("Failed to execute simctl command: {}", e)),
             })
         }
     }
@@ -1010,11 +1131,6 @@ pub async fn adb_get_ios_database_files(
 ) -> Result<DeviceResponse<Vec<DatabaseFile>>, String> {
     log::info!("Getting iOS database files for device: {} package: {}", device_id, package_name);
     
-    // Clean temp directory at the start
-    if let Err(e) = clean_temp_dir() {
-        error!("Failed to clean temp directory: {}", e);
-    }
-    
     let shell = app_handle.shell();
     let mut database_files = Vec::new();
     
@@ -1048,86 +1164,34 @@ pub async fn adb_get_ios_database_files(
                     
                     // Copy each found database file to local temp directory
                     for file_path in found_files {
-                        // Ensure temp directory exists
-                        let temp_dir = match ensure_temp_dir() {
-                            Ok(dir) => dir,
-                            Err(e) => {
-                                error!("Failed to ensure temp directory: {}", e);
-                                continue;
-                            }
-                        };
-                        
-                        // For iOS simulator, we can directly copy the file since it's already local
+                        // For iOS simulator, we store the direct file path (no temp copy needed like Electron)
+                        // The file_path is already the full path in the simulator container
                         let filename = std::path::Path::new(&file_path)
                             .file_name()
                             .unwrap_or_else(|| std::ffi::OsStr::new("unknown"));
-                        let local_path = temp_dir.join(filename);
                         
-                        match std::fs::copy(&file_path, &local_path) {
-                            Ok(_) => {
-                                let filename = filename
-                                    .to_str()
-                                    .unwrap_or("unknown")
-                                    .to_string();
-                                
-                                // Determine relative location from container path
-                                let relative_path = file_path.replace(&container_path, "")
-                                    .split('/')
-                                    .filter(|p| !p.is_empty())
-                                    .next()
-                                    .unwrap_or("root")
-                                    .to_string();
-                                
-
-                                
-                                // Store metadata
-                                let metadata = DatabaseFileMetadata {
-                                    device_id: device_id.clone(),
-                                    package_name: package_name.clone(),
-                                    remote_path: file_path.clone(),
-                                    timestamp: chrono::Utc::now().to_rfc3339(),
-                                };
-                                
-                                let metadata_path = format!("{}.meta.json", local_path.display());
-                                if let Ok(metadata_json) = serde_json::to_string_pretty(&metadata) {
-                                    let _ = std::fs::write(&metadata_path, metadata_json);
-                                }
-                                
-                                database_files.push(DatabaseFile {
-                                    path: local_path.to_string_lossy().to_string(),
-                                    package_name: package_name.clone(),
-                                    filename,
-                                    remote_path: Some(file_path),
-                                    location: relative_path,
-                                    device_type: "iphone".to_string(),
-                                });
-                            }
-                            Err(e) => {
-                                error!("Failed to copy iOS database file {}: {}", file_path, e);
-                                // Still add the file with remote path for fallback
-                                let filename = std::path::Path::new(&file_path)
-                                    .file_name()
-                                    .and_then(|n| n.to_str())
-                                    .unwrap_or("unknown")
-                                    .to_string();
-                                
-                                let relative_path = file_path.replace(&container_path, "")
-                                    .split('/')
-                                    .filter(|p| !p.is_empty())
-                                    .next()
-                                    .unwrap_or("root")
-                                    .to_string();
-                                
-                                database_files.push(DatabaseFile {
-                                    path: file_path.clone(),
-                                    package_name: package_name.clone(),
-                                    filename,
-                                    remote_path: Some(file_path),
-                                    location: relative_path,
-                                    device_type: "iphone".to_string(),
-                                });
-                            }
-                        }
+                        let filename = filename
+                            .to_str()
+                            .unwrap_or("unknown")
+                            .to_string();
+                        
+                        // Determine relative location from container path
+                        let relative_path = file_path.replace(&container_path, "")
+                            .split('/')
+                            .filter(|p| !p.is_empty())
+                            .next()
+                            .unwrap_or("root")
+                            .to_string();
+                        
+                        // For iOS simulator, store the direct file path (matching Electron approach)
+                        database_files.push(DatabaseFile {
+                            path: file_path.clone(), // Use original file path directly, not temp copy
+                            package_name: package_name.clone(),
+                            filename,
+                            remote_path: Some(file_path),
+                            location: relative_path,
+                            device_type: "iphone".to_string(),
+                        });
                     }
                 }
             }
@@ -1312,14 +1376,47 @@ pub async fn get_android_emulators(app_handle: tauri::AppHandle) -> Result<Devic
         let emulators_output = String::from_utf8_lossy(&output.stdout);
         let mut emulators = Vec::new();
         
+        // Get list of running emulators
+        let adb_path = get_adb_path();
+        let running_output = shell.command(&adb_path)
+            .args(["devices"])
+            .output()
+            .await;
+        
+        let running_emulator_ports: Vec<String> = if let Ok(output) = running_output {
+            if output.status.success() {
+                String::from_utf8_lossy(&output.stdout)
+                    .lines()
+                    .skip(1) // Skip header line
+                .filter_map(|line| {
+                    let parts: Vec<&str> = line.split_whitespace().collect();
+                    if parts.len() >= 2 && parts[0].starts_with("emulator-") && parts[1] == "device" {
+                        Some(parts[0].to_string())
+                    } else {
+                        None
+                    }
+                })
+                .collect()
+            } else {
+                Vec::new()
+            }
+        } else {
+            Vec::new()
+        };
+        
         for line in emulators_output.lines() {
             let emulator_id = line.trim();
             if !emulator_id.is_empty() {
+                // For simplicity, if any emulator is running, we'll need to check each one individually
+                // This is a basic implementation - ideally we'd match specific AVD names to running instances
+                let has_running_emulators = !running_emulator_ports.is_empty();
+                
                 emulators.push(VirtualDevice {
                     id: emulator_id.to_string(),
                     name: emulator_id.to_string(),
                     platform: "android".to_string(),
-                    state: Some("stopped".to_string()),
+                    state: Some(if has_running_emulators { "running".to_string() } else { "stopped".to_string() }),
+                    model: Some(emulator_id.to_string()),
                 });
             }
         }
@@ -1366,6 +1463,7 @@ pub async fn get_ios_simulators(app_handle: tauri::AppHandle) -> Result<DeviceRe
                                 simulators.push(VirtualDevice {
                                     id: udid.to_string(),
                                     name: format!("{} ({})", name, runtime),
+                                    model: Some(name.to_string()),
                                     platform: "ios".to_string(),
                                     state: Some(state.to_string()),
                                 });
@@ -1488,21 +1586,34 @@ pub async fn device_push_ios_database_file(
     package_name: String,
     remote_path: String,
 ) -> Result<DeviceResponse<String>, String> {
-    log::info!("Pushing database file {} to iOS device: {}", local_path, device_id);
+    log::info!("=== PUSH IOS DATABASE FILE CALLED ===");
+    log::info!("Device ID: {}", device_id);
+    log::info!("Local path: {}", local_path);
+    log::info!("Package name: {}", package_name);
+    log::info!("Remote path: {}", remote_path);
     
-    // Determine if it's a physical device (has UUID format) or simulator
-    let is_device = device_id.len() == 40 && device_id.chars().all(|c| c.is_ascii_hexdigit() || c == '-');
+    // Determine if it's a physical device or simulator
+    // Physical iOS devices have 40-character hex IDs without dashes
+    // iOS simulators have UUID format with dashes (e.g., E9E497ED-ED8E-4A33-B124-8F31C8E9FC34)
+    let is_device = device_id.len() == 40 && device_id.chars().all(|c| c.is_ascii_hexdigit()) && !device_id.contains('-');
+    log::info!("Device detection - is_device: {}", is_device);
     
     match push_ios_db_file(&device_id, &local_path, &package_name, &remote_path, is_device).await {
-        Ok(message) => Ok(DeviceResponse {
-            success: true,
-            data: Some(message),
-            error: None,
-        }),
-        Err(e) => Ok(DeviceResponse {
-            success: false,
-            data: None,
-            error: Some(format!("Failed to push iOS database file: {}", e)),
-        }),
+        Ok(message) => {
+            log::info!("Successfully pushed iOS database file: {}", message);
+            Ok(DeviceResponse {
+                success: true,
+                data: Some(message),
+                error: None,
+            })
+        },
+        Err(e) => {
+            log::error!("Failed to push iOS database file: {}", e);
+            Ok(DeviceResponse {
+                success: false,
+                data: None,
+                error: Some(format!("Failed to push iOS database file: {}", e)),
+            })
+        }
     }
 }

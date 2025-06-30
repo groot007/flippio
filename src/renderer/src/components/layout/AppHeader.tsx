@@ -5,7 +5,7 @@ import { useCurrentDatabaseSelection, useCurrentDeviceSelection } from '@rendere
 import { toaster } from '@renderer/ui/toaster'
 import { invoke } from '@tauri-apps/api/core'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { LuPackage, LuRefreshCcw, LuSmartphone } from 'react-icons/lu'
+import { LuPackage, LuRefreshCcw, LuRocket, LuSmartphone } from 'react-icons/lu'
 import FLSelect from './../common/FLSelect'
 import { VirtualDeviceModal } from './../data/VirtualDeviceModal'
 import { PackageSetModal } from './PackageSetModal'
@@ -99,9 +99,9 @@ function AppHeader() {
     devicesList.map((device) => {
       const osVersion = device.deviceType === 'iphone' ? device.iosVersion || '' : ''
       return {
-        label: `${device.name} ${osVersion}`,
+        label: device.label || `${device.name} ${osVersion}`,
         value: device.id,
-        description: device.deviceType.includes('iphone') ? 'iOS' : 'Android',
+        description: device.description || (device.deviceType?.includes('iphone') ? 'iOS' : 'Android'),
         ...device,
       }
     }), [devicesList])
@@ -155,7 +155,7 @@ function AppHeader() {
               value={selectedDevice}
               icon={<LuSmartphone color="var(--chakra-colors-flipioPrimary)" />}
               onChange={handleDeviceChange}
-              noOptionsMessage="No devices available. Try run an emulator"
+              noOptionsMessage="No devices found. Connect a device or launch an emulator/simulator"
             />
             <FLSelect
               options={applicationSelectOptions}
@@ -204,14 +204,13 @@ function AppHeader() {
               variant="outline"
               size="sm"
               title="Launch Emulator"
-              color="flipioPrimary"
-              borderColor="borderPrimary"
+              color="textSecondary"
+              border="none"
               _hover={{
                 bg: 'bgTertiary',
-                borderColor: 'flipioPrimary',
               }}
             >
-              <LuSmartphone size={16} />
+              <LuRocket size={16} />
             </Button>
 
             <Settings />
