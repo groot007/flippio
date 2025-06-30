@@ -461,6 +461,7 @@ pub struct Device {
     pub model: String,
     #[serde(rename = "deviceType")]
     pub device_type: String,
+    pub description: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -582,6 +583,15 @@ pub async fn adb_get_devices(_app_handle: tauri::AppHandle) -> Result<DeviceResp
                     let mut model = "Unknown".to_string();
                     let mut device_name = device_id.clone();
                     
+                    // Determine if it's an Android device or emulator
+                    // If the line contains "usb:" it's a physical device, otherwise it's an emulator
+                    let is_physical_device = line.contains("usb:");
+                    let description = if is_physical_device {
+                        "Android device".to_string()
+                    } else {
+                        "Android emulator".to_string()
+                    };
+                    
                     // Parse device properties
                     for part in &parts[2..] {
                         if part.starts_with("model:") {
@@ -596,6 +606,7 @@ pub async fn adb_get_devices(_app_handle: tauri::AppHandle) -> Result<DeviceResp
                         name: device_name,
                         model,
                         device_type: "android".to_string(),
+                        description,
                     });
                 }
             }
@@ -873,6 +884,7 @@ pub async fn device_get_ios_devices(app_handle: tauri::AppHandle) -> Result<Devi
                     name: device_name,
                     model: "iPhone".to_string(),
                     device_type: "iphone-device".to_string(),
+                    description: "iOS device".to_string(),
                 });
             }
         }

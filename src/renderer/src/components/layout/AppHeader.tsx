@@ -107,12 +107,15 @@ function AppHeader() {
     }), [devicesList])
 
   const applicationSelectOptions = useMemo(() => {
-    return applicationsList.map(app => ({
-      label: app.name,
-      value: app.bundleId,
-      description: app.bundleId,
-      ...app,
-    }))
+    return applicationsList.map((app) => {
+      const description = app.bundleId === app.name ? '' : app.bundleId
+      return {
+        label: app.name,
+        value: app.bundleId,
+        description,
+        ...app,
+      } 
+    })
   }, [applicationsList, selectedApplication])
 
   const handleDeviceChange = useCallback((value: any) => {

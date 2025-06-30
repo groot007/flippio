@@ -1,4 +1,4 @@
-import { HStack, Text } from '@chakra-ui/react'
+import { HStack, Text, VStack } from '@chakra-ui/react'
 import { chakraComponents, Select } from 'chakra-react-select'
 
 interface CustomSelectProps {
@@ -44,14 +44,21 @@ const FLSelect: React.FC<CustomSelectProps> = ({
     Option: ({ children, ...props }: any) => {
       return (
         <chakraComponents.Option {...props}>
-          <Text fontSize="sm" fontWeight="medium" color="textPrimary">
-            {props.data.label}
-          </Text>
-          {props.data.description && (
-            <Text fontSize="xs" color="textSecondary" mt={0.5}>
-              {props.data.description}
+          <VStack
+            alignItems="start" 
+            justifyContent="flex-start" 
+            gap={0}
+          >
+            <Text fontSize="sm" fontWeight="medium" color="textPrimary">
+              {props.data.label}
             </Text>
-          )}
+            {props.data.description && (
+              <Text fontSize="10px" color="textSecondary">
+                {props.data.description}
+              </Text>
+            )}
+          </VStack>
+         
         </chakraComponents.Option>
       )
     },
@@ -78,6 +85,7 @@ const FLSelect: React.FC<CustomSelectProps> = ({
           border: 'none',
           borderRadius: 'md',
           boxShadow: 'lg',
+          width,
           py: 1,
         }),
         menuList: provided => ({

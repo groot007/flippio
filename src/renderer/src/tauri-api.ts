@@ -149,15 +149,8 @@ export const api = {
       const androidResp = await invokeCommandWithResponse('adb:getDevices', 'devices')
       // Fetch physical iOS devices (simulators and physical)
       const iosResp = await invokeCommandWithResponse('device:getIOsDevices', 'devices')
-      // Fetch Android emulators
-      const androidEmulatorsResp = await invokeCommandWithResponse('getAndroidEmulators', 'emulators')
       // Fetch iOS simulators
       const iosSimulatorsResp = await invokeCommandWithResponse('getIOSSimulators', 'simulators')
-
-      console.log('Android devices:', androidResp)
-      console.log('iOS devices:', iosResp)
-      console.log('Android emulators:', androidEmulatorsResp)
-      console.log('iOS simulators:', iosSimulatorsResp)
 
       const allDevices = []
 
@@ -167,7 +160,7 @@ export const api = {
           allDevices.push({
             ...device,
             label: `${device.name || device.id}`,
-            description: 'Android Device',
+            description: device.description || 'Android',
           })
         })
       }
@@ -178,31 +171,13 @@ export const api = {
           allDevices.push({
             ...device,
             label: `${device.name || device.id}`,
-            description: 'iOS Device',
+            description: 'iPhone Device',
           })
         })
       }
 
-      // Add Android emulators (only running ones)
-      if (androidEmulatorsResp.success && androidEmulatorsResp.emulators) {
-        androidEmulatorsResp.emulators
-          .filter((emulator: any) => emulator.state === 'running')
-          .forEach((emulator: any) => {
-            allDevices.push({
-              id: emulator.id,
-              name: emulator.name,
-              model: emulator.name, // Add model field for Device interface compatibility
-              label: `${emulator.name}`,
-              description: 'Android Emulator',
-              platform: 'android',
-              deviceType: 'emulator',
-            })
-          })
-      }
-
       // Add iOS simulators (only booted ones)
       if (iosSimulatorsResp.success && iosSimulatorsResp.simulators) {
-        console.log('iOS simulators:', iosSimulatorsResp.simulators)
         iosSimulatorsResp.simulators
           .filter((simulator: any) => simulator.state === 'Booted')
           .forEach((simulator: any) => {
@@ -211,7 +186,7 @@ export const api = {
               name: simulator.name,
               model: simulator.name, // Add model field for Device interface compatibility
               label: `${simulator.model}`,
-              description: 'iOS Simulator',
+              description: 'iPhone Simulator',
               platform: 'ios',
               deviceType: 'simulator',
             })
