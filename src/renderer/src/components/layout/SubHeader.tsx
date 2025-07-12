@@ -134,6 +134,7 @@ export function SubHeader() {
           deviceType: 'desktop',
           packageName: '',
           remotePath: filePath,
+          location: filePath,
         })
       }
     })
