@@ -6,14 +6,13 @@ import {
   Portal,
   Stack,
 } from '@chakra-ui/react'
+import { useClearTableMutation, useDeleteRowMutation } from '@renderer/hooks/useTableMutations'
 import { useCurrentDatabaseSelection, useCurrentDeviceSelection, useTableData } from '@renderer/store'
 import { useRowEditingStore } from '@renderer/store/useRowEditingStore'
 import { useColorMode } from '@renderer/ui/color-mode'
-import { toaster } from '@renderer/ui/toaster'
-import { buildUniqueCondition } from '@renderer/utils'
-import { useQueryClient } from '@tanstack/react-query'
 import { useCallback, useState } from 'react'
 import { LuX } from 'react-icons/lu'
+import { ClearTableDialog } from './ClearTableDialog'
 import { DeleteRowDialog } from './DeleteRowDialog'
 import { FieldItem } from './Field'
 import { RowEditor } from './RowEditor'
@@ -24,117 +23,65 @@ export function SidePanel() {
   const { selectedRow, setSelectedRow } = useRowEditingStore()
   const isOpen = !!selectedRow
   const { selectedDevice, selectedApplication } = useCurrentDeviceSelection()
-  const { selectedDatabaseFile, selectedDatabaseTable, pulledDatabaseFilePath } = useCurrentDatabaseSelection()
+  const { selectedDatabaseFile, selectedDatabaseTable } = useCurrentDatabaseSelection()
   const tableData = useTableData(state => state.tableData)
-  const setTableData = useTableData(state => state.setTableData)
-  const queryClient = useQueryClient()
   const [isLoading, setIsLoading] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [editedData, setEditedData] = useState<Record<string, any>>({})
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [isClearTableDialogOpen, setIsClearTableDialogOpen] = useState(false)
 
   const closePanel = useCallback(() => {
     setSelectedRow(null)
     setIsEditing(false)
   }, [setSelectedRow])
 
-  const handleDeleteRow = useCallback(async () => {
-    if (!selectedRow || !selectedDatabaseTable)
+  const clearTableMutation = useClearTableMutation()
+
+  const handleClearTable = useCallback(async () => {
+    if (!selectedDatabaseTable) 
       return
 
-    try {
-      const condition = buildUniqueCondition(
-        tableData?.columns,
-        selectedRow?.originalData || selectedRow?.rowData,
-      )
-      const result = await window.api.deleteTableRow(
-        selectedDatabaseTable?.name || '',
-        condition,
-      )
+    await clearTableMutation.mutateAsync({
+      selectedDatabaseTable,
+      selectedDatabaseFile,
+      selectedDevice,
+      selectedApplication,
+    })
 
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to delete row')
-      }
+    setIsClearTableDialogOpen(false)
+  }, [
+    selectedDatabaseTable,
+    selectedDatabaseFile,
+    selectedDevice,
+    selectedApplication,
+    clearTableMutation,
+  ])
 
-      console.log('Row deleted successfully:', selectedDatabaseFile)
-      // Push changes back to device if needed
-      if (
-        selectedDatabaseFile
-        && selectedDevice
-        && selectedDatabaseFile.packageName
-        && selectedDatabaseFile.path // Ensure we have the local file path
-        && (selectedDatabaseFile?.deviceType === 'android'
-          || selectedDatabaseFile?.deviceType === 'iphone'
-          || selectedDatabaseFile?.deviceType === 'iphone-device'
-          || selectedDatabaseFile?.deviceType === 'simulator')
-      ) {
-        // Use the correct paths: local temp file and remote path on device
-        const localPath = selectedDatabaseFile.path // This is the local temp file path
-        const remotePath = selectedDatabaseFile.remotePath || `/${selectedDatabaseFile.location}/${selectedDatabaseFile.filename}`
-        
-        console.log('Pushing database file:', {
-          deviceId: selectedDevice.id,
-          localPath,
-          packageName: selectedDatabaseFile.packageName,
-          remotePath,
-          deviceType: selectedDatabaseFile.deviceType,
-        })
-        
-        await window.api.pushDatabaseFile(
-          selectedDevice.id,
-          localPath,
-          selectedDatabaseFile.packageName,
-          remotePath,
-          selectedDatabaseFile.deviceType,
-        )
-        
-        // Invalidate and refetch database files to get updated data
-        await queryClient.invalidateQueries({
-          queryKey: ['databaseFiles', selectedDevice.id, selectedApplication?.bundleId],
-        })
-      }
+  const deleteRowMutation = useDeleteRowMutation()
 
-      setIsDeleteDialogOpen(false)
+  const handleDeleteRow = useCallback(async () => {
+    if (!selectedRow || !selectedDatabaseTable) 
+      return
 
-      // Show success message
-      toaster.create({
-        title: 'Row deleted',
-        description: 'The row has been successfully deleted',
-        type: 'success',
-        duration: 3000,
-      })
+    await deleteRowMutation.mutateAsync({
+      selectedRow,
+      selectedDatabaseTable,
+      selectedDatabaseFile,
+      selectedDevice,
+      selectedApplication,
+      tableColumns: tableData?.columns,
+    })
 
-      // Close the panel
-      closePanel()
-
-      // Refresh table data to reflect deletion
-      if (selectedDatabaseTable?.name) {
-        const response = await window.api.getTableInfo(selectedDatabaseTable.name)
-        if (response.success && response.columns && response.rows) {
-          setTableData({
-            columns: response.columns,
-            rows: response.rows,
-          })
-        }
-      }
-    }
-    catch (error) {
-      console.error('Error deleting row:', error)
-      toaster.create({
-        title: 'Delete failed',
-        description: error instanceof Error ? error.message : 'Failed to delete row',
-        type: 'error',
-        duration: 5000,
-      })
-    }
+    setIsDeleteDialogOpen(false)
   }, [
     selectedRow,
     selectedDatabaseTable,
-    tableData?.columns,
     selectedDatabaseFile,
     selectedDevice,
-    pulledDatabaseFilePath,
-    closePanel,
+    selectedApplication,
+    tableData?.columns,
+    deleteRowMutation,
   ])
 
   return (
@@ -202,15 +149,34 @@ export function SidePanel() {
                     size="md"
                     width="full"
                     mt={8}
-                    mb={4}
+                    mb={2}
                     _hover={{ bg: 'red.50', _dark: { bg: 'red.900' } }}
                   >
                     Remove Row
+                  </Button>
+                  <Button
+                    colorScheme="orange"
+                    variant="outline"
+                    onClick={() => {
+                      setIsClearTableDialogOpen(true)
+                    }}
+                    size="md"
+                    width="full"
+                    mb={4}
+                    _hover={{ bg: 'orange.50', _dark: { bg: 'orange.900' } }}
+                  >
+                    Clear Whole Table
                   </Button>
                   <DeleteRowDialog
                     isOpen={isDeleteDialogOpen}
                     onClose={() => setIsDeleteDialogOpen(false)}
                     onDelete={handleDeleteRow}
+                    isLoading={isLoading}
+                  />
+                  <ClearTableDialog
+                    isOpen={isClearTableDialogOpen}
+                    onClose={() => setIsClearTableDialogOpen(false)}
+                    onClear={handleClearTable}
                     isLoading={isLoading}
                   />
                 </Stack>
