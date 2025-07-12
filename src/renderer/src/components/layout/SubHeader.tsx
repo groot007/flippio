@@ -11,6 +11,7 @@ import { useDatabaseTables } from '@renderer/hooks/useDatabaseTables'
 import { useTableDataQuery } from '@renderer/hooks/useTableDataQuery'
 import { useCurrentDatabaseSelection, useCurrentDeviceSelection, useTableData } from '@renderer/store'
 import { toaster } from '@renderer/ui/toaster'
+import { useDatabaseRefresh } from '@renderer/utils/databaseRefresh'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { LuDatabase, LuFilter, LuFolderOpen, LuRefreshCcw, LuTable, LuUpload, LuX } from 'react-icons/lu'
 import { CustomQueryModal } from '../data/CustomQueryModal'
@@ -35,7 +36,6 @@ export function SubHeader() {
   const {
     data: databaseFiles = [],
     isLoading,
-    refetch: refetchDatabaseFiles,
   } = useDatabaseFiles(selectedDevice, selectedApplication)
 
   const { data: tableData, refetch: refetchTable } = useTableDataQuery(selectedDatabaseTable?.name || '')
@@ -55,7 +55,6 @@ export function SubHeader() {
 
   const {
     data: tablesData,
-    refetch: refetchDatabaseTables,
     isError,
   } = useDatabaseTables(selectedDatabaseFile, selectedDevice)
 
@@ -116,27 +115,11 @@ export function SubHeader() {
     }
   }, [selectedDatabaseFile])
 
-  const handleDBRefresh = useCallback(async () => {
-    await refetchDatabaseFiles()
-      .then(() => {
-        toaster.create({
-          title: 'Success',
-          description: 'Database refreshed',
-          type: 'success',
-          duration: 3000,
-        })
-      })
-      .catch((err) => {
-        toaster.create({
-          title: 'Error refreshing database',
-          description: err.message,
-          type: 'error',
-          duration: 3000,
-        })
-      })
-    await refetchDatabaseTables()
-    await refetchTable()
-  }, [refetchDatabaseFiles, refetchDatabaseTables, refetchTable])
+  const handleDBRefresh = useDatabaseRefresh()
+
+  const onRefreshClick = useCallback(async () => {
+    await handleDBRefresh()
+  }, [handleDBRefresh])
 
   const isNoDB = !databaseFiles?.length && !isDBPulling && selectedApplication?.bundleId && selectedDevice?.id
 
@@ -252,7 +235,7 @@ export function SubHeader() {
           <Button
             data-testid="refresh-db"
             data-state={isLoading ? 'open' : 'closed'}
-            onClick={handleDBRefresh}
+            onClick={onRefreshClick}
             variant="ghost"
             size="sm"
             color="textSecondary"
