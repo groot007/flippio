@@ -70,16 +70,28 @@ export function SubHeader() {
   }, [isError])
 
   const databaseTables = tablesData?.tables
+  console.log('Database tables:', databaseTables)
 
-  console.log('Selected tablesData file:', !selectedDatabaseFile?.path, !selectedApplication?.bundleId, isDBPulling)
   const handleDatabaseFileChange = useCallback((file) => {
     setSelectedDatabaseFile(file)
     setSelectedDatabaseTable(null)
   }, [setSelectedDatabaseFile, setSelectedDatabaseTable])
 
   const handleTableChange = useCallback((table) => {
+    console.log('🎯 Table selected:', table?.name || 'none')
+    
+    // Clear any existing table data immediately to show loading state
+    if (table) {
+      setTableData({
+        rows: [],
+        columns: [],
+        isCustomQuery: false,
+        tableName: table.name,
+      })
+    }
+    
     setSelectedDatabaseTable(table)
-  }, [setSelectedDatabaseTable])
+  }, [setSelectedDatabaseTable, setTableData])
 
   const dbFileOptions = useMemo(() =>
     databaseFiles?.map(file => ({
@@ -115,7 +127,7 @@ export function SubHeader() {
     }
   }, [selectedDatabaseFile])
 
-  const handleDBRefresh = useDatabaseRefresh()
+  const { refresh: handleDBRefresh, isLoading: isRefreshing } = useDatabaseRefresh()
 
   const onRefreshClick = useCallback(async () => {
     await handleDBRefresh()
@@ -127,7 +139,7 @@ export function SubHeader() {
     window.api.openFile().then((file) => {
       if (!file.canceled && file.filePaths.length) {
         const filePath = file.filePaths[0]
-        console.log('FILELE', filePath)
+
         setSelectedDatabaseFile({
           path: filePath,
           filename: filePath.split('/').pop() || '',
@@ -229,13 +241,13 @@ export function SubHeader() {
               value={selectedDatabaseTable}
               icon={<LuTable color="var(--chakra-colors-flipioPrimary)" />}
               onChange={handleTableChange}
-              isDisabled={!selectedDatabaseFile?.path || isDBPulling}
+              isDisabled={!selectedApplication?.bundleId || !selectedDatabaseFile?.path || isDBPulling}
             />
           </Box>
 
           <Button
             data-testid="refresh-db"
-            data-state={isLoading ? 'open' : 'closed'}
+            data-state={isRefreshing || isLoading ? 'open' : 'closed'}
             onClick={onRefreshClick}
             variant="ghost"
             size="sm"
@@ -244,12 +256,13 @@ export function SubHeader() {
               bg: 'bgTertiary',
               color: 'flipioPrimary',
             }}
-            disabled={isLoading || !selectedDatabaseTable}
+            disabled={isLoading || isRefreshing || !selectedDatabaseTable}
             _disabled={{
               opacity: 0.5,
             }}
             _open={{
               animationName: 'rotate',
+              animationIterationCount: 'infinite',
               animationDuration: '1100ms',
             }}
             title="Refresh database"

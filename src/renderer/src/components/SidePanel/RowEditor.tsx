@@ -1,4 +1,4 @@
-import { Button, Flex } from '@chakra-ui/react'
+import { Button, Flex, Spinner } from '@chakra-ui/react'
 import { useTableDataQuery } from '@renderer/hooks/useTableDataQuery'
 import { useCurrentDatabaseSelection, useCurrentDeviceSelection, useTableData } from '@renderer/store'
 import { useRowEditingStore } from '@renderer/store/useRowEditingStore'
@@ -68,10 +68,6 @@ export const RowEditor: React.FC<RowEditorProps> = ({
         selectedDatabaseFile
         && selectedDevice
         && selectedDatabaseFile.packageName
-        && (selectedDatabaseFile?.deviceType === 'android'
-          || selectedDatabaseFile?.deviceType === 'iphone'
-          || selectedDatabaseFile?.deviceType === 'iphone-device'
-          || selectedDatabaseFile?.deviceType === 'simulator')
       ) {
         console.log('Pushing database file back to device:', {
           deviceId: selectedDevice.id,
@@ -134,41 +130,55 @@ export const RowEditor: React.FC<RowEditorProps> = ({
   }, [selectedRow, selectedDatabaseTable, editedData, tableData?.columns, setSelectedRow, setIsEditing, setIsLoading, cancelEditing])
 
   return (
-    <Flex gap={2}>
-      {!isEditing
-        ? (
-            <Button
-              size="sm"
-              onClick={startEditing}
-              disabled={isLoading}
-            >
-              <LuPencil />
-              {' '}
-              Edit
+    <>
+      
+      <Flex gap={2}>
+        {!isEditing
+          ? (
+              <Button
+                size="sm"
+                onClick={startEditing}
+                disabled={isLoading}
+              >
+                <LuPencil />
+                {' '}
+                Edit
 
-            </Button>
-          )
-        : (
-            <>
-              <Button
-                colorScheme="green"
-                size="sm"
-                onClick={handleSave}
-                disabled={isLoading}
-              >
-                Save
-                <LuSave />
               </Button>
-              <Button
-                size="sm"
-                colorPalette="pink"
-                onClick={cancelEditing}
-                disabled={isLoading}
-              >
-                Cancel
-              </Button>
-            </>
-          )}
-    </Flex>
+            )
+          : (
+              <>
+                <Button
+                  colorScheme="green"
+                  size="sm"
+                  onClick={handleSave}
+                  disabled={isLoading}
+                >
+                  {isLoading
+                    ? (
+                        <>
+                          <Spinner size="sm" />
+                          Saving...
+                        </>
+                      )
+                    : (
+                        <>
+                          Save
+                          <LuSave />
+                        </>
+                      )}
+                </Button>
+                <Button
+                  size="sm"
+                  colorPalette="pink"
+                  onClick={cancelEditing}
+                  disabled={isLoading}
+                >
+                  Cancel
+                </Button>
+              </>
+            )}
+      </Flex>
+    </>
   )
 }

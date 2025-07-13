@@ -24,7 +24,7 @@ interface ClearTableOptions extends DatabaseOperation {}
 export function useDeleteRowMutation() {
   const queryClient = useQueryClient()
   const { setSelectedRow } = useRowEditingStore()
-  const refreshDatabase = useDatabaseRefresh({ showSuccessToast: false, showErrorToast: false })
+  const { refresh: refreshDatabase } = useDatabaseRefresh({ showSuccessToast: false, showErrorToast: false })
 
   return useMutation({
     mutationFn: async ({ selectedRow, selectedDatabaseTable, selectedDatabaseFile, tableColumns }: DeleteRowOptions) => {
@@ -91,7 +91,7 @@ export function useDeleteRowMutation() {
 export function useClearTableMutation() {
   const queryClient = useQueryClient()
   const { setSelectedRow } = useRowEditingStore()
-  const refreshDatabase = useDatabaseRefresh({ showSuccessToast: false, showErrorToast: false })
+  const { refresh: refreshDatabase } = useDatabaseRefresh({ showSuccessToast: false, showErrorToast: false })
 
   return useMutation({
     mutationFn: async ({ selectedDatabaseTable, selectedDatabaseFile }: ClearTableOptions) => {
@@ -165,12 +165,7 @@ async function pushDatabaseToDevice({
     selectedDatabaseFile
     && selectedDevice
     && selectedDatabaseFile.packageName
-    && selectedDatabaseFile.path
-    && (selectedDatabaseFile?.deviceType === 'android'
-      || selectedDatabaseFile?.deviceType === 'iphone'
-      || selectedDatabaseFile?.deviceType === 'iphone-device'
-      || selectedDatabaseFile?.deviceType === 'simulator')
-  ) {
+    && selectedDatabaseFile.path) {
     const localPath = selectedDatabaseFile.path
     const remotePath = selectedDatabaseFile.remotePath || `/${selectedDatabaseFile.location}/${selectedDatabaseFile.filename}`
     

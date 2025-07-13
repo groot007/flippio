@@ -34,11 +34,12 @@ export function useDatabaseFiles(
 
       let fetchFunction: (deviceId: string, bundleId: string) => Promise<DatabaseFilesResponse>
 
-      if (selectedDevice.deviceType === 'iphone' || selectedDevice.deviceType === 'simulator') {
-        fetchFunction = window.api.getIOSDatabaseFiles
-      }
-      else if (selectedDevice.deviceType === 'iphone-device') {
+      if (selectedDevice.deviceType === 'iphone-device') {
         fetchFunction = window.api.getIOSDeviceDatabaseFiles
+      }
+      else if (selectedDevice.deviceType.includes('simulator')) {
+        console.log('Fetching iOS simulator database files_____')
+        fetchFunction = window.api.getIOSSimulatorDatabaseFiles
       }
       else {
         fetchFunction = window.api.getAndroidDatabaseFiles

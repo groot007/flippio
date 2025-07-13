@@ -73,28 +73,18 @@ export const PackageSetModal: React.FC<PackageSetModalProps> = ({ isOpen, isLoad
       return
     }
 
-    const { success } = await window.api.checkAppExistence(selectedDevice?.id, bundleIDInput)
-    if (success) {
-      addRecentBundleId(bundleIDInput)
+    addRecentBundleId(bundleIDInput)
 
-      setSelectedApplication({
-        bundleId: bundleIDInput,
-        name: bundleIDInput,
-        // @ts-expect-error selectedDevice
-        label: bundleIDInput,
-        value: bundleIDInput,
-        description: bundleIDInput,
-      })
+    setSelectedApplication({
+      bundleId: bundleIDInput,
+      name: bundleIDInput,
+      // @ts-expect-error selectedDevice
+      label: bundleIDInput,
+      value: bundleIDInput,
+      description: bundleIDInput,
+    })
 
-      onPackageSet()
-    }
-    else {
-      toaster.create({
-        title: 'Error',
-        description: 'Bundle ID not found. Please check the Bundle ID and try again.',
-        type: 'error',
-      })
-    }
+    onPackageSet()
   }, [selectedDevice, bundleIDInput, setSelectedApplication, onPackageSet])
 
   useEffect(() => {

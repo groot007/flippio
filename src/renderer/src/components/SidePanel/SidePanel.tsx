@@ -42,14 +42,22 @@ export function SidePanel() {
     if (!selectedDatabaseTable) 
       return
 
-    await clearTableMutation.mutateAsync({
-      selectedDatabaseTable,
-      selectedDatabaseFile,
-      selectedDevice,
-      selectedApplication,
-    })
-
-    setIsClearTableDialogOpen(false)
+    setIsLoading(true)
+    try {
+      await clearTableMutation.mutateAsync({
+        selectedDatabaseTable,
+        selectedDatabaseFile,
+        selectedDevice,
+        selectedApplication,
+      })
+    }
+    catch (error) {
+      console.error('Failed to clear table:', error)
+    }
+    finally {
+      setIsLoading(false)
+      setIsClearTableDialogOpen(false)
+    }
   }, [
     selectedDatabaseTable,
     selectedDatabaseFile,
@@ -64,16 +72,24 @@ export function SidePanel() {
     if (!selectedRow || !selectedDatabaseTable) 
       return
 
-    await deleteRowMutation.mutateAsync({
-      selectedRow,
-      selectedDatabaseTable,
-      selectedDatabaseFile,
-      selectedDevice,
-      selectedApplication,
-      tableColumns: tableData?.columns,
-    })
-
-    setIsDeleteDialogOpen(false)
+    setIsLoading(true)
+    try {
+      await deleteRowMutation.mutateAsync({
+        selectedRow,
+        selectedDatabaseTable,
+        selectedDatabaseFile,
+        selectedDevice,
+        selectedApplication,
+        tableColumns: tableData?.columns,
+      })
+    }
+    catch (error) {
+      console.error('Failed to delete row:', error)
+    }
+    finally {
+      setIsLoading(false)
+      setIsDeleteDialogOpen(false)
+    }
   }, [
     selectedRow,
     selectedDatabaseTable,

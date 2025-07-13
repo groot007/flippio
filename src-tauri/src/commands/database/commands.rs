@@ -94,10 +94,13 @@ pub async fn db_get_table_data(
     state: State<'_, DbPool>,
     table_name: String,
 ) -> Result<DbResponse<TableData>, String> {
+    log::info!("📊 Getting table data for: {}", table_name);
+    
     let pool_guard = state.read().await;
     let pool = match pool_guard.as_ref() {
         Some(pool) => pool,
         None => {
+            log::error!("❌ No database connection available");
             return Ok(DbResponse {
                 success: false,
                 data: None,
@@ -106,11 +109,43 @@ pub async fn db_get_table_data(
         }
     };
     
+    // First, verify the table exists
+    let table_exists_query = "SELECT name FROM sqlite_master WHERE type='table' AND name = ?";
+    match sqlx::query(table_exists_query)
+        .bind(&table_name)
+        .fetch_optional(pool)
+        .await
+    {
+        Ok(Some(_)) => {
+            log::info!("✅ Table '{}' exists", table_name);
+        }
+        Ok(None) => {
+            log::error!("❌ Table '{}' does not exist", table_name);
+            return Ok(DbResponse {
+                success: false,
+                data: None,
+                error: Some(format!("Table '{}' does not exist", table_name)),
+            });
+        }
+        Err(e) => {
+            log::error!("❌ Error checking if table exists: {}", e);
+            return Ok(DbResponse {
+                success: false,
+                data: None,
+                error: Some(format!("Error checking table existence: {}", e)),
+            });
+        }
+    }
+    
     // Get column information
     let column_query = format!("PRAGMA table_info({})", table_name);
     let column_rows = match sqlx::query(&column_query).fetch_all(pool).await {
-        Ok(rows) => rows,
+        Ok(rows) => {
+            log::info!("✅ Retrieved {} columns for table '{}'", rows.len(), table_name);
+            rows
+        }
         Err(e) => {
+            log::error!("❌ Error getting table info for '{}': {}", table_name, e);
             return Ok(DbResponse {
                 success: false,
                 data: None,
@@ -133,8 +168,12 @@ pub async fn db_get_table_data(
     // Get table data
     let data_query = format!("SELECT * FROM {}", table_name);
     let data_rows = match sqlx::query(&data_query).fetch_all(pool).await {
-        Ok(rows) => rows,
+        Ok(rows) => {
+            log::info!("✅ Retrieved {} rows from table '{}'", rows.len(), table_name);
+            rows
+        }
         Err(e) => {
+            log::error!("❌ Error getting table data for '{}': {}", table_name, e);
             return Ok(DbResponse {
                 success: false,
                 data: None,
@@ -179,6 +218,8 @@ pub async fn db_get_table_data(
         }
         rows.push(row_data);
     }
+    
+    log::info!("✅ Successfully processed table data for '{}': {} columns, {} rows", table_name, columns.len(), rows.len());
     
     Ok(DbResponse {
         success: true,
