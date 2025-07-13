@@ -68,10 +68,6 @@ export const RowEditor: React.FC<RowEditorProps> = ({
         selectedDatabaseFile
         && selectedDevice
         && selectedDatabaseFile.packageName
-        && (selectedDatabaseFile?.deviceType === 'android'
-          || selectedDatabaseFile?.deviceType === 'iphone'
-          || selectedDatabaseFile?.deviceType === 'iphone-device'
-          || selectedDatabaseFile?.deviceType === 'simulator')
       ) {
         console.log('Pushing database file back to device:', {
           deviceId: selectedDevice.id,

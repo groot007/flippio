@@ -37,11 +37,11 @@ const COMMAND_MAP = {
   'device:getIOsDevices': 'device_get_ios_devices',
   'device:getIosPackages': 'device_get_ios_packages',
   'device:getIosDevicePackages': 'device_get_ios_device_packages',
-  'device:getIOSDeviceDatabaseFiles': 'device_get_ios_device_database_files',
-  'adb:getIOSDatabaseFiles': 'get_ios_database_files',
   'device:checkAppExistence': 'device_check_app_existence',
-  'device:uploadIOSDbFile': 'device_upload_ios_db_file',
   'device:pushIOSDbFile': 'device_push_ios_database_file',
+  'device:getIOSDeviceDatabaseFiles': 'get_ios_device_database_files',
+  'simulator:getIOSSimulatorDatabaseFiles': 'get_ios_simulator_database_files',
+  'simulator:uploadSimulatorIOSDbFile': 'upload_simulator_ios_db_file',
 
   // Virtual device commands
   'getAndroidEmulators': 'get_android_emulators',
@@ -109,10 +109,10 @@ function getParameterNames(command: string): string[] {
     device_push_ios_database_file: ['deviceId', 'localPath', 'packageName', 'remotePath'],
     device_get_ios_packages: ['deviceId'],
     device_get_ios_device_packages: ['deviceId'],
-    device_get_ios_device_database_files: ['deviceId', 'packageName'],
-    get_ios_database_files: ['deviceId', 'packageName'],
+    get_ios_device_database_files: ['deviceId', 'packageName'],
+    get_ios_simulator_database_files: ['deviceId', 'packageName'],
     device_check_app_existence: ['deviceId', 'packageName'],
-    device_upload_ios_db_file: ['deviceId', 'packageName', 'localFilePath', 'remoteLocation'],
+    upload_simulator_ios_db_file: ['deviceId', 'localFilePath', 'packageName', 'remoteLocation'],
     launch_android_emulator: ['emulatorId'],
     launch_ios_simulator: ['simulatorId'],
     get_android_emulators: [],
@@ -218,33 +218,36 @@ export const api = {
   checkAppExistence: (deviceId: string, applicationId: string) =>
     invokeCommandWithResponse('device:checkAppExistence', 'exists', deviceId, applicationId),
 
-  getIOSDatabaseFiles: (deviceId: string, applicationId: string) =>
-    invokeCommandWithResponse('adb:getIOSDatabaseFiles', 'files', deviceId, applicationId),
-
   getIOSDeviceDatabaseFiles: (deviceId: string, applicationId: string) =>
     invokeCommandWithResponse('device:getIOSDeviceDatabaseFiles', 'files', deviceId, applicationId),
 
-  uploadIOSDbFile: (deviceId: string, packageName: string, localFilePath: string, remoteLocation: string) =>
-    invokeCommandWithResponse('device:uploadIOSDbFile', 'result', deviceId, packageName, localFilePath, remoteLocation),
+  getIOSDeviceDatabaseFilesNew: (deviceId: string, applicationId: string) =>
+    invokeCommandWithResponse('device:getIOSDeviceDatabaseFilesNew', 'files', deviceId, applicationId),
+
+  getIOSSimulatorDatabaseFiles: (deviceId: string, applicationId: string) =>
+    invokeCommandWithResponse('simulator:getIOSSimulatorDatabaseFiles', 'files', deviceId, applicationId),
 
   pushDatabaseFile: async (deviceId: string, localPath: string, packageName: string, remotePath: string, deviceType?: string) => {
     // Determine device type if not provided
     if (!deviceType) {
-      // Try to infer from deviceId format or other parameters
       if (deviceId.match(/^[A-F0-9-]{36,40}$/i)) {
-        deviceType = 'iphone-device' // Physical iOS device
+        deviceType = 'iphone-device' 
       }
       else if (deviceId.match(/^[A-F0-9-]{8,}$/i)) {
-        deviceType = 'simulator' // iOS simulator
+        deviceType = 'simulator' 
       }
       else {
-        deviceType = 'android' // Default to Android
+        deviceType = 'android' 
       }
     }
+    console.log('DEVICE TYPE:', deviceType)
 
     // Use appropriate command based on device type
     if (deviceType === 'android') {
       return invokeCommandWithResponse('adb:pushDatabaseFile', 'result', deviceId, localPath, packageName, remotePath)
+    }
+    else if (deviceType.includes('simulator')) {
+      return invokeCommandWithResponse('simulator:uploadSimulatorIOSDbFile', 'result', deviceId, localPath, packageName, remotePath)
     }
     else {
       return invokeCommandWithResponse('device:pushIOSDbFile', 'result', deviceId, localPath, packageName, remotePath)

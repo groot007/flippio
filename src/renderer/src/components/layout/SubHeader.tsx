@@ -70,16 +70,28 @@ export function SubHeader() {
   }, [isError])
 
   const databaseTables = tablesData?.tables
+  console.log('Database tables:', databaseTables)
 
-  console.log('Selected tablesData file:', !selectedDatabaseFile?.path, !selectedApplication?.bundleId, isDBPulling)
   const handleDatabaseFileChange = useCallback((file) => {
     setSelectedDatabaseFile(file)
     setSelectedDatabaseTable(null)
   }, [setSelectedDatabaseFile, setSelectedDatabaseTable])
 
   const handleTableChange = useCallback((table) => {
+    console.log('🎯 Table selected:', table?.name || 'none')
+    
+    // Clear any existing table data immediately to show loading state
+    if (table) {
+      setTableData({
+        rows: [],
+        columns: [],
+        isCustomQuery: false,
+        tableName: table.name,
+      })
+    }
+    
     setSelectedDatabaseTable(table)
-  }, [setSelectedDatabaseTable])
+  }, [setSelectedDatabaseTable, setTableData])
 
   const dbFileOptions = useMemo(() =>
     databaseFiles?.map(file => ({
