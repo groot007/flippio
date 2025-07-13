@@ -74,6 +74,7 @@ export async function refreshDatabase({
 /**
  * Hook that provides a database refresh handler using the current context
  * Automatically uses the current device, application, database file, and table selections
+ * Returns an object with the refresh function and loading state
  */
 export function useDatabaseRefresh(options: RefreshDatabaseOptions = {}) {
   const selectedDevice = useCurrentDeviceSelection(state => state.selectedDevice)
@@ -81,13 +82,16 @@ export function useDatabaseRefresh(options: RefreshDatabaseOptions = {}) {
   const selectedDatabaseFile = useCurrentDatabaseSelection(state => state.selectedDatabaseFile)
   const selectedDatabaseTable = useCurrentDatabaseSelection(state => state.selectedDatabaseTable)
 
-  // Get refetch functions from hooks
-  const { refetch: refetchDatabaseFiles } = useDatabaseFiles(selectedDevice, selectedApplication)
-  const { refetch: refetchDatabaseTables } = useDatabaseTables(selectedDatabaseFile, selectedDevice)
-  const { refetch: refetchTable } = useTableDataQuery(selectedDatabaseTable?.name || '')
+  // Get refetch functions and loading states from hooks
+  const { refetch: refetchDatabaseFiles, isFetching: isFetchingDatabaseFiles } = useDatabaseFiles(selectedDevice, selectedApplication)
+  const { refetch: refetchDatabaseTables, isFetching: isFetchingDatabaseTables } = useDatabaseTables(selectedDatabaseFile, selectedDevice)
+  const { refetch: refetchTable, isFetching: isFetchingTable } = useTableDataQuery(selectedDatabaseTable?.name || '')
 
-  return useCallback(async (overrideOptions: RefreshDatabaseOptions = {}) => {
-    return refreshDatabase({
+  // Combine all loading states
+  const isLoading = isFetchingDatabaseFiles || isFetchingDatabaseTables || isFetchingTable
+
+  const refresh = useCallback(async (overrideOptions: RefreshDatabaseOptions = {}) => {
+    await refreshDatabase({
       refetchDatabaseFiles,
       refetchDatabaseTables,
       refetchTable,
@@ -95,6 +99,8 @@ export function useDatabaseRefresh(options: RefreshDatabaseOptions = {}) {
       ...overrideOptions,
     })
   }, [refetchDatabaseFiles, refetchDatabaseTables, refetchTable, options])
+
+  return { refresh, isLoading }
 }
 
 /**

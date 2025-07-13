@@ -38,7 +38,7 @@ pub fn run() {
             commands::device::device_get_ios_packages,
             commands::device::device_get_ios_device_packages,
             commands::device::device_get_ios_device_database_files,
-            commands::device::adb_get_ios_database_files,
+            commands::device::get_ios_database_files,
             commands::device::device_check_app_existence,
             commands::device::device_upload_ios_db_file,
             commands::device::device_push_ios_database_file,

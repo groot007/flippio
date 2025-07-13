@@ -1,7 +1,6 @@
 use super::types::*;
 use super::helpers::*;
 use tauri_plugin_shell::ShellExt;
-use log::info;
 
 #[tauri::command]
 pub async fn get_android_emulators(app_handle: tauri::AppHandle) -> Result<DeviceResponse<Vec<VirtualDevice>>, String> {

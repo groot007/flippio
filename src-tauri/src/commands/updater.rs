@@ -113,8 +113,6 @@ pub async fn download_and_install_update(app_handle: tauri::AppHandle) -> Result
                             Ok(_) => {
                                 log::info!("Update installed successfully, restarting...");
                                 app_handle.restart();
-                                // This code will never be reached, but Rust requires a return
-                                unreachable!()
                             }
                             Err(e) => {
                                 log::error!("Failed to download/install update: {}", e);

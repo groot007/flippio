@@ -415,59 +415,7 @@ pub async fn adb_get_android_database_files(
     })
 }
 
-#[tauri::command]
-pub async fn adb_get_ios_database_files(
-    _app_handle: tauri::AppHandle,
-    device_id: String,
-    package_name: String,
-) -> Result<DeviceResponse<Vec<DatabaseFile>>, String> {
-    log::info!("Getting iOS database files via ADB for device: {} package: {}", device_id, package_name);
-    
-    // For iOS simulator databases accessed via ADB
-    let mut database_files = Vec::new();
-    
-    // Search in common iOS app data locations
-    let locations = vec![
-        format!("/Users/{}/Library/Developer/CoreSimulator/Devices/{}/data/Containers/Data/Application/", 
-                std::env::var("USER").unwrap_or_else(|_| "user".to_string()), device_id),
-    ];
-    
-    for location in locations {
-        let output = execute_adb_command(&["shell", "find", &location, "-name", "*.db", "-o", "-name", "*.sqlite", "-o", "-name", "*.sqlite3"]).await;
-        
-        if let Ok(result) = output {
-            if result.status.success() {
-                let files_output = String::from_utf8_lossy(&result.stdout);
-                
-                for file_path in files_output.lines() {
-                    let file_path = file_path.trim();
-                    if !file_path.is_empty() && file_path.contains(&package_name) {
-                        let filename = std::path::Path::new(file_path)
-                            .file_name()
-                            .and_then(|n| n.to_str())
-                            .unwrap_or("unknown")
-                            .to_string();
-                        
-                        database_files.push(DatabaseFile {
-                            path: file_path.to_string(),
-                            package_name: package_name.clone(),
-                            filename,
-                            location: location.clone(),
-                            remote_path: Some(file_path.to_string()),
-                            device_type: "ios".to_string(),
-                        });
-                    }
-                }
-            }
-        }
-    }
-    
-    Ok(DeviceResponse {
-        success: true,
-        data: Some(database_files),
-        error: None,
-    })
-}
+
 
 // Push database file back to Android device
 #[tauri::command]

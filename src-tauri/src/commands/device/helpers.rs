@@ -2,36 +2,6 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use log::{info, error};
 
-// Helper function to get libimobiledevice tool path
-pub fn get_libimobiledevice_tool_path(tool_name: &str) -> Option<PathBuf> {
-    // Check if we're in a development environment
-    if let Ok(current_dir) = std::env::current_dir() {
-        let dev_path = current_dir.join("macos-deps").join(tool_name);
-        if dev_path.exists() {
-            return Some(dev_path);
-        }
-    }
-    
-    // Check for bundled tools in the app bundle
-    let possible_paths = vec![
-        format!("./macos-deps/{}", tool_name),
-        format!("../Resources/macos-deps/{}", tool_name),
-        format!("../../Resources/macos-deps/{}", tool_name),
-        format!("/usr/local/bin/{}", tool_name),
-        format!("/opt/homebrew/bin/{}", tool_name),
-    ];
-    
-    for path in possible_paths {
-        let path_buf = PathBuf::from(&path);
-        if path_buf.exists() {
-            return Some(path_buf);
-        }
-    }
-    
-    // Fallback to system PATH
-    Some(PathBuf::from(tool_name))
-}
-
 // Temp directory utilities
 pub fn get_temp_dir_path() -> PathBuf {
     std::env::temp_dir().join("flippio-db-temp")

@@ -127,19 +127,145 @@ async fn push_ios_db_file(
             .map(|p| p.to_string_lossy().to_string())
             .unwrap_or_else(|| "afcclient".to_string());
         
-        let ios_cmd = format!("{} --documents {} -u {} put {} {}", 
-                              afcclient_cmd, package_name, device_id, local_path, remote_path);
+        info!("afcclient path: {:?}", afcclient_path);
+        info!("afcclient command: {}", afcclient_cmd);
         
+        // Check if afcclient exists
+        if afcclient_path.is_none() {
+            error!("afcclient tool not found in expected locations");
+            return Err("afcclient tool not found".into());
+        }
+        
+        // First, try to create the directory structure if it doesn't exist
+        let parent_dir = std::path::Path::new(remote_path).parent()
+            .map(|p| p.to_string_lossy().to_string())
+            .unwrap_or_else(|| "/Documents".to_string());
+        
+        info!("Ensuring parent directory exists: {}", parent_dir);
+        
+        // Create directory structure if needed
+        let mkdir_cmd = format!("{} --documents {} -u {} mkdir {}", 
+                              afcclient_cmd, package_name, device_id, parent_dir);
+        
+        info!("Running directory creation command: {}", mkdir_cmd);
+        
+        let mkdir_output = std::process::Command::new("sh")
+            .arg("-c")
+            .arg(&mkdir_cmd)
+            .output()?;
+        
+        info!("mkdir stdout: {}", String::from_utf8_lossy(&mkdir_output.stdout));
+        info!("mkdir stderr: {}", String::from_utf8_lossy(&mkdir_output.stderr));
+        
+        // Directory creation might fail if it already exists, which is fine
+        // Now implement the robust push flow: delete → verify deletion → upload → verify upload
+        
+        // Extract target filename for the flow
+        let target_filename = std::path::Path::new(remote_path)
+            .file_name()
+            .map(|f| f.to_string_lossy().to_string())
+            .unwrap_or_else(|| "database.db".to_string());
+        
+        // Step 1: Try to delete existing file first (if it exists)
+        info!("🗑️  Step 1: Attempting to delete existing file '{}'...", target_filename);
+        let delete_cmd = format!("{} --documents {} -u {} rm Documents/{}", 
+                                afcclient_cmd, package_name, device_id, target_filename);
+        
+        info!("Running delete command: {}", delete_cmd);
+        let delete_output = std::process::Command::new("sh")
+            .arg("-c")
+            .arg(&delete_cmd)
+            .output()?;
+        
+        info!("Delete command stdout: {}", String::from_utf8_lossy(&delete_output.stdout));
+        info!("Delete command stderr: {}", String::from_utf8_lossy(&delete_output.stderr));
+        
+        if delete_output.status.success() {
+            info!("✅ Existing file deleted successfully");
+        } else {
+            info!("ℹ️  File deletion failed (file may not exist) - continuing with upload");
+        }
+        
+        // Step 2: Verify file is not present before upload
+        info!("🔍 Step 2: Verifying file is not present before upload...");
+        let pre_check_cmd = format!("{} --documents {} -u {} ls Documents", 
+                                  afcclient_cmd, package_name, device_id);
+        
+        let pre_check_output = std::process::Command::new("sh")
+            .arg("-c")
+            .arg(&pre_check_cmd)
+            .output()?;
+        
+        if pre_check_output.status.success() {
+            let files_list = String::from_utf8_lossy(&pre_check_output.stdout);
+            info!("📂 Files in Documents before upload: {}", files_list);
+            
+            if files_list.contains(&target_filename) {
+                info!("⚠️  File '{}' still present after deletion attempt", target_filename);
+            } else {
+                info!("✅ Confirmed: File '{}' is not present, ready for upload", target_filename);
+            }
+        } else {
+            info!("⚠️  Cannot verify pre-upload state due to listing restrictions");
+        }
+        
+        // Step 3: Upload the file
+        // Fix: afcclient requires full path with Documents/ prefix for uploads
+        let ios_target_path = format!("Documents/{}", target_filename);
+        
+        let ios_cmd = format!("{} --documents {} -u {} put {} {}", 
+                              afcclient_cmd, package_name, device_id, local_path, ios_target_path);
+        
+        info!("📤 Step 3: Uploading file to device...");
         info!("Running iOS device push command: {}", ios_cmd);
+        info!("Target path: {}", ios_target_path);
         
         let output = std::process::Command::new("sh")
             .arg("-c")
             .arg(&ios_cmd)
             .output()?;
         
+        info!("Command stdout: {}", String::from_utf8_lossy(&output.stdout));
+        info!("Command stderr: {}", String::from_utf8_lossy(&output.stderr));
+        info!("Command exit status: {:?}", output.status);
+        
         if !output.status.success() {
             let error_msg = String::from_utf8_lossy(&output.stderr);
-            return Err(format!("iOS device push failed: {}", error_msg).into());
+            let stdout_msg = String::from_utf8_lossy(&output.stdout);
+            error!("iOS device push failed with stderr: {}", error_msg);
+            error!("iOS device push stdout: {}", stdout_msg);
+            return Err(format!("iOS device push failed: {}\nstdout: {}", error_msg, stdout_msg).into());
+        } else {
+            info!("✅ iOS device push command completed successfully");
+            
+            // Step 4: Verify the file was uploaded successfully
+            info!("🔍 Step 4: Verifying file upload by listing Documents directory...");
+            let verify_cmd = format!("{} --documents {} -u {} ls Documents", 
+                                   afcclient_cmd, package_name, device_id);
+            
+            let verify_output = std::process::Command::new("sh")
+                .arg("-c")
+                .arg(&verify_cmd)
+                .output()?;
+            
+            if verify_output.status.success() {
+                let files_list = String::from_utf8_lossy(&verify_output.stdout);
+                info!("📂 Current files in Documents: {}", files_list);
+                
+                if files_list.contains(&target_filename) {
+                    info!("✅ Upload verified: File '{}' is now present in Documents directory", target_filename);
+                } else {
+                    info!("⚠️  Upload verification failed: File '{}' not found in Documents directory", target_filename);
+                    info!("📋 Available files: {}", files_list.trim());
+                }
+            } else {
+                // Note: Some iOS apps allow file uploads but restrict directory listing
+                info!("📝 File upload completed - verification via listing may not be possible due to app permissions");
+                let stderr = String::from_utf8_lossy(&verify_output.stderr);
+                if stderr.contains("Permission denied") {
+                    info!("🔒 Directory listing restricted by app permissions, but upload should have succeeded");
+                }
+            }
         }
     } else {
         info!("=== USING iOS SIMULATOR PATH ===");
@@ -216,14 +342,14 @@ pub fn get_libimobiledevice_tool_path(tool_name: &str) -> Option<std::path::Path
         log::info!("[libimobiledevice] current_exe: {:?}", exe_path);
 
         if let Some(exe_dir) = exe_path.parent() {
-            // ✅ 1. Production: Contents/Resources/macos-deps/<tool>
+            // ✅ 1. Production: Contents/MacOs/<tool>
             if let Some(resources_path) = exe_dir
                 .parent() // Contents/
                 .map(|p| p.join("MacOs").join(tool_name))
             {
                 if resources_path.exists() {
                     log::info!(
-                        "[libimobiledevice] Using bundled '{}' from Contents/Resources/macos-deps/: {:?}",
+                        "[libimobiledevice] Using bundled '{}' from Contents/MacOs/: {:?}",
                         tool_name,
                         resources_path
                     );
@@ -495,11 +621,19 @@ pub async fn device_get_ios_device_database_files(
 ) -> Result<DeviceResponse<Vec<DatabaseFile>>, String> {
     log::info!("Getting iOS device database files for device: {} package: {}", device_id, package_name);
     
+    // Clean temp directory before pulling new files
+    if let Err(e) = clean_temp_dir() {
+        log::warn!("Failed to clean temp directory: {}", e);
+    } else {
+        log::info!("Successfully cleaned temp directory before pulling new files");
+    }
+    
     let shell = app_handle.shell();
     let mut database_files = Vec::new();
+
     
     // Search in common iOS app data locations
-    let locations = vec!["Documents", "Library", "tmp"];
+    let locations = vec!["Documents"];
     
     for location in locations {
         // Use bundled afcclient tool to list files in the app's container
@@ -570,7 +704,18 @@ pub async fn device_get_ios_device_database_files(
                         }
                     }
                 }
+            } else {
+                // Listing failed - this can happen due to iOS security restrictions
+                let stderr = String::from_utf8_lossy(&result.stderr);
+                info!("⚠️  Directory listing failed: {}", stderr);
+                if stderr.contains("Permission denied") {
+                    info!("📱 App may allow file uploads but restrict directory browsing due to iOS security settings");
+                    info!("💡 Files can still be pushed to the device even if listing is not possible");
+                }
             }
+        } else {
+            // Command execution failed
+            info!("⚠️  Failed to execute afcclient ls command for location: {}", location);
         }
     }
     
@@ -658,7 +803,7 @@ pub async fn device_check_app_existence(
 
 #[tauri::command]
 pub async fn device_upload_ios_db_file(
-    app_handle: tauri::AppHandle,
+    _app_handle: tauri::AppHandle,
     device_id: String,
     package_name: String,
     file_path: String,
@@ -688,9 +833,26 @@ pub async fn device_push_ios_database_file(
     log::info!("Remote path: {}", remote_path);
     
     // Determine if it's a physical device or simulator
-    // Physical iOS devices have 40-character hex IDs without dashes
+    // Physical iOS devices can have different formats:
+    // - 40-character hex IDs without dashes (older format)
+    // - 25-character format like 00008101-001908100E32001E (newer format)
     // iOS simulators have UUID format with dashes (e.g., E9E497ED-ED8E-4A33-B124-8F31C8E9FC34)
-    let is_device = device_id.len() == 40 && device_id.chars().all(|c| c.is_ascii_hexdigit()) && !device_id.contains('-');
+    log::info!("=== DEVICE DETECTION DEBUG ===");
+    log::info!("Device ID: '{}'", device_id);
+    log::info!("Device ID length: {}", device_id.len());
+    log::info!("Contains dash: {}", device_id.contains('-'));
+    log::info!("All hex chars (ignoring dashes): {}", device_id.replace("-", "").chars().all(|c| c.is_ascii_hexdigit()));
+    
+    // Check for physical device formats:
+    // 1. 40-character hex without dashes (classic format)
+    // 2. 25-character format with one dash (newer format like 00008101-001908100E32001E)
+    let is_classic_format = device_id.len() == 40 && device_id.chars().all(|c| c.is_ascii_hexdigit()) && !device_id.contains('-');
+    let is_newer_format = device_id.len() == 25 && device_id.replace("-", "").chars().all(|c| c.is_ascii_hexdigit()) && device_id.matches('-').count() == 1;
+    
+    let is_device = is_classic_format || is_newer_format;
+    
+    log::info!("Classic format (40 chars, no dash): {}", is_classic_format);
+    log::info!("Newer format (25 chars, one dash): {}", is_newer_format);
     log::info!("Device detection - is_device: {}", is_device);
     
     match push_ios_db_file(&device_id, &local_path, &package_name, &remote_path, is_device).await {
@@ -711,4 +873,144 @@ pub async fn device_push_ios_database_file(
             })
         }
     }
+}
+
+#[tauri::command]
+pub async fn get_ios_database_files(
+    app_handle: tauri::AppHandle,
+    device_id: String,
+    package_name: String,
+) -> Result<DeviceResponse<Vec<DatabaseFile>>, String> {
+    log::info!("Getting iOS database files for device: {} package: {}", device_id, package_name);
+    
+    let shell = app_handle.shell();
+    let mut database_files = Vec::new();
+    
+    // Determine if it's a physical device or simulator
+    let is_classic_format = device_id.len() == 40 && device_id.chars().all(|c| c.is_ascii_hexdigit()) && !device_id.contains('-');
+    let is_newer_format = device_id.len() == 25 && device_id.replace("-", "").chars().all(|c| c.is_ascii_hexdigit()) && device_id.matches('-').count() == 1;
+    let is_device = is_classic_format || is_newer_format;
+    
+    if is_device {
+        // Physical iOS device - use afcclient
+        log::info!("Getting database files from physical iOS device");
+        
+        let locations = vec!["Documents", "Library", "tmp"];
+        
+        for location in locations {
+            let afcclient_path = get_libimobiledevice_tool_path("afcclient");
+            let afcclient_cmd = afcclient_path
+                .as_ref()
+                .map(|p| p.to_string_lossy().to_string())
+                .unwrap_or_else(|| "afcclient".to_string());
+            
+            let output = shell.command(&afcclient_cmd)
+                .args(["--documents", &package_name, "-u", &device_id, "ls", location])
+                .output()
+                .await;
+            
+            if let Ok(result) = output {
+                if result.status.success() {
+                    let files_output = String::from_utf8_lossy(&result.stdout);
+                    
+                    for file in files_output.lines() {
+                        let file = file.trim();
+                        if !file.is_empty() && (file.ends_with(".db") || file.ends_with(".sqlite") || file.ends_with(".sqlite3")) {
+                            let remote_path = format!("Documents/{}", file);
+                            
+                            // Pull the file to temp directory
+                            match pull_ios_db_file(&device_id, &package_name, &remote_path, true).await {
+                                Ok(local_path) => {
+                                    database_files.push(DatabaseFile {
+                                        path: local_path,
+                                        package_name: package_name.clone(),
+                                        filename: file.to_string(),
+                                        remote_path: Some(remote_path),
+                                        location: location.to_string(),
+                                        device_type: "iphone-device".to_string(),
+                                    });
+                                }
+                                Err(e) => {
+                                    error!("Failed to pull iOS device database file {}: {}", remote_path, e);
+                                    // Still add the file with remote path for fallback
+                                    database_files.push(DatabaseFile {
+                                        path: remote_path.clone(),
+                                        package_name: package_name.clone(),
+                                        filename: file.to_string(),
+                                        remote_path: Some(remote_path),
+                                        location: location.to_string(),
+                                        device_type: "iphone-device".to_string(),
+                                    });
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    } else {
+        // iOS simulator - use simctl to get app container and find files
+        log::info!("Getting database files from iOS simulator");
+        
+        let output = shell.command("xcrun")
+            .args(["simctl", "get_app_container", &device_id, &package_name, "data"])
+            .output()
+            .await;
+        
+        if let Ok(result) = output {
+            if result.status.success() {
+                let container_path = String::from_utf8_lossy(&result.stdout).trim().to_string();
+                
+                // Search for database files in the container
+                let find_output = shell.command("find")
+                    .args([&container_path, "-name", "*.db", "-o", "-name", "*.sqlite", "-o", "-name", "*.sqlite3"])
+                    .output()
+                    .await;
+                
+                if let Ok(find_result) = find_output {
+                    if find_result.status.success() {
+                        let files_output = String::from_utf8_lossy(&find_result.stdout);
+                        
+                        for file_path in files_output.lines() {
+                            let file_path = file_path.trim();
+                            if !file_path.is_empty() {
+                                let filename = std::path::Path::new(file_path)
+                                    .file_name()
+                                    .unwrap_or_else(|| std::ffi::OsStr::new("unknown"));
+                                
+                                let filename = filename
+                                    .to_str()
+                                    .unwrap_or("unknown")
+                                    .to_string();
+                                
+                                // Determine relative location from container path
+                                let relative_path = file_path.replace(&container_path, "")
+                                    .split('/')
+                                    .filter(|p| !p.is_empty())
+                                    .next()
+                                    .unwrap_or("root")
+                                    .to_string();
+                                
+                                // For iOS simulator, store the direct file path (no temp copy needed)
+                                database_files.push(DatabaseFile {
+                                    path: file_path.to_string(),
+                                    package_name: package_name.clone(),
+                                    filename,
+                                    remote_path: Some(file_path.to_string()),
+                                    location: relative_path,
+                                    device_type: "iphone".to_string(),
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    Ok(DeviceResponse {
+        success: true,
+        data: Some(database_files),
+        error: None,
+    })
 }
