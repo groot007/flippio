@@ -182,7 +182,7 @@ async function pushDatabaseToDevice({
       deviceType: selectedDatabaseFile.deviceType,
     })
     
-    await window.api.pushDatabaseFile(
+    const pushResult = await window.api.pushDatabaseFile(
       selectedDevice.id,
       localPath,
       selectedDatabaseFile.packageName,
@@ -190,9 +190,31 @@ async function pushDatabaseToDevice({
       selectedDatabaseFile.deviceType,
     )
     
+    if (!pushResult.success) {
+      console.error('Failed to push database file:', pushResult.error)
+      toaster.create({
+        title: 'Push failed',
+        description: `Failed to push changes to device: ${pushResult.error}`,
+        type: 'warning',
+        duration: 5000,
+      })
+    }
+    else {
+      console.log('Database file pushed successfully')
+    }
+    
     // Invalidate and refetch database files
     await queryClient.invalidateQueries({
       queryKey: ['databaseFiles', selectedDevice.id, selectedApplication?.bundleId],
+    })
+  }
+  else {
+    console.log('Skipping push to device - missing required data:', {
+      hasDatabaseFile: !!selectedDatabaseFile,
+      hasDevice: !!selectedDevice,
+      hasPackageName: !!selectedDatabaseFile?.packageName,
+      hasPath: !!selectedDatabaseFile?.path,
+      deviceType: selectedDatabaseFile?.deviceType,
     })
   }
 }

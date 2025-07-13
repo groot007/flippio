@@ -1,6 +1,5 @@
-// Commands module - exports all IPC command modules
-
-pub mod common;
-pub mod database;
+// Commands module - all IPC commands for the application
 pub mod device;
+pub mod database;
+pub mod common;
 pub mod updater;

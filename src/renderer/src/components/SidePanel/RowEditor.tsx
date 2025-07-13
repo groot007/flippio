@@ -73,13 +73,34 @@ export const RowEditor: React.FC<RowEditorProps> = ({
           || selectedDatabaseFile?.deviceType === 'iphone-device'
           || selectedDatabaseFile?.deviceType === 'simulator')
       ) {
-        await window.api.pushDatabaseFile(
+        console.log('Pushing database file back to device:', {
+          deviceId: selectedDevice.id,
+          localPath: selectedDatabaseFile.path,
+          packageName: selectedDatabaseFile.packageName,
+          remotePath: selectedDatabaseFile.remotePath || selectedDatabaseFile.path,
+          deviceType: selectedDatabaseFile.deviceType,
+        })
+        
+        const pushResult = await window.api.pushDatabaseFile(
           selectedDevice.id,
           selectedDatabaseFile.path,
           selectedDatabaseFile.packageName,
           selectedDatabaseFile.remotePath || selectedDatabaseFile.path,
           selectedDatabaseFile.deviceType,
         )
+        
+        if (!pushResult.success) {
+          console.error('Failed to push database file:', pushResult.error)
+          toaster.create({
+            title: 'Push failed',
+            description: `Failed to push changes to device: ${pushResult.error}`,
+            type: 'warning',
+            duration: 5000,
+          })
+        }
+        else {
+          console.log('Database file pushed successfully')
+        }
       }
 
       setSelectedRow({
