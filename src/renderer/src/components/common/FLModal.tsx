@@ -8,6 +8,7 @@ interface FLModalProps {
   onAccept: () => void
   rejectBtn: string
   onReject: () => void
+  disabled?: boolean
 }
 
 function FLModal({
@@ -18,6 +19,7 @@ function FLModal({
   onAccept,
   rejectBtn,
   onReject,
+  disabled = false,
 }: FLModalProps) {
   return (
     <Dialog.Root lazyMount open={isOpen} closeOnInteractOutside={true}>
@@ -70,6 +72,7 @@ function FLModal({
                 <Button
                   variant="ghost"
                   onClick={onReject}
+                  disabled={disabled}
                   color="textSecondary"
                   _hover={{
                     bg: 'bgTertiary',
@@ -80,6 +83,7 @@ function FLModal({
               </Dialog.ActionTrigger>
               <Button
                 onClick={onAccept}
+                disabled={disabled}
                 bg="flipioPrimary"
                 color="white"
                 _hover={{

@@ -120,3 +120,51 @@ pub fn find_android_emulator_path() -> String {
     // Fallback to just "emulator" and hope it's in PATH
     "emulator".to_string()
 }
+
+// Helper function to get libimobiledevice tool path
+pub fn get_libimobiledevice_tool_path(tool_name: &str) -> Option<std::path::PathBuf> {
+    if let Ok(exe_path) = std::env::current_exe() {
+        log::info!("[libimobiledevice] current_exe: {:?}", exe_path);
+
+        if let Some(exe_dir) = exe_path.parent() {
+            // ✅ 1. Production: Contents/MacOs/<tool>
+            if let Some(resources_path) = exe_dir
+                .parent() // Contents/
+                .map(|p| p.join("MacOs").join(tool_name))
+            {
+                if resources_path.exists() {
+                    log::info!(
+                        "[libimobiledevice] Using bundled '{}' from Contents/MacOs/: {:?}",
+                        tool_name,
+                        resources_path
+                    );
+                    return Some(resources_path);
+                }
+            }
+
+            let dev_path = exe_dir
+                .parent()
+                .and_then(|p| p.parent())  // target/debug/
+                .and_then(|p| p.parent())  // target/
+                .map(|p| p.join("resources/libimobiledevice/tools").join(tool_name));
+
+            if let Some(ref dev_path) = dev_path {
+                if dev_path.exists() {
+                    log::info!(
+                        "[libimobiledevice] Using dev '{}' from: {:?}",
+                        tool_name,
+                        dev_path
+                    );
+                    return Some(dev_path.clone());
+                }
+            }
+        }
+    }
+
+    // ❗ Fallback: system PATH
+    log::warn!(
+        "[libimobiledevice] Falling back to system '{}' from PATH",
+        tool_name
+    );
+    None
+}

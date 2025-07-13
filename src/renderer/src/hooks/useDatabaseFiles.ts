@@ -38,6 +38,7 @@ export function useDatabaseFiles(
         fetchFunction = window.api.getIOSDeviceDatabaseFiles
       }
       else if (selectedDevice.deviceType.includes('simulator')) {
+        console.log('Fetching iOS simulator database files_____')
         fetchFunction = window.api.getIOSSimulatorDatabaseFiles
       }
       else {
