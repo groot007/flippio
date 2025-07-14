@@ -16,6 +16,7 @@ import { colorSchemeDark, colorSchemeLight, themeQuartz } from 'ag-grid-communit
 import { AgGridReact } from 'ag-grid-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { LuPlus } from 'react-icons/lu'
+import { TableFooter } from './TableFooter'
 
 export function CustomHeaderComponent(props: any) {
   return (
@@ -44,6 +45,7 @@ export function DataGrid() {
   const gridTheme = themeQuartz.withPart(colorMode === 'dark' ? colorSchemeDark : colorSchemeLight)
   const gridRef = useRef<AgGridReact>(null)
   const [isAddingRow, setIsAddingRow] = useState(false)
+  const [pageSize, setPageSize] = useState(20)
 
   const { data, error, refetch: refetchTableData } = useTableDataQuery(selectedDatabaseTable?.name || '')
 
@@ -132,6 +134,15 @@ export function DataGrid() {
     }
   }, [tableData])
 
+  // Sync with AG Grid pagination events
+  useEffect(() => {
+    if (gridRef.current?.api) {
+      gridRef.current.api.addEventListener('paginationChanged', () => {
+        // Pagination state is now handled by the TableFooter component
+      })
+    }
+  }, [tableData])
+
   const columnDefs = useMemo(() => {
     if (!tableData?.columns?.length)
       return []
@@ -177,6 +188,13 @@ export function DataGrid() {
     return { ...mainStyle, ...bg }
   }, [colorMode])
 
+  // Pagination calculations
+  const totalRows = tableData?.rows?.length || 0
+  
+  const handlePageSizeChange = useCallback((newPageSize: number) => {
+    setPageSize(newPageSize)
+  }, [])
+
   if (isLoadingTableData) {
     return (
       <Flex
@@ -201,7 +219,7 @@ export function DataGrid() {
   return (
     <Box flex={1} height="full" width="full" position="relative">
       <Box
-        height="100%"
+        height="calc(100% - 50px)"
         width="100%"
         onDragOver={e => e.preventDefault()}
       >
@@ -216,18 +234,24 @@ export function DataGrid() {
           rowSelection="single"
           onRowClicked={onRowClicked}
           pagination={true}
+          paginationPageSize={pageSize}
           loading={false}
-          paginationPageSize={20}
           suppressCellFocus={false}
         />
       </Box>
+
+      <TableFooter 
+        gridRef={gridRef}
+        totalRows={totalRows}
+        onPageSizeChange={handlePageSizeChange}
+      />
 
       {selectedDatabaseTable && (
         <Button
           aria-label="Add new row"
           size="lg"
           position="absolute"
-          bottom="12"
+          bottom="16" // Adjusted for the bottom panel
           right="6"
           backgroundColor="flipioPrimary"
           boxShadow="lg"

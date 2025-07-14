@@ -182,6 +182,9 @@ const flipioTheme = defineConfig({
         warning: {
           value: `{colors.flipioAccent.orange}`,
         },
+        remove: {
+          value: `{colors.flipioAccent.purple}`,
+        },
       },
     },
   },
