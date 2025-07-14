@@ -92,3 +92,7 @@ body {
 .slide-down {
   animation: slideDown 0.2s ease-out;
 }
+
+.ag-paging-panel {
+  display: none;
+}

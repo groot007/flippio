@@ -18,6 +18,7 @@ interface CustomSelectProps {
   placeholder?: string
   searchable?: boolean
   noOptionsMessage?: string
+  variant?: 'small' | 'regular'
 }
 
 const FLSelect: React.FC<CustomSelectProps> = ({
@@ -31,7 +32,32 @@ const FLSelect: React.FC<CustomSelectProps> = ({
   placeholder,
   searchable = true,
   noOptionsMessage = 'No options available',
+  variant = 'regular',
 }) => {
+  const controlStyles = {
+    small: {
+      control: {
+        minH: '32px',
+        py: 0,
+        px: 0,
+        pr: 1,
+        borderColor: 'none',
+      },
+  
+    },
+    regular: {
+      control: {
+        minH: '40px',
+        py: 2,
+        px: 3,
+        borderWidth: '1px',
+        borderColor: 'borderPrimary',
+      },
+    },
+  }
+
+  const styles = controlStyles[variant]
+
   const customComponents = {
     Control: ({ children, ...props }: any) => {
       return (
@@ -130,9 +156,9 @@ const FLSelect: React.FC<CustomSelectProps> = ({
           ...provided,
           bg: 'bgPrimary',
           borderColor: 'borderPrimary',
-          borderWidth: '1px',
+          
           borderRadius: 'sm',
-          minH: '40px',
+     
           fontSize: 'sm',
           fontWeight: 'medium',
           transition: 'all 0.2s',
@@ -151,6 +177,7 @@ const FLSelect: React.FC<CustomSelectProps> = ({
             opacity: 0.6,
             cursor: 'not-allowed',
           },
+          ...styles.control,
         }),
         placeholder: provided => ({
           ...provided,
