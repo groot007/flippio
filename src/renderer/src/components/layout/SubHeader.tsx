@@ -31,8 +31,6 @@ export function SubHeader() {
 
   const [isQueryModalOpen, setIsQueryModalOpen] = useState(false)
 
-  console.log('SubHeader selectedDevice:', selectedDevice, selectedApplication)
-
   const {
     data: databaseFiles = [],
     isLoading,
@@ -70,16 +68,13 @@ export function SubHeader() {
   }, [isError])
 
   const databaseTables = tablesData?.tables
-  console.log('Database tables:', databaseTables)
 
   const handleDatabaseFileChange = useCallback((file) => {
     setSelectedDatabaseFile(file)
     setSelectedDatabaseTable(null)
   }, [setSelectedDatabaseFile, setSelectedDatabaseTable])
 
-  const handleTableChange = useCallback((table) => {
-    console.log('🎯 Table selected:', table?.name || 'none')
-    
+  const handleTableChange = useCallback((table) => {    
     // Clear any existing table data immediately to show loading state
     if (table) {
       setTableData({
@@ -157,11 +152,13 @@ export function SubHeader() {
       return
     }
 
+    console.log('selectedDatabaseFile', selectedDatabaseFile)
+
     window.api.exportFile({
       defaultPath: selectedDatabaseFile?.filename,
       filters: [
         {
-          name: 'Database Files',
+          name: selectedDatabaseFile?.filename || 'Database',
           extensions: ['db', 'sqlite'],
         },
       ],

@@ -169,7 +169,6 @@ export function DataGrid() {
   }), [])
 
   const onRowClicked = useCallback((event: Record<string, any>) => {
-    console.log('Row clicked:', event.data)
     setSelectedRow({
       rowData: event.data,
       columnInfo: tableData?.columns || [],

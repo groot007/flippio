@@ -19,7 +19,6 @@ export const DeleteRowDialog: React.FC<DeleteRowDialogProps> = ({
   onDelete,
   isLoading,
 }) => {
-  console.log('isLoading deellelelelel', isLoading)
   return (
     <>
 
