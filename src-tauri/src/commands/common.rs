@@ -34,7 +34,13 @@ pub async fn dialog_select_file(
     
     let (tx, rx) = oneshot::channel();
     
-    app_handle.dialog().file().pick_file(move |file_path| {
+    let mut dialog = app_handle.dialog().file();
+    
+    // Add database file filters
+    dialog = dialog.add_filter("Database Files", &["db", "sqlite", "sqlite3", "db3"]);
+    dialog = dialog.add_filter("All Files", &["*"]);
+    
+    dialog.pick_file(move |file_path| {
         let _ = tx.send(file_path);
     });
     
@@ -62,7 +68,22 @@ pub async fn dialog_save_file(
     
     let (tx, rx) = oneshot::channel();
     
-    app_handle.dialog().file().save_file(move |file_path| {
+    let mut dialog = app_handle.dialog().file();
+    
+    // Set default filename from options if provided
+    if let Some(default_path) = &options.default_path {
+        dialog = dialog.set_file_name(default_path);
+    }
+    
+    // Set filters if provided
+    if let Some(filters) = &options.filters {
+        for filter in filters {
+            let extensions: Vec<&str> = filter.extensions.iter().map(|s| s.as_str()).collect();
+            dialog = dialog.add_filter(&filter.name, &extensions);
+        }
+    }
+    
+    dialog.save_file(move |file_path| {
         let _ = tx.send(file_path);
     });
     

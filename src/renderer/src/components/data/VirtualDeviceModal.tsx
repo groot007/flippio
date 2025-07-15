@@ -52,7 +52,6 @@ export const VirtualDeviceModal: React.FC<VirtualDeviceModalProps> = ({ isOpen, 
 
         // Fetch Android emulators
         const androidEmulators = await window.api.getAndroidEmulators()
-        console.log('Fetched Android emulators:', androidEmulators)
         if (androidEmulators.success) {
           setAndroidDevices(androidEmulators.emulators || [])
         }

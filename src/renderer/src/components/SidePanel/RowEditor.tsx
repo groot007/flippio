@@ -52,7 +52,7 @@ export const RowEditor: React.FC<RowEditorProps> = ({
         tableData?.columns,
         selectedRow?.originalData || selectedRow?.rowData,
       )
-      console.log('Saving edited data:', condition, selectedRow)
+
       const result = await window.api.updateTableRow(
         selectedDatabaseTable?.name || '',
         editedData,
@@ -69,14 +69,6 @@ export const RowEditor: React.FC<RowEditorProps> = ({
         && selectedDevice
         && selectedDatabaseFile.packageName
       ) {
-        console.log('Pushing database file back to device:', {
-          deviceId: selectedDevice.id,
-          localPath: selectedDatabaseFile.path,
-          packageName: selectedDatabaseFile.packageName,
-          remotePath: selectedDatabaseFile.remotePath || selectedDatabaseFile.path,
-          deviceType: selectedDatabaseFile.deviceType,
-        })
-        
         const pushResult = await window.api.pushDatabaseFile(
           selectedDevice.id,
           selectedDatabaseFile.path,
