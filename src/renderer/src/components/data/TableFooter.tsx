@@ -9,7 +9,7 @@ import FLSelect from '@renderer/components/common/FLSelect'
 import { useRowEditingStore } from '@renderer/store/useRowEditingStore'
 import { useColorMode } from '@renderer/ui/color-mode'
 import { useCallback, useEffect, useState } from 'react'
-import { LuChevronLeft, LuChevronRight, LuTable } from 'react-icons/lu'
+import { LuChevronLeft, LuChevronRight, LuTrash2 } from 'react-icons/lu'
 import { useClearTableMutation } from '@/hooks/useTableMutations'
 import { useCurrentDatabaseSelection } from '@/store/useCurrentDatabaseSelection'
 import { useCurrentDeviceSelection } from '@/store/useCurrentDeviceSelection'
@@ -140,7 +140,7 @@ export function TableFooter({ gridRef, totalRows, onPageSizeChange }: TableFoote
           disabled={!selectedDatabaseTable?.name || isLoading}
           _hover={{ bg: colorMode === 'dark' ? 'gray.700' : 'gray.100' }}
         >
-          <LuTable color="flipioAccent.purple" />
+          <LuTrash2 color="flipioAccent.purple" />
         </Button>
       </Flex>
 

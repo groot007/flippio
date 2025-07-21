@@ -165,7 +165,6 @@ export function DataGrid() {
 
   const defaultColDef = useMemo(() => ({
     filter: true,
-    maxWidth: 300,
   }), [])
 
   const onRowClicked = useCallback((event: Record<string, any>) => {
