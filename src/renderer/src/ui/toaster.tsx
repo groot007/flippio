@@ -28,7 +28,7 @@ export function Toaster() {
                   <Toast.Indicator />
                 )}
             <Stack gap="1" flex="1" maxWidth="100%">
-              <Stack color={toast.type === 'success' ? 'green.500' : toast.type === 'error' ? 'red.500' : 'blue.500'}>{toast.title && <Toast.Title>{toast.title}</Toast.Title>}</Stack>
+              <Stack color={toast.type === 'success' ? 'green.100' : toast.type === 'error' ? 'red.500' : 'blue.500'}>{toast.title && <Toast.Title>{toast.title}</Toast.Title>}</Stack>
               {toast.description && (
                 <Toast.Description>{toast.description}</Toast.Description>
               )}
