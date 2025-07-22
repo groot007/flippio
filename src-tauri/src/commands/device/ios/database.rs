@@ -199,6 +199,53 @@ pub async fn get_ios_device_database_files(
         error!("   2. Database files are in different locations not being scanned");
         error!("   3. afcclient command is not working properly");
         error!("   4. Permission issues preventing file access");
+        error!("   5. Package name is incorrect (check for trailing commas/spaces)");
+        
+        // Try a broader search approach
+        info!("🔍 Attempting broader search...");
+        
+        let afcclient_cmd = get_tool_command("afcclient");
+        
+        // Try listing the root directory to see what's available
+        let root_args = ["--documents", &package_name, "-u", &device_id, "ls", "/"];
+        info!("Root directory listing: {} {}", afcclient_cmd, root_args.join(" "));
+        
+        if let Ok(root_output) = shell.command(&afcclient_cmd)
+            .args(root_args)
+            .output()
+            .await 
+        {
+            if root_output.status.success() {
+                let root_files = String::from_utf8_lossy(&root_output.stdout);
+                info!("📁 Root directory contents:");
+                for line in root_files.lines() {
+                    info!("  {}", line.trim());
+                }
+            } else {
+                error!("❌ Failed to list root directory: {}", String::from_utf8_lossy(&root_output.stderr));
+            }
+        }
+        
+        // Try without the leading slash for location paths
+        info!("🔍 Trying alternative path formats...");
+        for location in &["Documents", "Library"] {
+            let alt_args = ["--documents", &package_name, "-u", &device_id, "ls", location];
+            info!("Alternative listing: {} {}", afcclient_cmd, alt_args.join(" "));
+            
+            if let Ok(alt_output) = shell.command(&afcclient_cmd)
+                .args(alt_args)
+                .output()
+                .await 
+            {
+                if alt_output.status.success() {
+                    let alt_files = String::from_utf8_lossy(&alt_output.stdout);
+                    info!("📁 {} directory contents (alternative):", location);
+                    for line in alt_files.lines() {
+                        info!("  {}", line.trim());
+                    }
+                }
+            }
+        }
     } else {
         info!("✅ Database files found:");
         for (index, db_file) in database_files.iter().enumerate() {

@@ -60,9 +60,18 @@ pub async fn device_get_ios_packages(app_handle: tauri::AppHandle, device_id: St
                     .or(current_bundle_name.clone())
                     .unwrap_or_else(|| bundle_id.clone());
                 
+                // Clean the bundle ID and app name in case they have trailing commas or whitespace
+                let clean_bundle_id = bundle_id.trim().trim_end_matches(',').to_string();
+                let clean_app_name = app_name.trim().trim_end_matches(',').to_string();
+                
+                if clean_bundle_id != bundle_id || clean_app_name != app_name {
+                    info!("🧹 Cleaned simulator package: '{}' -> '{}', name: '{}' -> '{}'", 
+                          bundle_id, clean_bundle_id, app_name, clean_app_name);
+                }
+                
                 let package = Package {
-                    name: app_name,
-                    bundle_id: bundle_id.clone(),
+                    name: clean_app_name.clone(),
+                    bundle_id: clean_bundle_id.clone(),
                 };
                 
                 info!("Found app: {} ({})", package.name, package.bundle_id);
@@ -103,9 +112,18 @@ pub async fn device_get_ios_packages(app_handle: tauri::AppHandle, device_id: St
             .or(current_bundle_name)
             .unwrap_or_else(|| bundle_id.clone());
         
+        // Clean the bundle ID and app name in case they have trailing commas or whitespace
+        let clean_bundle_id = bundle_id.trim().trim_end_matches(',').to_string();
+        let clean_app_name = app_name.trim().trim_end_matches(',').to_string();
+        
+        if clean_bundle_id != bundle_id || clean_app_name != app_name {
+            info!("🧹 Cleaned last simulator package: '{}' -> '{}', name: '{}' -> '{}'", 
+                  bundle_id, clean_bundle_id, app_name, clean_app_name);
+        }
+        
         let package = Package {
-            name: app_name,
-            bundle_id: bundle_id.clone(),
+            name: clean_app_name.clone(),
+            bundle_id: clean_bundle_id.clone(),
         };
         
         info!("Found app: {} ({})", package.name, package.bundle_id);
@@ -214,9 +232,36 @@ pub async fn device_get_ios_device_packages(app_handle: tauri::AppHandle, device
         };
         
         if !bundle_id.is_empty() {
+            // Clean the bundle ID in case it has trailing commas or whitespace
+            let clean_bundle_id = bundle_id.trim().trim_end_matches(',').to_string();
+            let mut clean_app_name = app_name.trim().trim_end_matches(',').to_string();
+            
+            // Handle the format: "version", "AppName" -> AppName (version)
+            if clean_app_name.contains(", ") && clean_app_name.starts_with('"') {
+                let parts: Vec<&str> = clean_app_name.split(", ").collect();
+                if parts.len() >= 2 {
+                    // Extract version (first part) and app name (last part)
+                    let version = parts[0].trim_matches('"').trim();
+                    let app_name_part = parts[parts.len() - 1].trim_matches('"').trim();
+                    
+                    if !version.is_empty() && !app_name_part.is_empty() {
+                        clean_app_name = format!("{} ({})", app_name_part, version);
+                        info!("🔄 Reformatted app name: '{}' -> '{}'", app_name, clean_app_name);
+                    }
+                }
+            } else {
+                // Just clean quotes and whitespace for other formats
+                clean_app_name = clean_app_name.trim_matches('"').trim().to_string();
+            }
+            
+            if clean_bundle_id != bundle_id || clean_app_name != app_name {
+                info!("🧹 Cleaned package: '{}' -> '{}', name: '{}' -> '{}'", 
+                      bundle_id, clean_bundle_id, app_name, clean_app_name);
+            }
+            
             let package = Package {
-                name: app_name.to_string(),
-                bundle_id: bundle_id.to_string(),
+                name: clean_app_name,
+                bundle_id: clean_bundle_id,
             };
             
             info!("✅ Found app: {} ({})", package.name, package.bundle_id);
