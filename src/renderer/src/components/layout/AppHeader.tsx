@@ -107,6 +107,7 @@ function AppHeader() {
     }), [devicesList])
 
   const applicationSelectOptions = useMemo(() => {
+    console.log('Applications list:', applicationsList)
     return applicationsList.map((app) => {
       const description = app.bundleId === app.name ? '' : app.bundleId
       return {
