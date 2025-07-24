@@ -83,9 +83,22 @@ pub async fn device_get_ios_packages(app_handle: tauri::AppHandle, device_id: St
                 let bundle_part = &line[..equals_pos];
                 // Remove quotes if present
                 let bundle_id = bundle_part.trim_matches('"').trim_matches('\'');
-                current_bundle_id = Some(bundle_id.to_string());
-                current_display_name = None;
-                current_bundle_name = None;
+                
+                // Filter out system directories that aren't actual apps
+                if bundle_id == "GroupContainers" || 
+                   bundle_id == "SystemContainers" || 
+                   bundle_id == "SharedContainers" ||
+                   bundle_id == "Containers" ||
+                   !bundle_id.contains('.') { // Bundle IDs should contain dots (reverse domain notation)
+                    info!("Skipping system directory: {}", bundle_id);
+                    current_bundle_id = None;
+                    current_display_name = None;
+                    current_bundle_name = None;
+                } else {
+                    current_bundle_id = Some(bundle_id.to_string());
+                    current_display_name = None;
+                    current_bundle_name = None;
+                }
             }
         }
         // Look for CFBundleDisplayName
@@ -108,26 +121,35 @@ pub async fn device_get_ios_packages(app_handle: tauri::AppHandle, device_id: St
     
     // Don't forget the last app
     if let Some(bundle_id) = current_bundle_id {
-        let app_name = current_display_name
-            .or(current_bundle_name)
-            .unwrap_or_else(|| bundle_id.clone());
-        
-        // Clean the bundle ID and app name in case they have trailing commas or whitespace
-        let clean_bundle_id = bundle_id.trim().trim_end_matches(',').to_string();
-        let clean_app_name = app_name.trim().trim_end_matches(',').to_string();
-        
-        if clean_bundle_id != bundle_id || clean_app_name != app_name {
-            info!("🧹 Cleaned last simulator package: '{}' -> '{}', name: '{}' -> '{}'", 
-                  bundle_id, clean_bundle_id, app_name, clean_app_name);
+        // Filter out system directories that aren't actual apps
+        if bundle_id == "GroupContainers" || 
+           bundle_id == "SystemContainers" || 
+           bundle_id == "SharedContainers" ||
+           bundle_id == "Containers" ||
+           !bundle_id.contains('.') { // Bundle IDs should contain dots (reverse domain notation)
+            info!("Skipping system directory in final check: {}", bundle_id);
+        } else {
+            let app_name = current_display_name
+                .or(current_bundle_name)
+                .unwrap_or_else(|| bundle_id.clone());
+            
+            // Clean the bundle ID and app name in case they have trailing commas or whitespace
+            let clean_bundle_id = bundle_id.trim().trim_end_matches(',').to_string();
+            let clean_app_name = app_name.trim().trim_end_matches(',').to_string();
+            
+            if clean_bundle_id != bundle_id || clean_app_name != app_name {
+                info!("🧹 Cleaned last simulator package: '{}' -> '{}', name: '{}' -> '{}'", 
+                      bundle_id, clean_bundle_id, app_name, clean_app_name);
+            }
+            
+            let package = Package {
+                name: clean_app_name.clone(),
+                bundle_id: clean_bundle_id.clone(),
+            };
+            
+            info!("Found app: {} ({})", package.name, package.bundle_id);
+            packages.push(package);
         }
-        
-        let package = Package {
-            name: clean_app_name.clone(),
-            bundle_id: clean_bundle_id.clone(),
-        };
-        
-        info!("Found app: {} ({})", package.name, package.bundle_id);
-        packages.push(package);
     }
     
     info!("=== GET iOS PACKAGES COMPLETED ===");

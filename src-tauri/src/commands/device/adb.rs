@@ -337,7 +337,8 @@ pub async fn adb_get_android_database_files(
     
     let mut database_files = Vec::new();
     
-    // Search in multiple locations
+    // Search in multiple locations with priority order
+    // Priority: /data/data/ > /sdcard/Android/data/ > /storage/emulated/0/Android/data/
     let locations = vec![
         ("/data/data/", true),
         ("/sdcard/Android/data/", false),
@@ -365,44 +366,52 @@ pub async fn adb_get_android_database_files(
                     }
                 }
                 
-                // Pull each found database file to local temp directory
-                for (file_path, admin_access) in found_files {
-                    match pull_android_db_file(&device_id, &package_name, &file_path, admin_access).await {
-                        Ok(local_path) => {
-                            let filename = std::path::Path::new(&file_path)
-                                .file_name()
-                                .and_then(|n| n.to_str())
-                                .unwrap_or("unknown")
-                                .to_string();
-                            
-                            database_files.push(DatabaseFile {
-                                path: local_path, // Use local path instead of remote path
-                                package_name: package_name.clone(),
-                                filename,
-                                location: location.to_string(),
-                                remote_path: Some(file_path),
-                                device_type: "android".to_string(),
-                            });
-                        }
-                        Err(e) => {
-                            error!("Failed to pull database file {}: {}", file_path, e);
-                            // Still add the file with remote path for fallback
-                            let filename = std::path::Path::new(&file_path)
-                                .file_name()
-                                .and_then(|n| n.to_str())
-                                .unwrap_or("unknown")
-                                .to_string();
-                            
-                            database_files.push(DatabaseFile {
-                                path: file_path.clone(),
-                                package_name: package_name.clone(),
-                                filename,
-                                location: location.to_string(),
-                                remote_path: Some(file_path),
-                                device_type: "android".to_string(),
-                            });
+                // If files found in this location, process them and skip remaining locations
+                if !found_files.is_empty() {
+                    log::info!("Found {} database files in {}, skipping other locations", found_files.len(), location);
+                    
+                    // Pull each found database file to local temp directory
+                    for (file_path, admin_access) in found_files {
+                        match pull_android_db_file(&device_id, &package_name, &file_path, admin_access).await {
+                            Ok(local_path) => {
+                                let filename = std::path::Path::new(&file_path)
+                                    .file_name()
+                                    .and_then(|n| n.to_str())
+                                    .unwrap_or("unknown")
+                                    .to_string();
+                                
+                                database_files.push(DatabaseFile {
+                                    path: local_path, // Use local path instead of remote path
+                                    package_name: package_name.clone(),
+                                    filename,
+                                    location: location.to_string(),
+                                    remote_path: Some(file_path),
+                                    device_type: "android".to_string(),
+                                });
+                            }
+                            Err(e) => {
+                                error!("Failed to pull database file {}: {}", file_path, e);
+                                // Still add the file with remote path for fallback
+                                let filename = std::path::Path::new(&file_path)
+                                    .file_name()
+                                    .and_then(|n| n.to_str())
+                                    .unwrap_or("unknown")
+                                    .to_string();
+                                
+                                database_files.push(DatabaseFile {
+                                    path: file_path.clone(),
+                                    package_name: package_name.clone(),
+                                    filename,
+                                    location: location.to_string(),
+                                    remote_path: Some(file_path),
+                                    device_type: "android".to_string(),
+                                });
+                            }
                         }
                     }
+                    
+                    // Break out of the loop since we found files in this location
+                    break;
                 }
             }
         }
