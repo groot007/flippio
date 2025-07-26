@@ -23,85 +23,19 @@ jobs:
           toolchain: stable
           override: true
       
-      - name: Install system dependencies
+      - name: Install Tauri dependencies
         run: |
           sudo apt-get update
-          
-          # Search for available webkit packages
-          echo "Searching for available webkit packages:"
-          apt-cache search webkit2gtk | grep -E "dev|webkit2gtk"
-          
-          echo "Searching for available soup packages:"
-          apt-cache search libsoup | grep -E "dev|libsoup"
-          
-          echo "Searching for available glib packages:"
-          apt-cache search libglib | grep -E "dev|glib"
-          
-          # Install base packages that should always be available
           sudo apt-get install -y \
-            pkg-config \
-            build-essential \
-            curl \
-            wget \
-            file \
-            libssl-dev \
-            libudev-dev \
-            libsqlite3-dev \
+            libwebkit2gtk-4.0-dev \
             libgtk-3-dev \
-            libappindicator3-dev \
+            libayatana-appindicator3-dev \
             librsvg2-dev \
-            libglib2.0-dev \
-            libcairo2-dev \
-            libpango1.0-dev \
-            libatk1.0-dev \
-            libgdk-pixbuf-2.0-dev
-          
-          # Try webkit packages in order of preference
-          if sudo apt-get install -y libwebkit2gtk-4.1-dev; then
-            echo "✓ Installed libwebkit2gtk-4.1-dev"
-          elif sudo apt-get install -y libwebkit2gtk-4.0-dev; then
-            echo "✓ Installed libwebkit2gtk-4.0-dev"
-          else
-            echo "✗ Could not install webkit2gtk development packages"
-          fi
-          
-          # Try soup packages in order of preference
-          if sudo apt-get install -y libsoup-3.0-dev; then
-            echo "✓ Installed libsoup-3.0-dev"
-          elif sudo apt-get install -y libsoup2.4-dev; then
-            echo "✓ Installed libsoup2.4-dev"
-          else
-            echo "✗ Could not install soup development packages"
-          fi
-          
-          # Verify pkg-config can find the libraries
-          echo "Checking pkg-config libraries:"
-          pkg-config --exists glib-2.0 && echo "✓ glib-2.0 found" || echo "✗ glib-2.0 missing"
-          pkg-config --exists gobject-2.0 && echo "✓ gobject-2.0 found" || echo "✗ gobject-2.0 missing"
-          pkg-config --exists gtk+-3.0 && echo "✓ gtk+-3.0 found" || echo "✗ gtk+-3.0 missing"
-          
-          # Set PKG_CONFIG_PATH
-          export PKG_CONFIG_PATH="/usr/lib/x86_64-linux-gnu/pkgconfig:/usr/share/pkgconfig:$PKG_CONFIG_PATH"
-          echo "PKG_CONFIG_PATH=$PKG_CONFIG_PATH" >> $GITHUB_ENV
+            patchelf
       
       - name: Run Rust tests
         working-directory: src-tauri
-        run: |
-          # First try running tests normally
-          cargo test --verbose || {
-            echo "Regular tests failed, trying with minimal features..."
-            cargo test --verbose --no-default-features || {
-              echo "Tests failed with no default features. Checking environment..."
-              echo "Rust version: $(rustc --version)"
-              echo "Cargo version: $(cargo --version)"
-              pkg-config --modversion glib-2.0 || echo "glib-2.0 not found"
-              pkg-config --modversion gobject-2.0 || echo "gobject-2.0 not found"
-              echo "PKG_CONFIG_PATH: $PKG_CONFIG_PATH"
-              echo "Available .pc files:"
-              find /usr -name "*.pc" 2>/dev/null | grep -E "(glib|gobject)" | head -10 || true
-              exit 1
-            }
-          }
+        run: cargo test --verbose
 
   frontend-tests:
     name: Frontend Tests
