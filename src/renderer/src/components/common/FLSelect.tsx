@@ -19,6 +19,7 @@ interface CustomSelectProps {
   searchable?: boolean
   noOptionsMessage?: string
   variant?: 'small' | 'regular'
+  menuListWidth?: string | number
 }
 
 const FLSelect: React.FC<CustomSelectProps> = ({
@@ -28,6 +29,7 @@ const FLSelect: React.FC<CustomSelectProps> = ({
   label,
   isDisabled = false,
   width = '220px',
+  menuListWidth = 'auto',
   icon = null,
   placeholder,
   searchable = true,
@@ -119,6 +121,7 @@ const FLSelect: React.FC<CustomSelectProps> = ({
           border: 'none',
           borderRadius: 'md',
           boxShadow: 'none',
+          width: menuListWidth,
         }),
         option: provided => ({
           ...provided,
