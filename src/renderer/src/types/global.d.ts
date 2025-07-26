@@ -26,11 +26,12 @@ declare global {
       getTables: (dbPath?: string) => Promise<any>
       openDatabase: (filePath: string) => Promise<any>
       getTableInfo: (tableName: string, dbPath?: string) => Promise<any>
-      updateTableRow: (tableName: string, row: any, condition: any) => Promise<any>
+      updateTableRow: (tableName: string, row: any, condition: any, dbPath?: string) => Promise<any>
       executeQuery: (query: string, dbPath: string) => Promise<any>
-      insertTableRow: (table: string, row: any) => Promise<any>
-      addNewRowWithDefaults: (table: string) => Promise<any>
-      deleteTableRow: (table: string, condition: any) => Promise<any>
+      insertTableRow: (table: string, row: any, dbPath?: string) => Promise<any>
+      addNewRowWithDefaults: (table: string, dbPath?: string) => Promise<any>
+      deleteTableRow: (table: string, condition: any, dbPath?: string) => Promise<any>
+      switchDatabase: (filePath: string) => Promise<any>
 
       // File dialog methods
       openFile: () => Promise<any>

@@ -45,14 +45,18 @@ impl DatabaseConnectionManager {
             let mut cache_guard = self.cache.write().await;
             
             if let Some(cached_conn) = cache_guard.get_mut(&normalized_path) {
-                // Check if connection is still valid
-                if !cached_conn.is_expired(self.config.connection_ttl) {
+                // Check if connection should be removed (time-expired OR pool is closed)
+                if !cached_conn.should_be_removed(self.config.connection_ttl) {
                     cached_conn.update_last_used();
                     info!("📦 Reusing cached connection for: {}", normalized_path);
                     return Ok(cached_conn.pool.clone());
                 } else {
-                    info!("⏰ Cached connection expired for: {}", normalized_path);
-                    cached_conn.pool.close().await;
+                    if cached_conn.is_pool_closed() {
+                        info!("🚫 Cached connection pool is closed, removing from cache: {}", normalized_path);
+                    } else {
+                        info!("⏰ Cached connection expired for: {}", normalized_path);
+                    }
+                    // Remove the invalid connection from cache
                     cache_guard.remove(&normalized_path);
                 }
             }
@@ -108,9 +112,9 @@ impl DatabaseConnectionManager {
             .map(|(path, conn)| (path.clone(), conn.clone()))
         {
             info!("🧹 Removing oldest cached connection: {}", oldest_path);
-            if let Some(removed_conn) = cache.remove(&oldest_path) {
-                removed_conn.pool.close().await;
-            }
+            cache.remove(&oldest_path);
+            // Don't explicitly close the pool - let it be garbage collected
+            // when all references are dropped
         }
     }
 
@@ -125,21 +129,19 @@ impl DatabaseConnectionManager {
                 sleep(interval).await;
                 
                 let mut cache_guard = cache.write().await;
-                let mut expired_keys = Vec::new();
+                let mut keys_to_remove = Vec::new();
 
-                // Find expired connections
+                // Find connections that should be removed (expired or closed)
                 for (path, conn) in cache_guard.iter() {
-                    if conn.is_expired(ttl) {
-                        expired_keys.push(path.clone());
+                    if conn.should_be_removed(ttl) {
+                        keys_to_remove.push(path.clone());
                     }
                 }
 
-                // Remove expired connections
-                for key in expired_keys {
-                    if let Some(expired_conn) = cache_guard.remove(&key) {
-                        info!("🧹 Cleaning up expired connection: {}", key);
-                        expired_conn.pool.close().await;
-                    }
+                // Remove invalid connections from cache
+                for key in keys_to_remove {
+                    cache_guard.remove(&key);
+                    info!("🧹 Cleaning up invalid connection: {}", key);
                 }
 
                 if !cache_guard.is_empty() {

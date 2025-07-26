@@ -70,6 +70,9 @@ pub fn run() {
             commands::database::db_delete_table_row,
             commands::database::db_execute_query,
             commands::database::db_get_connection_stats,
+            commands::database::db_clear_cache_for_path,
+            commands::database::db_clear_all_cache,
+            commands::database::db_switch_database,
             // Common commands (file dialogs)
             commands::common::dialog_select_file,
             commands::common::dialog_save_file,
