@@ -1,5 +1,6 @@
-import { HStack, Text, VStack } from '@chakra-ui/react'
+import { Box, HStack, Icon, Text, VStack } from '@chakra-ui/react'
 import { chakraComponents, Select } from 'chakra-react-select'
+import { LuPin } from 'react-icons/lu'
 
 interface CustomSelectProps {
   label: string
@@ -7,6 +8,7 @@ interface CustomSelectProps {
     label: string
     value: string
     description?: string
+    isRecentlyUsed?: boolean
   }[]
   value: any
   onChange: (value: any) => void
@@ -20,6 +22,7 @@ interface CustomSelectProps {
   noOptionsMessage?: string
   variant?: 'small' | 'regular'
   menuListWidth?: string | number
+  showPinIcon?: boolean
 }
 
 const FLSelect: React.FC<CustomSelectProps> = ({
@@ -35,6 +38,7 @@ const FLSelect: React.FC<CustomSelectProps> = ({
   searchable = true,
   noOptionsMessage = 'No options available',
   variant = 'regular',
+  showPinIcon = false,
 }) => {
   const controlStyles = {
     small: {
@@ -72,21 +76,35 @@ const FLSelect: React.FC<CustomSelectProps> = ({
     Option: ({ children, ...props }: any) => {
       return (
         <chakraComponents.Option {...props}>
-          <VStack
-            alignItems="start" 
-            justifyContent="flex-start" 
-            gap={0}
-          >
-            <Text fontSize="sm" fontWeight="medium" color="textPrimary">
-              {props.data.label}
-            </Text>
-            {props.data.description && (
-              <Text fontSize="10px" color="textSecondary">
-                {props.data.description}
-              </Text>
+          <Box position="relative" width="100%">
+            {showPinIcon && props.data.isRecentlyUsed && (
+              <Icon
+                as={LuPin}
+                position="absolute"
+                left="-2px"
+                top="50%"
+                transform="translateY(-50%)"
+                boxSize={3}
+                color="flipioPrimary"
+                zIndex={1}
+              />
             )}
-          </VStack>
-         
+            <VStack
+              alignItems="start" 
+              justifyContent="flex-start" 
+              gap={0}
+              pl={showPinIcon && props.data.isRecentlyUsed ? 4 : 0}
+            >
+              <Text fontSize="sm" fontWeight="medium" color="textPrimary">
+                {props.data.label}
+              </Text>
+              {props.data.description && (
+                <Text fontSize="10px" color="textSecondary">
+                  {props.data.description}
+                </Text>
+              )}
+            </VStack>
+          </Box>
         </chakraComponents.Option>
       )
     },
