@@ -41,12 +41,17 @@ jobs:
       
       - name: Run Rust tests
         working-directory: src-tauri
-        env:
-          # Use CI-specific config without external binaries
-          TAURI_CONFIG_PATH: tauri-ci.conf.json
         run: |
-          # Run tests with CI configuration that excludes external binaries
+          # Temporarily use CI config to avoid external binary issues
+          mv tauri.conf.json tauri.conf.json.bak
+          mv tauri-ci.conf.json tauri.conf.json
+          
+          # Run tests with CI configuration
           cargo test
+          
+          # Restore original config
+          mv tauri.conf.json tauri-ci.conf.json
+          mv tauri.conf.json.bak tauri.conf.json
 
   frontend-tests:
     name: Frontend Tests
