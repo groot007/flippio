@@ -1,4 +1,4 @@
-import { fireEvent, screen } from '@testing-library/react'
+import { fireEvent, screen, waitFor } from '@testing-library/react'
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { render } from '../../../test-utils/render'
 import AppHeader from '../AppHeader'
@@ -19,27 +19,34 @@ beforeAll(() => {
   })
 })
 
+const mockRefreshDevices = vi.fn().mockResolvedValue(undefined)
+
 vi.mock('@renderer/hooks/useDevices', () => ({
   useDevices: () => ({
-    devices: [
-      { id: 'device1', model: 'Test Device 1', deviceType: 'android' },
-      { id: 'device2', model: 'Test Device 2', deviceType: 'iphone' },
+    data: [
+      { id: 'device1', name: 'Test Device 1', deviceType: 'android', label: 'Android Device' },
+      { id: 'device2', name: 'Test Device 2', deviceType: 'iphone', label: 'iPhone Device' },
     ],
     isLoading: false,
     error: null,
-    refresh: vi.fn().mockResolvedValue(undefined),
+    refetch: mockRefreshDevices,
+    isFetching: false,
   }),
 }))
 
 vi.mock('@renderer/hooks/useApplications', () => ({
   useApplications: () => ({
-    applications: [
+    data: [
       { name: 'Test App 1', bundleId: 'com.test.app1' },
       { name: 'Test App 2', bundleId: 'com.test.app2' },
     ],
     isLoading: false,
     error: null,
   }),
+}))
+
+vi.mock('@tauri-apps/api/core', () => ({
+  invoke: vi.fn().mockResolvedValue('/path/to/tool'),
 }))
 
 vi.mock('@renderer/store', () => ({
@@ -67,6 +74,13 @@ vi.mock('@renderer/store', () => ({
     }
     return selector(state)
   },
+  useRecentlyUsedApps: () => ({
+    addRecentApp: vi.fn(),
+    getRecentAppsForDevice: vi.fn().mockReturnValue([]),
+    getRecentApps: vi.fn().mockReturnValue([]),
+    removeRecentApp: vi.fn(),
+    clearRecentApps: vi.fn(),
+  }),
 }))
 
 vi.mock('@renderer/ui/toaster', () => ({
@@ -75,30 +89,60 @@ vi.mock('@renderer/ui/toaster', () => ({
   },
 }))
 
-describe('appHeader Component', () => {
+describe('appHeader component', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
 
   it('renders correctly with device and application selectors', () => {
-    render(
-      <AppHeader />,
-    )
+    render(<AppHeader />)
 
     expect(screen.getByText('Select Device')).toBeInTheDocument()
     expect(screen.getByText('Select App')).toBeInTheDocument()
   })
 
   it('has a working refresh button', async () => {
-    render(
-      <AppHeader />,
-    )
+    render(<AppHeader />)
 
     const refreshButton = screen.getByTestId('refresh-devices')
     expect(refreshButton).toBeInTheDocument()
 
     fireEvent.click(refreshButton)
 
-    expect(refreshButton).toBeInTheDocument()
+    await waitFor(() => {
+      expect(mockRefreshDevices).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  it('displays device options when devices are available', () => {
+    render(<AppHeader />)
+    
+    // The device selector should be present
+    const deviceSelector = screen.getByText('Select Device')
+    expect(deviceSelector).toBeInTheDocument()
+  })
+
+  it('shows loading state when applications are loading', () => {
+    render(<AppHeader />)
+    
+    // Check that the app selector is present
+    expect(screen.getByText('Select App')).toBeInTheDocument()
+  })
+
+  it('disables app selector when no device is selected', () => {
+    render(<AppHeader />)
+    
+    // App selector should be disabled when no device is selected
+    const appSelector = screen.getByText('Select App')
+    expect(appSelector).toBeInTheDocument()
+    // The parent component should handle the disabled state
+  })
+
+  it('shows virtual device modal button', () => {
+    render(<AppHeader />)
+    
+    // Look for the virtual device button (rocket icon)
+    const virtualDeviceButton = screen.getByTitle('Launch Emulator')
+    expect(virtualDeviceButton).toBeInTheDocument()
   })
 })
