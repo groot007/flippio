@@ -69,7 +69,18 @@ export function SubHeader() {
 
   const databaseTables = tablesData?.tables
 
-  const handleDatabaseFileChange = useCallback((file) => {
+  const handleDatabaseFileChange = useCallback(async (file) => {
+    // Call database switch cleanup if we have a file path
+    if (file?.path) {
+      try {
+        await window.api.switchDatabase(file.path)
+        console.log('Database switch cleanup completed for:', file.path)
+      }
+      catch (error) {
+        console.warn('Database switch cleanup failed (non-critical):', error)
+      }
+    }
+    
     setSelectedDatabaseFile(file)
     setSelectedDatabaseTable(null)
   }, [setSelectedDatabaseFile, setSelectedDatabaseTable])

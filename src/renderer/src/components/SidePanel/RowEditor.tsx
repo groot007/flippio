@@ -57,6 +57,7 @@ export const RowEditor: React.FC<RowEditorProps> = ({
         selectedDatabaseTable?.name || '',
         editedData,
         condition,
+        selectedDatabaseFile?.path,
       )
 
       if (!result.success) {

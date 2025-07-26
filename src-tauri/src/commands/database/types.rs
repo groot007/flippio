@@ -31,6 +31,17 @@ impl CachedConnection {
     pub fn is_expired(&self, ttl: Duration) -> bool {
         self.last_used.elapsed() > ttl
     }
+    
+    /// Check if the pool is actually closed/unusable
+    pub fn is_pool_closed(&self) -> bool {
+        self.pool.is_closed()
+    }
+    
+    /// Check if this connection should be removed from cache
+    /// (either time-expired or pool is closed)
+    pub fn should_be_removed(&self, ttl: Duration) -> bool {
+        self.is_expired(ttl) || self.is_pool_closed()
+    }
 }
 
 // Per-database connection cache with automatic cleanup
