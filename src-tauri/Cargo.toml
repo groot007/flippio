@@ -7,6 +7,15 @@ edition = "2021"
 repository = "https://github.com/groot007/flippio"
 build = "build.rs"
 
+# Define both library and binary targets
+[[bin]]
+name = "Flippio"
+path = "src/main.rs"
+
+[lib]
+name = "flippio"
+path = "src/lib.rs"
+
 [build-dependencies]
 tauri-build = { version = "2.0", features = [] }
 
@@ -37,6 +46,8 @@ predicates = "3.1"
 mockall = "0.12"
 serial_test = "3.1"
 rstest = "0.19"
+rusqlite = "0.29"
+futures = "0.3"
 
 [features]
 default = ["custom-protocol"]

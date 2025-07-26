@@ -48,7 +48,7 @@ function AppHeader() {
     ) {
       timer = setTimeout(() => {
         setIsPackageSetModalOpen(true)
-      }, 2000)
+      }, 5000)
     }
     else {
       setIsPackageSetModalOpen(false)
