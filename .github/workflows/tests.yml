@@ -41,7 +41,13 @@ jobs:
       
       - name: Run Rust tests
         working-directory: src-tauri
-        run: cargo test --verbose
+        env:
+          # Skip external bin resolution for CI
+          TAURI_SKIP_EXTERNAL_BIN: '1'
+        run: |
+          # Run tests without building the full Tauri app bundle
+          # This avoids the external binary dependency issues in CI
+          cargo test --lib --verbose --workspace
 
   frontend-tests:
     name: Frontend Tests
