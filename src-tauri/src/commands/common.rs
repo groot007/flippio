@@ -2,6 +2,7 @@
 // Implements file dialog and other common IPC commands
 
 use serde::{Deserialize, Serialize};
+use tauri::Manager;
 use tauri_plugin_dialog::{DialogExt};
 use std::path::Path;
 
@@ -57,6 +58,40 @@ pub async fn dialog_select_file(
             file_path: None,
         }),
     }
+}
+
+#[tauri::command]
+pub async fn save_dropped_file(
+    app_handle: tauri::AppHandle,
+    file_content: Vec<u8>,
+    filename: String,
+) -> Result<String, String> {
+    use std::fs;
+    use std::io::Write;
+    
+    // Create a temporary directory for dropped files
+    let temp_dir = app_handle.path().temp_dir()
+        .map_err(|e| format!("Failed to get temp directory: {}", e))?;
+    
+    let dropped_files_dir = temp_dir.join("flippio_dropped_files");
+    fs::create_dir_all(&dropped_files_dir)
+        .map_err(|e| format!("Failed to create temp directory: {}", e))?;
+    
+    // Create a unique filename to avoid conflicts
+    let timestamp = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap()
+        .as_secs();
+    let unique_filename = format!("{}_{}", timestamp, filename);
+    let file_path = dropped_files_dir.join(&unique_filename);
+    
+    // Write the file content
+    let mut file = fs::File::create(&file_path)
+        .map_err(|e| format!("Failed to create file: {}", e))?;
+    file.write_all(&file_content)
+        .map_err(|e| format!("Failed to write file: {}", e))?;
+    
+    Ok(file_path.to_string_lossy().to_string())
 }
 
 #[tauri::command]
