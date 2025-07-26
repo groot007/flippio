@@ -28,6 +28,16 @@ log = "0.4"
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
 tauri-plugin-updater = "2.0"
 
+# Test dependencies
+[dev-dependencies]
+tokio-test = "0.4"
+tempfile = "3.10"
+assert_fs = "1.1"
+predicates = "3.1"
+mockall = "0.12"
+serial_test = "3.1"
+rstest = "0.19"
+
 [features]
 default = ["custom-protocol"]
 custom-protocol = ["tauri/custom-protocol"]
