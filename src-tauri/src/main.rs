@@ -6,16 +6,27 @@ use tokio::sync::RwLock;
 use tauri_plugin_log;
 
 mod commands;
-use commands::database::DbPool;
+use commands::database::{DbPool, DatabaseConnectionManager};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    // Initialize database connection pool state
-    let db_pool: DbPool = Arc::new(RwLock::new(None));
+    // Initialize database connection management
+    let db_pool: DbPool = Arc::new(RwLock::new(None)); // Legacy pool for compatibility
+    let connection_manager = DatabaseConnectionManager::new();
+    let db_cache = connection_manager.get_cache();
     
     let mut builder = tauri::Builder::default()
         .plugin(tauri_plugin_log::Builder::new().build())
         .manage(db_pool)
+        .manage(db_cache)
+        .setup(|_app| {
+            // Start background cleanup task after Tauri runtime is initialized
+            let connection_manager = DatabaseConnectionManager::new();
+            tauri::async_runtime::spawn(async move {
+                connection_manager.start_cleanup_task().await;
+            });
+            Ok(())
+        })
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_shell::init());
@@ -58,6 +69,7 @@ pub fn run() {
             commands::database::db_add_new_row_with_defaults,
             commands::database::db_delete_table_row,
             commands::database::db_execute_query,
+            commands::database::db_get_connection_stats,
             // Common commands (file dialogs)
             commands::common::dialog_select_file,
             commands::common::dialog_save_file,
@@ -65,7 +77,9 @@ pub fn run() {
             // Updater commands
             commands::updater::check_for_updates,
             commands::updater::download_and_install_update,
-            commands::device::get_libimobiledevice_tool_path_cmd
+            // iOS diagnostic commands
+            commands::device::ios::diagnostic::diagnose_ios_device,
+            commands::device::ios::diagnostic::check_ios_device_status
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

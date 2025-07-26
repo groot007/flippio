@@ -5,7 +5,7 @@
 
 use super::super::helpers::{ensure_temp_dir};
 use super::super::types::{DatabaseFileMetadata};
-use super::tools::get_tool_command;
+use super::tools::get_tool_command_legacy;
 use tauri_plugin_shell::ShellExt;
 use log::{info, error};
 use std::path::Path;
@@ -43,7 +43,7 @@ pub async fn pull_ios_db_file(
     
     if is_device {
         info!("Step 4: Pulling from physical iOS device using afcclient");
-        let afcclient_cmd = get_tool_command("afcclient");
+        let afcclient_cmd = get_tool_command_legacy("afcclient");
         info!("Using afcclient command: {}", afcclient_cmd);
         
         // Use afcclient to pull file from device
