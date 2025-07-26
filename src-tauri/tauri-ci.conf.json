@@ -1,0 +1,65 @@
+{
+  "productName": "Flippio",
+  "version": "0.3.16",
+  "identifier": "com.flippio.app",
+  "build": {
+    "beforeDevCommand": "",
+    "beforeBuildCommand": "",
+    "devUrl": "http://localhost:5173",
+    "frontendDist": ""
+  },
+  "app": {
+    "security": {
+      "csp": null,
+      "capabilities": [
+        {
+          "identifier": "main-capability",
+          "description": "Main window capabilities",
+          "windows": [
+            "main"
+          ],
+          "permissions": [
+            "core:default",
+            "core:event:default",
+            "core:event:allow-listen",
+            "core:event:allow-emit",
+            "core:event:allow-unlisten",
+            "core:window:default",
+            "core:window:allow-set-title",
+            "shell:allow-open",
+            "fs:default",
+            "dialog:default"
+          ]
+        }
+      ]
+    },
+    "windows": [
+      {
+        "label": "main",
+        "title": "Flippio",
+        "width": 950,
+        "height": 670,
+        "minWidth": 500,
+        "minHeight": 600,
+        "resizable": true,
+        "fullscreen": false,
+        "backgroundColor": "#1a202c"
+      }
+    ]
+  },
+  "bundle": {
+    "active": false,
+    "targets": "all",
+    "createUpdaterArtifacts": false,
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ]
+  },
+  "plugins": {
+    "log": null
+  }
+}
