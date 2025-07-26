@@ -2,14 +2,14 @@ import { Box, Flex, Icon, Text } from '@chakra-ui/react'
 import { keyframes } from '@emotion/react'
 import { useCurrentDatabaseSelection } from '@renderer/store'
 import { useColorMode } from '@renderer/ui/color-mode'
-// import { webUtils } from 'electron'
+import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow'
 import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react'
 import { LuDatabase, LuFileType, LuUpload } from 'react-icons/lu'
 import { toaster } from '../../ui/toaster'
 
 // Create a context for drag and drop functionality
 interface DragAndDropContextType {
-  handleFile: (file: File) => void
+  handleFile: (fileOrPath: File | string) => void
   isProcessingFile: boolean
 }
 
@@ -62,44 +62,128 @@ export const DragAndDropProvider: React.FC<DragAndDropProviderProps> = ({ childr
   const { colorMode } = useColorMode()
   const isDark = colorMode === 'dark'
   const setSelectedDatabaseFile = useCurrentDatabaseSelection(state => state.setSelectedDatabaseFile)
+  const setSelectedDatabaseTable = useCurrentDatabaseSelection(state => state.setSelectedDatabaseTable)
 
-  const handleFile = useCallback(async (file: File) => {
-    if (!file)
-      return
-
-    const filterExt = SUPPORTED_FILE_EXTENSIONS.some(ext => file.name.toLowerCase().endsWith(ext))
-
-    if (!filterExt) {
-      toaster.create({
-        title: 'Unsupported file type',
-        description: 'Please drop SQLite database files only (.db, .sqlite, .sql)',
-        type: 'warning',
-        duration: 3000,
-      })
-      return
-    }
-
+  const handleFile = useCallback(async (fileOrPath: File | string) => {
     setIsProcessingFile(true)
 
-    const filePath = window.api.webUtils.getPathForFile(file)
+    try {
+      let filePath: string
+      let filename: string
 
-    setSelectedDatabaseFile({
-      path: filePath,
-      filename: file.name,
-      deviceType: 'desktop',
-      packageName: '',
-      remotePath: filePath,
-      location: filePath, 
-    })
-    toaster.create({
-      title: 'Database opened',
-      description: `Successfully opened ${file.name}`,
-      type: 'success',
-      duration: 3000,
-    })
+      if (typeof fileOrPath === 'string') {
+        // Tauri file drop - we have the file path directly
+        filePath = fileOrPath
+        filename = filePath.split('/').pop() || filePath
+      }
+      else {
+        // HTML5 drag and drop - we have a File object
+        const file = fileOrPath
+        filename = file.name
+        
+        const filterExt = SUPPORTED_FILE_EXTENSIONS.some(ext => filename.toLowerCase().endsWith(ext))
+        if (!filterExt) {
+          toaster.create({
+            title: 'Unsupported file type',
+            description: 'Please drop SQLite database files only (.db, .sqlite, .sql)',
+            type: 'warning',
+            duration: 3000,
+          })
+          setIsProcessingFile(false)
+          return
+        }
+
+        filePath = await window.api.webUtils.getPathForFile(file)
+      }
+
+      // Check file extension for Tauri file drops
+      if (typeof fileOrPath === 'string') {
+        const filterExt = SUPPORTED_FILE_EXTENSIONS.some(ext => filename.toLowerCase().endsWith(ext))
+        if (!filterExt) {
+          toaster.create({
+            title: 'Unsupported file type',
+            description: 'Please drop SQLite database files only (.db, .sqlite, .sql)',
+            type: 'warning',
+            duration: 3000,
+          })
+          setIsProcessingFile(false)
+          return
+        }
+      }
+
+      // Clear any previously selected table to avoid confusion when switching databases
+      setSelectedDatabaseTable(null)
+
+      setSelectedDatabaseFile({
+        path: filePath,
+        filename,
+        deviceType: 'desktop',
+        packageName: '',
+        remotePath: filePath,
+        location: filePath, 
+      })
+      
+      toaster.create({
+        title: 'Database opened',
+        description: `Successfully opened ${filename}`,
+        type: 'success',
+        duration: 3000,
+      })
+    }
+    catch (error) {
+      console.error('Error handling dropped file:', error)
+      toaster.create({
+        title: 'Error opening file',
+        description: 'Failed to open the dropped file. Please try again.',
+        type: 'error',
+        duration: 3000,
+      })
+    }
 
     setIsProcessingFile(false)
-  }, [])
+  }, [setSelectedDatabaseFile, setSelectedDatabaseTable])
+
+  // Handle Tauri file drop events
+  useEffect(() => {
+    const setupFileDropListener = async () => {
+      try {
+        const webview = getCurrentWebviewWindow()
+        const unlisten = await webview.onDragDropEvent((event) => {
+          console.log('Drag drop event:', event)
+          
+          if (event.payload.type === 'over') {
+            console.log('File drag hover')
+            setIsDragging(true)
+          }
+          else if (event.payload.type === 'drop') {
+            console.log('File dropped:', event.payload.paths)
+            setIsDragging(false)
+            if (event.payload.paths && event.payload.paths.length > 0) {
+              handleFile(event.payload.paths[0])
+            }
+          }
+          else if (event.payload.type === 'leave') {
+            console.log('File drag leave')
+            setIsDragging(false)
+          }
+        })
+
+        return unlisten
+      }
+      catch (error) {
+        console.error('Error setting up file drop listener:', error)
+      }
+    }
+
+    const unlistenPromise = setupFileDropListener()
+    
+    return () => {
+      unlistenPromise?.then((unlisten) => {
+        if (unlisten) 
+          unlisten()
+      })
+    }
+  }, [handleFile])
 
   const handleDragEnter = useCallback((e: DragEvent) => {
     e.preventDefault()

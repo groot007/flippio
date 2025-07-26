@@ -404,11 +404,24 @@ export const api = {
 
   // Add webUtils placeholder for compatibility
   webUtils: {
-    getPathForFile: (file: File) => {
-      // In Tauri, we need to handle files differently
-      // For now, return the file name as we can't get the full path for security reasons
-      // The actual file handling would need to be done through Tauri's file system API
-      return file.name
+    getPathForFile: async (file: File) => {
+      try {
+        // Read the file content as array buffer
+        const arrayBuffer = await file.arrayBuffer()
+        const uint8Array = new Uint8Array(arrayBuffer)
+        
+        // Call our Tauri command to save the dropped file content
+        const filePath = await invoke<string>('save_dropped_file', {
+          fileContent: Array.from(uint8Array),
+          filename: file.name,
+        })
+        
+        return filePath
+      }
+      catch (error) {
+        console.error('Error saving dropped file:', error)
+        throw error
+      }
     },
   },
 }
