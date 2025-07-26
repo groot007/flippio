@@ -47,7 +47,7 @@ jobs:
         run: |
           # Run tests without building the full Tauri app bundle
           # This avoids the external binary dependency issues in CI
-          cargo test --lib --verbose --workspace
+          cargo test
 
   frontend-tests:
     name: Frontend Tests
