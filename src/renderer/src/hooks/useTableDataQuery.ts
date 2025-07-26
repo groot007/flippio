@@ -34,7 +34,7 @@ export function useTableDataQuery(tableName: string) {
       await new Promise(resolve => setTimeout(resolve, 100))
 
       console.log('📊 Fetching table data for:', tableName)
-      const response: TableDataResponse = await window.api.getTableInfo(tableName)
+      const response: TableDataResponse = await window.api.getTableInfo(tableName, selectedDatabaseFile.path)
       console.log('Table data response:', response)
 
       if (!response.success) {

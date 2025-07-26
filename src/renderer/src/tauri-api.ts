@@ -255,9 +255,11 @@ export const api = {
   },
 
   // Database methods
-  getTables: async () => {
+  getTables: async (dbPath?: string) => {
     try {
-      const response = await invoke<any>('db_get_tables')
+      const response = await invoke<any>('db_get_tables', { 
+        currentDbPath: dbPath, 
+      })
       if (response.success && response.data) {
         return {
           success: true,
@@ -287,9 +289,12 @@ export const api = {
     }
   },
 
-  getTableInfo: async (tableName: string) => {
+  getTableInfo: async (tableName: string, dbPath?: string) => {
     try {
-      const response = await invoke<DeviceResponse<any>>('db_get_table_data', { tableName })
+      const response = await invoke<DeviceResponse<any>>('db_get_table_data', { 
+        tableName,
+        currentDbPath: dbPath, 
+      })
       if (response.success && response.data) {
         // Transform to match Electron API structure
         return {

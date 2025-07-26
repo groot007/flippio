@@ -1,6 +1,6 @@
-// Database commands - exact copy from original database.rs
+// Database commands - enhanced with connection caching
 use crate::commands::database::types::*;
-use crate::commands::database::helpers::get_default_value_for_type;
+use crate::commands::database::helpers::{get_default_value_for_type, ensure_database_file_permissions};
 use serde_json;
 use sqlx::{sqlite::SqlitePool, Row, Column, ValueRef, TypeInfo};
 use std::collections::HashMap;
@@ -12,22 +12,17 @@ use base64::{Engine as _, engine::general_purpose};
 #[tauri::command]
 pub async fn db_open(
     state: State<'_, DbPool>,
+    db_cache: State<'_, DbConnectionCache>,
     file_path: String,
 ) -> Result<DbResponse<String>, String> {
-    log::info!("Opening database: {}", file_path);
+    log::info!("Opening database with caching: {}", file_path);
     
-    // Close existing connection if any
-    {
-        let mut pool_guard = state.write().await;
-        if let Some(pool) = pool_guard.take() {
-            pool.close().await;
-        }
-    }
-    
-    // Open new connection
-    match SqlitePool::connect(&format!("sqlite:{}", file_path)).await {
+    // Try to get connection from cache
+    match get_cached_connection(&db_cache, &file_path).await {
         Ok(pool) => {
+            // Update legacy state for backward compatibility
             *state.write().await = Some(pool);
+            
             Ok(DbResponse {
                 success: true,
                 data: Some(file_path.clone()),
@@ -39,7 +34,7 @@ pub async fn db_open(
             Ok(DbResponse {
                 success: false,
                 data: None,
-                error: Some(format!("Could not connect to database: {}", e)),
+                error: Some(e),
             })
         }
     }
@@ -48,28 +43,31 @@ pub async fn db_open(
 #[tauri::command]
 pub async fn db_get_tables(
     state: State<'_, DbPool>,
+    db_cache: State<'_, DbConnectionCache>,
+    current_db_path: Option<String>,
 ) -> Result<DbResponse<Vec<TableInfo>>, String> {
-    let pool_guard = state.read().await;
-    let pool = match pool_guard.as_ref() {
-        Some(pool) => pool,
-        None => {
+    // Get the current pool using the helper function
+    let pool = match get_current_pool(&state, &db_cache, current_db_path).await {
+        Ok(pool) => pool,
+        Err(e) => {
+            log::error!("❌ {}", e);
             return Ok(DbResponse {
                 success: false,
                 data: None,
-                error: Some("No database connection".to_string()),
+                error: Some(e),
             });
         }
     };
     
     match sqlx::query("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'")
-        .fetch_all(pool)
+        .fetch_all(&pool)
         .await
     {
         Ok(rows) => {
             let tables: Vec<TableInfo> = rows
                 .iter()
                 .map(|row| TableInfo {
-                    name: row.get::<String, _>("name"),
+                    name: row.get::<String, &str>("name"),
                 })
                 .collect();
             Ok(DbResponse {
@@ -92,19 +90,21 @@ pub async fn db_get_tables(
 #[tauri::command]
 pub async fn db_get_table_data(
     state: State<'_, DbPool>,
+    db_cache: State<'_, DbConnectionCache>,
     table_name: String,
+    current_db_path: Option<String>,
 ) -> Result<DbResponse<TableData>, String> {
     log::info!("📊 Getting table data for: {}", table_name);
     
-    let pool_guard = state.read().await;
-    let pool = match pool_guard.as_ref() {
-        Some(pool) => pool,
-        None => {
-            log::error!("❌ No database connection available");
+    // Get the current pool using the helper function
+    let pool = match get_current_pool(&state, &db_cache, current_db_path).await {
+        Ok(pool) => pool,
+        Err(e) => {
+            log::error!("❌ {}", e);
             return Ok(DbResponse {
                 success: false,
                 data: None,
-                error: Some("No database connection".to_string()),
+                error: Some(e),
             });
         }
     };
@@ -113,7 +113,7 @@ pub async fn db_get_table_data(
     let table_exists_query = "SELECT name FROM sqlite_master WHERE type='table' AND name = ?";
     match sqlx::query(table_exists_query)
         .bind(&table_name)
-        .fetch_optional(pool)
+        .fetch_optional(&pool)
         .await
     {
         Ok(Some(_)) => {
@@ -139,7 +139,7 @@ pub async fn db_get_table_data(
     
     // Get column information
     let column_query = format!("PRAGMA table_info({})", table_name);
-    let column_rows = match sqlx::query(&column_query).fetch_all(pool).await {
+    let column_rows = match sqlx::query(&column_query).fetch_all(&pool).await {
         Ok(rows) => {
             log::info!("✅ Retrieved {} columns for table '{}'", rows.len(), table_name);
             rows
@@ -167,7 +167,7 @@ pub async fn db_get_table_data(
     
     // Get table data
     let data_query = format!("SELECT * FROM {}", table_name);
-    let data_rows = match sqlx::query(&data_query).fetch_all(pool).await {
+    let data_rows = match sqlx::query(&data_query).fetch_all(&pool).await {
         Ok(rows) => {
             log::info!("✅ Retrieved {} rows from table '{}'", rows.len(), table_name);
             rows
@@ -287,18 +287,21 @@ pub async fn db_get_info(
 #[tauri::command]
 pub async fn db_update_table_row(
     state: State<'_, DbPool>,
+    db_cache: State<'_, DbConnectionCache>,
     table_name: String,
     row: HashMap<String, serde_json::Value>,
     condition: String,
+    current_db_path: Option<String>,
 ) -> Result<DbResponse<u64>, String> {
-    let pool_guard = state.read().await;
-    let pool = match pool_guard.as_ref() {
-        Some(pool) => pool,
-        None => {
+    // Get the current pool using the helper function
+    let pool = match get_current_pool(&state, &db_cache, current_db_path).await {
+        Ok(pool) => pool,
+        Err(e) => {
+            log::error!("❌ {}", e);
             return Ok(DbResponse {
                 success: false,
                 data: None,
-                error: Some("No database connection".to_string()),
+                error: Some(e),
             });
         }
     };
@@ -319,10 +322,17 @@ pub async fn db_update_table_row(
             query_builder = match value {
                 serde_json::Value::String(s) => query_builder.bind(s),
                 serde_json::Value::Number(n) => {
-                    if n.is_i64() {
-                        query_builder.bind(n.as_i64().unwrap())
+                    if let Some(int_val) = n.as_i64() {
+                        query_builder.bind(int_val)
+                    } else if let Some(float_val) = n.as_f64() {
+                        query_builder.bind(float_val)
                     } else {
-                        query_builder.bind(n.as_f64().unwrap())
+                        log::error!("Error binding value for column '{}': Invalid number format", col);
+                        return Ok(DbResponse {
+                            success: false,
+                            data: None,
+                            error: Some(format!("Error binding value for column '{}': Invalid number format", col)),
+                        });
                     }
                 },
                 serde_json::Value::Bool(b) => query_builder.bind(b),
@@ -332,7 +342,7 @@ pub async fn db_update_table_row(
         }
     }
     
-    match query_builder.execute(pool).await {
+    match query_builder.execute(&pool).await {
         Ok(result) => Ok(DbResponse {
             success: true,
             data: Some(result.rows_affected()),
@@ -352,17 +362,20 @@ pub async fn db_update_table_row(
 #[tauri::command]
 pub async fn db_insert_table_row(
     state: State<'_, DbPool>,
+    db_cache: State<'_, DbConnectionCache>,
     table_name: String,
     row: HashMap<String, serde_json::Value>,
+    current_db_path: Option<String>,
 ) -> Result<DbResponse<i64>, String> {
-    let pool_guard = state.read().await;
-    let pool = match pool_guard.as_ref() {
-        Some(pool) => pool,
-        None => {
+    // Get the current pool using the helper function
+    let pool = match get_current_pool(&state, &db_cache, current_db_path).await {
+        Ok(pool) => pool,
+        Err(e) => {
+            log::error!("❌ {}", e);
             return Ok(DbResponse {
                 success: false,
                 data: None,
-                error: Some("No database connection".to_string()),
+                error: Some(e),
             });
         }
     };
@@ -380,10 +393,17 @@ pub async fn db_insert_table_row(
             query_builder = match value {
                 serde_json::Value::String(s) => query_builder.bind(s),
                 serde_json::Value::Number(n) => {
-                    if n.is_i64() {
-                        query_builder.bind(n.as_i64().unwrap())
+                    if let Some(int_val) = n.as_i64() {
+                        query_builder.bind(int_val)
+                    } else if let Some(float_val) = n.as_f64() {
+                        query_builder.bind(float_val)
                     } else {
-                        query_builder.bind(n.as_f64().unwrap())
+                        log::error!("Error binding value for column '{}': Invalid number format", col);
+                        return Ok(DbResponse {
+                            success: false,
+                            data: None,
+                            error: Some(format!("Error binding value for column '{}': Invalid number format", col)),
+                        });
                     }
                 },
                 serde_json::Value::Bool(b) => query_builder.bind(b),
@@ -393,7 +413,7 @@ pub async fn db_insert_table_row(
         }
     }
     
-    match query_builder.execute(pool).await {
+    match query_builder.execute(&pool).await {
         Ok(result) => Ok(DbResponse {
             success: true,
             data: Some(result.last_insert_rowid()),
@@ -413,16 +433,19 @@ pub async fn db_insert_table_row(
 #[tauri::command]
 pub async fn db_add_new_row_with_defaults(
     state: State<'_, DbPool>,
+    db_cache: State<'_, DbConnectionCache>,
     table_name: String,
+    current_db_path: Option<String>,
 ) -> Result<DbResponse<i64>, String> {
-    let pool_guard = state.read().await;
-    let pool = match pool_guard.as_ref() {
-        Some(pool) => pool,
-        None => {
+    // Get the current pool using the helper function
+    let pool = match get_current_pool(&state, &db_cache, current_db_path).await {
+        Ok(pool) => pool,
+        Err(e) => {
+            log::error!("❌ {}", e);
             return Ok(DbResponse {
                 success: false,
                 data: None,
-                error: Some("No database connection".to_string()),
+                error: Some(e),
             });
         }
     };
@@ -430,7 +453,7 @@ pub async fn db_add_new_row_with_defaults(
     // Use INSERT with DEFAULT VALUES
     let query = format!("INSERT INTO {} DEFAULT VALUES", table_name);
     
-    match sqlx::query(&query).execute(pool).await {
+    match sqlx::query(&query).execute(&pool).await {
         Ok(result) => Ok(DbResponse {
             success: true,
             data: Some(result.last_insert_rowid()),
@@ -450,17 +473,20 @@ pub async fn db_add_new_row_with_defaults(
 #[tauri::command]
 pub async fn db_delete_table_row(
     state: State<'_, DbPool>,
+    db_cache: State<'_, DbConnectionCache>,
     table_name: String,
     condition: String,
+    current_db_path: Option<String>,
 ) -> Result<DbResponse<u64>, String> {
-    let pool_guard = state.read().await;
-    let pool = match pool_guard.as_ref() {
-        Some(pool) => pool,
-        None => {
+    // Get the current pool using the helper function
+    let pool = match get_current_pool(&state, &db_cache, current_db_path).await {
+        Ok(pool) => pool,
+        Err(e) => {
+            log::error!("❌ {}", e);
             return Ok(DbResponse {
                 success: false,
                 data: None,
-                error: Some("No database connection".to_string()),
+                error: Some(e),
             });
         }
     };
@@ -485,7 +511,7 @@ pub async fn db_delete_table_row(
     let query = format!("DELETE FROM {} WHERE {}", table_name, condition);
     log::info!("Executing delete query: {}", query);
     
-    match sqlx::query(&query).execute(pool).await {
+    match sqlx::query(&query).execute(&pool).await {
         Ok(result) => {
             let rows_affected = result.rows_affected();
             log::info!("Delete successful, rows affected: {}", rows_affected);
@@ -509,18 +535,21 @@ pub async fn db_delete_table_row(
 #[tauri::command]
 pub async fn db_execute_query(
     state: State<'_, DbPool>,
+    db_cache: State<'_, DbConnectionCache>,
     query: String,
     _db_path: String,
     _params: Option<Vec<serde_json::Value>>,
+    current_db_path: Option<String>,
 ) -> Result<DbResponse<serde_json::Value>, String> {
-    let pool_guard = state.read().await;
-    let pool = match pool_guard.as_ref() {
-        Some(pool) => pool,
-        None => {
+    // Get the current pool using the helper function
+    let pool = match get_current_pool(&state, &db_cache, current_db_path).await {
+        Ok(pool) => pool,
+        Err(e) => {
+            log::error!("❌ {}", e);
             return Ok(DbResponse {
                 success: false,
                 data: None,
-                error: Some("No database connection".to_string()),
+                error: Some(e),
             });
         }
     };
@@ -529,7 +558,7 @@ pub async fn db_execute_query(
     
     if is_select {
         // Handle SELECT queries
-        match sqlx::query(&query).fetch_all(pool).await {
+        match sqlx::query(&query).fetch_all(&pool).await {
             Ok(rows) => {
                 let mut result_rows = Vec::new();
                 let mut columns = Vec::new();
@@ -593,7 +622,7 @@ pub async fn db_execute_query(
         }
     } else {
         // Handle non-SELECT queries (INSERT, UPDATE, DELETE, etc.)
-        match sqlx::query(&query).execute(pool).await {
+        match sqlx::query(&query).execute(&pool).await {
             Ok(result) => Ok(DbResponse {
                 success: true,
                 data: Some(serde_json::json!({
@@ -610,6 +639,154 @@ pub async fn db_execute_query(
                     error: Some(format!("Error executing query: {}", e)),
                 })
             }
+        }
+    }
+}
+
+/// Get database connection statistics
+#[tauri::command]
+pub async fn db_get_connection_stats(
+    db_cache: State<'_, DbConnectionCache>,
+) -> Result<DbResponse<HashMap<String, serde_json::Value>>, String> {
+    let cache_guard = db_cache.read().await;
+    let mut stats = HashMap::new();
+    
+    stats.insert("total_connections".to_string(), serde_json::Value::from(cache_guard.len()));
+    
+    let connection_details: Vec<serde_json::Value> = cache_guard
+        .iter()
+        .map(|(path, conn)| {
+            serde_json::json!({
+                "path": path,
+                "age_seconds": conn.created_at.elapsed().as_secs(),
+                "last_used_seconds_ago": conn.last_used.elapsed().as_secs()
+            })
+        })
+        .collect();
+        
+    stats.insert("connections".to_string(), serde_json::Value::Array(connection_details));
+    
+    Ok(DbResponse {
+        success: true,
+        data: Some(stats),
+        error: None,
+    })
+}
+
+/// Get or create a database connection from cache
+async fn get_cached_connection(
+    db_cache: &DbConnectionCache,
+    db_path: &str,
+) -> Result<SqlitePool, String> {
+    let normalized_path = match std::fs::canonicalize(db_path) {
+        Ok(absolute_path) => absolute_path.to_string_lossy().to_string(),
+        Err(_) => db_path.to_string(),
+    };
+    
+    // Try to get existing connection from cache
+    {
+        let mut cache_guard = db_cache.write().await;
+        
+        if let Some(cached_conn) = cache_guard.get_mut(&normalized_path) {
+            // Check if connection is still valid (5 minutes TTL)
+            if !cached_conn.is_expired(std::time::Duration::from_secs(300)) {
+                cached_conn.update_last_used();
+                log::info!("📦 Reusing cached connection for: {}", normalized_path);
+                return Ok(cached_conn.pool.clone());
+            } else {
+                log::info!("⏰ Cached connection expired for: {}", normalized_path);
+                cached_conn.pool.close().await;
+                cache_guard.remove(&normalized_path);
+            }
+        }
+    }
+
+    // Create new connection
+    log::info!("🔗 Creating new connection for: {}", normalized_path);
+    
+    // Validate file exists
+    if !std::path::Path::new(&normalized_path).exists() {
+        return Err(format!("Database file does not exist: {}", normalized_path));
+    }
+
+    // Ensure file permissions are correct
+    ensure_database_file_permissions(&normalized_path)?;
+
+    let pool = match SqlitePool::connect(&format!("sqlite:{}?mode=rwc", normalized_path)).await {
+        Ok(pool) => {
+            log::info!("✅ Successfully connected to database: {}", normalized_path);
+            pool
+        }
+        Err(e) => {
+            log::error!("❌ Failed to connect to database '{}': {}", normalized_path, e);
+            return Err(format!("Could not connect to database: {}", e));
+        }
+    };
+    
+    // Add to cache
+    {
+        let mut cache_guard = db_cache.write().await;
+        
+        // Check cache size limit (10 connections max)
+        if cache_guard.len() >= 10 {
+            // Remove oldest connection
+            if let Some((oldest_path, _)) = cache_guard
+                .iter()
+                .min_by_key(|(_, conn)| conn.last_used)
+                .map(|(path, conn)| (path.clone(), conn.clone()))
+            {
+                log::info!("🧹 Removing oldest cached connection: {}", oldest_path);
+                if let Some(removed_conn) = cache_guard.remove(&oldest_path) {
+                    removed_conn.pool.close().await;
+                }
+            }
+        }
+        
+        cache_guard.insert(normalized_path.clone(), CachedConnection::new(pool.clone()));
+    }
+
+    Ok(pool)
+}
+
+// Helper function to get the current active database from cache or state
+async fn get_current_pool(
+    state: &State<'_, DbPool>,
+    db_cache: &State<'_, DbConnectionCache>,
+    current_db_path: Option<String>,
+) -> Result<SqlitePool, String> {
+    // If path is provided, try to get from cache first
+    if let Some(db_path) = current_db_path {
+        match get_cached_connection(db_cache, &db_path).await {
+            Ok(cached_pool) => {
+                log::info!("✅ Using cached connection for: {}", db_path);
+                return Ok(cached_pool);
+            }
+            Err(e) => {
+                log::warn!("⚠️ Failed to get cached connection: {}", e);
+            }
+        }
+    }
+    
+    // Try to find any active connection in cache
+    {
+        let cache_guard = db_cache.read().await;
+        if let Some((path, cached_conn)) = cache_guard.iter().next() {
+            if !cached_conn.is_expired(std::time::Duration::from_secs(300)) {
+                log::info!("✅ Using cached connection from cache: {}", path);
+                return Ok(cached_conn.pool.clone());
+            }
+        }
+    }
+    
+    // Fallback to legacy pool
+    let pool_guard = state.read().await;
+    match pool_guard.as_ref() {
+        Some(pool) => {
+            log::info!("✅ Using legacy pool connection");
+            Ok(pool.clone())
+        }
+        None => {
+            Err("No database connection available".to_string())
         }
     }
 }

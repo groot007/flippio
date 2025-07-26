@@ -6,7 +6,7 @@
 use super::super::types::{DeviceResponse, DatabaseFile};
 use super::super::helpers::clean_temp_dir;
 use super::file_utils::pull_ios_db_file;
-use super::tools::get_tool_command;
+use super::tools::get_tool_command_legacy;
 use tauri_plugin_shell::ShellExt;
 use log::{info, error};
 
@@ -41,7 +41,7 @@ pub async fn get_ios_device_database_files(
         info!("Step 2.{}: Scanning location '{}'", loc_index + 1, location);
         
         // Use bundled afcclient tool to list files in the app's container
-        let afcclient_cmd = get_tool_command("afcclient");
+        let afcclient_cmd = get_tool_command_legacy("afcclient");
         info!("  Final command: {}", afcclient_cmd);
         
         // Check if the tool is executable
@@ -204,7 +204,7 @@ pub async fn get_ios_device_database_files(
         // Try a broader search approach
         info!("🔍 Attempting broader search...");
         
-        let afcclient_cmd = get_tool_command("afcclient");
+        let afcclient_cmd = get_tool_command_legacy("afcclient");
         
         // Try listing the root directory to see what's available
         let root_args = ["--documents", &package_name, "-u", &device_id, "ls", "/"];
@@ -366,7 +366,7 @@ pub async fn device_push_ios_database_file(
     
     info!("Step 4: Checking if file exists on device");
     let shell = app_handle.shell();
-    let afcclient_cmd = get_tool_command("afcclient");
+    let afcclient_cmd = get_tool_command_legacy("afcclient");
     info!("Using afcclient command: {}", afcclient_cmd);
     
     // Check if file exists on device first

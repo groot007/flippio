@@ -26,7 +26,8 @@ export function useDatabaseTables(
       const dbPath = selectedDatabaseFile.path
       await window.api.openDatabase(dbPath)
 
-      const response = await window.api.getTables()
+      // Pass the database path to getTables to ensure it uses the correct connection
+      const response = await window.api.getTables(dbPath)
 
       console.log('Database tables response:', response)
 
