@@ -1,6 +1,6 @@
 [package]
 name = "Flippio"
-version = "0.3.15"
+version = "0.3.16"
 description = "Database viewer with device connection"
 authors = ["koliastanis"]
 edition = "2021"

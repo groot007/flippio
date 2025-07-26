@@ -152,8 +152,6 @@ export function SubHeader() {
       return
     }
 
-    console.log('selectedDatabaseFile', selectedDatabaseFile)
-
     window.api.exportFile({
       defaultPath: selectedDatabaseFile?.filename,
       filters: [
@@ -181,6 +179,8 @@ export function SubHeader() {
     },
     )
   }, [selectedDatabaseFile])
+
+  const isTableSelectDisabled = (!selectedApplication?.bundleId && selectedDatabaseFile?.deviceType !== 'desktop') || !selectedDatabaseFile?.path || isDBPulling
 
   return (
     <Box
@@ -238,7 +238,7 @@ export function SubHeader() {
               value={selectedDatabaseTable}
               icon={<LuTable color="var(--chakra-colors-flipioPrimary)" />}
               onChange={handleTableChange}
-              isDisabled={!selectedApplication?.bundleId || !selectedDatabaseFile?.path || isDBPulling}
+              isDisabled={isTableSelectDisabled}
             />
           </Box>
 

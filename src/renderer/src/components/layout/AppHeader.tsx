@@ -1,7 +1,7 @@
 import { Box, Button, HStack, Spinner } from '@chakra-ui/react'
 import { useApplications } from '@renderer/hooks/useApplications'
 import { useDevices } from '@renderer/hooks/useDevices'
-import { useCurrentDatabaseSelection, useCurrentDeviceSelection } from '@renderer/store'
+import { useCurrentDatabaseSelection, useCurrentDeviceSelection, useRecentlyUsedApps } from '@renderer/store'
 import { toaster } from '@renderer/ui/toaster'
 import { invoke } from '@tauri-apps/api/core'
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -19,6 +19,8 @@ function AppHeader() {
   const selectedApplication = useCurrentDeviceSelection(state => state.selectedApplication)
   const setSelectedApplication = useCurrentDeviceSelection(state => state.setSelectedApplication)
   const setSelectedDatabaseFile = useCurrentDatabaseSelection(state => state.setSelectedDatabaseFile)
+  
+  const { addRecentApp, getRecentAppsForDevice } = useRecentlyUsedApps()
 
   const {
     data: devicesList = [],
@@ -107,16 +109,51 @@ function AppHeader() {
     }), [devicesList])
 
   const applicationSelectOptions = useMemo(() => {
-    return applicationsList.map((app) => {
+    if (!selectedDevice) 
+      return []
+    
+    // Get recently used apps for the current device
+    const recentApps = getRecentAppsForDevice(selectedDevice.id)
+    const recentBundleIds = new Set(recentApps.map(app => app.bundleId))
+    
+    // Map all applications to options
+    const allAppOptions = applicationsList.map((app) => {
       const description = app.bundleId === app.name ? '' : app.bundleId
+      const isRecentlyUsed = recentBundleIds.has(app.bundleId)
       return {
         label: app.name,
         value: app.bundleId,
         description,
+        isRecentlyUsed,
         ...app,
       } 
     })
-  }, [applicationsList, selectedApplication])
+    
+    // Find recently used apps that are still available
+    const recentAppOptions = recentApps
+      .map((recentApp) => {
+        const foundApp = applicationsList.find(app => app.bundleId === recentApp.bundleId)
+        if (foundApp) {
+          const description = foundApp.bundleId === foundApp.name ? '' : foundApp.bundleId
+          return {
+            label: foundApp.name,
+            value: foundApp.bundleId,
+            description,
+            isRecentlyUsed: true,
+            ...foundApp,
+          }
+        }
+        return null
+      })
+      .filter(Boolean)
+      .slice(0, 3) // Limit to top 3 recent apps
+    
+    // Filter out recently used apps from the main list to avoid duplicates
+    const otherAppOptions = allAppOptions.filter(app => !recentBundleIds.has(app.bundleId))
+    
+    // Combine: recent apps first, then all other apps
+    return [...recentAppOptions, ...otherAppOptions]
+  }, [applicationsList, selectedDevice, getRecentAppsForDevice])
 
   const handleDeviceChange = useCallback((value: any) => {
     setSelectedDevice(value)
@@ -126,7 +163,12 @@ function AppHeader() {
   const handlePackageChange = useCallback((value) => {
     setSelectedDatabaseFile(null)
     setSelectedApplication(value)
-  }, [setSelectedApplication])
+    
+    // Add to recently used apps if we have a device and app selected
+    if (selectedDevice && value) {
+      addRecentApp(value, selectedDevice.id, selectedDevice.name || selectedDevice.id)
+    }
+  }, [setSelectedApplication, setSelectedDatabaseFile, selectedDevice, addRecentApp])
 
   const handleOpenVirtualDeviceModal = useCallback(() => {
     setIsVirtualDeviceModalOpen(true)
@@ -163,10 +205,12 @@ function AppHeader() {
             <FLSelect
               options={applicationSelectOptions}
               label="Select App"
+              menuListWidth={300}
               value={selectedApplication}
               icon={<LuPackage color="var(--chakra-colors-flipioPrimary)" />}
               onChange={handlePackageChange}
               isDisabled={!selectedDevice || isLoading}
+              showPinIcon={true}
             />
             {isLoading && (
               <Spinner
