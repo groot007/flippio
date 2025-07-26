@@ -3,10 +3,10 @@
   "version": "0.3.16",
   "identifier": "com.flippio.app",
   "build": {
-    "beforeDevCommand": "npm run dev:renderer",
-    "beforeBuildCommand": "npm run build:renderer",
+    "beforeDevCommand": "",
+    "beforeBuildCommand": "",
     "devUrl": "http://localhost:5173",
-    "frontendDist": "../src/renderer/dist"
+    "frontendDist": ""
   },
   "app": {
     "security": {
