@@ -1,254 +1,270 @@
+// Import the actual iOS functionality from the flippio library crate
+use flippio::{
+    get_ios_error_help,
+    ensure_temp_dir,
+    get_libimobiledevice_tool_path,
+};
+
 #[cfg(test)]
 mod ios_device_tests {
-    use crate::fixtures::mock_devices::{create_mock_ios_devices, create_mock_ios_apps, create_mock_ios_databases};
+    use super::*;
+    use crate::fixtures::{temp_files::*, mock_devices::*};
     
-    #[tokio::test]
-    async fn test_ios_device_discovery() {
-        let devices = create_mock_ios_devices();
-        
-        // Test that we have the expected devices
-        assert_eq!(devices.len(), 2);
-        assert!(devices.iter().any(|d| d.udid == "test-udid-1"));
-        assert!(devices.iter().any(|d| d.udid == "test-udid-2"));
+    /// Test fixture for iOS helper function tests
+    struct IOSHelperTestFixture {
+        temp_manager: TempFileManager,
     }
-    
-    #[tokio::test]
-    async fn test_ios_device_validation() {
-        let devices = create_mock_ios_devices();
-        
-        for device in devices {
-            // Validate device properties
-            assert!(!device.udid.is_empty());
-            assert!(!device.name.is_empty());
-            assert!(device.udid.len() >= 10); // UDIDs should be reasonably long
+
+    impl IOSHelperTestFixture {
+        fn new() -> Self {
+            let temp_manager = TempFileManager::new();
+            Self { temp_manager }
         }
     }
     
     #[tokio::test]
-    async fn test_ios_tool_availability() {
-        // Check if iOS tools would be available
-        let tools = ["idevice_id", "ideviceinfo", "ideviceinstaller", "afcclient"];
+    async fn test_ios_tool_path_validation() {
+        // Test the real get_validated_tool_path function
+        // Note: Since get_validated_tool_path is not exposed, we test get_libimobiledevice_tool_path instead
+        let tools_to_test = ["idevice_id", "ideviceinfo", "ideviceinstaller", "afcclient"];
         
-        for tool in tools {
-            // In a real environment, we'd check if the tool exists
-            // For testing, we just validate the tool name format
-            assert!(!tool.is_empty());
-            assert!(tool.starts_with("idevice") || tool == "afcclient");
-        }
-    }
-    
-    #[tokio::test]
-    async fn test_ios_device_status_check() {
-        let devices = create_mock_ios_devices();
-        
-        for device in devices {
-            // Simulate checking device status
-            let is_connected = !device.udid.is_empty();
-            assert!(is_connected, "Device {} should be connected", device.name);
-        }
-    }
-    
-    #[tokio::test]
-    async fn test_ios_app_listing() {
-        let devices = create_mock_ios_devices();
-        let apps = create_mock_ios_apps();
-        
-        // Test that each device can have apps
-        for device in devices {
-            // In a real scenario, we'd query apps for each device
-            let device_apps: Vec<_> = apps.iter()
-                .filter(|app| app.device_udid == device.udid)
-                .collect();
-                
-            if device.udid == "test-udid-1" {
-                assert!(device_apps.len() > 0, "Device 1 should have apps");
-            }
-        }
-    }
-    
-    #[tokio::test]
-    async fn test_ios_database_listing() {
-        let devices = create_mock_ios_devices();
-        let databases = create_mock_ios_databases();
-        
-        for device in devices {
-            let device_databases: Vec<_> = databases.iter()
-                .filter(|db| db.device_udid == device.udid)
-                .collect();
-                
-            // Each device should have at least one database for testing
-            if device.udid == "test-udid-1" || device.udid == "test-udid-2" {
-                assert!(device_databases.len() > 0, "Device {} should have databases", device.name);
-            }
-        }
-    }
-    
-    #[tokio::test]
-    async fn test_ios_file_transfer_paths() {
-        let databases = create_mock_ios_databases();
-        
-        for database in databases {
-            // Validate database paths
-            assert!(!database.path.is_empty());
-            assert!(database.path.contains("/"), "Path should contain directory separators");
+        for tool in tools_to_test {
+            let result = get_libimobiledevice_tool_path(tool);
             
-            // Check file extensions
-            if database.path.ends_with(".db") || database.path.ends_with(".sqlite") {
-                // Valid database file
-                assert!(true);
-            } else {
-                // For testing, we'll allow other extensions
-                assert!(!database.path.is_empty());
-            }
-        }
-    }
-}
-
-#[cfg(test)]
-mod ios_command_tests {
-    use std::path::PathBuf;
-    
-    #[test]
-    fn test_ios_command_construction() {
-        // Test idevice_id command
-        let cmd_args = vec!["idevice_id", "-l"];
-        assert_eq!(cmd_args[0], "idevice_id");
-        assert_eq!(cmd_args[1], "-l");
-        
-        // Test ideviceinfo command
-        let udid = "test-udid";
-        let info_args = vec!["ideviceinfo", "-u", udid];
-        assert_eq!(info_args[0], "ideviceinfo");
-        assert_eq!(info_args[1], "-u");
-        assert_eq!(info_args[2], udid);
-    }
-    
-    #[test]
-    fn test_ios_installer_command_construction() {
-        let udid = "test-udid";
-        let bundle_id = "com.example.app";
-        
-        // Test app listing command
-        let list_args = vec!["ideviceinstaller", "-u", udid, "-l"];
-        assert_eq!(list_args[0], "ideviceinstaller");
-        assert_eq!(list_args[1], "-u");
-        assert_eq!(list_args[2], udid);
-        assert_eq!(list_args[3], "-l");
-        
-        // Test document listing command
-        let docs_args = vec!["ideviceinstaller", "-u", udid, "--list-documents", bundle_id];
-        assert_eq!(docs_args[0], "ideviceinstaller");
-        assert_eq!(docs_args[4], bundle_id);
-    }
-    
-    #[test]
-    fn test_afcclient_command_construction() {
-        let udid = "test-udid";
-        let remote_path = "/Documents/database.db";
-        let local_path = "/tmp/database.db";
-        
-        // Test file copy command
-        let copy_args = vec!["afcclient", "-u", udid, "cp", remote_path, local_path];
-        assert_eq!(copy_args[0], "afcclient");
-        assert_eq!(copy_args[1], "-u");
-        assert_eq!(copy_args[2], udid);
-        assert_eq!(copy_args[3], "cp");
-        assert_eq!(copy_args[4], remote_path);
-        assert_eq!(copy_args[5], local_path);
-    }
-    
-    #[test]
-    fn test_ios_tool_path_resolution() {
-        // Test bundled tool path construction
-        let binary_dir = PathBuf::from("/app/resources/macos-deps");
-        let tool_name = "idevice_id";
-        
-        let tool_path = binary_dir.join(tool_name);
-        assert!(tool_path.to_string_lossy().contains("macos-deps"));
-        assert!(tool_path.to_string_lossy().ends_with("idevice_id"));
-    }
-    
-    #[test]
-    fn test_ios_command_error_handling() {
-        // Test command validation
-        let empty_udid = "";
-        assert!(empty_udid.is_empty(), "Empty UDID should be detected");
-        
-        let valid_udid = "01234567-89ABCDEF01234567";
-        assert!(!valid_udid.is_empty(), "Valid UDID should pass");
-        assert!(valid_udid.len() > 10, "UDID should be reasonably long");
-    }
-}
-
-#[cfg(test)]
-mod ios_integration_tests {
-    use crate::fixtures::temp_files::*;
-    use crate::fixtures::mock_devices::{create_mock_ios_devices, create_mock_ios_apps, create_mock_ios_databases};
-    
-    #[tokio::test]
-    async fn test_ios_database_transfer_workflow() {
-        let temp_manager = TempFileManager::new();
-        let temp_dir = temp_manager.create_temp_dir("ios_transfer").unwrap();
-        
-        // Simulate the workflow of transferring a database from iOS device
-        let source_db_name = "test_app.db";
-        let local_path = temp_dir.join(source_db_name);
-        
-        // In a real scenario, this would be the result of afcclient copy
-        std::fs::write(&local_path, b"SQLite database content").unwrap();
-        
-        // Verify the file was created
-        assert!(local_path.exists());
-        
-        // Verify we can read the content
-        let content = std::fs::read_to_string(&local_path).unwrap();
-        assert!(content.contains("SQLite"));
-    }
-    
-    #[tokio::test]
-    async fn test_ios_app_database_mapping() {
-        let devices = create_mock_ios_devices();
-        let apps = create_mock_ios_apps();
-        let databases = create_mock_ios_databases();
-        
-        // Test that we can map databases to apps correctly
-        for device in devices {
-            let device_apps: Vec<_> = apps.iter()
-                .filter(|app| app.device_udid == device.udid)
-                .collect();
-                
-            let device_databases: Vec<_> = databases.iter()
-                .filter(|db| db.device_udid == device.udid)
-                .collect();
-                
-            // For each app, check if it has associated databases
-            for app in device_apps {
-                let app_databases: Vec<_> = device_databases.iter()
-                    .filter(|db| db.app_bundle_id == app.bundle_id)
-                    .collect();
-                    
-                // Some apps should have databases
-                if app.bundle_id == "com.example.app1" {
-                    assert!(app_databases.len() > 0, "App1 should have databases");
+            // The function returns Option<PathBuf>, we test that it returns something reasonable
+            match result {
+                Some(path) => {
+                    let path_str = path.to_string_lossy();
+                    assert!(!path_str.is_empty(), "Tool path should not be empty for {}", tool);
+                    assert!(path_str.contains(tool), "Path should contain tool name for {}", tool);
+                }
+                None => {
+                    // Tool path not found - this is acceptable in test environment
+                    // We just verify the function executes without panicking
+                    assert!(true, "Function executed without panic for {}", tool);
                 }
             }
         }
     }
     
     #[tokio::test]
-    async fn test_ios_error_scenarios() {
-        // Test handling of common iOS error scenarios
+    async fn test_get_libimobiledevice_tool_path_fallback() {
+        // Test the fallback tool path resolution
+        let tools_to_test = ["idevice_id", "ideviceinfo"];
         
-        // Device not found
-        let invalid_udid = "invalid-udid";
-        assert!(invalid_udid.len() < 20, "Invalid UDID should be short");
+        for tool in tools_to_test {
+            let result = get_libimobiledevice_tool_path(tool);
+            
+            // This function returns Option<PathBuf>
+            match result {
+                Some(path) => {
+                    let path_str = path.to_string_lossy();
+                    assert!(!path_str.is_empty(), "Should return a valid path for {}", tool);
+                    assert!(path_str.contains(tool), "Path should contain tool name: {}", path_str);
+                }
+                None => {
+                    // In some environments, tools might not be available
+                    // This is acceptable as long as the function doesn't panic
+                    assert!(true, "Tool {} not found, but function executed safely", tool);
+                }
+            }
+        }
+    }
+    
+    #[tokio::test]
+    async fn test_ios_error_help_function() {
+        // Test the real get_ios_error_help function
+        let test_errors = [
+            "No device found",
+            "Could not connect to lockdownd",
+            "Permission denied",
+            "Device not trusted",
+            "Unknown error"
+        ];
         
-        // App not installed
-        let invalid_bundle_id = "com.nonexistent.app";
-        assert!(invalid_bundle_id.contains("nonexistent"), "Should contain indicator");
+        for error in test_errors {
+            let help_text = get_ios_error_help(error);
+            
+            assert!(!help_text.is_empty(), "Help text should not be empty for error: {}", error);
+            // Help text should provide some guidance
+            assert!(
+                help_text.len() > 10,
+                "Help text should be substantial for error: {}", error
+            );
+        }
+    }
+    
+    #[tokio::test]
+    async fn test_ensure_temp_dir_helper() {
+        // Test the real ensure_temp_dir helper function
+        let result = ensure_temp_dir();
         
-        // Permission denied
-        let restricted_path = "/System/restricted/file";
-        assert!(restricted_path.contains("System"), "Should be system path");
+        match result {
+            Ok(temp_dir) => {
+                assert!(temp_dir.exists(), "Temp directory should exist");
+                assert!(temp_dir.is_dir(), "Should be a directory");
+                
+                // Test that we can write to it
+                let test_file = temp_dir.join("test_file.txt");
+                let write_result = std::fs::write(&test_file, "test content");
+                assert!(write_result.is_ok(), "Should be able to write to temp directory");
+                
+                // Clean up
+                let _ = std::fs::remove_file(&test_file);
+            }
+            Err(e) => {
+                panic!("ensure_temp_dir should succeed: {}", e);
+            }
+        }
+    }
+    
+    #[tokio::test]
+    async fn test_ios_file_transfer_paths() {
+        let _fixture = IOSHelperTestFixture::new();
+        
+        // Test path construction for iOS file transfers
+        let test_cases = [
+            ("com.example.app", "Documents/database.db"),
+            ("com.test.myapp", "Library/Application Support/data.sqlite"),
+            ("bundle.id.test", "tmp/cache.db"),
+        ];
+        
+        for (bundle_id, relative_path) in test_cases {
+            // Simulate the path construction that would happen in real file transfers
+            let container_path = format!("/var/mobile/Containers/Data/Application/{}/{}", 
+                "UUID-PLACEHOLDER", relative_path);
+            
+            assert!(container_path.contains(relative_path), 
+                "Container path should contain relative path for {}", bundle_id);
+            assert!(container_path.starts_with("/var/mobile/"), 
+                "Should use iOS container path structure");
+        }
+    }
+    
+    #[tokio::test]
+    async fn test_ios_simulator_vs_device_detection() {
+        // Test logic for distinguishing between simulators and physical devices
+        let simulator_udids = [
+            "ABCD1234-5678-9ABC-DEF0-123456789ABC",  // Simulator format
+            "12345678-ABCD-EFGH-1234-567890ABCDEF",  // Another simulator format
+        ];
+        
+        let device_udids = [
+            "00008030-001234567890ABCD",  // Real device format
+            "1234567890abcdef1234567890abcdef12345678",  // 40-char device UDID
+        ];
+        
+        // Test simulator UDID characteristics
+        for udid in simulator_udids {
+            assert!(udid.len() >= 36, "Simulator UDID should be at least 36 chars: {}", udid);
+            assert!(udid.contains("-"), "Simulator UDID should contain hyphens: {}", udid);
+        }
+        
+        // Test device UDID characteristics  
+        for udid in device_udids {
+            assert!(udid.len() >= 20, "Device UDID should be at least 20 chars: {}", udid);
+            // Device UDIDs typically don't have the same hyphen pattern as simulators
+        }
+    }
+    
+    #[tokio::test]
+    async fn test_ios_bundle_id_validation() {
+        // Test bundle ID validation logic that would be used in real iOS operations
+        let valid_bundle_ids = [
+            "com.example.app",
+            "com.company.myapp.extension",
+            "org.opensource.tool",
+            "net.domain.application"
+        ];
+        
+        let invalid_bundle_ids = [
+            "",
+            "invalid",
+            ".com.example",
+            "com..example",
+            "com.example.",
+        ];
+        
+        for bundle_id in valid_bundle_ids {
+            assert!(!bundle_id.is_empty(), "Valid bundle ID should not be empty");
+            assert!(bundle_id.contains("."), "Valid bundle ID should contain dots");
+            assert!(bundle_id.len() >= 3, "Valid bundle ID should be at least 3 chars");
+            assert!(!bundle_id.starts_with("."), "Valid bundle ID should not start with dot");
+            assert!(!bundle_id.ends_with("."), "Valid bundle ID should not end with dot");
+            assert!(!bundle_id.contains(".."), "Valid bundle ID should not have consecutive dots");
+        }
+        
+        for bundle_id in invalid_bundle_ids {
+            let is_invalid = bundle_id.is_empty() 
+                || !bundle_id.contains(".")
+                || bundle_id.starts_with(".")
+                || bundle_id.ends_with(".")
+                || bundle_id.contains("..");
+            assert!(is_invalid, "Bundle ID should be detected as invalid: {}", bundle_id);
+        }
+    }
+    
+    #[tokio::test]
+    async fn test_ios_database_path_construction() {
+        // Test the database path construction logic used in iOS operations
+        let test_apps = create_mock_ios_apps();
+        let test_databases = create_mock_ios_databases();
+        
+        for app in test_apps {
+            let app_databases: Vec<_> = test_databases.iter()
+                .filter(|db| db.app_bundle_id == app.bundle_id)
+                .collect();
+                
+            for database in app_databases {
+                // Test that database paths are properly constructed
+                assert!(!database.path.is_empty(), "Database path should not be empty");
+                assert!(database.path.ends_with(".db") || database.path.ends_with(".sqlite") || database.path.contains("sqlite"),
+                    "Database path should look like a database file: {}", database.path);
+                
+                // Test that the path contains reasonable directory structure
+                let has_reasonable_structure = database.path.contains("/") 
+                    && (database.path.contains("Documents") 
+                        || database.path.contains("Library") 
+                        || database.path.contains("Application Support")
+                        || database.path.contains("tmp"));
+                assert!(has_reasonable_structure, 
+                    "Database path should have reasonable iOS directory structure: {}", database.path);
+            }
+        }
+    }
+    
+    #[tokio::test]
+    async fn test_ios_error_categorization() {
+        // Test error categorization that would be used in real error handling
+        let network_errors = ["Could not connect", "Network error", "Connection timeout"];
+        let permission_errors = ["Permission denied", "Access denied", "Not authorized"];
+        let device_errors = ["No device found", "Device disconnected", "Device not trusted"];
+        
+        for error in network_errors {
+            let help = get_ios_error_help(error);
+            // Network errors should suggest connection-related solutions
+            assert!(help.to_lowercase().contains("connect") 
+                || help.to_lowercase().contains("network")
+                || help.to_lowercase().contains("cable"),
+                "Network error help should mention connectivity: {}", help);
+        }
+        
+        for error in permission_errors {
+            let help = get_ios_error_help(error);
+            // Permission errors should suggest trust/authorization solutions
+            assert!(help.to_lowercase().contains("trust") 
+                || help.to_lowercase().contains("permission")
+                || help.to_lowercase().contains("allow"),
+                "Permission error help should mention trust/permissions: {}", help);
+        }
+        
+        for error in device_errors {
+            let help = get_ios_error_help(error);
+            // Device errors should suggest device-related solutions
+            assert!(help.to_lowercase().contains("device") 
+                || help.to_lowercase().contains("connect")
+                || help.to_lowercase().contains("usb"),
+                "Device error help should mention device connection: {}", help);
+        }
     }
 }
