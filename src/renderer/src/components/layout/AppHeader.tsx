@@ -163,6 +163,7 @@ function AppHeader() {
             <FLSelect
               options={applicationSelectOptions}
               label="Select App"
+              menuListWidth={300}
               value={selectedApplication}
               icon={<LuPackage color="var(--chakra-colors-flipioPrimary)" />}
               onChange={handlePackageChange}
