@@ -6,6 +6,12 @@ fn main() {
     // Always run the standard Tauri build
     tauri_build::build();
     
+    // Skip external binary processing in CI or when explicitly disabled
+    if env::var("CI").is_ok() || env::var("TAURI_SKIP_EXTERNAL_BIN").is_ok() {
+        println!("cargo:warning=Skipping external binary processing for CI/testing");
+        return;
+    }
+    
     println!("cargo:rerun-if-changed=../resources/libimobiledevice");
     
     // Only run during actual Tauri bundle builds
