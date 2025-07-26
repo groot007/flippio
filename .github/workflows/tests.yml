@@ -42,11 +42,10 @@ jobs:
       - name: Run Rust tests
         working-directory: src-tauri
         env:
-          # Skip external bin resolution for CI
-          TAURI_SKIP_EXTERNAL_BIN: '1'
+          # Use CI-specific config without external binaries
+          TAURI_CONFIG_PATH: tauri-ci.conf.json
         run: |
-          # Run tests without building the full Tauri app bundle
-          # This avoids the external binary dependency issues in CI
+          # Run tests with CI configuration that excludes external binaries
           cargo test
 
   frontend-tests:
