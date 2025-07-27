@@ -1,6 +1,6 @@
 {
   "productName": "Flippio",
-  "version": "0.3.16",
+  "version": "0.3.17",
   "identifier": "com.flippio.app",
   "build": {
     "beforeDevCommand": "npm run dev:renderer",
