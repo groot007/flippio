@@ -7,7 +7,18 @@ pub mod commands;
 
 // Re-export commonly used types for external access
 pub use commands::database::{
-    DbPool, DbConnectionCache, DatabaseConnectionManager, DbResponse
+    // Database commands (Phase 2 refactored)
+    db_open, db_get_tables, db_get_table_data, db_insert_table_row,
+    db_update_table_row, db_delete_table_row, db_execute_query, db_get_connection_stats,
+    db_clear_cache_for_path, db_clear_all_cache, db_switch_database,
+    db_add_new_row_with_defaults, db_get_info,
+    
+    // Core business logic for testing (Phase 2)
+    get_tables_impl, get_table_data_impl, insert_table_row_impl,
+    get_current_pool, validate_pool_health,
+    
+    // Database connection manager
+    DatabaseConnectionManager,
 };
 
 // Re-export all database commands for testing
@@ -26,6 +37,13 @@ pub use commands::device::helpers::{
 };
 
 // Re-export iOS helper functions for testing
-pub use commands::device::ios::diagnostic::{
+pub use commands::ios::{
     get_ios_error_help,
+};
+
+// Re-export common utilities for use across modules
+pub use commands::common::{
+    CommandErrorExt,
+    ShellExecutor,
+    CommandResult,
 }; 

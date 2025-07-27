@@ -6,6 +6,11 @@ pub mod validation;
 pub mod helpers;
 pub mod types;
 
+// Legacy compatibility modules (re-export from new structure)
+pub mod adb;
+pub mod ios;
+pub mod virtual_device;
+
 // Re-export core types for convenience
 pub use types::*;
 
@@ -13,3 +18,5 @@ pub use types::*;
 // - Android commands: crate::commands::android::*
 // - iOS commands: crate::commands::ios::*  
 // - Virtual device commands: crate::commands::virtual_devices::*
+//
+// The adb, ios, and virtual_device modules above provide backward compatibility. 

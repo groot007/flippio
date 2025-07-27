@@ -122,22 +122,29 @@ mod dialog_tests {
     async fn test_dialog_structures() {
         // Test DialogResult structure
         let result = DialogResult {
+            success: true,
             canceled: false,
             file_paths: Some(vec!["test.db".to_string()]),
             file_path: Some("test.db".to_string()),
+            error: None,
         };
         
+        assert!(result.success);
         assert!(!result.canceled);
         assert!(result.file_paths.is_some());
         assert!(result.file_path.is_some());
+        assert!(result.error.is_none());
         
         // Test canceled result
         let canceled_result = DialogResult {
+            success: false,
             canceled: true,
             file_paths: None,
             file_path: None,
+            error: None,
         };
         
+        assert!(!canceled_result.success);
         assert!(canceled_result.canceled);
         assert!(canceled_result.file_paths.is_none());
         assert!(canceled_result.file_path.is_none());
@@ -152,13 +159,13 @@ mod dialog_tests {
         };
         
         let options = SaveDialogOptions {
-            db_file_path: "/path/to/source.db".to_string(),
-            default_path: Some("export.db".to_string()),
+            source_file_path: "/path/to/source.db".to_string(),
+            default_filename: Some("export.db".to_string()),
             filters: Some(vec![filter]),
         };
         
-        assert_eq!(options.db_file_path, "/path/to/source.db");
-        assert!(options.default_path.is_some());
+        assert_eq!(options.source_file_path, "/path/to/source.db");
+        assert!(options.default_filename.is_some());
         assert!(options.filters.is_some());
         
         let filters = options.filters.unwrap();

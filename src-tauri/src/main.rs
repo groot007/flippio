@@ -40,25 +40,25 @@ pub fn run() {
     builder
         .invoke_handler(tauri::generate_handler![
             // Device commands (ADB)
-            commands::device::adb_get_devices,
-            commands::device::adb_get_packages,
-            commands::device::adb_get_android_database_files,
-            commands::device::adb_push_database_file,
+            commands::device::adb::adb_get_devices,
+            commands::device::adb::adb_get_packages,
+            commands::device::adb::adb_get_android_database_files,
+            commands::device::adb::adb_push_database_file,
             // Device commands (iOS)
-            commands::device::device_get_ios_devices,
-            commands::device::device_get_ios_packages,
-            commands::device::device_get_ios_device_packages,
-            commands::device::get_ios_device_database_files,
-            commands::device::device_check_app_existence,
-            commands::device::device_push_ios_database_file,
-            // IOS Simulator commands
-            commands::device::get_ios_simulator_database_files,
-            commands::device::upload_simulator_ios_db_file,
+            commands::device::ios::device::device_get_ios_devices,
+            commands::device::ios::packages::device_get_ios_packages,
+            commands::device::ios::packages::device_get_ios_device_packages,
+            commands::device::ios::database::get_ios_device_database_files,
+            commands::device::ios::device::device_check_app_existence,
+            commands::device::ios::database::device_push_ios_database_file,
+            // iOS Simulator commands
+            commands::device::ios::simulator::get_ios_simulator_database_files,
+            commands::device::ios::simulator::upload_simulator_ios_db_file,
             // Virtual device commands
-            commands::device::get_android_emulators,
-            commands::device::get_ios_simulators,
-            commands::device::launch_android_emulator,
-            commands::device::launch_ios_simulator,
+            commands::device::virtual_device::get_android_emulators,
+            commands::device::virtual_device::get_ios_simulators,
+            commands::device::virtual_device::launch_android_emulator,
+            commands::device::virtual_device::launch_ios_simulator,
             // Database commands
             commands::database::db_open,
             commands::database::db_get_tables,
@@ -73,10 +73,10 @@ pub fn run() {
             commands::database::db_clear_cache_for_path,
             commands::database::db_clear_all_cache,
             commands::database::db_switch_database,
-            // Common commands (file dialogs)
-            commands::common::dialog_select_file,
-            commands::common::dialog_save_file,
-            commands::common::save_dropped_file,
+            // File dialog commands
+            commands::file_dialogs::dialog_select_file,
+            commands::file_dialogs::dialog_save_file,
+            commands::file_dialogs::save_dropped_file,
             // Updater commands
             commands::updater::check_for_updates,
             commands::updater::download_and_install_update,

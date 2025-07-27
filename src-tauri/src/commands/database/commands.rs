@@ -87,8 +87,8 @@ pub async fn db_get_tables(
     }
 }
 
-/// Helper function to validate that a pool is actually usable
-async fn validate_pool_health(pool: &SqlitePool) -> bool {
+// Pool health validation
+pub async fn validate_pool_health(pool: &SqlitePool) -> bool {
     if pool.is_closed() {
         log::warn!("🚫 Pool is marked as closed");
         return false;
@@ -1258,7 +1258,7 @@ async fn get_cached_connection(
 }
 
 // Helper function to get the current active database from cache or state
-async fn get_current_pool(
+pub async fn get_current_pool(
     state: &State<'_, DbPool>,
     db_cache: &State<'_, DbConnectionCache>,
     current_db_path: Option<String>,
@@ -1325,4 +1325,200 @@ async fn get_current_pool(
             Err("No database connection available".to_string())
         }
     }
+}
+
+// Test compatibility functions - these are wrappers around the main commands for testing
+// These functions extract the core business logic without requiring Tauri state
+
+/// Get tables implementation for testing
+#[allow(dead_code)]
+pub async fn get_tables_impl(pool: &sqlx::SqlitePool) -> DbResponse<Vec<TableInfo>> {
+    let connection_result = pool.acquire().await;
+    
+    match connection_result {
+        Ok(mut conn) => {
+            let query_result = sqlx::query("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name")
+                .fetch_all(&mut *conn)
+                .await;
+
+            match query_result {
+                Ok(rows) => {
+                    let tables: Vec<TableInfo> = rows.iter().map(|row| {
+                        let name: String = row.get(0);
+                        TableInfo { name }
+                    }).collect();
+
+                    DbResponse {
+                        success: true,
+                        data: Some(tables),
+                        error: None,
+                    }
+                }
+                Err(e) => DbResponse {
+                    success: false,
+                    data: None,
+                    error: Some(format!("Failed to get tables: {}", e)),
+                }
+            }
+        }
+        Err(e) => DbResponse {
+            success: false,
+            data: None,
+            error: Some(format!("Database connection error: {}", e)),
+        }
+    }
+}
+
+/// Get table data implementation for testing
+#[allow(dead_code)]
+pub async fn get_table_data_impl(pool: &sqlx::SqlitePool, table_name: &str) -> DbResponse<TableData> {
+    let connection_result = pool.acquire().await;
+    
+    match connection_result {
+        Ok(mut conn) => {
+            let query = format!("SELECT * FROM \"{}\" LIMIT 100", table_name);
+            let query_result = sqlx::query(&query).fetch_all(&mut *conn).await;
+
+            match query_result {
+                Ok(rows) => {
+                    let mut json_rows = Vec::new();
+                    
+                    for row in rows {
+                        let mut json_row = std::collections::HashMap::new();
+                        for (i, column) in row.columns().iter().enumerate() {
+                            let column_name = column.name();
+                            let value = get_column_value(&row, i);
+                            json_row.insert(column_name.to_string(), value);
+                        }
+                        json_rows.push(json_row);
+                    }
+
+                    DbResponse {
+                        success: true,
+                        data: Some(TableData {
+                            columns: vec![], // For testing, we'll leave this empty
+                            rows: json_rows,
+                        }),
+                        error: None,
+                    }
+                }
+                Err(e) => DbResponse {
+                    success: false,
+                    data: None,
+                    error: Some(format!("Failed to get table data: {}", e)),
+                }
+            }
+        }
+        Err(e) => DbResponse {
+            success: false,
+            data: None,
+            error: Some(format!("Database connection error: {}", e)),
+        }
+    }
+}
+
+/// Insert table row implementation for testing
+#[allow(dead_code)]
+pub async fn insert_table_row_impl(pool: &sqlx::SqlitePool, table_name: &str, row_data: &std::collections::HashMap<String, serde_json::Value>) -> DbResponse<String> {
+    let connection_result = pool.acquire().await;
+    
+    match connection_result {
+        Ok(mut conn) => {
+            let columns: Vec<String> = row_data.keys().map(|k| format!("\"{}\"", k)).collect();
+            let placeholders: Vec<String> = (0..row_data.len()).map(|_| "?".to_string()).collect();
+            
+            let query = format!(
+                "INSERT INTO \"{}\" ({}) VALUES ({})",
+                table_name,
+                columns.join(", "),
+                placeholders.join(", ")
+            );
+
+            let mut query_builder = sqlx::query(&query);
+            
+            for (_, value) in row_data.iter() {
+                query_builder = bind_json_value(query_builder, value);
+            }
+
+            match query_builder.execute(&mut *conn).await {
+                Ok(_) => DbResponse {
+                    success: true,
+                    data: Some("Row inserted successfully".to_string()),
+                    error: None,
+                },
+                Err(e) => DbResponse {
+                    success: false,
+                    data: None,
+                    error: Some(format!("Failed to insert row: {}", e)),
+                }
+            }
+        }
+        Err(e) => DbResponse {
+            success: false,
+            data: None,
+            error: Some(format!("Database connection error: {}", e)),
+        }
+    }
+}
+
+#[allow(dead_code)]
+fn get_column_value(row: &sqlx::sqlite::SqliteRow, index: usize) -> serde_json::Value {
+    use sqlx::{Column, ValueRef};
+    
+    let column = &row.columns()[index];
+    let value_ref = row.try_get_raw(index).unwrap();
+    
+    if value_ref.is_null() {
+        return serde_json::Value::Null;
+    }
+    
+    match column.type_info().name() {
+        "TEXT" => {
+            if let Ok(val) = row.try_get::<String, _>(index) {
+                serde_json::Value::String(val)
+            } else {
+                serde_json::Value::Null
+            }
+        }
+        "INTEGER" => {
+            if let Ok(val) = row.try_get::<i64, _>(index) {
+                serde_json::Value::Number(serde_json::Number::from(val))
+            } else {
+                serde_json::Value::Null
+            }
+        }
+        "REAL" => {
+            if let Ok(val) = row.try_get::<f64, _>(index) {
+                serde_json::Number::from_f64(val)
+                    .map(serde_json::Value::Number)
+                    .unwrap_or(serde_json::Value::Null)
+            } else {
+                serde_json::Value::Null
+            }
+        }
+        _ => {
+            if let Ok(val) = row.try_get::<String, _>(index) {
+                serde_json::Value::String(val)
+            } else {
+                serde_json::Value::Null
+            }
+        }
+    }
+}
+
+fn bind_json_value<'a>(mut query: sqlx::query::Query<'a, sqlx::Sqlite, sqlx::sqlite::SqliteArguments<'a>>, value: &serde_json::Value) -> sqlx::query::Query<'a, sqlx::Sqlite, sqlx::sqlite::SqliteArguments<'a>> {
+    match value {
+        serde_json::Value::String(s) => query = query.bind(s.clone()),
+        serde_json::Value::Number(n) => {
+            if let Some(i) = n.as_i64() {
+                query = query.bind(i);
+            } else if let Some(f) = n.as_f64() {
+                query = query.bind(f);
+            }
+        }
+        serde_json::Value::Bool(b) => query = query.bind(*b),
+        serde_json::Value::Null => query = query.bind(Option::<String>::None),
+        _ => query = query.bind(value.to_string()),
+    }
+    query
 }

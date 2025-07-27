@@ -1,5 +1,5 @@
 use serial_test::serial;
-use flippio::commands::updater::*;
+use flippio::commands::common::{UpdateInfo, UpdateResponse};
 use crate::fixtures::temp_files::TempFileManager;
 
 /// Test fixture for updater command testing
