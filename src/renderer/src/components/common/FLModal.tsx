@@ -1,4 +1,4 @@
-import { Button, CloseButton, Dialog, Portal } from '@chakra-ui/react'
+import { Button, Dialog, Portal } from '@chakra-ui/react'
 
 interface FLModalProps {
   isOpen: boolean
@@ -94,19 +94,28 @@ function FLModal({
                 {acceptBtn}
               </Button>
             </Dialog.Footer>
-            <Dialog.CloseTrigger asChild>
-              <CloseButton
-                onClick={onReject}
-                size="sm"
-                position="absolute"
-                top={4}
-                right={4}
-                color="textSecondary"
-                _hover={{
-                  bg: 'bgTertiary',
-                  color: 'textPrimary',
-                }}
-              />
+            <Dialog.CloseTrigger 
+              position="absolute"
+              top={4}
+              right={4}
+              onClick={onReject}
+              color="textSecondary"
+              _hover={{
+                bg: 'bgTertiary',
+                color: 'textPrimary',
+              }}
+              fontSize="sm"
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+              w={6}
+              h={6}
+              borderRadius="md"
+              bg="transparent"
+              border="none"
+              cursor="pointer"
+            >
+              ×
             </Dialog.CloseTrigger>
           </Dialog.Content>
         </Dialog.Positioner>

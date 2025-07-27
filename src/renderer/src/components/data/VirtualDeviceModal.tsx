@@ -1,7 +1,6 @@
 import {
   Box,
   Button,
-  CloseButton,
   Dialog,
   Flex,
   Heading,
@@ -279,8 +278,26 @@ export const VirtualDeviceModal: React.FC<VirtualDeviceModalProps> = ({ isOpen, 
                       </List.Root>
                     )}
               </Dialog.Body>
-              <Dialog.CloseTrigger>
-                <CloseButton size="sm" onClick={onClose} />
+              <Dialog.CloseTrigger 
+                position="absolute"
+                top={2}
+                right={2}
+                onClick={onClose}
+                fontSize="sm"
+                display="flex"
+                alignItems="center"
+                justifyContent="center"
+                w={6}
+                h={6}
+                borderRadius="md"
+                bg="transparent"
+                border="none"
+                cursor="pointer"
+                _hover={{
+                  bg: 'bgTertiary',
+                }}
+              >
+                ×
               </Dialog.CloseTrigger>
             </Dialog.Content>
           </Dialog.Positioner>

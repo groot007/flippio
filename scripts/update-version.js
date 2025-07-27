@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 
-const { execSync } = require('node:child_process')
 const fs = require('node:fs')
 const path = require('node:path')
 const process = require('node:process')
@@ -118,31 +117,6 @@ console.log(`✅ Successfully updated: ${updatedFiles} files`)
 if (errors.length > 0) {
   console.log(`❌ Errors: ${errors.length}`)
   errors.forEach(error => console.log(`   • ${error}`))
-}
-
-if (errors.length === 0) {
-  console.log(`\n🎉 Version successfully updated to ${newVersion}!`)
-  
-  // Optionally run cargo check to verify Rust compilation
-  try {
-    console.log('\n🔍 Verifying Rust compilation...')
-    execSync('cd src-tauri && cargo check', { stdio: 'inherit' })
-    console.log('✅ Rust compilation verified')
-  }
-  catch {
-    console.error('⚠️  Rust compilation check failed, but version was updated')
-  }
-  
-  console.log('\n💡 Next steps:')
-  console.log('1. Review the changes: git diff')
-  console.log('2. Test the build: npm run tauri build')
-  console.log(`3. Commit the changes: git add . && git commit -m "chore: bump version to v${newVersion}"`)
-  console.log(`4. Create a tag: git tag v${newVersion}`)
-  console.log('5. Push: git push && git push --tags')
-}
-else {
-  console.log('\n❌ Some files failed to update. Please review and fix the errors above.')
-  process.exit(1)
 }
 
 /**

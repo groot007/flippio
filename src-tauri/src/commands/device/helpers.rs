@@ -107,6 +107,7 @@ pub async fn touch_database_file(file_path: String) -> Result<String, String> {
 }
 
 /// Force clean all temp files (use sparingly, e.g., app shutdown)
+#[allow(dead_code)]
 pub fn force_clean_temp_dir() -> Result<PathBuf, Box<dyn std::error::Error + Send + Sync>> {
     let temp_dir = get_temp_dir_path();
     
