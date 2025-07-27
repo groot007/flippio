@@ -47,10 +47,11 @@ pub async fn pull_ios_db_file(
         info!("Using afcclient command: {}", afcclient_cmd);
         
         // Use afcclient to pull file from device
+        let local_path_str = local_path.to_string_lossy();
         let args = [
             "--documents", package_name,
             "-u", device_id,
-            "get", remote_path, local_path.to_str().unwrap()
+            "get", remote_path, &local_path_str
         ];
         info!("Pull command: {} {}", afcclient_cmd, args.join(" "));
         
