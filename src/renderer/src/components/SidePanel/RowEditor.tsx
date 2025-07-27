@@ -4,6 +4,7 @@ import { useCurrentDatabaseSelection, useCurrentDeviceSelection, useTableData } 
 import { useRowEditingStore } from '@renderer/store/useRowEditingStore'
 import { toaster } from '@renderer/ui/toaster'
 import { buildUniqueCondition } from '@renderer/utils'
+import { validateRowData } from '@renderer/utils/typeValidation'
 import { useCallback } from 'react'
 import { LuPencil, LuSave } from 'react-icons/lu'
 
@@ -48,14 +49,40 @@ export const RowEditor: React.FC<RowEditorProps> = ({
 
     try {
       setIsLoading(true)
+      
+      // Validate data types before sending to backend
+      const columnTypes: Record<string, string> = {}
+      tableData?.columns?.forEach((col) => {
+        columnTypes[col.name] = col.type
+      })
+      
+      const validation = validateRowData(editedData, columnTypes)
+      if (!validation.isValid) {
+        const firstError = validation.errors && Object.entries(validation.errors)[0]
+        toaster.create({
+          title: 'Invalid Data',
+          description: firstError
+            ? `${firstError[0]}: ${firstError[1]}`
+            : 'An unknown validation error occurred.',
+          type: 'error',
+          duration: 6000,
+          meta: {
+            closable: true,
+          },
+        })
+        setIsLoading(false)
+        return
+      }
+      
       const condition = buildUniqueCondition(
         tableData?.columns,
         selectedRow?.originalData || selectedRow?.rowData,
       )
 
+      // Use validated and converted data
       const result = await window.api.updateTableRow(
         selectedDatabaseTable?.name || '',
-        editedData,
+        validation.convertedData || editedData,
         condition,
         selectedDatabaseFile?.path,
       )
@@ -65,6 +92,9 @@ export const RowEditor: React.FC<RowEditorProps> = ({
       }
 
       // Push changes back to device if needed
+      let pushSucceeded = true
+      let pushError = ''
+      
       if (
         selectedDatabaseFile
         && selectedDevice
@@ -79,12 +109,18 @@ export const RowEditor: React.FC<RowEditorProps> = ({
         )
         
         if (!pushResult.success) {
-          console.error('Failed to push database file:', pushResult.error)
+          pushSucceeded = false
+          pushError = pushResult.error || 'Unknown push error'
+          console.error('Failed to push database file:', pushError)
+          
           toaster.create({
-            title: 'Push failed',
-            description: `Failed to push changes to device: ${pushResult.error}`,
-            type: 'warning',
-            duration: 5000,
+            title: 'Sync Failed',
+            description: `Data updated locally but failed to sync to device: ${pushError}`,
+            type: 'error',
+            duration: 8000,
+            meta: {
+              closable: true,
+            },
           })
         }
         else {
@@ -100,12 +136,15 @@ export const RowEditor: React.FC<RowEditorProps> = ({
       refetchTable()
       setIsEditing(false)
 
-      toaster.create({
-        title: 'Data updated',
-        description: 'Row data has been successfully updated',
-        type: 'success',
-        duration: 3000,
-      })
+      // Only show success message if push succeeded or no push was needed
+      if (pushSucceeded) {
+        toaster.create({
+          title: 'Data updated',
+          description: 'Row data has been successfully updated and synced to device',
+          type: 'success',
+          duration: 3000,
+        })
+      }
     }
     catch (error) {
       console.error('Error saving data:', error)

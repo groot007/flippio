@@ -3,7 +3,6 @@ import { useApplications } from '@renderer/hooks/useApplications'
 import { useDevices } from '@renderer/hooks/useDevices'
 import { useCurrentDatabaseSelection, useCurrentDeviceSelection, useRecentlyUsedApps } from '@renderer/store'
 import { toaster } from '@renderer/ui/toaster'
-import { invoke } from '@tauri-apps/api/core'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { LuPackage, LuRefreshCcw, LuRocket, LuSmartphone } from 'react-icons/lu'
 import FLSelect from './../common/FLSelect'
@@ -109,13 +108,6 @@ function AppHeader() {
   }, [devicesList, selectedDevice, setSelectedApplication, setSelectedDevice])
 
   const handleRefreshDevices = useCallback(() => {
-    invoke('get_libimobiledevice_tool_path_cmd', { toolName: 'idevice_id' })
-      .then((toolPath) => {
-        console.log('Libimobiledevice tool path:', toolPath)
-      })
-      .catch((err) => {
-        console.error('Error getting libimobiledevice tool path:', err)
-      })
     refreshDevices()
       .then(() => {
         toaster.create({

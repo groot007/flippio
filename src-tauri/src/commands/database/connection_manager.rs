@@ -10,7 +10,6 @@ use tokio::sync::RwLock;
 use tokio::time::sleep;
 
 /// Database connection manager with caching and automatic cleanup
-#[allow(dead_code)]
 pub struct DatabaseConnectionManager {
     cache: DbConnectionCache,
     config: ConnectionConfig,

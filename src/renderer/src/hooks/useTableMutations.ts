@@ -161,7 +161,7 @@ async function pushDatabaseToDevice({
   selectedDevice: any
   queryClient: any
   selectedApplication: any
-}) {
+}): Promise<{ success: boolean, error?: string }> {
   if (
     selectedDatabaseFile
     && selectedDevice
@@ -189,14 +189,20 @@ async function pushDatabaseToDevice({
     if (!pushResult.success) {
       console.error('Failed to push database file:', pushResult.error)
       toaster.create({
-        title: 'Push failed',
+        title: 'Sync Failed',
         description: `Failed to push changes to device: ${pushResult.error}`,
-        type: 'warning',
-        duration: 5000,
+        type: 'error',
+        duration: 8000,
+        meta: {
+          closable: true,
+        },
       })
+      // Return the push result so calling code can handle the failure
+      return { success: false, error: pushResult.error }
     }
     else {
       console.log('Database file pushed successfully')
+      return { success: true }
     }
     
     // Invalidate and refetch database files
@@ -212,5 +218,6 @@ async function pushDatabaseToDevice({
       hasPath: !!selectedDatabaseFile?.path,
       deviceType: selectedDatabaseFile?.deviceType,
     })
+    return { success: true } // No push needed, consider it successful
   }
 }

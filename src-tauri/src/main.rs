@@ -77,6 +77,8 @@ pub fn run() {
             commands::common::dialog_select_file,
             commands::common::dialog_save_file,
             commands::common::save_dropped_file,
+            // Device helper commands
+            commands::device::helpers::touch_database_file,
             // Updater commands
             commands::updater::check_for_updates,
             commands::updater::download_and_install_update,

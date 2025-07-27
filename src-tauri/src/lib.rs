@@ -22,6 +22,9 @@ pub use commands::database::helpers::{
 // Re-export device helper functions for testing
 pub use commands::device::helpers::{
     ensure_temp_dir,
+    clean_temp_dir,
+    force_clean_temp_dir,
+    touch_temp_file,
     get_libimobiledevice_tool_path,
 };
 
