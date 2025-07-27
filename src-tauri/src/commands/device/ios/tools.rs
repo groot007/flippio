@@ -18,19 +18,6 @@ fn get_validator() -> &'static IOSToolValidator {
     })
 }
 
-/// Get the path to a specific libimobiledevice tool with enhanced validation
-#[allow(dead_code)]
-#[tauri::command]
-pub async fn get_libimobiledevice_tool_path_cmd(tool_name: String) -> Result<String, String> {
-    match get_validated_tool_path(&tool_name) {
-        Ok(path) => Ok(path),
-        Err(error) => {
-            error!("❌ Tool validation failed: {}", error);
-            let instructions = IOSToolValidator::get_installation_instructions(&error);
-            Err(instructions)
-        }
-    }
-}
 
 /// Get validated tool path with comprehensive fallback strategies
 pub fn get_validated_tool_path(tool_name: &str) -> Result<String, ToolValidationError> {
@@ -82,83 +69,6 @@ pub fn get_tool_command_legacy(tool_name: &str) -> String {
         Err(_) => {
             error!("❌ All tool resolution methods failed for '{}', using bare command", tool_name);
             tool_name.to_string() // Last resort fallback
-        }
-    }
-}
-
-/// Check if a specific iOS tool is available and working
-#[allow(dead_code)]
-#[tauri::command]
-pub async fn check_ios_tool_availability(tool_name: String) -> Result<serde_json::Value, String> {
-    let validator = get_validator();
-    
-    match validator.get_validated_tool(&tool_name) {
-        Ok(validated_tool) => {
-            Ok(serde_json::json!({
-                "available": true,
-                "path": validated_tool.path.to_string_lossy(),
-                "strategy": validated_tool.strategy,
-                "version": validated_tool.version,
-                "error": null
-            }))
-        }
-        Err(error) => {
-            Ok(serde_json::json!({
-                "available": false,
-                "path": null,
-                "strategy": null,
-                "version": null,
-                "error": error.to_string(),
-                "instructions": IOSToolValidator::get_installation_instructions(&error)
-            }))
-        }
-    }
-}
-
-/// Get status of all iOS tools
-#[allow(dead_code)]
-#[tauri::command]
-pub async fn get_ios_tools_status() -> Result<serde_json::Value, String> {
-    let tools = ["idevice_id", "ideviceinfo", "afcclient", "ideviceinstaller"];
-    let validator = get_validator();
-    
-    let mut tool_status = serde_json::Map::new();
-    let mut all_available = true;
-    
-    for tool_name in &tools {
-        match validator.get_validated_tool(tool_name) {
-            Ok(validated_tool) => {
-                tool_status.insert(tool_name.to_string(), serde_json::json!({
-                    "available": true,
-                    "path": validated_tool.path.to_string_lossy(),
-                    "strategy": validated_tool.strategy,
-                    "version": validated_tool.version
-                }));
-            }
-            Err(error) => {
-                all_available = false;
-                tool_status.insert(tool_name.to_string(), serde_json::json!({
-                    "available": false,
-                    "error": error.to_string()
-                }));
-            }
-        }
-    }
-    
-    Ok(serde_json::json!({
-        "all_available": all_available,
-        "tools": tool_status,
-        "timestamp": chrono::Utc::now().to_rfc3339()
-    }))
-}
-
-// Legacy function for backward compatibility
-pub fn get_tool_path_with_logging(tool_name: &str) -> Option<std::path::PathBuf> {
-    match get_validated_tool_path(tool_name) {
-        Ok(path) => Some(std::path::PathBuf::from(path)),
-        Err(_) => {
-            // Fallback to legacy method
-            get_libimobiledevice_tool_path(tool_name)
         }
     }
 }
