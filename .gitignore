@@ -62,3 +62,5 @@ yarn-error.*
 *.tsbuildinfo
 
 app-example
+
+coverage/
