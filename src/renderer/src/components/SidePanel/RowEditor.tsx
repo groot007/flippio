@@ -58,18 +58,18 @@ export const RowEditor: React.FC<RowEditorProps> = ({
       
       const validation = validateRowData(editedData, columnTypes)
       if (!validation.isValid) {
-        const firstError = Object.entries(validation.errors)[0]
-        if (firstError) {
-          toaster.create({
-            title: 'Invalid Data',
-            description: `${firstError[0]}: ${firstError[1]}`,
-            type: 'error',
-            duration: 6000,
-            meta: {
-              closable: true,
-            },
-          })
-        }
+        const firstError = validation.errors && Object.entries(validation.errors)[0]
+        toaster.create({
+          title: 'Invalid Data',
+          description: firstError
+            ? `${firstError[0]}: ${firstError[1]}`
+            : 'An unknown validation error occurred.',
+          type: 'error',
+          duration: 6000,
+          meta: {
+            closable: true,
+          },
+        })
         setIsLoading(false)
         return
       }
