@@ -141,3 +141,156 @@ pub async fn dialog_save_file(
         Ok(None) | Err(_) => Ok(None),
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_dialog_result_creation() {
+        let result = DialogResult {
+            canceled: false,
+            file_paths: Some(vec!["path1.db".to_string(), "path2.db".to_string()]),
+            file_path: Some("selected.db".to_string()),
+        };
+        
+        assert!(!result.canceled);
+        assert_eq!(result.file_paths.as_ref().unwrap().len(), 2);
+        assert_eq!(result.file_path.as_ref().unwrap(), "selected.db");
+    }
+
+    #[test]
+    fn test_dialog_result_canceled() {
+        let result = DialogResult {
+            canceled: true,
+            file_paths: None,
+            file_path: None,
+        };
+        
+        assert!(result.canceled);
+        assert!(result.file_paths.is_none());
+        assert!(result.file_path.is_none());
+    }
+
+    #[test]
+    fn test_save_dialog_options_creation() {
+        let filter = DialogFilter {
+            name: "Database Files".to_string(),
+            extensions: vec!["db".to_string(), "sqlite".to_string()],
+        };
+        
+        let options = SaveDialogOptions {
+            db_file_path: "/path/to/database.db".to_string(),
+            default_path: Some("/default/path".to_string()),
+            filters: Some(vec![filter]),
+        };
+        
+        assert_eq!(options.db_file_path, "/path/to/database.db");
+        assert!(options.default_path.is_some());
+        assert!(options.filters.is_some());
+        assert_eq!(options.filters.as_ref().unwrap().len(), 1);
+    }
+
+    #[test]
+    fn test_dialog_filter_creation() {
+        let filter = DialogFilter {
+            name: "All Files".to_string(),
+            extensions: vec!["*".to_string()],
+        };
+        
+        assert_eq!(filter.name, "All Files");
+        assert_eq!(filter.extensions.len(), 1);
+        assert_eq!(filter.extensions[0], "*");
+    }
+
+    #[test]
+    fn test_dialog_filter_database_extensions() {
+        let filter = DialogFilter {
+            name: "Database Files".to_string(),
+            extensions: vec![
+                "db".to_string(), 
+                "sqlite".to_string(), 
+                "sqlite3".to_string(), 
+                "db3".to_string()
+            ],
+        };
+        
+        assert_eq!(filter.name, "Database Files");
+        assert_eq!(filter.extensions.len(), 4);
+        assert!(filter.extensions.contains(&"db".to_string()));
+        assert!(filter.extensions.contains(&"sqlite".to_string()));
+        assert!(filter.extensions.contains(&"sqlite3".to_string()));
+        assert!(filter.extensions.contains(&"db3".to_string()));
+    }
+
+    #[test]
+    fn test_save_dialog_options_without_defaults() {
+        let options = SaveDialogOptions {
+            db_file_path: "test.db".to_string(),
+            default_path: None,
+            filters: None,
+        };
+        
+        assert_eq!(options.db_file_path, "test.db");
+        assert!(options.default_path.is_none());
+        assert!(options.filters.is_none());
+    }
+
+    #[test]
+    fn test_serde_serialization() -> Result<(), serde_json::Error> {
+        let result = DialogResult {
+            canceled: false,
+            file_paths: Some(vec!["test.db".to_string()]),
+            file_path: Some("test.db".to_string()),
+        };
+        
+        // Test serialization
+        let json = serde_json::to_string(&result)?;
+        assert!(json.contains("canceled"));
+        assert!(json.contains("file_paths"));
+        assert!(json.contains("file_path"));
+        
+        // Test deserialization
+        let deserialized: DialogResult = serde_json::from_str(&json)?;
+        assert_eq!(deserialized.canceled, result.canceled);
+        assert_eq!(deserialized.file_paths, result.file_paths);
+        assert_eq!(deserialized.file_path, result.file_path);
+        
+        Ok(())
+    }
+
+    #[test]
+    fn test_multiple_filters() {
+        let filter1 = DialogFilter {
+            name: "Database Files".to_string(),
+            extensions: vec!["db".to_string(), "sqlite".to_string()],
+        };
+        
+        let filter2 = DialogFilter {
+            name: "All Files".to_string(),
+            extensions: vec!["*".to_string()],
+        };
+        
+        let options = SaveDialogOptions {
+            db_file_path: "test.db".to_string(),
+            default_path: None,
+            filters: Some(vec![filter1, filter2]),
+        };
+        
+        let filters = options.filters.unwrap();
+        assert_eq!(filters.len(), 2);
+        assert_eq!(filters[0].name, "Database Files");
+        assert_eq!(filters[1].name, "All Files");
+    }
+
+    #[test]
+    fn test_empty_extensions() {
+        let filter = DialogFilter {
+            name: "Test Filter".to_string(),
+            extensions: vec![],
+        };
+        
+        assert_eq!(filter.name, "Test Filter");
+        assert!(filter.extensions.is_empty());
+    }
+}

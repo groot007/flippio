@@ -244,23 +244,66 @@ pub async fn db_get_table_data(
                         serde_json::Value::Null
                     } else {
                         match column.type_info().name() {
-                            "TEXT" => serde_json::Value::String(row.get::<String, _>(i)),
-                            "INTEGER" => serde_json::Value::Number(
-                                serde_json::Number::from(row.get::<i64, _>(i))
-                            ),
-                            "REAL" => serde_json::Value::Number(
-                                serde_json::Number::from_f64(row.get::<f64, _>(i))
-                                    .unwrap_or(serde_json::Number::from(0))
-                            ),
-                            "BLOB" => {
-                                let blob_data: Vec<u8> = row.get(i);
-                                serde_json::Value::String(
-                                    general_purpose::STANDARD.encode(blob_data)
-                                )
+                            "TEXT" => {
+                                match row.try_get::<String, _>(i) {
+                                    Ok(val) => serde_json::Value::String(val),
+                                    Err(_) => serde_json::Value::String("".to_string()),
+                                }
                             },
-                            _ => serde_json::Value::String(
-                                "Unknown type".to_string()
-                            ),
+                            "INTEGER" => {
+                                match row.try_get::<i64, _>(i) {
+                                    Ok(val) => serde_json::Value::Number(serde_json::Number::from(val)),
+                                    Err(_) => {
+                                        // Try as string first, then convert to number if possible
+                                        match row.try_get::<String, _>(i) {
+                                            Ok(str_val) => {
+                                                if let Ok(int_val) = str_val.parse::<i64>() {
+                                                    serde_json::Value::Number(serde_json::Number::from(int_val))
+                                                } else {
+                                                    serde_json::Value::String(str_val)
+                                                }
+                                            },
+                                            Err(_) => serde_json::Value::Null,
+                                        }
+                                    }
+                                }
+                            },
+                            "REAL" => {
+                                match row.try_get::<f64, _>(i) {
+                                    Ok(val) => serde_json::Value::Number(
+                                        serde_json::Number::from_f64(val).unwrap_or(serde_json::Number::from(0))
+                                    ),
+                                    Err(_) => {
+                                        // Try as string first, then convert to number if possible
+                                        match row.try_get::<String, _>(i) {
+                                            Ok(str_val) => {
+                                                if let Ok(float_val) = str_val.parse::<f64>() {
+                                                    serde_json::Value::Number(
+                                                        serde_json::Number::from_f64(float_val).unwrap_or(serde_json::Number::from(0))
+                                                    )
+                                                } else {
+                                                    serde_json::Value::String(str_val)
+                                                }
+                                            },
+                                            Err(_) => serde_json::Value::Null,
+                                        }
+                                    }
+                                }
+                            },
+                            "BLOB" => {
+                                match row.try_get::<Vec<u8>, _>(i) {
+                                    Ok(blob_data) => serde_json::Value::String(
+                                        general_purpose::STANDARD.encode(blob_data)
+                                    ),
+                                    Err(_) => serde_json::Value::String("".to_string()),
+                                }
+                            },
+                            _ => {
+                                match row.try_get::<String, _>(i) {
+                                    Ok(val) => serde_json::Value::String(val),
+                                    Err(_) => serde_json::Value::String("Unknown type".to_string()),
+                                }
+                            },
                         }
                     }
                 }
@@ -1001,15 +1044,58 @@ pub async fn db_execute_query(
                                         serde_json::Value::Null
                                     } else {
                                         match column.type_info().name() {
-                                            "TEXT" => serde_json::Value::String(row.get::<String, _>(i)),
-                                            "INTEGER" => serde_json::Value::Number(
-                                                serde_json::Number::from(row.get::<i64, _>(i))
-                                            ),
-                                            "REAL" => serde_json::Value::Number(
-                                                serde_json::Number::from_f64(row.get::<f64, _>(i))
-                                                    .unwrap_or(serde_json::Number::from(0))
-                                            ),
-                                            _ => serde_json::Value::String(row.get::<String, _>(i)),
+                                            "TEXT" => {
+                                                match row.try_get::<String, _>(i) {
+                                                    Ok(val) => serde_json::Value::String(val),
+                                                    Err(_) => serde_json::Value::String("".to_string()),
+                                                }
+                                            },
+                                            "INTEGER" => {
+                                                match row.try_get::<i64, _>(i) {
+                                                    Ok(val) => serde_json::Value::Number(serde_json::Number::from(val)),
+                                                    Err(_) => {
+                                                        // Try as string first, then convert to number if possible
+                                                        match row.try_get::<String, _>(i) {
+                                                            Ok(str_val) => {
+                                                                if let Ok(int_val) = str_val.parse::<i64>() {
+                                                                    serde_json::Value::Number(serde_json::Number::from(int_val))
+                                                                } else {
+                                                                    serde_json::Value::String(str_val)
+                                                                }
+                                                            },
+                                                            Err(_) => serde_json::Value::Null,
+                                                        }
+                                                    }
+                                                }
+                                            },
+                                            "REAL" => {
+                                                match row.try_get::<f64, _>(i) {
+                                                    Ok(val) => serde_json::Value::Number(
+                                                        serde_json::Number::from_f64(val).unwrap_or(serde_json::Number::from(0))
+                                                    ),
+                                                    Err(_) => {
+                                                        // Try as string first, then convert to number if possible
+                                                        match row.try_get::<String, _>(i) {
+                                                            Ok(str_val) => {
+                                                                if let Ok(float_val) = str_val.parse::<f64>() {
+                                                                    serde_json::Value::Number(
+                                                                        serde_json::Number::from_f64(float_val).unwrap_or(serde_json::Number::from(0))
+                                                                    )
+                                                                } else {
+                                                                    serde_json::Value::String(str_val)
+                                                                }
+                                                            },
+                                                            Err(_) => serde_json::Value::Null,
+                                                        }
+                                                    }
+                                                }
+                                            },
+                                            _ => {
+                                                match row.try_get::<String, _>(i) {
+                                                    Ok(val) => serde_json::Value::String(val),
+                                                    Err(_) => serde_json::Value::String("".to_string()),
+                                                }
+                                            },
                                         }
                                     }
                                 }

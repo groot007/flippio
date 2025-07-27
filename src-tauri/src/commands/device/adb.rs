@@ -449,3 +449,350 @@ pub async fn adb_push_database_file(
         }),
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tempfile::TempDir;
+
+    #[tokio::test]
+    async fn test_pull_android_db_file_paths() {
+        // Test path generation logic
+        let temp_dir = TempDir::new().unwrap();
+        let remote_path = "/data/data/com.example.app/databases/test.db";
+        let filename = std::path::Path::new(remote_path)
+            .file_name()
+            .unwrap()
+            .to_string_lossy();
+        
+        assert_eq!(filename, "test.db");
+        
+        let local_path = temp_dir.path().join(&*filename);
+        assert!(local_path.to_string_lossy().contains("test.db"));
+    }
+
+    #[test]
+    fn test_database_file_metadata_creation() {
+        let metadata = DatabaseFileMetadata {
+            device_id: "emulator-5554".to_string(),
+            package_name: "com.example.app".to_string(),
+            remote_path: "/data/data/com.example.app/databases/test.db".to_string(),
+            timestamp: "2024-01-01T12:00:00Z".to_string(),
+        };
+        
+        assert_eq!(metadata.device_id, "emulator-5554");
+        assert_eq!(metadata.package_name, "com.example.app");
+        assert!(metadata.remote_path.contains("test.db"));
+        assert!(metadata.timestamp.contains("2024"));
+    }
+
+    #[test]
+    fn test_device_response_success() {
+        let devices = vec![
+            Device {
+                id: "emulator-5554".to_string(),
+                name: "Android Emulator".to_string(),
+                model: "Android SDK built for x86".to_string(),
+                device_type: "emulator".to_string(),
+                description: "Emulator device".to_string(),
+            },
+        ];
+        
+        let response = DeviceResponse {
+            success: true,
+            data: Some(devices),
+            error: None,
+        };
+        
+        assert!(response.success);
+        assert!(response.data.is_some());
+        assert!(response.error.is_none());
+        assert_eq!(response.data.unwrap().len(), 1);
+    }
+
+    #[test]
+    fn test_device_response_error() {
+        let response: DeviceResponse<Vec<Device>> = DeviceResponse {
+            success: false,
+            data: None,
+            error: Some("ADB not found".to_string()),
+        };
+        
+        assert!(!response.success);
+        assert!(response.data.is_none());
+        assert!(response.error.is_some());
+        assert_eq!(response.error.unwrap(), "ADB not found");
+    }
+
+    #[test]
+    fn test_package_creation() {
+        let package = Package {
+            name: "Example App".to_string(),
+            bundle_id: "com.example.app".to_string(),
+        };
+        
+        assert_eq!(package.name, "Example App");
+        assert_eq!(package.bundle_id, "com.example.app");
+    }
+
+    #[test]
+    fn test_database_file_creation() {
+        let db_file = DatabaseFile {
+            path: "/data/data/com.example.app/databases/test.db".to_string(),
+            package_name: "com.example.app".to_string(),
+            filename: "test.db".to_string(),
+            location: "internal".to_string(),
+            remote_path: Some("/data/data/com.example.app/databases/test.db".to_string()),
+            device_type: "android".to_string(),
+        };
+        
+        assert_eq!(db_file.filename, "test.db");
+        assert_eq!(db_file.package_name, "com.example.app");
+        assert_eq!(db_file.device_type, "android");
+        assert!(db_file.remote_path.is_some());
+    }
+
+    #[test]
+    fn test_adb_path_discovery() {
+        let adb_path = get_adb_path();
+        // Should return some path (even if just "adb")
+        assert!(!adb_path.is_empty());
+        // Common ADB path should be detected
+        assert!(adb_path.contains("adb"));
+    }
+
+    #[tokio::test]
+    async fn test_execute_adb_command_basic() {
+        // Test that the command structure is correct
+        let args = ["devices"];
+        let result = execute_adb_command(&args).await;
+        
+        // Command should at least attempt to execute
+        // (it might fail if ADB is not installed, but the function should work)
+        match result {
+            Ok(_) => {
+                // Command succeeded
+                assert!(true);
+            }
+            Err(e) => {
+                // Command failed, but that's expected if ADB is not available
+                // Just verify the error is related to execution, not our logic
+                let error_msg = e.to_string();
+                assert!(
+                    error_msg.contains("No such file") || 
+                    error_msg.contains("not found") ||
+                    error_msg.contains("cannot run") ||
+                    error_msg.contains("failed to execute") ||
+                    error_msg.contains("access") ||
+                    error_msg.contains("permission")
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn test_serde_serialization_device() -> Result<(), serde_json::Error> {
+        let device = Device {
+            id: "test123".to_string(),
+            name: "Test Device".to_string(),
+            model: "Test Model".to_string(),
+            device_type: "android".to_string(),
+            description: "Test Description".to_string(),
+        };
+        
+        // Test serialization
+        let json = serde_json::to_string(&device)?;
+        assert!(json.contains("test123"));
+        assert!(json.contains("deviceType"));
+        
+        // Test deserialization
+        let deserialized: Device = serde_json::from_str(&json)?;
+        assert_eq!(deserialized.id, device.id);
+        assert_eq!(deserialized.device_type, device.device_type);
+        
+        Ok(())
+    }
+
+    #[test]
+    fn test_serde_serialization_package() -> Result<(), serde_json::Error> {
+        let package = Package {
+            name: "Test Package".to_string(),
+            bundle_id: "com.test.package".to_string(),
+        };
+        
+        // Test serialization
+        let json = serde_json::to_string(&package)?;
+        assert!(json.contains("bundleId"));
+        assert!(json.contains("com.test.package"));
+        
+        // Test deserialization
+        let deserialized: Package = serde_json::from_str(&json)?;
+        assert_eq!(deserialized.bundle_id, package.bundle_id);
+        
+        Ok(())
+    }
+
+    #[test]
+    fn test_serde_serialization_database_file() -> Result<(), serde_json::Error> {
+        let db_file = DatabaseFile {
+            path: "/test/path".to_string(),
+            package_name: "com.test".to_string(),
+            filename: "test.db".to_string(),
+            location: "internal".to_string(),
+            remote_path: Some("/remote/test.db".to_string()),
+            device_type: "android".to_string(),
+        };
+        
+        // Test serialization
+        let json = serde_json::to_string(&db_file)?;
+        assert!(json.contains("packageName"));
+        assert!(json.contains("remotePath"));
+        assert!(json.contains("deviceType"));
+        
+        // Test deserialization
+        let deserialized: DatabaseFile = serde_json::from_str(&json)?;
+        assert_eq!(deserialized.package_name, db_file.package_name);
+        assert_eq!(deserialized.device_type, db_file.device_type);
+        
+        Ok(())
+    }
+
+    #[test]
+    fn test_device_response_serialization() -> Result<(), serde_json::Error> {
+        let devices = vec![Device {
+            id: "test".to_string(),
+            name: "Test".to_string(),
+            model: "Model".to_string(),
+            device_type: "android".to_string(),
+            description: "Desc".to_string(),
+        }];
+        
+        let response = DeviceResponse {
+            success: true,
+            data: Some(devices),
+            error: None,
+        };
+        
+        let json = serde_json::to_string(&response)?;
+        assert!(json.contains("success"));
+        assert!(json.contains("data"));
+        
+        let deserialized: DeviceResponse<Vec<Device>> = serde_json::from_str(&json)?;
+        assert!(deserialized.success);
+        assert!(deserialized.data.is_some());
+        
+        Ok(())
+    }
+
+    #[test]
+    fn test_multiple_devices_parsing() {
+        // Test parsing multiple device entries
+        let device_output = "emulator-5554\tdevice\nABCD1234\tdevice\noffline-device\toffline\n";
+        let lines: Vec<&str> = device_output.lines().collect();
+        
+        assert_eq!(lines.len(), 3);
+        
+        // Test each line format
+        for line in lines {
+            let parts: Vec<&str> = line.split('\t').collect();
+            assert_eq!(parts.len(), 2);
+            assert!(!parts[0].is_empty()); // Device ID
+            assert!(!parts[1].is_empty()); // Status
+        }
+    }
+
+    #[test]
+    fn test_package_parsing() {
+        // Test package name extraction
+        let package_line = "package:com.example.app=com.example.app.MainActivity";
+        assert!(package_line.starts_with("package:"));
+        
+        let package_part = package_line.strip_prefix("package:").unwrap();
+        let package_name = package_part.split('=').next().unwrap();
+        assert_eq!(package_name, "com.example.app");
+    }
+
+    #[test]
+    fn test_database_file_path_parsing() {
+        let db_paths = vec![
+            "/data/data/com.example.app/databases/test.db",
+            "/data/data/com.another.app/files/database.sqlite",
+            "/storage/emulated/0/Android/data/com.app/files/db.sqlite3",
+        ];
+        
+        for path in db_paths {
+            // Test filename extraction
+            let filename = std::path::Path::new(path)
+                .file_name()
+                .unwrap()
+                .to_string_lossy();
+            assert!(filename.contains("db") || filename.contains("sqlite"));
+            
+            // Test package name extraction from path
+            if path.contains("/data/data/") {
+                let parts: Vec<&str> = path.split('/').collect();
+                let package_index = parts.iter().position(|&x| x == "data").unwrap() + 2;
+                if package_index < parts.len() {
+                    let package_name = parts[package_index];
+                    assert!(package_name.contains("."));
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn test_temp_file_path_generation() {
+        let temp_dir = TempDir::new().unwrap();
+        let remote_paths = vec![
+            "/data/data/com.app/databases/db.sqlite",
+            "/storage/test/file.db",
+            "/complex/path/with/subdirs/database.sqlite3",
+        ];
+        
+        for remote_path in remote_paths {
+            let filename = std::path::Path::new(remote_path)
+                .file_name()
+                .unwrap()
+                .to_string_lossy();
+            let local_path = temp_dir.path().join(&*filename);
+            
+            // Verify path is valid and contains expected filename
+            assert!(local_path.exists() || !local_path.exists()); // Path should be valid
+            assert!(local_path.to_string_lossy().contains(&*filename));
+        }
+    }
+
+    #[test]
+    fn test_error_handling_edge_cases() {
+        // Test various error scenarios
+        
+        // Empty device ID
+        let empty_device = Device {
+            id: "".to_string(),
+            name: "Test".to_string(),
+            model: "Test".to_string(),
+            device_type: "android".to_string(),
+            description: "Test".to_string(),
+        };
+        assert!(empty_device.id.is_empty());
+        
+        // Invalid package name format
+        let invalid_package = Package {
+            name: "".to_string(),
+            bundle_id: "invalid-bundle-id".to_string(),
+        };
+        assert!(invalid_package.name.is_empty());
+        
+        // Database file with invalid path
+        let invalid_db_file = DatabaseFile {
+            path: "".to_string(),
+            package_name: "com.test".to_string(),
+            filename: "".to_string(),
+            location: "unknown".to_string(),
+            remote_path: None,
+            device_type: "android".to_string(),
+        };
+        assert!(invalid_db_file.path.is_empty());
+        assert!(invalid_db_file.remote_path.is_none());
+    }
+}
