@@ -18,6 +18,9 @@ pub mod tools;
 pub mod tool_validation;
 pub mod diagnostic;
 
+#[cfg(test)]
+pub mod tests;
+
 // Public exports for command registration
 pub use device::*;
 pub use packages::*;

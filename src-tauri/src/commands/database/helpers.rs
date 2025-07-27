@@ -208,3 +208,123 @@ pub fn ensure_database_file_permissions(db_path: &str) -> Result<(), String> {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tempfile::TempDir;
+    use std::fs::File;
+
+    #[test]
+    fn test_get_default_value_for_type_integer() {
+        let result = get_default_value_for_type("INTEGER");
+        assert_eq!(result, serde_json::Value::Number(serde_json::Number::from(0)));
+    }
+
+    #[test]
+    fn test_get_default_value_for_type_text() {
+        let result = get_default_value_for_type("TEXT");
+        assert_eq!(result, serde_json::Value::String("".to_string()));
+    }
+
+    #[test]
+    fn test_get_default_value_for_type_varchar() {
+        let result = get_default_value_for_type("VARCHAR");
+        assert_eq!(result, serde_json::Value::String("".to_string()));
+    }
+
+    #[test]
+    fn test_get_default_value_for_type_real() {
+        let result = get_default_value_for_type("REAL");
+        assert_eq!(result, serde_json::Value::Number(serde_json::Number::from_f64(0.0).unwrap()));
+    }
+
+    #[test]
+    fn test_get_default_value_for_type_numeric() {
+        let result = get_default_value_for_type("NUMERIC");
+        assert_eq!(result, serde_json::Value::Number(serde_json::Number::from_f64(0.0).unwrap()));
+    }
+
+    #[test]
+    fn test_get_default_value_for_type_blob() {
+        let result = get_default_value_for_type("BLOB");
+        assert_eq!(result, serde_json::Value::String("".to_string()));
+    }
+
+    #[test]
+    fn test_get_default_value_for_type_boolean() {
+        let result = get_default_value_for_type("BOOLEAN");
+        assert_eq!(result, serde_json::Value::Bool(false));
+    }
+
+    #[test]
+    fn test_get_default_value_for_type_unknown() {
+        let result = get_default_value_for_type("UNKNOWN_TYPE");
+        assert_eq!(result, serde_json::Value::Null);
+    }
+
+    #[test]
+    fn test_get_default_value_for_type_case_insensitive() {
+        let result = get_default_value_for_type("integer");
+        assert_eq!(result, serde_json::Value::Number(serde_json::Number::from(0)));
+        
+        let result = get_default_value_for_type("Text");
+        assert_eq!(result, serde_json::Value::String("".to_string()));
+    }
+
+    #[test]
+    fn test_reset_sqlite_wal_mode_nonexistent_file() {
+        let result = reset_sqlite_wal_mode("/nonexistent/path/database.db");
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("Database file does not exist"));
+    }
+
+    #[test]
+    fn test_reset_sqlite_wal_mode_existing_file() -> Result<(), Box<dyn std::error::Error>> {
+        let temp_dir = TempDir::new()?;
+        let db_path = temp_dir.path().join("test.db");
+        let wal_path = temp_dir.path().join("test.db-wal");
+        let shm_path = temp_dir.path().join("test.db-shm");
+
+        // Create test database file
+        File::create(&db_path)?;
+        
+        // Create WAL and SHM files
+        File::create(&wal_path)?;
+        File::create(&shm_path)?;
+
+        // Verify files exist before
+        assert!(db_path.exists());
+        assert!(wal_path.exists());
+        assert!(shm_path.exists());
+
+        // Run the function
+        let result = reset_sqlite_wal_mode(db_path.to_str().unwrap());
+        assert!(result.is_ok());
+
+        // WAL and SHM files should be removed
+        assert!(db_path.exists()); // Original DB should remain
+        assert!(!wal_path.exists()); // WAL should be removed
+        assert!(!shm_path.exists()); // SHM should be removed
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_reset_sqlite_wal_mode_no_wal_files() -> Result<(), Box<dyn std::error::Error>> {
+        let temp_dir = TempDir::new()?;
+        let db_path = temp_dir.path().join("test.db");
+
+        // Create only the database file (no WAL/SHM files)
+        File::create(&db_path)?;
+
+        // Run the function
+        let result = reset_sqlite_wal_mode(db_path.to_str().unwrap());
+        assert!(result.is_ok());
+
+        // Database should still exist
+        assert!(db_path.exists());
+
+        Ok(())
+    }
+}
