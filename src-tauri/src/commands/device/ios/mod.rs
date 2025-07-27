@@ -7,16 +7,20 @@
 //! - Simulator support
 //! - File transfer utilities
 
+// iOS device module
+pub mod common;
 pub mod device;
 pub mod packages;
-pub mod database;
 pub mod simulator;
+pub mod database;
 pub mod file_utils;
 pub mod tools;
+pub mod tool_validation;
+pub mod diagnostic;
 
-// Re-export all public functions from sub-modules
+// Public exports for command registration
 pub use device::*;
 pub use packages::*;
+pub use simulator::*; 
 pub use database::*;
-pub use simulator::*;
-pub use tools::*;
+// Tools commands available but not auto-exported (can be used via direct module path)

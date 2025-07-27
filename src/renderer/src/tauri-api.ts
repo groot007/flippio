@@ -59,6 +59,7 @@ const COMMAND_MAP = {
   'db:addNewRowWithDefaults': 'db_add_new_row_with_defaults',
   'db:deleteTableRow': 'db_delete_table_row',
   'db:executeQuery': 'db_execute_query',
+  'db:switchDatabase': 'db_switch_database',
 
   // Common commands
   'dialog:selectFile': 'dialog_select_file',
@@ -120,14 +121,15 @@ function getParameterNames(command: string): string[] {
 
     // Database commands
     db_open: ['filePath'],
-    db_get_tables: [],
-    db_get_table_data: ['tableName'],
+    db_get_tables: ['currentDbPath'],
+    db_get_table_data: ['tableName', 'currentDbPath'],
     db_get_info: ['filePath'],
-    db_update_table_row: ['tableName', 'row', 'condition'],
-    db_insert_table_row: ['tableName', 'row'],
-    db_add_new_row_with_defaults: ['tableName'],
-    db_delete_table_row: ['tableName', 'condition'],
+    db_update_table_row: ['tableName', 'row', 'condition', 'currentDbPath'],
+    db_insert_table_row: ['tableName', 'row', 'currentDbPath'],
+    db_add_new_row_with_defaults: ['tableName', 'currentDbPath'],
+    db_delete_table_row: ['tableName', 'condition', 'currentDbPath'],
     db_execute_query: ['query', 'dbPath', 'params'],
+    db_switch_database: ['newDbPath'],
 
     // Common commands
     get_app_path: [],
@@ -255,9 +257,11 @@ export const api = {
   },
 
   // Database methods
-  getTables: async () => {
+  getTables: async (dbPath?: string) => {
     try {
-      const response = await invoke<any>('db_get_tables')
+      const response = await invoke<any>('db_get_tables', { 
+        currentDbPath: dbPath, 
+      })
       if (response.success && response.data) {
         return {
           success: true,
@@ -287,9 +291,12 @@ export const api = {
     }
   },
 
-  getTableInfo: async (tableName: string) => {
+  getTableInfo: async (tableName: string, dbPath?: string) => {
     try {
-      const response = await invoke<DeviceResponse<any>>('db_get_table_data', { tableName })
+      const response = await invoke<DeviceResponse<any>>('db_get_table_data', { 
+        tableName,
+        currentDbPath: dbPath, 
+      })
       if (response.success && response.data) {
         // Transform to match Electron API structure
         return {
@@ -307,20 +314,23 @@ export const api = {
     }
   },
 
-  updateTableRow: (tableName: string, row: any, condition: any) =>
-    invokeCommandWithResponse('db:updateTableRow', 'result', tableName, row, condition),
+  updateTableRow: (tableName: string, row: any, condition: any, dbPath?: string) =>
+    invokeCommandWithResponse('db:updateTableRow', 'result', tableName, row, condition, dbPath),
 
   executeQuery: (query: string, dbPath: string) =>
     invokeCommandWithResponse('db:executeQuery', 'result', query, dbPath),
 
-  insertTableRow: (tableName: string, row: any) =>
-    invokeCommandWithResponse('db:insertTableRow', 'result', tableName, row),
+  insertTableRow: (tableName: string, row: any, dbPath?: string) =>
+    invokeCommandWithResponse('db:insertTableRow', 'result', tableName, row, dbPath),
 
-  addNewRowWithDefaults: (tableName: string) =>
-    invokeCommandWithResponse('db:addNewRowWithDefaults', 'result', tableName),
+  addNewRowWithDefaults: (tableName: string, dbPath?: string) =>
+    invokeCommandWithResponse('db:addNewRowWithDefaults', 'result', tableName, dbPath),
 
-  deleteTableRow: (tableName: string, condition: any) =>
-    invokeCommandWithResponse('db:deleteTableRow', 'result', tableName, condition),
+  deleteTableRow: (tableName: string, condition: any, dbPath?: string) =>
+    invokeCommandWithResponse('db:deleteTableRow', 'result', tableName, condition, dbPath),
+
+  switchDatabase: (filePath: string) =>
+    invokeCommandWithResponse('db:switchDatabase', 'result', filePath),
 
   // File dialog methods
   openFile: async () => {

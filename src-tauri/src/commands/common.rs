@@ -80,7 +80,10 @@ pub async fn save_dropped_file(
     // Create a unique filename to avoid conflicts
     let timestamp = std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
-        .unwrap()
+        .unwrap_or_else(|_| {
+            log::warn!("System time before Unix epoch, using fallback timestamp");
+            std::time::Duration::from_secs(0)
+        })
         .as_secs();
     let unique_filename = format!("{}_{}", timestamp, filename);
     let file_path = dropped_files_dir.join(&unique_filename);

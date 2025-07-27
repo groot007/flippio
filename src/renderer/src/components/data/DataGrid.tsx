@@ -58,7 +58,7 @@ export function DataGrid() {
       setIsAddingRow(true)
 
       // Use the new addNewRowWithDefaults method to let SQLite handle default values
-      const result = await window.api.addNewRowWithDefaults(selectedDatabaseTable.name)
+      const result = await window.api.addNewRowWithDefaults(selectedDatabaseTable.name, selectedDatabaseFile?.path)
 
       if (!result.success) {
         throw new Error(result.error || 'Failed to create new row')

@@ -81,7 +81,7 @@ export const AddNewRowModal: React.FC<AddNewRowModalProps> = ({ isOpen, onClose,
     try {
       setIsCreatingRow(true)
 
-      const result = await window.api.insertTableRow(selectedDatabaseTable.name, newRowData)
+      const result = await window.api.insertTableRow(selectedDatabaseTable.name, newRowData, selectedDatabaseFile?.path)
 
       if (!result.success) {
         throw new Error(result.error || 'Failed to create new row')

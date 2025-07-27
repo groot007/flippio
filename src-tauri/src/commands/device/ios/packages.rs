@@ -4,7 +4,8 @@
 //! simulators and physical devices.
 
 use super::super::types::{DeviceResponse, Package};
-use super::tools::get_tool_command;
+use super::tools::get_tool_command_legacy;
+use super::diagnostic::get_ios_error_help;
 use tauri_plugin_shell::ShellExt;
 use log::{info, error};
 
@@ -168,132 +169,80 @@ pub async fn device_get_ios_device_packages(app_handle: tauri::AppHandle, device
     info!("=== GET iOS DEVICE PACKAGES STARTED ===");
     info!("Device ID: {}", device_id);
     
-    info!("Step 1: Using ideviceinstaller to get installed apps");
     let shell = app_handle.shell();
-    let ideviceinstaller_cmd = get_tool_command("ideviceinstaller");
+    let ideviceinstaller_cmd = get_tool_command_legacy("ideviceinstaller");
     info!("Using ideviceinstaller command: {}", ideviceinstaller_cmd);
     
+    // First try XML mode for faster parsing
+    info!("Step 1: Trying XML mode for faster parsing");
+    let xml_output = shell.command(&ideviceinstaller_cmd)
+        .args(["-u", &device_id, "-l", "-o", "xml"])
+        .output()
+        .await
+        .map_err(|e| format!("Failed to execute ideviceinstaller: {}", e))?;
+    
+    info!("ideviceinstaller XML exit status: {:?}", xml_output.status);
+    
+    if xml_output.status.success() {
+        let xml_content = String::from_utf8_lossy(&xml_output.stdout);
+        info!("📱 XML output received, length: {} characters", xml_content.len());
+        
+        // Try XML parsing first
+        match parse_ios_apps_xml(&xml_content) {
+            Ok(packages) if !packages.is_empty() => {
+                info!("=== GET iOS DEVICE PACKAGES COMPLETED (XML MODE) ===");
+                info!("Found {} packages on device", packages.len());
+                return Ok(DeviceResponse {
+                    success: true,
+                    data: Some(packages),
+                    error: None,
+                });
+            },
+            Ok(_) => {
+                info!("⚠️  XML parsing returned 0 packages, trying fallback to regular mode");
+            },
+            Err(e) => {
+                info!("⚠️  XML parsing failed: {}, trying fallback to regular mode", e);
+            }
+        }
+    } else {
+        let error_msg = String::from_utf8_lossy(&xml_output.stderr);
+        info!("⚠️  XML mode failed: {}, trying fallback to regular mode", error_msg);
+    }
+    
+    // Fallback to regular text mode
+    info!("Step 2: Fallback to regular text parsing mode");
     let output = shell.command(&ideviceinstaller_cmd)
         .args(["-u", &device_id, "-l"])
         .output()
         .await
         .map_err(|e| format!("Failed to execute ideviceinstaller: {}", e))?;
     
-    info!("ideviceinstaller exit status: {:?}", output.status);
+    info!("ideviceinstaller regular exit status: {:?}", output.status);
     
     if !output.status.success() {
         let error_msg = String::from_utf8_lossy(&output.stderr);
         error!("❌ ideviceinstaller command failed: {}", error_msg);
+        
+        // Provide user-friendly error message
+        let user_friendly_error = get_ios_error_help(&error_msg);
+        
         return Ok(DeviceResponse {
             success: false,
             data: None,
-            error: Some(error_msg.to_string()),
+            error: Some(user_friendly_error),
         });
     }
     
-    info!("Step 2: Parsing installed apps list");
+    info!("Step 3: Parsing regular text output for apps");
     let apps_output = String::from_utf8_lossy(&output.stdout);
     
-    // Debug: Log the raw output
-    info!("📱 Raw ideviceinstaller output:");
-    info!("Output length: {} characters", apps_output.len());
-    info!("First 500 characters: {}", 
-          if apps_output.len() > 500 { &apps_output[..500] } else { &apps_output });
+    info!("📱 Regular output received, length: {} characters", apps_output.len());
     
-    // Debug: Log each line with line numbers
-    info!("📝 Line by line breakdown:");
-    for (i, line) in apps_output.lines().enumerate().take(10) {
-        info!("  Line {}: '{}'", i + 1, line);
-    }
-    if apps_output.lines().count() > 10 {
-        info!("  ... and {} more lines", apps_output.lines().count() - 10);
-    }
+    // Parse the regular text output
+    let packages = parse_ios_apps_text(&apps_output)?;
     
-    let mut packages = Vec::new();
-    
-    // Parse the output from ideviceinstaller -l
-    for (line_num, line) in apps_output.lines().enumerate() {
-        let line = line.trim();
-        if line.is_empty() {
-            continue;
-        }
-        
-        info!("🔍 Processing line {}: '{}'", line_num + 1, line);
-        
-        // Try different parsing approaches
-        let (bundle_id, app_name) = if let Some(dash_pos) = line.find(" - ") {
-            // Format: "BundleID - AppName"
-            let bundle_id = line[..dash_pos].trim();
-            let app_name = line[dash_pos + 3..].trim();
-            info!("  ✅ Parsed with dash format: '{}' - '{}'", bundle_id, app_name);
-            (bundle_id, app_name)
-        } else if line.contains('\t') {
-            // Tab-separated format
-            let parts: Vec<&str> = line.split('\t').collect();
-            if parts.len() >= 2 {
-                info!("  ✅ Parsed with tab format: '{}' - '{}'", parts[0].trim(), parts[1].trim());
-                (parts[0].trim(), parts[1].trim())
-            } else {
-                info!("  ❌ Tab format but insufficient parts");
-                continue;
-            }
-        } else if line.contains(' ') {
-            // Space-separated, assume first word is bundle ID, rest is name
-            let parts: Vec<&str> = line.splitn(2, ' ').collect();
-            if parts.len() >= 2 {
-                info!("  ✅ Parsed with space format: '{}' - '{}'", parts[0].trim(), parts[1].trim());
-                (parts[0].trim(), parts[1].trim())
-            } else {
-                info!("  ❌ Space format but insufficient parts");
-                continue;
-            }
-        } else {
-            // Single word, use as both bundle ID and name
-            info!("  ✅ Using as bundle ID only: '{}'", line);
-            (line, line)
-        };
-        
-        if !bundle_id.is_empty() {
-            // Clean the bundle ID in case it has trailing commas or whitespace
-            let clean_bundle_id = bundle_id.trim().trim_end_matches(',').to_string();
-            let mut clean_app_name = app_name.trim().trim_end_matches(',').to_string();
-            
-            // Handle the format: "version", "AppName" -> AppName (version)
-            if clean_app_name.contains(", ") && clean_app_name.starts_with('"') {
-                let parts: Vec<&str> = clean_app_name.split(", ").collect();
-                if parts.len() >= 2 {
-                    // Extract version (first part) and app name (last part)
-                    let version = parts[0].trim_matches('"').trim();
-                    let app_name_part = parts[parts.len() - 1].trim_matches('"').trim();
-                    
-                    if !version.is_empty() && !app_name_part.is_empty() {
-                        clean_app_name = format!("{} ({})", app_name_part, version);
-                        info!("🔄 Reformatted app name: '{}' -> '{}'", app_name, clean_app_name);
-                    }
-                }
-            } else {
-                // Just clean quotes and whitespace for other formats
-                clean_app_name = clean_app_name.trim_matches('"').trim().to_string();
-            }
-            
-            if clean_bundle_id != bundle_id || clean_app_name != app_name {
-                info!("🧹 Cleaned package: '{}' -> '{}', name: '{}' -> '{}'", 
-                      bundle_id, clean_bundle_id, app_name, clean_app_name);
-            }
-            
-            let package = Package {
-                name: clean_app_name,
-                bundle_id: clean_bundle_id,
-            };
-            
-            info!("✅ Found app: {} ({})", package.name, package.bundle_id);
-            packages.push(package);
-        } else {
-            info!("  ❌ Empty bundle ID, skipping");
-        }
-    }
-    
-    info!("=== GET iOS DEVICE PACKAGES COMPLETED ===");
+    info!("=== GET iOS DEVICE PACKAGES COMPLETED (REGULAR MODE) ===");
     info!("Found {} packages on device", packages.len());
     
     Ok(DeviceResponse {
@@ -301,4 +250,295 @@ pub async fn device_get_ios_device_packages(app_handle: tauri::AppHandle, device
         data: Some(packages),
         error: None,
     })
+}
+
+/// Parse iOS apps from XML plist output
+fn parse_ios_apps_xml(xml_content: &str) -> Result<Vec<Package>, String> {
+    let mut packages = Vec::new();
+    let lines: Vec<&str> = xml_content.lines().collect();
+    let mut i = 0;
+    
+    info!("🔍 Starting XML parsing of {} lines", lines.len());
+    
+    // Debug: Show first 20 lines to understand structure
+    info!("📋 First 20 lines of XML for debugging:");
+    for (idx, line) in lines.iter().take(20).enumerate() {
+        info!("  Line {}: {}", idx + 1, line.trim());
+    }
+    
+    // Debug: Look for any CFBundleIdentifier occurrences
+    let bundle_id_count = lines.iter().filter(|line| line.trim() == "<key>CFBundleIdentifier</key>").count();
+    info!("🔍 Found {} occurrences of CFBundleIdentifier key", bundle_id_count);
+    
+    // Also check for alternative patterns
+    let dict_count = lines.iter().filter(|line| line.trim() == "<dict>").count();
+    let array_count = lines.iter().filter(|line| line.trim() == "<array>").count();
+    info!("🔍 Found {} <dict> tags and {} <array> tags", dict_count, array_count);
+    
+    while i < lines.len() {
+        let line = lines[i].trim();
+        
+        // Look for the start of an app entry - we'll look for CFBundleIdentifier
+        if line == "<key>CFBundleIdentifier</key>" {
+            info!("🎯 Found CFBundleIdentifier at line {}", i + 1);
+            if let Some(bundle_id) = extract_next_string_value(&lines, i) {
+                info!("  📱 Extracted bundle ID: {}", bundle_id);
+                
+                // Now look for the display name within the same dictionary
+                let mut app_name = bundle_id.clone(); // Fallback to bundle ID
+                let mut dict_depth = 1; // We're already inside a dictionary that contains CFBundleIdentifier
+                let mut j = i + 1; // Start from the line after CFBundleIdentifier
+                
+                // Find the end of this dictionary by tracking <dict> and </dict> tags
+                while j < lines.len() {
+                    let search_line = lines[j].trim();
+                    
+                    if search_line == "<dict>" {
+                        dict_depth += 1;
+                    } else if search_line == "</dict>" {
+                        dict_depth -= 1;
+                        if dict_depth <= 0 {
+                            break; // End of this app's dictionary
+                        }
+                    } else if search_line == "<key>CFBundleDisplayName</key>" {
+                        if let Some(display_name) = extract_next_string_value(&lines, j) {
+                            app_name = display_name;
+                            info!("  🏷️  Found display name: {}", app_name);
+                            break;
+                        }
+                    } else if search_line == "<key>CFBundleName</key>" && app_name == bundle_id {
+                        // Only use CFBundleName if we haven't found CFBundleDisplayName
+                        if let Some(bundle_name) = extract_next_string_value(&lines, j) {
+                            app_name = bundle_name;
+                            info!("  📦 Found bundle name: {}", app_name);
+                            // Continue looking for CFBundleDisplayName which is preferred
+                        }
+                    } else if search_line == "<key>CFBundleVersion</key>" {
+                        if let Some(version) = extract_next_string_value(&lines, j) {
+                            info!("  🔢 Found version: {}", version);
+                            // Optionally include version in app name
+                            if app_name != bundle_id && !app_name.contains(&version) {
+                                app_name = format!("{} ({})", app_name, version);
+                            }
+                        }
+                    }
+                    
+                    j += 1;
+                }
+                
+                // Clean the values
+                let clean_bundle_id = bundle_id.trim().to_string();
+                let clean_app_name = app_name.trim().to_string();
+                
+                info!("🧹 Cleaned package: '{}' -> '{}', name: '{}' -> '{}'", 
+                      bundle_id, clean_bundle_id, app_name, clean_app_name);
+                
+                // Filter out system/invalid entries
+                if !clean_bundle_id.is_empty() && 
+                   clean_bundle_id.contains('.') && 
+                   !clean_bundle_id.starts_with("com.apple.") { // Skip most Apple system apps
+                    
+                    let package = Package {
+                        name: clean_app_name.clone(),
+                        bundle_id: clean_bundle_id.clone(),
+                    };
+                    
+                    info!("✅ Found app: {} ({})", package.name, package.bundle_id);
+                    packages.push(package);
+                } else {
+                    info!("⏭️  Skipped app: {} ({})", clean_app_name, clean_bundle_id);
+                }
+                
+                // Move i to where we left off in the inner loop
+                i = j;
+            } else {
+                info!("❌ Failed to extract bundle ID at line {}", i + 1);
+            }
+        }
+        
+        i += 1;
+    }
+    
+    info!("🎯 XML parsing completed - extracted {} valid packages", packages.len());
+    Ok(packages)
+}
+
+/// Parse iOS apps from regular text output
+fn parse_ios_apps_text(text_content: &str) -> Result<Vec<Package>, String> {
+    let mut packages = Vec::new();
+    let lines: Vec<&str> = text_content.lines().collect();
+    
+    info!("🔍 Starting text parsing of {} lines", lines.len());
+    
+    // Debug: Show first 10 lines to understand structure
+    info!("📋 First 10 lines of text for debugging:");
+    for (idx, line) in lines.iter().take(10).enumerate() {
+        info!("  Line {}: {}", idx + 1, line.trim());
+    }
+    
+    for (line_num, line) in lines.iter().enumerate() {
+        let line = line.trim();
+        
+        // Skip empty lines
+        if line.is_empty() {
+            continue;
+        }
+        
+        // Look for lines with comma-separated format: bundle.id, "version", "App Name"
+        if line.contains(',') && line.contains('"') {
+            info!("🔍 Processing line {}: '{}'", line_num + 1, line);
+            
+            // Try to parse the comma-separated format
+            if let Some((bundle_id, app_name)) = parse_app_line(line) {
+                // Clean the values
+                let clean_bundle_id = bundle_id.trim().to_string();
+                let clean_app_name = app_name.trim().to_string();
+                
+                // Filter out system/invalid entries
+                if !clean_bundle_id.is_empty() && 
+                   clean_bundle_id.contains('.') && 
+                   !clean_bundle_id.starts_with("com.apple.") { // Skip most Apple system apps
+                    
+                    let package = Package {
+                        name: clean_app_name.clone(),
+                        bundle_id: clean_bundle_id.clone(),
+                    };
+                    
+                    info!("✅ Found app: {} ({})", package.name, package.bundle_id);
+                    packages.push(package);
+                } else {
+                    info!("⏭️  Skipped app: {} ({})", clean_app_name, clean_bundle_id);
+                }
+            } else {
+                info!("❌ Failed to parse line: {}", line);
+            }
+        }
+    }
+    
+    info!("🎯 Text parsing completed - extracted {} valid packages", packages.len());
+    Ok(packages)
+}
+
+/// Parse a single app line in format: bundle.id, "version", "App Name"
+fn parse_app_line(line: &str) -> Option<(String, String)> {
+    // Split by comma and trim
+    let parts: Vec<&str> = line.split(',').collect();
+    
+    if parts.len() >= 3 {
+        let bundle_id = parts[0].trim();
+        
+        // Extract app name from the last quoted part
+        let app_name_part = parts[2].trim();
+        if let Some(app_name) = extract_quoted_string(app_name_part) {
+            // If bundle_id ends with comma, remove it
+            let clean_bundle_id = bundle_id.trim_end_matches(',').trim();
+            
+            info!("  ✅ Parsed with space format: '{}' - '{}'", clean_bundle_id, app_name_part);
+            
+            // Format app name with version if available
+            let version_part = parts[1].trim();
+            if let Some(version) = extract_quoted_string(version_part) {
+                let formatted_name = format!("{} ({})", app_name, version);
+                info!("🔄 Reformatted app name: '{}' -> '{}'", app_name_part, formatted_name);
+                return Some((clean_bundle_id.to_string(), formatted_name));
+            } else {
+                return Some((clean_bundle_id.to_string(), app_name));
+            }
+        }
+    }
+    
+    // Try alternative format with space separation
+    if let Some(space_pos) = line.find(' ') {
+        let bundle_id = &line[..space_pos];
+        let rest = &line[space_pos + 1..];
+        
+        if rest.contains('"') {
+            // Try to extract quoted parts
+            let quoted_parts: Vec<&str> = rest.split('"').collect();
+            if quoted_parts.len() >= 4 {
+                let version = quoted_parts[1];
+                let app_name = quoted_parts[3];
+                
+                let clean_bundle_id = bundle_id.trim_end_matches(',').trim();
+                let formatted_name = format!("{} ({})", app_name, version);
+                
+                info!("  ✅ Parsed with space format: '{}' - '\"{}\" \"{}\"'", clean_bundle_id, version, app_name);
+                info!("🔄 Reformatted app name: '\"{}\" \"{}\"' -> '{}'", version, app_name, formatted_name);
+                
+                return Some((clean_bundle_id.to_string(), formatted_name));
+            }
+        }
+    }
+    
+    None
+}
+
+/// Extract content from a quoted string
+fn extract_quoted_string(s: &str) -> Option<String> {
+    let trimmed = s.trim();
+    if trimmed.starts_with('"') && trimmed.ends_with('"') && trimmed.len() >= 2 {
+        Some(trimmed[1..trimmed.len()-1].to_string())
+    } else {
+        None
+    }
+}
+
+/// Extract the next <string>value</string> after a given line index
+fn extract_next_string_value(lines: &[&str], start_index: usize) -> Option<String> {
+    if start_index + 1 >= lines.len() {
+        return None;
+    }
+    
+    // Check the next line first
+    let next_line = lines[start_index + 1].trim();
+    
+    // Look for <string>value</string> pattern
+    if next_line.starts_with("<string>") && next_line.ends_with("</string>") {
+        let start = "<string>".len();
+        let end = next_line.len() - "</string>".len();
+        if end > start {
+            return Some(next_line[start..end].to_string());
+        }
+    }
+    
+    // Also check if the string might be split across lines or have different formatting
+    // Look for just <string> tag
+    if next_line == "<string>" {
+        // Value might be on the next line
+        if start_index + 2 < lines.len() {
+            let value_line = lines[start_index + 2].trim();
+            if start_index + 3 < lines.len() && lines[start_index + 3].trim() == "</string>" {
+                return Some(value_line.to_string());
+            }
+        }
+    }
+    
+    // Check if it's all on one line but with extra whitespace
+    if let Some(string_start) = next_line.find("<string>") {
+        if let Some(string_end) = next_line.find("</string>") {
+            let start = string_start + "<string>".len();
+            let end = string_end;
+            if end > start {
+                return Some(next_line[start..end].to_string());
+            }
+        }
+    }
+    
+    // Try looking a bit further ahead (up to 3 lines) in case of formatting differences
+    for offset in 2..=4 {
+        if start_index + offset >= lines.len() {
+            break;
+        }
+        
+        let check_line = lines[start_index + offset].trim();
+        if check_line.starts_with("<string>") && check_line.ends_with("</string>") {
+            let start = "<string>".len();
+            let end = check_line.len() - "</string>".len();
+            if end > start {
+                return Some(check_line[start..end].to_string());
+            }
+        }
+    }
+    
+    None
 }

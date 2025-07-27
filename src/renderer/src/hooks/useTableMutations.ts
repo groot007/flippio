@@ -40,6 +40,7 @@ export function useDeleteRowMutation() {
       const result = await window.api.deleteTableRow(
         selectedDatabaseTable?.name || '',
         condition,
+        selectedDatabaseFile?.path,
       )
 
       if (!result.success) {

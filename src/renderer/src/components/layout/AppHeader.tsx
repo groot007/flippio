@@ -31,6 +31,8 @@ function AppHeader() {
   const {
     isLoading,
     data: applicationsList = [],
+    error: applicationsError,
+    isError: isApplicationsError,
   } = useApplications(selectedDevice)
 
   const [isPackageSetModalOpen, setIsPackageSetModalOpen] = useState(false)
@@ -46,7 +48,7 @@ function AppHeader() {
     ) {
       timer = setTimeout(() => {
         setIsPackageSetModalOpen(true)
-      }, 2000)
+      }, 5000)
     }
     else {
       setIsPackageSetModalOpen(false)
@@ -55,6 +57,48 @@ function AppHeader() {
       clearTimeout(timer)
     }
   }, [selectedDevice, isLoading])
+
+  // Handle iOS installation proxy errors with user-friendly toast
+  useEffect(() => {
+    if (isApplicationsError && applicationsError && selectedDevice?.deviceType === 'iphone-device') {
+      const errorMessage = applicationsError.message || ''
+      
+      if (errorMessage.includes('Could not start com.apple.mobile.installation_proxy')) {
+        toaster.create({
+          title: 'iPhone Connection Issue',
+          description: 'Cannot access iPhone apps. Please unlock your phone. Enable Developer Mode (iOS 16+)\n\nThen try again.',
+          type: 'error',
+          duration: 10000,
+          meta: {
+            closable: true,
+          },
+        })
+      }
+      else if (errorMessage.includes('Device not found') || errorMessage.includes('No device found')) {
+        toaster.create({
+          title: 'iPhone Not Found',
+          description: 'iPhone is not detected. Please check USB connection and try reconnecting your device.',
+          type: 'error',
+          duration: 6000,
+          meta: {
+            closable: true,
+          },
+        })
+      }
+      else {
+        // Generic iOS error
+        toaster.create({
+          title: 'iPhone Error',
+          description: `Failed to load iPhone apps: ${errorMessage}`,
+          type: 'error',
+          duration: 6000,
+          meta: {
+            closable: true,
+          },
+        })
+      }
+    }
+  }, [isApplicationsError, applicationsError, selectedDevice])
 
   useEffect(() => {
     if (!devicesList.find(device => device.id === selectedDevice?.id)) {

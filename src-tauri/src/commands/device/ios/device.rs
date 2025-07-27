@@ -4,7 +4,8 @@
 //! from connected iOS devices.
 
 use super::super::types::{DeviceResponse, Device};
-use super::tools::get_tool_command;
+use super::tools::get_tool_command_legacy;
+use super::diagnostic::get_ios_error_help;
 use tauri_plugin_shell::ShellExt;
 use log::{info, error};
 use std::time::Duration;
@@ -15,7 +16,7 @@ pub async fn device_get_ios_devices(app_handle: tauri::AppHandle) -> Result<Devi
     info!("=== GET iOS DEVICES STARTED ===");
     
     let shell = app_handle.shell();
-    let idevice_id_cmd = get_tool_command("idevice_id");
+    let idevice_id_cmd = get_tool_command_legacy("idevice_id");
     
     // Get list of device IDs (local USB devices only)
     let output = shell.command(&idevice_id_cmd)
@@ -54,7 +55,7 @@ pub async fn device_get_ios_devices(app_handle: tauri::AppHandle) -> Result<Devi
         info!("🔍 Processing device ID: '{}'", device_id);
         
         // Get device name using ideviceinfo
-        let ideviceinfo_cmd = get_tool_command("ideviceinfo");
+        let ideviceinfo_cmd = get_tool_command_legacy("ideviceinfo");
         let device_name = match shell.command(&ideviceinfo_cmd)
             .args(["-u", device_id])
             .output()
@@ -110,7 +111,7 @@ pub async fn device_check_app_existence(
     
     info!("Step 1: Using ideviceinstaller to check app existence");
     let shell = app_handle.shell();
-    let ideviceinstaller_cmd = get_tool_command("ideviceinstaller");
+    let ideviceinstaller_cmd = get_tool_command_legacy("ideviceinstaller");
     info!("Using ideviceinstaller command: {}", ideviceinstaller_cmd);
     
     info!("🕐 Starting ideviceinstaller with 30s timeout...");
@@ -129,10 +130,14 @@ pub async fn device_check_app_existence(
     if !output.status.success() {
         let error_msg = String::from_utf8_lossy(&output.stderr);
         error!("❌ ideviceinstaller command failed: {}", error_msg);
+        
+        // Provide user-friendly error message with specific diagnostics
+        let user_friendly_error = get_ios_error_help(&error_msg);
+        
         return Ok(DeviceResponse {
             success: false,
             data: None,
-            error: Some(error_msg.to_string()),
+            error: Some(user_friendly_error),
         });
     }
     

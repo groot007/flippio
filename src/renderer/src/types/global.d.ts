@@ -23,14 +23,15 @@ declare global {
       pushDatabaseFile: (deviceId: string, localPath: string, packageName: string, remotePath: string, deviceType?: string) => Promise<any>
 
       // Database methods
-      getTables: () => Promise<any>
+      getTables: (dbPath?: string) => Promise<any>
       openDatabase: (filePath: string) => Promise<any>
-      getTableInfo: (tableName: string) => Promise<any>
-      updateTableRow: (tableName: string, row: any, condition: any) => Promise<any>
+      getTableInfo: (tableName: string, dbPath?: string) => Promise<any>
+      updateTableRow: (tableName: string, row: any, condition: any, dbPath?: string) => Promise<any>
       executeQuery: (query: string, dbPath: string) => Promise<any>
-      insertTableRow: (table: string, row: any) => Promise<any>
-      addNewRowWithDefaults: (table: string) => Promise<any>
-      deleteTableRow: (table: string, condition: any) => Promise<any>
+      insertTableRow: (table: string, row: any, dbPath?: string) => Promise<any>
+      addNewRowWithDefaults: (table: string, dbPath?: string) => Promise<any>
+      deleteTableRow: (table: string, condition: any, dbPath?: string) => Promise<any>
+      switchDatabase: (filePath: string) => Promise<any>
 
       // File dialog methods
       openFile: () => Promise<any>
