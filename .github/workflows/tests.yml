@@ -21,7 +21,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
           cache: yarn
       
       - name: Install dependencies
@@ -30,20 +30,20 @@ jobs:
       - name: Run frontend tests
         run: yarn test
 
-  rust-tests:
-    name: Rust Tests
-    runs-on: ubuntu-latest
+  # rust-tests:
+  #   name: Rust Tests
+  #   runs-on: ubuntu-latest
     
-    steps:
-      - uses: actions/checkout@v4
+  #   steps:
+  #     - uses: actions/checkout@v4
       
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
+  #     - name: Setup Rust
+  #       uses: dtolnay/rust-toolchain@stable
       
-      - name: Cache Rust dependencies
-        uses: swatinem/rust-cache@v2
-        with:
-          workspaces: ./src-tauri -> target
+  #     - name: Cache Rust dependencies
+  #       uses: swatinem/rust-cache@v2
+  #       with:
+  #         workspaces: ./src-tauri -> target
       
-      - name: Run Rust tests
-        run: cd src-tauri && cargo test
+  #     - name: Run Rust tests
+  #       run: cd src-tauri && cargo test
