@@ -292,15 +292,22 @@ mod tests {
     fn test_clean_temp_dir() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         // Test that clean_temp_dir preserves recent files and creates directory
         let temp_dir = get_temp_dir_path();
-        let _ = ensure_temp_dir()?; // Ensure temp dir exists
+        
+        // Ensure temp dir exists first
+        let created_dir = ensure_temp_dir()?;
+        assert!(created_dir.exists(), "Temp directory should be created");
         
         // Create a recent file (should be preserved since it's less than 1 hour old)
         let recent_file = temp_dir.join("recent_file.txt");
         fs::write(&recent_file, "recent content")?;
+        assert!(recent_file.exists(), "Test file should be created");
         
         // Run clean_temp_dir
         let result = clean_temp_dir()?;
-        assert!(result.exists());
+        
+        // The result should be the temp directory path and it should exist
+        assert!(result.exists(), "Temp directory should exist after clean_temp_dir");
+        assert_eq!(result, temp_dir, "clean_temp_dir should return the temp directory path");
         
         // Recent file should still exist (since it's new)
         assert!(recent_file.exists(), "Recent file should be preserved");
