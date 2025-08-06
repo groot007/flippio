@@ -232,3 +232,6 @@ if (deviceId.match(/^[A-F0-9-]{36,40}$/i)) deviceType = 'iphone-device'  // Phys
 else if (deviceId.match(/^[A-F0-9-]{8,}$/i)) deviceType = 'simulator'    // iOS Simulator  
 else deviceType = 'android'  // Android device/emulator
 ```
+
+## Copilot Code editing instructions
+- **DONT ADD COMMENTS**: Copilot should not add comments to the code. only jsdoc comments are allowed. (on component level)
