@@ -2,6 +2,7 @@ import {
 
   Textarea,
 } from '@chakra-ui/react'
+import { useChangeHistoryRefresh } from '@renderer/hooks/useChangeHistory'
 import { useCurrentDatabaseSelection, useTableData } from '@renderer/store'
 import { toaster } from '@renderer/ui/toaster'
 import { useState } from 'react'
@@ -16,6 +17,7 @@ export function CustomQueryModal({ isOpen, onClose }: CustomQueryModalProps) {
   const [query, setQuery] = useState('')
   const { selectedDatabaseFile } = useCurrentDatabaseSelection()
   const setTableData = useTableData(state => state.setTableData)
+  const { refreshChangeHistory } = useChangeHistoryRefresh()
 
   const handleExecute = async () => {
     if (!query.trim() || !selectedDatabaseFile?.path)
@@ -38,6 +40,12 @@ export function CustomQueryModal({ isOpen, onClose }: CustomQueryModalProps) {
         customQuery: query,
         tableName: 'Custom Query Result',
       })
+
+      // Refresh change history if the query might have modified data
+      const queryUpperCase = query.trim().toUpperCase()
+      if (queryUpperCase.startsWith('INSERT') || queryUpperCase.startsWith('UPDATE') || queryUpperCase.startsWith('DELETE')) {
+        refreshChangeHistory()
+      }
 
       onClose()
     }

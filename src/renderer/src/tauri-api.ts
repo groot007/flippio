@@ -58,8 +58,15 @@ const COMMAND_MAP = {
   'db:insertTableRow': 'db_insert_table_row',
   'db:addNewRowWithDefaults': 'db_add_new_row_with_defaults',
   'db:deleteTableRow': 'db_delete_table_row',
+  'db:clearTable': 'db_clear_table',
   'db:executeQuery': 'db_execute_query',
   'db:switchDatabase': 'db_switch_database',
+
+  // Change history commands
+  'db:getChangeHistory': 'get_database_change_history',
+  'db:getContextSummaries': 'get_all_context_summaries',
+  'db:getChangeHistoryDiagnostics': 'get_change_history_diagnostics',
+  'db:clearContextChanges': 'clear_context_changes',
 
   // Common commands
   'dialog:selectFile': 'dialog_select_file',
@@ -68,33 +75,42 @@ const COMMAND_MAP = {
 
 // Helper function for commands that need to preserve Electron-style response structure
 async function invokeCommandWithResponse<T>(electronCommand: string, dataFieldName: string, ...args: any[]): Promise<{ success: boolean, [key: string]: any }> {
+  console.log('🔍 [invokeCommandWithResponse] Called with:', { electronCommand, dataFieldName, args });
+  
   const tauriCommand = COMMAND_MAP[electronCommand as keyof typeof COMMAND_MAP]
   if (!tauriCommand) {
+    console.error('🔍 [invokeCommandWithResponse] Command not found:', electronCommand);
     throw new Error(`Command not found: ${electronCommand}`)
   }
+
+  console.log('🔍 [invokeCommandWithResponse] Mapped to Tauri command:', tauriCommand);
 
   try {
     // Create proper parameter object based on command
     const parameters: Record<string, any> = {}
     const paramNames = getParameterNames(tauriCommand)
+    console.log('🔍 [invokeCommandWithResponse] Parameter names:', paramNames);
 
     for (let i = 0; i < args.length && i < paramNames.length; i++) {
       parameters[paramNames[i]] = args[i]
     }
 
-    console.log(`Invoking ${tauriCommand} with parameters:`, parameters)
+    console.log(`🔍 [invokeCommandWithResponse] Invoking ${tauriCommand} with parameters:`, parameters)
     const response = await invoke<DeviceResponse<T>>(tauriCommand, parameters)
-    console.log(`Response from ${tauriCommand}:`, response)
+    console.log(`🔍 [invokeCommandWithResponse] Raw response from ${tauriCommand}:`, response)
 
     if (response.success) {
-      return { success: true, [dataFieldName]: response.data }
+      const result = { success: true, [dataFieldName]: response.data };
+      console.log(`🔍 [invokeCommandWithResponse] Formatted result:`, result);
+      return result;
     }
     else {
+      console.error(`🔍 [invokeCommandWithResponse] Command failed:`, response.error);
       return { success: false, error: response.error }
     }
   }
   catch (error) {
-    console.error(`Error invoking ${tauriCommand}:`, error)
+    console.error(`🔍 [invokeCommandWithResponse] Exception invoking ${tauriCommand}:`, error)
     return { success: false, error: (error as Error).message }
   }
 }
@@ -124,12 +140,19 @@ function getParameterNames(command: string): string[] {
     db_get_tables: ['currentDbPath'],
     db_get_table_data: ['tableName', 'currentDbPath'],
     db_get_info: ['filePath'],
-    db_update_table_row: ['tableName', 'row', 'condition', 'currentDbPath'],
-    db_insert_table_row: ['tableName', 'row', 'currentDbPath'],
-    db_add_new_row_with_defaults: ['tableName', 'currentDbPath'],
-    db_delete_table_row: ['tableName', 'condition', 'currentDbPath'],
+    db_update_table_row: ['tableName', 'row', 'condition', 'currentDbPath', 'deviceId', 'deviceName', 'deviceType', 'packageName', 'appName'],
+    db_insert_table_row: ['tableName', 'row', 'currentDbPath', 'deviceId', 'deviceName', 'deviceType', 'packageName', 'appName'],
+    db_add_new_row_with_defaults: ['tableName', 'currentDbPath', 'deviceId', 'deviceName', 'deviceType', 'packageName', 'appName'],
+    db_delete_table_row: ['tableName', 'condition', 'currentDbPath', 'deviceId', 'deviceName', 'deviceType', 'packageName', 'appName'],
+    db_clear_table: ['tableName', 'currentDbPath', 'deviceId', 'deviceName', 'deviceType', 'packageName', 'appName'],
     db_execute_query: ['query', 'dbPath', 'params'],
     db_switch_database: ['newDbPath'],
+
+    // Change history commands
+    get_database_change_history: ['contextKey', 'tableName'],
+    get_all_context_summaries: [],
+    get_change_history_diagnostics: [],
+    clear_context_changes: ['contextKey'],
 
     // Common commands
     get_app_path: [],
@@ -314,23 +337,94 @@ export const api = {
     }
   },
 
-  updateTableRow: (tableName: string, row: any, condition: any, dbPath?: string) =>
-    invokeCommandWithResponse('db:updateTableRow', 'result', tableName, row, condition, dbPath),
+  updateTableRow: (
+    tableName: string, 
+    row: any, 
+    condition: any, 
+    dbPath?: string,
+    deviceId?: string,
+    deviceName?: string,
+    deviceType?: string,
+    packageName?: string,
+    appName?: string
+  ) =>
+    invokeCommandWithResponse('db:updateTableRow', 'result', tableName, row, condition, dbPath, deviceId, deviceName, deviceType, packageName, appName),
 
   executeQuery: (query: string, dbPath: string) =>
     invokeCommandWithResponse('db:executeQuery', 'result', query, dbPath),
 
-  insertTableRow: (tableName: string, row: any, dbPath?: string) =>
-    invokeCommandWithResponse('db:insertTableRow', 'result', tableName, row, dbPath),
+  insertTableRow: (
+    tableName: string, 
+    row: any, 
+    dbPath?: string,
+    deviceId?: string,
+    deviceName?: string, 
+    deviceType?: string,
+    packageName?: string,
+    appName?: string
+  ) =>
+    invokeCommandWithResponse('db:insertTableRow', 'result', tableName, row, dbPath, deviceId, deviceName, deviceType, packageName, appName),
 
-  addNewRowWithDefaults: (tableName: string, dbPath?: string) =>
-    invokeCommandWithResponse('db:addNewRowWithDefaults', 'result', tableName, dbPath),
+  addNewRowWithDefaults: (
+    tableName: string, 
+    dbPath?: string,
+    deviceId?: string,
+    deviceName?: string,
+    deviceType?: string,
+    packageName?: string,
+    appName?: string
+  ) =>
+    invokeCommandWithResponse('db:addNewRowWithDefaults', 'result', tableName, dbPath, deviceId, deviceName, deviceType, packageName, appName),
 
-  deleteTableRow: (tableName: string, condition: any, dbPath?: string) =>
-    invokeCommandWithResponse('db:deleteTableRow', 'result', tableName, condition, dbPath),
+  deleteTableRow: (
+    tableName: string, 
+    condition: any, 
+    dbPath?: string,
+    deviceId?: string,
+    deviceName?: string,
+    deviceType?: string,
+    packageName?: string,
+    appName?: string
+  ) =>
+    invokeCommandWithResponse('db:deleteTableRow', 'result', tableName, condition, dbPath, deviceId, deviceName, deviceType, packageName, appName),
+
+  clearTable: (
+    tableName: string,
+    dbPath?: string,
+    deviceId?: string,
+    deviceName?: string,
+    deviceType?: string,
+    packageName?: string,
+    appName?: string
+  ) =>
+    invokeCommandWithResponse('db:clearTable', 'result', tableName, dbPath, deviceId, deviceName, deviceType, packageName, appName),
 
   switchDatabase: (filePath: string) =>
     invokeCommandWithResponse('db:switchDatabase', 'result', filePath),
+
+  // Change history methods
+  getChangeHistory: async (contextKey: string, tableName?: string) => {
+    console.log('🔍 [API] getChangeHistory called with:', { contextKey, tableName });
+    try {
+      const result = await invokeCommandWithResponse('db:getChangeHistory', 'data', contextKey, tableName);
+      console.log('🔍 [API] getChangeHistory result:', result);
+      console.log('🔍 [API] getChangeHistory data type:', typeof result.data);
+      console.log('🔍 [API] getChangeHistory data length:', Array.isArray(result.data) ? result.data.length : 'not an array');
+      return result;
+    } catch (error) {
+      console.error('🔍 [API] getChangeHistory error:', error);
+      throw error;
+    }
+  },
+
+  getContextSummaries: () =>
+    invokeCommandWithResponse('db:getContextSummaries', 'summaries'),
+
+  getChangeHistoryDiagnostics: () =>
+    invokeCommandWithResponse('db:getChangeHistoryDiagnostics', 'diagnostics'),
+
+  clearContextChanges: (contextKey: string) =>
+    invokeCommandWithResponse('db:clearContextChanges', 'result', contextKey),
 
   // File dialog methods
   openFile: async () => {

@@ -72,6 +72,7 @@ pub fn run() {
             commands::database::db_insert_table_row,
             commands::database::db_add_new_row_with_defaults,
             commands::database::db_delete_table_row,
+            commands::database::db_clear_table,
             commands::database::db_execute_query,
             commands::database::db_get_connection_stats,
             commands::database::db_clear_cache_for_path,

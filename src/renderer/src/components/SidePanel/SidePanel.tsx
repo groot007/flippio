@@ -74,6 +74,13 @@ export function SidePanel() {
 
     setIsLoading(true)
     try {
+      console.log('🗑️ Starting delete row operation:', {
+        selectedRow,
+        selectedDatabaseTable: selectedDatabaseTable?.name,
+        selectedDevice: selectedDevice?.id,
+        selectedApplication: selectedApplication?.bundleId
+      })
+      
       await deleteRowMutation.mutateAsync({
         selectedRow,
         selectedDatabaseTable,
@@ -82,6 +89,8 @@ export function SidePanel() {
         selectedApplication,
         tableColumns: tableData?.columns,
       })
+      
+      console.log('✅ Delete row operation completed successfully')
     }
     catch (error) {
       console.error('Failed to delete row:', error)

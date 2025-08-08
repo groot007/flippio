@@ -6,6 +6,7 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ChangeEvent {
     pub id: String,                           // UUID for the change
     pub timestamp: DateTime<Utc>,             // When the change occurred
@@ -36,6 +37,7 @@ pub enum OperationType {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct FieldChange {
     pub field_name: String,
     pub old_value: Option<serde_json::Value>,
@@ -44,6 +46,7 @@ pub struct FieldChange {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct UserContext {
     pub device_id: String,
     pub device_name: String,
@@ -54,6 +57,7 @@ pub struct UserContext {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ChangeMetadata {
     pub affected_rows: usize,
     pub execution_time_ms: u64,
@@ -63,6 +67,7 @@ pub struct ChangeMetadata {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ContextSummary {
     pub context_key: String,
     pub device_name: String,

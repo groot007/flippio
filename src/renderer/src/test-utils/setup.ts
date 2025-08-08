@@ -124,6 +124,11 @@ beforeAll(() => {
     launchIOSSimulator: vi.fn().mockResolvedValue({ success: true }),
     checkForUpdates: vi.fn().mockResolvedValue({ success: true, updateAvailable: false }),
     downloadAndInstallUpdate: vi.fn().mockResolvedValue({ success: true }),
+    // Change history methods
+    getChangeHistory: vi.fn().mockResolvedValue({ success: true, changes: [] }),
+    getContextSummaries: vi.fn().mockResolvedValue({ success: true, summaries: [] }),
+    getChangeHistoryDiagnostics: vi.fn().mockResolvedValue({ success: true, diagnostics: {} }),
+    clearContextChanges: vi.fn().mockResolvedValue({ success: true }),
   }
 })
 

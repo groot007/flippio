@@ -7,11 +7,13 @@ import {
   Text,
   VStack,
 } from '@chakra-ui/react'
+import { useChangeHistoryRefresh } from '@renderer/hooks/useChangeHistory'
 import { useTableDataQuery } from '@renderer/hooks/useTableDataQuery'
 import { useCurrentDatabaseSelection, useCurrentDeviceSelection, useTableData } from '@renderer/store'
 import { useRowEditingStore } from '@renderer/store/useRowEditingStore'
 import { useColorMode } from '@renderer/ui/color-mode'
 import { toaster } from '@renderer/ui/toaster'
+import { extractContextFromState } from '@renderer/utils/contextKey'
 import { colorSchemeDark, colorSchemeLight, themeQuartz } from 'ag-grid-community'
 import { AgGridReact } from 'ag-grid-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -41,7 +43,8 @@ export function DataGrid() {
   } = useTableData()
   const { setSelectedRow } = useRowEditingStore()
   const { selectedDatabaseTable, selectedDatabaseFile } = useCurrentDatabaseSelection()
-  const { selectedDevice } = useCurrentDeviceSelection()
+  const { selectedDevice, selectedApplication } = useCurrentDeviceSelection()
+  const { refreshChangeHistory } = useChangeHistoryRefresh()
   const gridTheme = themeQuartz.withPart(colorMode === 'dark' ? colorSchemeDark : colorSchemeLight)
   const gridRef = useRef<AgGridReact>(null)
   const [isAddingRow, setIsAddingRow] = useState(false)
@@ -57,8 +60,19 @@ export function DataGrid() {
     try {
       setIsAddingRow(true)
 
+      // Extract context for change history
+      const context = extractContextFromState(selectedDevice, selectedApplication, selectedDatabaseFile)
+
       // Use the new addNewRowWithDefaults method to let SQLite handle default values
-      const result = await window.api.addNewRowWithDefaults(selectedDatabaseTable.name, selectedDatabaseFile?.path)
+      const result = await window.api.addNewRowWithDefaults(
+        selectedDatabaseTable.name, 
+        selectedDatabaseFile?.path,
+        context.deviceId,
+        context.deviceName,
+        context.deviceType,
+        context.packageName,
+        context.appName
+      )
 
       if (!result.success) {
         throw new Error(result.error || 'Failed to create new row')
@@ -83,8 +97,9 @@ export function DataGrid() {
         )
       }
 
-      // Refresh the table data
+      // Refresh the table data and change history
       refetchTableData()
+      refreshChangeHistory()
 
       toaster.create({
         title: 'Row created',

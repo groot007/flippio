@@ -112,11 +112,22 @@ pub async fn get_database_change_history(
     table_name: Option<String>,
     history_manager: State<'_, ChangeHistoryManager>,
 ) -> Result<DbResponse<Vec<ChangeEvent>>, String> {
+    // Debug logging for get_database_change_history
+    log::info!("🔍 [get_database_change_history] Requested context key: {}", context_key);
+    log::info!("🔍 [get_database_change_history] Table filter: {:?}", table_name);
+    
     let changes = if let Some(table) = table_name.as_ref() {
         history_manager.get_changes_for_table(&context_key, table).await
     } else {
         history_manager.get_changes(&context_key).await
     };
+    
+    log::info!("🔍 [get_database_change_history] Found {} changes for context key", changes.len());
+    
+    // Also log all available context keys for debugging
+    let all_context_summaries = history_manager.get_all_context_summaries().await;
+    log::info!("🔍 [get_database_change_history] Available context keys: {:?}", 
+               all_context_summaries.iter().map(|s| &s.context_key).collect::<Vec<_>>());
     
     Ok(DbResponse {
         success: true,

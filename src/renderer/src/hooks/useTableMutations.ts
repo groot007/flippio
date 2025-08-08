@@ -3,6 +3,7 @@ import { toaster } from '@renderer/ui/toaster'
 import { buildUniqueCondition } from '@renderer/utils'
 import { useDatabaseRefresh } from '@renderer/utils/databaseRefresh'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useChangeHistoryRefresh } from './useChangeHistory'
 
 interface DatabaseOperation {
   selectedDatabaseTable: any
@@ -25,9 +26,10 @@ export function useDeleteRowMutation() {
   const queryClient = useQueryClient()
   const { setSelectedRow } = useRowEditingStore()
   const { refresh: refreshDatabase } = useDatabaseRefresh({ showSuccessToast: false, showErrorToast: false })
+  const { refreshChangeHistory } = useChangeHistoryRefresh()
 
   return useMutation({
-    mutationFn: async ({ selectedRow, selectedDatabaseTable, selectedDatabaseFile, tableColumns }: DeleteRowOptions) => {
+    mutationFn: async ({ selectedRow, selectedDatabaseTable, selectedDatabaseFile, tableColumns, selectedDevice, selectedApplication }: DeleteRowOptions) => {
       if (!selectedRow || !selectedDatabaseTable) {
         throw new Error('Missing required data for deletion')
       }
@@ -41,7 +43,14 @@ export function useDeleteRowMutation() {
         selectedDatabaseTable?.name || '',
         condition,
         selectedDatabaseFile?.path,
+        selectedDevice?.id,
+        selectedDevice?.name,
+        selectedDevice?.type,
+        selectedApplication?.bundleId,
+        selectedApplication?.name,
       )
+
+      console.log('🗑️ Delete API result:', result)
 
       if (!result.success) {
         throw new Error(result.error || 'Failed to delete row')
@@ -51,6 +60,9 @@ export function useDeleteRowMutation() {
     },
     onSuccess: async ({ selectedDatabaseFile }, variables) => {
       const { selectedDevice, selectedApplication } = variables
+
+      console.log('🗑️ Delete mutation onSuccess triggered')
+      console.log('🗑️ Refreshing change history...')
 
       // Push changes back to device if needed
       await pushDatabaseToDevice({
@@ -71,8 +83,11 @@ export function useDeleteRowMutation() {
       // Close the panel
       setSelectedRow(null)
 
-      // Refresh table data
+      // Refresh table data and change history
       await refreshDatabase()
+      refreshChangeHistory()
+      
+      console.log('🗑️ Change history refresh called successfully')
     },
     onError: (error) => {
       console.error('Error deleting row:', error)
@@ -93,16 +108,22 @@ export function useClearTableMutation() {
   const queryClient = useQueryClient()
   const { setSelectedRow } = useRowEditingStore()
   const { refresh: refreshDatabase } = useDatabaseRefresh({ showSuccessToast: false, showErrorToast: false })
+  const { refreshChangeHistory } = useChangeHistoryRefresh()
 
   return useMutation({
-    mutationFn: async ({ selectedDatabaseTable, selectedDatabaseFile }: ClearTableOptions) => {
+    mutationFn: async ({ selectedDatabaseTable, selectedDatabaseFile, selectedDevice, selectedApplication }: ClearTableOptions) => {
       if (!selectedDatabaseTable) {
         throw new Error('No table selected')
       }
 
-      const result = await window.api.executeQuery(
-        `DELETE FROM ${selectedDatabaseTable.name}`,
+      const result = await window.api.clearTable(
+        selectedDatabaseTable.name,
         selectedDatabaseFile?.path,
+        selectedDevice?.id,
+        selectedDevice?.name,
+        selectedDevice?.type,
+        selectedApplication?.bundleId,
+        selectedApplication?.name,
       )
 
       if (!result.success) {
@@ -133,8 +154,9 @@ export function useClearTableMutation() {
       // Close the panel
       setSelectedRow(null)
 
-      // Refresh table data
+      // Refresh table data and change history
       await refreshDatabase()
+      refreshChangeHistory()
     },
     onError: (error) => {
       console.error('Error clearing table:', error)

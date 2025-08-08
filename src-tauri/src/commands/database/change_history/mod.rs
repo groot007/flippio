@@ -5,6 +5,7 @@
 pub mod types;
 pub mod manager;
 pub mod commands;
+pub mod integration;
 
 // Re-export commonly used types
 pub use types::{
@@ -30,4 +31,12 @@ pub use commands::{
     clear_context_changes,
     get_change_history_diagnostics,
     generate_context_from_app_state,
+};
+
+pub use integration::{
+    capture_old_values_for_update,
+    create_field_changes,
+    extract_context_from_path,
+    record_change_with_safety,
+    create_change_event,
 };

@@ -47,6 +47,11 @@ beforeAll(() => {
     launchIOSSimulator: vi.fn().mockResolvedValue(null),
     checkForUpdates: vi.fn().mockResolvedValue(null),
     downloadAndInstallUpdate: vi.fn().mockResolvedValue(null),
+    // Change history methods
+    getChangeHistory: vi.fn().mockResolvedValue({ success: true, changes: [] }),
+    getContextSummaries: vi.fn().mockResolvedValue({ success: true, summaries: [] }),
+    getChangeHistoryDiagnostics: vi.fn().mockResolvedValue({ success: true, diagnostics: {} }),
+    clearContextChanges: vi.fn().mockResolvedValue({ success: true }),
     webUtils: {
       getPathForFile: vi.fn().mockResolvedValue(''),
     },
