@@ -83,7 +83,7 @@ beforeAll(() => {
   }
 
   // Mock window.api for all tests
-    globalThis.window.api = {
+  globalThis.window.api = {
     getDevices: vi.fn(),
     getIOSPackages: vi.fn(),
     getIOsDevicePackages: vi.fn(),

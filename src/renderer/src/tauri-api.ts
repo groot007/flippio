@@ -77,21 +77,21 @@ const COMMAND_MAP = {
 
 // Helper function for commands that need to preserve Electron-style response structure
 async function invokeCommandWithResponse<T>(electronCommand: string, dataFieldName: string, ...args: any[]): Promise<{ success: boolean, [key: string]: any }> {
-  console.log('🔍 [invokeCommandWithResponse] Called with:', { electronCommand, dataFieldName, args });
+  console.log('🔍 [invokeCommandWithResponse] Called with:', { electronCommand, dataFieldName, args })
   
   const tauriCommand = COMMAND_MAP[electronCommand as keyof typeof COMMAND_MAP]
   if (!tauriCommand) {
-    console.error('🔍 [invokeCommandWithResponse] Command not found:', electronCommand);
+    console.error('🔍 [invokeCommandWithResponse] Command not found:', electronCommand)
     throw new Error(`Command not found: ${electronCommand}`)
   }
 
-  console.log('🔍 [invokeCommandWithResponse] Mapped to Tauri command:', tauriCommand);
+  console.log('🔍 [invokeCommandWithResponse] Mapped to Tauri command:', tauriCommand)
 
   try {
     // Create proper parameter object based on command
     const parameters: Record<string, any> = {}
     const paramNames = getParameterNames(tauriCommand)
-    console.log('🔍 [invokeCommandWithResponse] Parameter names:', paramNames);
+    console.log('🔍 [invokeCommandWithResponse] Parameter names:', paramNames)
 
     for (let i = 0; i < args.length && i < paramNames.length; i++) {
       parameters[paramNames[i]] = args[i]
@@ -102,12 +102,12 @@ async function invokeCommandWithResponse<T>(electronCommand: string, dataFieldNa
     console.log(`🔍 [invokeCommandWithResponse] Raw response from ${tauriCommand}:`, response)
 
     if (response.success) {
-      const result = { success: true, [dataFieldName]: response.data };
-      console.log(`🔍 [invokeCommandWithResponse] Formatted result:`, result);
-      return result;
+      const result = { success: true, [dataFieldName]: response.data }
+      console.log(`🔍 [invokeCommandWithResponse] Formatted result:`, result)
+      return result
     }
     else {
-      console.error(`🔍 [invokeCommandWithResponse] Command failed:`, response.error);
+      console.error(`🔍 [invokeCommandWithResponse] Command failed:`, response.error)
       return { success: false, error: response.error }
     }
   }
@@ -350,7 +350,7 @@ export const api = {
     deviceName?: string,
     deviceType?: string,
     packageName?: string,
-    appName?: string
+    appName?: string,
   ) =>
     invokeCommandWithResponse('db:updateTableRow', 'result', tableName, row, condition, dbPath, deviceId, deviceName, deviceType, packageName, appName),
 
@@ -365,7 +365,7 @@ export const api = {
     deviceName?: string, 
     deviceType?: string,
     packageName?: string,
-    appName?: string
+    appName?: string,
   ) =>
     invokeCommandWithResponse('db:insertTableRow', 'result', tableName, row, dbPath, deviceId, deviceName, deviceType, packageName, appName),
 
@@ -376,7 +376,7 @@ export const api = {
     deviceName?: string,
     deviceType?: string,
     packageName?: string,
-    appName?: string
+    appName?: string,
   ) =>
     invokeCommandWithResponse('db:addNewRowWithDefaults', 'result', tableName, dbPath, deviceId, deviceName, deviceType, packageName, appName),
 
@@ -388,7 +388,7 @@ export const api = {
     deviceName?: string,
     deviceType?: string,
     packageName?: string,
-    appName?: string
+    appName?: string,
   ) =>
     invokeCommandWithResponse('db:deleteTableRow', 'result', tableName, condition, dbPath, deviceId, deviceName, deviceType, packageName, appName),
 
@@ -399,7 +399,7 @@ export const api = {
     deviceName?: string,
     deviceType?: string,
     packageName?: string,
-    appName?: string
+    appName?: string,
   ) =>
     invokeCommandWithResponse('db:clearTable', 'result', tableName, dbPath, deviceId, deviceName, deviceType, packageName, appName),
 
@@ -408,16 +408,17 @@ export const api = {
 
   // Change history methods
   getChangeHistory: async (contextKey: string, tableName?: string) => {
-    console.log('🔍 [API] getChangeHistory called with:', { contextKey, tableName });
+    console.log('🔍 [API] getChangeHistory called with:', { contextKey, tableName })
     try {
-      const result = await invokeCommandWithResponse('db:getChangeHistory', 'data', contextKey, tableName);
-      console.log('🔍 [API] getChangeHistory result:', result);
-      console.log('🔍 [API] getChangeHistory data type:', typeof result.data);
-      console.log('🔍 [API] getChangeHistory data length:', Array.isArray(result.data) ? result.data.length : 'not an array');
-      return result;
-    } catch (error) {
-      console.error('🔍 [API] getChangeHistory error:', error);
-      throw error;
+      const result = await invokeCommandWithResponse('db:getChangeHistory', 'data', contextKey, tableName)
+      console.log('🔍 [API] getChangeHistory result:', result)
+      console.log('🔍 [API] getChangeHistory data type:', typeof result.data)
+      console.log('🔍 [API] getChangeHistory data length:', Array.isArray(result.data) ? result.data.length : 'not an array')
+      return result
+    }
+    catch (error) {
+      console.error('🔍 [API] getChangeHistory error:', error)
+      throw error
     }
   },
 

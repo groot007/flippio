@@ -14,7 +14,7 @@ interface ClearTableVariables extends MutationContext {}
  * Hook for deleting a single row from the table
  */
 export function useDeleteRowMutation() {
-  return useBaseDatabaseMutation<DeleteRowVariables, { selectedDatabaseFile: any; selectedDatabaseTable: any }>({
+  return useBaseDatabaseMutation<DeleteRowVariables, { selectedDatabaseFile: any, selectedDatabaseTable: any }>({
     mutationFn: async ({ selectedRow, selectedDatabaseTable, tableColumns, ...context }) => {
       if (!selectedRow || !selectedDatabaseTable) {
         throw new Error('Missing required data for deletion')
@@ -54,7 +54,7 @@ export function useDeleteRowMutation() {
  * Hook for clearing all rows from the table
  */
 export function useClearTableMutation() {
-  return useBaseDatabaseMutation<ClearTableVariables, { selectedDatabaseFile: any; selectedDatabaseTable: any }>({
+  return useBaseDatabaseMutation<ClearTableVariables, { selectedDatabaseFile: any, selectedDatabaseTable: any }>({
     mutationFn: async ({ selectedDatabaseTable, ...context }) => {
       if (!selectedDatabaseTable) {
         throw new Error('No table selected')
