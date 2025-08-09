@@ -145,7 +145,7 @@ export function TableFooter({ gridRef, totalRows, onPageSizeChange }: TableFoote
         </Button>
       </Flex>
 
-      <Flex alignItems="center" gap={2}>
+      <Flex alignItems="center" gap={2} marginLeft={6}>
         <ChangeHistoryIndicator />
       </Flex>
 

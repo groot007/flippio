@@ -1,56 +1,8 @@
+import type { ChangeEvent, ContextSummary } from '@renderer/types/changeHistory'
 import { useCurrentDatabaseSelection } from '@renderer/store/useCurrentDatabaseSelection'
 import { useCurrentDeviceSelection } from '@renderer/store/useCurrentDeviceSelection'
 import { generateContextKey } from '@renderer/utils/contextKey'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-
-export interface ChangeEvent {
-  id: string
-  timestamp: string
-  contextKey: string
-  databasePath: string
-  databaseFilename: string
-  tableName: string
-  operationType: 
-    | 'Insert' 
-    | 'Update' 
-    | 'Delete' 
-    | 'Clear'
-    | { BulkInsert: { count: number } }
-    | { BulkUpdate: { count: number } }
-    | { BulkDelete: { count: number } }
-    | { Revert: { original_change_id: string; cascade_reverted_ids: string[] } }
-  userContext: {
-    deviceId: string
-    deviceName: string
-    deviceType: string
-    appPackage: string
-    appName: string
-    sessionId: string
-  }
-  changes: Array<{
-    fieldName: string
-    oldValue: any
-    newValue: any
-    dataType: string
-  }>
-  rowIdentifier?: string
-  metadata: {
-    affectedRows: number
-    executionTimeMs: number
-    sqlStatement?: string
-    originalRemotePath?: string
-    pullTimestamp: string
-  }
-}
-
-export interface ContextSummary {
-  contextKey: string
-  deviceName: string
-  appName: string
-  databaseFilename: string
-  totalChanges: number
-  lastChangeTime?: string
-}
 
 /**
  * Hook for fetching change history for the current database context

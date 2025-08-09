@@ -2,8 +2,11 @@
 use crate::commands::database::types::*;
 use crate::commands::database::helpers::{get_default_value_for_type, ensure_database_file_permissions};
 use crate::commands::database::change_history::{
-    capture_old_values_for_update, create_field_changes, extract_context_from_path,
+    capture_old_values_for_update, extract_context_from_path,
     record_change_with_safety, create_change_event, OperationType
+};
+use crate::commands::database::change_tracking::{
+    create_field_changes_optimized, extract_row_values
 };
 use serde_json;
 use sqlx::{sqlite::SqlitePool, Row, Column, ValueRef, TypeInfo};
@@ -504,7 +507,11 @@ pub async fn db_update_table_row(
                     app_name,
                 );
                 
-                let field_changes = create_field_changes(&old_vals, &row);
+                let field_changes = create_field_changes_optimized(
+                    &OperationType::Update,
+                    &old_vals,
+                    &row
+                );
                 
                 if !field_changes.is_empty() {
                     match create_change_event(
@@ -704,7 +711,11 @@ pub async fn db_insert_table_row(
             
             // For INSERT, all values are "new" values, no old values
             let empty_old_values = HashMap::new();
-            let field_changes = create_field_changes(&empty_old_values, &row);
+            let field_changes = create_field_changes_optimized(
+                &OperationType::Insert,
+                &empty_old_values,
+                &row
+            );
             
             if !field_changes.is_empty() {
                 match create_change_event(
@@ -1182,36 +1193,14 @@ pub async fn db_delete_table_row(
                 
                 // Record each deleted row as a separate change event
                 for (row_index, row) in deleted_rows.iter().enumerate() {
-                    let mut old_row_values = HashMap::new();
+                    let old_row_values = extract_row_values(row);
+                    let empty_new_values = std::collections::HashMap::new();
                     
-                    // Extract all columns from the row
-                    for (col_index, column) in row.columns().iter().enumerate() {
-                        let col_name = column.name();
-                        let value = match row.try_get::<Option<String>, usize>(col_index) {
-                            Ok(Some(s)) => serde_json::Value::String(s),
-                            Ok(None) => serde_json::Value::Null,
-                            Err(_) => {
-                                if let Ok(Some(i)) = row.try_get::<Option<i64>, usize>(col_index) {
-                                    serde_json::Value::Number(i.into())
-                                } else if let Ok(Some(f)) = row.try_get::<Option<f64>, usize>(col_index) {
-                                    if let Some(num) = serde_json::Number::from_f64(f) {
-                                        serde_json::Value::Number(num)
-                                    } else {
-                                        serde_json::Value::String(f.to_string())
-                                    }
-                                } else if let Ok(Some(b)) = row.try_get::<Option<bool>, usize>(col_index) {
-                                    serde_json::Value::Bool(b)
-                                } else {
-                                    serde_json::Value::Null
-                                }
-                            }
-                        };
-                        old_row_values.insert(col_name.to_string(), value);
-                    }
-                    
-                    // For DELETE, new values are empty, only old values exist
-                    let empty_new_values = HashMap::new();
-                    let field_changes = create_field_changes(&old_row_values, &empty_new_values);
+                    let field_changes = create_field_changes_optimized(
+                        &OperationType::Delete,
+                        &old_row_values,
+                        &empty_new_values,
+                    );
                     
                     if !field_changes.is_empty() {
                         match create_change_event(
@@ -1220,7 +1209,7 @@ pub async fn db_delete_table_row(
                             OperationType::Delete,
                             user_context.clone(),
                             field_changes,
-                            Some(format!("deleted_row_{}", row_index)), // Simple identifier for deleted rows
+                            Some(format!("deleted_row_{}", row_index)),
                             Some(query.clone()),
                         ) {
                             Ok(change_event) => {

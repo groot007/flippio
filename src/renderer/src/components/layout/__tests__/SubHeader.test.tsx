@@ -36,6 +36,7 @@ beforeAll(() => {
     updateTableRow: vi.fn().mockResolvedValue(true),
     insertTableRow: vi.fn().mockResolvedValue(true),
     deleteTableRow: vi.fn().mockResolvedValue(true),
+    clearTable: vi.fn().mockResolvedValue(true),
     addNewRowWithDefaults: vi.fn().mockResolvedValue(true),
     switchDatabase: vi.fn().mockResolvedValue(true),
     pushDatabaseFile: vi.fn().mockResolvedValue(true),

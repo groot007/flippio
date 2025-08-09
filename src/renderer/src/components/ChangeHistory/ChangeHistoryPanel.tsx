@@ -1,4 +1,4 @@
-import type { ChangeEvent } from '@renderer/hooks/useChangeHistory'
+import type { ChangeEvent } from '@renderer/types/changeHistory'
 import {
   Badge,
   Box,
@@ -14,6 +14,7 @@ import { useChangeHistory } from '@renderer/hooks/useChangeHistory'
 import { useClearChangeHistoryMutation } from '@renderer/hooks/useChangeHistoryMutations'
 import { useCurrentDatabaseSelection, useCurrentDeviceSelection } from '@renderer/store'
 import { useColorMode } from '@renderer/ui/color-mode'
+import { formatOperationType, getOperationColor, getOperationTypeString } from '@renderer/utils/operationTypeUtils'
 import { formatDistanceToNow } from 'date-fns'
 import { useState } from 'react'
 import { LuClock, LuDatabase, LuRefreshCw, LuTrash2, LuX } from 'react-icons/lu'
@@ -35,22 +36,8 @@ export function ChangeHistoryPanel({ isOpen, onClose }: ChangeHistoryPanelProps)
     data: changes = [],
     isLoading,
     error,
-    refetch
+    refetch,
   } = useChangeHistory(50, 0)
-  
-  // Debug logging for changes
-  console.log('🔍 [ChangeHistoryPanel] Changes data:', changes)
-  console.log('🔍 [ChangeHistoryPanel] Changes length:', changes.length)
-  if (changes.length > 0) {
-    changes.forEach((change, index) => {
-      console.log(`🔍 [ChangeHistoryPanel] Change ${index}:`, {
-        operationType: change.operationType,
-        tableName: change.tableName,
-        timestamp: change.timestamp,
-        id: change.id
-      })
-    })
-  }
   
   const clearHistoryMutation = useClearChangeHistoryMutation()
 
@@ -58,78 +45,6 @@ export function ChangeHistoryPanel({ isOpen, onClose }: ChangeHistoryPanelProps)
     // eslint-disable-next-line no-alert
     if (window.confirm('Are you sure you want to clear all change history for this database?')) {
       clearHistoryMutation.mutate()
-    }
-  }
-
-  const formatOperationType = (operationType: ChangeEvent['operationType']) => {
-    // Handle Rust enum serialization
-    if (typeof operationType === 'string') {
-      return operationType
-    }
-    
-    // Handle complex operation types from Rust enum variants
-    if (typeof operationType === 'object' && operationType !== null) {
-      // Handle BulkInsert, BulkUpdate, BulkDelete: { "BulkUpdate": { "count": 5 } }
-      if ('BulkInsert' in operationType) {
-        return `Bulk Insert (${(operationType as any).BulkInsert.count} rows)`
-      }
-      if ('BulkUpdate' in operationType) {
-        return `Bulk Update (${(operationType as any).BulkUpdate.count} rows)`
-      }
-      if ('BulkDelete' in operationType) {
-        return `Bulk Delete (${(operationType as any).BulkDelete.count} rows)`
-      }
-      if ('Revert' in operationType) {
-        return 'Revert'
-      }
-      
-      // Handle legacy format with type property
-      if ('type' in operationType) {
-        const op = operationType as any
-        if (op.count) {
-          return `${op.type} (${op.count} rows)`
-        }
-        return op.type
-      }
-    }
-    
-    // Fallback
-    return String(operationType)
-  }
-
-  const getOperationTypeString = (operationType: ChangeEvent['operationType']): string => {
-    if (typeof operationType === 'string') {
-      return operationType
-    }
-    
-    if (typeof operationType === 'object' && operationType !== null) {
-      // Handle Rust enum variants
-      if ('BulkInsert' in operationType) return 'insert'
-      if ('BulkUpdate' in operationType) return 'update'
-      if ('BulkDelete' in operationType) return 'delete'
-      if ('Revert' in operationType) return 'revert'
-      
-      // Handle legacy format
-      if ('type' in operationType) {
-        return (operationType as any).type
-      }
-    }
-    
-    return 'unknown'
-  }
-
-  const getOperationColor = (type: string) => {
-    switch (type.toLowerCase()) {
-      case 'insert':
-        return 'green'
-      case 'update':
-        return 'blue'
-      case 'delete':
-        return 'red'
-      case 'clear':
-        return 'orange'
-      default:
-        return 'gray'
     }
   }
 
@@ -183,20 +98,26 @@ export function ChangeHistoryPanel({ isOpen, onClose }: ChangeHistoryPanelProps)
               <Stack gap={4}>
                 {/* Context Info */}
                 <Box
-                  p={3}
-                  bg={isDark ? 'gray.700' : 'gray.50'}
+                  p={2}
+                  bg={isDark ? 'gray.800' : 'gray.100'}
                   borderRadius="md"
+                  opacity={0.7}
                 >
-                  <Text fontSize="sm" color="gray.500" mb={2}>Current Context</Text>
                   <Stack gap={1}>
-                    <Text fontSize="sm">
-                      <Text as="span" fontWeight="bold">Device:</Text> {selectedDevice?.name || 'Unknown'}
+                    <Text fontSize="xs" color={isDark ? 'gray.500' : 'gray.600'}>
+                      <Text as="span" fontWeight="bold" color={isDark ? 'gray.400' : 'gray.500'}>Device:</Text> 
+                      {' '}
+                      {selectedDevice?.name || 'Unknown'}
                     </Text>
-                    <Text fontSize="sm">
-                      <Text as="span" fontWeight="bold">App:</Text> {selectedApplication?.name || selectedDatabaseFile?.packageName || 'Unknown'}
+                    <Text fontSize="xs" color={isDark ? 'gray.500' : 'gray.600'}>
+                      <Text as="span" fontWeight="bold" color={isDark ? 'gray.400' : 'gray.500'}>App:</Text> 
+                      {' '}
+                      {selectedApplication?.name || selectedDatabaseFile?.packageName || 'Unknown'}
                     </Text>
-                    <Text fontSize="sm">
-                      <Text as="span" fontWeight="bold">Database:</Text> {selectedDatabaseFile?.filename || 'Unknown'}
+                    <Text fontSize="xs" color={isDark ? 'gray.500' : 'gray.600'}>
+                      <Text as="span" fontWeight="bold" color={isDark ? 'gray.400' : 'gray.500'}>Database:</Text> 
+                      {' '}
+                      {selectedDatabaseFile?.filename || 'Unknown'}
                     </Text>
                   </Stack>
                 </Box>
@@ -218,7 +139,9 @@ export function ChangeHistoryPanel({ isOpen, onClose }: ChangeHistoryPanelProps)
                     borderLeftColor="red.500"
                   >
                     <Text fontSize="sm" color="red.500">
-                      Error loading changes: {error.message}
+                      Error loading changes: 
+                      {' '}
+                      {error.message}
                     </Text>
                   </Box>
                 )}
@@ -239,7 +162,7 @@ export function ChangeHistoryPanel({ isOpen, onClose }: ChangeHistoryPanelProps)
                 {/* Change List */}
                 {changes.length > 0 && (
                   <Stack gap={2}>
-                    {changes.map((change) => (
+                    {[...changes].reverse().map(change => (
                       <Box
                         key={change.id}
                         p={3}
@@ -262,46 +185,62 @@ export function ChangeHistoryPanel({ isOpen, onClose }: ChangeHistoryPanelProps)
                               {formatOperationType(change.operationType)}
                             </Badge>
                           </Flex>
-                          <Text fontSize="xs" color="gray.500">
+                          <Text fontSize="xs" color={isDark ? 'gray.400' : 'gray.500'}>
                             {formatDistanceToNow(new Date(change.timestamp), { addSuffix: true })}
                           </Text>
                         </Flex>
 
-                        <Text fontSize="sm" color="gray.600" mb={1}>
-                          Table: {change.tableName}
+                        <Text fontSize="sm" color={isDark ? 'gray.300' : 'gray.700'} mb={1}>
+                          Table: 
+                          {' '}
+                          {change.tableName}
                         </Text>
 
                         {change.metadata.affectedRows > 0 && (
-                          <Text fontSize="xs" color="gray.500" mb={2}>
-                            {change.metadata.affectedRows} row{change.metadata.affectedRows === 1 ? '' : 's'} affected
+                          <Text fontSize="xs" color={isDark ? 'gray.400' : 'gray.500'} mb={2}>
+                            {change.metadata.affectedRows}
+                            {' '}
+                            row
+                            {change.metadata.affectedRows === 1 ? '' : 's'}
+                            {' '}
+                            affected
                           </Text>
                         )}
 
                         {/* Expanded Details */}
                         {selectedChange?.id === change.id && (
                           <Box w="full" pt={2} borderTop="1px" borderColor={isDark ? 'gray.600' : 'gray.200'}>
-                            <Text fontSize="sm" fontWeight="bold" mb={2}>Field Changes:</Text>
-                            {change.changes.length === 0 ? (
-                              <Text fontSize="sm" color="gray.500" mb={2}>No field changes recorded</Text>
-                            ) : (
-                              <Stack gap={2} mb={2}>
-                                {change.changes.map((fieldChange, idx) => (
-                                  <Box key={idx} fontSize="xs">
-                                    <Text fontWeight="bold" mb={1}>{fieldChange.fieldName}:</Text>
-                                    <Flex direction="column" gap={1}>
-                                      <Text color="red.500">
-                                        - {fieldChange.oldValue !== null ? String(fieldChange.oldValue) : 'null'}
-                                      </Text>
-                                      <Text color="green.500">
-                                        + {fieldChange.newValue !== null ? String(fieldChange.newValue) : 'null'}
-                                      </Text>
-                                    </Flex>
-                                  </Box>
-                                ))}
-                              </Stack>
-                            )}
+                            <Text fontSize="sm" fontWeight="bold" mb={2} color={isDark ? 'gray.200' : 'gray.800'}>Field Changes:</Text>
+                            {change.changes.length === 0
+                              ? (
+                                  <Text fontSize="sm" color={isDark ? 'gray.400' : 'gray.500'} mb={2}>No field changes recorded</Text>
+                                )
+                              : (
+                                  <Stack gap={2} mb={2}>
+                                    {change.changes.map((fieldChange, idx) => (
+                                      <Box key={idx} fontSize="xs">
+                                        <Text fontWeight="bold" mb={1} color={isDark ? 'gray.300' : 'gray.700'}>
+                                          {fieldChange.fieldName}
+                                          :
+                                        </Text>
+                                        <Flex direction="column" gap={1}>
+                                          <Text color="red.500">
+                                            - 
+                                            {' '}
+                                            {fieldChange.oldValue !== null ? String(fieldChange.oldValue) : 'null'}
+                                          </Text>
+                                          <Text color="green.500">
+                                            + 
+                                            {' '}
+                                            {fieldChange.newValue !== null ? String(fieldChange.newValue) : 'null'}
+                                          </Text>
+                                        </Flex>
+                                      </Box>
+                                    ))}
+                                  </Stack>
+                                )}
                             
-                            {change.metadata.sqlStatement && (
+                            {/* {change.metadata.sqlStatement && (
                               <Box>
                                 <Text fontSize="sm" fontWeight="bold" mb={1}>SQL:</Text>
                                 <Text
@@ -316,7 +255,7 @@ export function ChangeHistoryPanel({ isOpen, onClose }: ChangeHistoryPanelProps)
                                   {change.metadata.sqlStatement}
                                 </Text>
                               </Box>
-                            )}
+                            )} */}
                           </Box>
                         )}
                       </Box>

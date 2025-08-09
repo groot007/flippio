@@ -4,6 +4,7 @@ pub mod helpers;
 pub mod commands;
 pub mod connection_manager;
 pub mod change_history;
+pub mod change_tracking;
 
 #[cfg(test)]
 pub mod tests;
