@@ -22,9 +22,9 @@ export function useClearChangeHistoryMutation() {
 
       console.log('🧹 [Clear History] Context:', { deviceId, packageName, databasePath })
 
-      if (!deviceId || !packageName || !databasePath) {
-        console.error('🧹 [Clear History] Missing required context:', { deviceId, packageName, databasePath })
-        throw new Error('Missing required context for clearing change history')
+      if (!databasePath) {
+        console.error('🧹 [Clear History] Missing database path')
+        throw new Error('Database path is required for clearing change history')
       }
 
       const contextKey = generateContextKeySync(deviceId, packageName, databasePath)

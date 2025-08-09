@@ -1,6 +1,6 @@
 import { Box, Flex, Icon, Text } from '@chakra-ui/react'
 import { keyframes } from '@emotion/react'
-import { useCurrentDatabaseSelection } from '@renderer/store'
+import { useCurrentDatabaseSelection, useCurrentDeviceSelection } from '@renderer/store'
 import { useColorMode } from '@renderer/ui/color-mode'
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow'
 import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react'
@@ -58,11 +58,30 @@ interface DragAndDropProviderProps {
 export const DragAndDropProvider: React.FC<DragAndDropProviderProps> = ({ children }) => {
   const [isDragging, setIsDragging] = useState(false)
   const [isProcessingFile, setIsProcessingFile] = useState(false)
+  const [isSettingCustomFile, setIsSettingCustomFile] = useState(false)
   const dragCounterRef = useRef(0)
   const { colorMode } = useColorMode()
   const isDark = colorMode === 'dark'
   const setSelectedDatabaseFile = useCurrentDatabaseSelection(state => state.setSelectedDatabaseFile)
   const setSelectedDatabaseTable = useCurrentDatabaseSelection(state => state.setSelectedDatabaseTable)
+  const { setSelectedDevice, setSelectedApplication } = useCurrentDeviceSelection()
+  const selectedDatabaseFile = useCurrentDatabaseSelection(state => state.selectedDatabaseFile)
+
+  // Handle custom file setting with proper sequencing
+  useEffect(() => {
+    if (isSettingCustomFile && selectedDatabaseFile?.deviceType === 'desktop' && selectedDatabaseFile?.packageName === '') {
+      // Step 1: Custom file has been set, now clear device/application selections
+      console.log('🔧 [DragAndDrop] Custom file detected, clearing device/application selections')
+      setSelectedDevice(null)
+      setSelectedApplication(null)
+      
+      // Step 2: Mark custom file setting as complete
+      setTimeout(() => {
+        setIsSettingCustomFile(false)
+        console.log('🔧 [DragAndDrop] Custom file setup complete')
+      }, 100)
+    }
+  }, [selectedDatabaseFile, isSettingCustomFile, setSelectedDevice, setSelectedApplication])
 
   const handleFile = useCallback(async (fileOrPath: File | string) => {
     setIsProcessingFile(true)
@@ -114,6 +133,10 @@ export const DragAndDropProvider: React.FC<DragAndDropProviderProps> = ({ childr
       // Clear any previously selected table to avoid confusion when switching databases
       setSelectedDatabaseTable(null)
 
+      // Set custom file flag and database file
+      setIsSettingCustomFile(true)
+      console.log('🔧 [DragAndDrop] Setting custom file:', filePath)
+      
       setSelectedDatabaseFile({
         path: filePath,
         filename,

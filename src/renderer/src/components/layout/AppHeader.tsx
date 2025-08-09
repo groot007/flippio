@@ -17,6 +17,7 @@ function AppHeader() {
   const setSelectedDevice = useCurrentDeviceSelection(state => state.setSelectedDevice)
   const selectedApplication = useCurrentDeviceSelection(state => state.selectedApplication)
   const setSelectedApplication = useCurrentDeviceSelection(state => state.setSelectedApplication)
+  const selectedDatabaseFile = useCurrentDatabaseSelection(state => state.selectedDatabaseFile)
   const setSelectedDatabaseFile = useCurrentDatabaseSelection(state => state.setSelectedDatabaseFile)
   
   const { addRecentApp, getRecentAppsForDevice } = useRecentlyUsedApps()
@@ -103,9 +104,13 @@ function AppHeader() {
     if (!devicesList.find(device => device.id === selectedDevice?.id)) {
       setSelectedApplication(null)
       setSelectedDevice(null)
-      setSelectedDatabaseFile(null)
+      
+      // Only clear database file if it's not a custom file (desktop type)
+      if (selectedDatabaseFile?.deviceType !== 'desktop') {
+        setSelectedDatabaseFile(null)
+      }
     }
-  }, [devicesList, selectedDevice, setSelectedApplication, setSelectedDevice])
+  }, [devicesList, selectedDevice, selectedDatabaseFile, setSelectedApplication, setSelectedDevice, setSelectedDatabaseFile])
 
   const handleRefreshDevices = useCallback(() => {
     refreshDevices()

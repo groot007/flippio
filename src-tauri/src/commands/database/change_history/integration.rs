@@ -178,17 +178,29 @@ pub fn create_change_event(
         .to_string_lossy()
         .to_string();
     
-    let context_key = super::generate_context_key(
-        &user_context.device_id,
-        &user_context.app_package,
-        &database_filename,
-    );
+    // Check if this is a custom file by detecting if both device_id and app_package 
+    // were defaulted to "unknown" (indicating None was passed for both device_id and package_name)
+    let is_custom_file = user_context.device_id == "unknown" && 
+                        user_context.app_package == database_filename;
+    
+    // For custom files, use custom file context key, otherwise use regular context key
+    let context_key = if is_custom_file {
+        super::generate_custom_file_context_key(db_path)
+    } else {
+        super::generate_context_key(
+            &user_context.device_id,
+            &user_context.app_package,
+            &database_filename,
+        )
+    };
     
     // Debug logging for context key generation
     log::info!("🔍 [record_change] Context key generation:");
     log::info!("🔍 [record_change] Device ID: {}", user_context.device_id);
     log::info!("🔍 [record_change] App package: {}", user_context.app_package);
     log::info!("🔍 [record_change] Database filename: {}", database_filename);
+    log::info!("🔍 [record_change] Database path: {}", db_path);
+    log::info!("🔍 [record_change] Is custom file: {}", is_custom_file);
     log::info!("🔍 [record_change] Generated context key: {}", context_key);
     
     let metadata = ChangeMetadata {

@@ -144,12 +144,12 @@ export function ChangeHistoryPanel({ isOpen, onClose }: ChangeHistoryPanelProps)
                     <Text fontSize="xs" color={isDark ? 'gray.500' : 'gray.600'}>
                       <Text as="span" fontWeight="bold" color={isDark ? 'gray.400' : 'gray.500'}>Device:</Text> 
                       {' '}
-                      {selectedDevice?.name || 'Unknown'}
+                      {selectedDevice?.name || 'Custom File'}
                     </Text>
                     <Text fontSize="xs" color={isDark ? 'gray.500' : 'gray.600'}>
                       <Text as="span" fontWeight="bold" color={isDark ? 'gray.400' : 'gray.500'}>App:</Text> 
                       {' '}
-                      {selectedApplication?.name || selectedDatabaseFile?.packageName || 'Unknown'}
+                      {selectedApplication?.name || selectedDatabaseFile?.packageName || 'Direct File Access'}
                     </Text>
                     <Text fontSize="xs" color={isDark ? 'gray.500' : 'gray.600'}>
                       <Text as="span" fontWeight="bold" color={isDark ? 'gray.400' : 'gray.500'}>Database:</Text> 

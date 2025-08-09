@@ -68,6 +68,7 @@ const COMMAND_MAP = {
   'db:getChangeHistoryDiagnostics': 'get_change_history_diagnostics',
   'db:clearContextChanges': 'clear_context_changes',
   'db:clearAllChangeHistory': 'clear_all_change_history',
+  'db:generateCustomFileContextKey': 'generate_custom_file_context_key_command',
 
   // Common commands
   'dialog:selectFile': 'dialog_select_file',
@@ -154,6 +155,8 @@ function getParameterNames(command: string): string[] {
     get_all_context_summaries: [],
     get_change_history_diagnostics: [],
     clear_context_changes: ['contextKey'],
+    clear_all_change_history: [],
+    generate_custom_file_context_key_command: ['databasePath'],
 
     // Common commands
     get_app_path: [],
@@ -429,6 +432,9 @@ export const api = {
 
   clearAllChangeHistory: () =>
     invokeCommandWithResponse('db:clearAllChangeHistory', 'result'),
+
+  generateCustomFileContextKey: (databasePath: string) =>
+    invokeCommandWithResponse('db:generateCustomFileContextKey', 'data', databasePath),
 
   // File dialog methods
   openFile: async () => {

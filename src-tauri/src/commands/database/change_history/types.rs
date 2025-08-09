@@ -98,6 +98,27 @@ pub fn generate_context_key(device_id: &str, package_name: &str, database_filena
     general_purpose::STANDARD_NO_PAD.encode(&result)
 }
 
+// SAFE: Context key generation for custom files without device/package context
+pub fn generate_custom_file_context_key(database_path: &str) -> String {
+    use sha2::{Sha256, Digest};
+    use base64::{Engine as _, engine::general_purpose};
+    
+    // Use full path for custom files to ensure uniqueness
+    let context_string = format!("custom_file:{}", database_path);
+    let mut hasher = Sha256::new();
+    hasher.update(context_string.as_bytes());
+    let result = hasher.finalize();
+    
+    // Add custom prefix to distinguish from device-based keys
+    let hash = general_purpose::STANDARD_NO_PAD.encode(&result);
+    format!("custom_{}", hash)
+}
+
+// Helper function to determine if a context key is for a custom file
+pub fn is_custom_file_context_key(context_key: &str) -> bool {
+    context_key.starts_with("custom_")
+}
+
 // SAFE: Validate context uniqueness to prevent collisions
 pub async fn validate_context_key(
     context_key: &str,

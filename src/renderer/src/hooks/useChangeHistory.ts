@@ -15,13 +15,15 @@ export function useChangeHistory(limit = 50, offset = 0) {
   const packageName = selectedApplication?.bundleId || selectedDatabaseFile?.packageName
   const databasePath = selectedDatabaseFile?.path
   
-  const isEnabled = !!(deviceId && packageName && databasePath)
+  // Enable query if we have at least a database path (custom files need only this)
+  const isEnabled = !!databasePath
   
   console.log('🔍 useChangeHistory context:', {
     deviceId,
     packageName,
     databasePath,
     isEnabled,
+    isCustomFile: !deviceId || !packageName,
   })
   
   return useQuery({
@@ -30,9 +32,9 @@ export function useChangeHistory(limit = 50, offset = 0) {
       console.log('🔍 [useChangeHistory] Query function started');
       console.log('🔍 [useChangeHistory] Input validation:', { deviceId, packageName, databasePath });
       
-      if (!deviceId || !packageName || !databasePath) {
-        console.error('🔍 [useChangeHistory] Missing required context:', { deviceId, packageName, databasePath });
-        throw new Error('Missing required context for change history')
+      if (!databasePath) {
+        console.error('🔍 [useChangeHistory] Missing database path');
+        throw new Error('Database path is required for change history')
       }
       
       console.log('🔍 [useChangeHistory] Generating context key...');

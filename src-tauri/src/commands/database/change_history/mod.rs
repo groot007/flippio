@@ -16,23 +16,12 @@ pub use types::{
     ChangeMetadata,
     ContextSummary,
     generate_context_key,
-    validate_context_key,
+    generate_custom_file_context_key,
+    is_custom_file_context_key,
     get_session_id,
 };
 
 pub use manager::ChangeHistoryManager;
-
-pub use commands::{
-    record_database_change_safe,
-    get_database_change_history,
-    get_last_change_time,
-    get_context_summary,
-    get_all_context_summaries,
-    clear_context_changes,
-    clear_all_change_history,
-    get_change_history_diagnostics,
-    generate_context_from_app_state,
-};
 
 pub use integration::{
     capture_old_values_for_update,

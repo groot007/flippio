@@ -269,3 +269,19 @@ pub fn generate_context_from_app_state(
 ) -> String {
     generate_context_key(device_id, app_package, database_filename)
 }
+
+/// Generate context key for custom files (direct file access)
+#[tauri::command]
+pub async fn generate_custom_file_context_key_command(
+    database_path: String,
+) -> Result<DbResponse<String>, String> {
+    use crate::commands::database::change_history::types::generate_custom_file_context_key;
+    
+    let context_key = generate_custom_file_context_key(&database_path);
+    
+    Ok(DbResponse {
+        success: true,
+        data: Some(context_key),
+        error: None,
+    })
+}
