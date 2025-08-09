@@ -45,7 +45,7 @@ describe('appStore', () => {
       const { setDevices } = useAppStore.getState()
       const testDevices = [
         { value: 'device1', label: 'iPhone 14', description: 'iOS Device' },
-        { value: 'device2', label: 'Pixel 7', description: 'Android Device' }
+        { value: 'device2', label: 'Pixel 7', description: 'Android Device' },
       ]
       
       setDevices(testDevices)
@@ -65,7 +65,7 @@ describe('appStore', () => {
       const { setApplications } = useAppStore.getState()
       const testApps = [
         { id: 'app1', name: 'Test App 1', deviceId: 'device1' },
-        { id: 'app2', name: 'Test App 2', deviceId: 'device1' }
+        { id: 'app2', name: 'Test App 2', deviceId: 'device1' },
       ]
       
       setApplications(testApps)
@@ -85,7 +85,7 @@ describe('appStore', () => {
       const { setDatabaseFiles } = useAppStore.getState()
       const testFiles = [
         { id: 'file1', name: 'test.db', applicationId: 'app1' },
-        { id: 'file2', name: 'backup.db', applicationId: 'app1' }
+        { id: 'file2', name: 'backup.db', applicationId: 'app1' },
       ]
       
       setDatabaseFiles(testFiles)
@@ -106,7 +106,7 @@ describe('appStore', () => {
       const { setDatabaseTables } = useAppStore.getState()
       const testTables = [
         { id: 'table1', name: 'users', databaseId: 'file1' },
-        { id: 'table2', name: 'posts', databaseId: 'file1' }
+        { id: 'table2', name: 'posts', databaseId: 'file1' },
       ]
       
       setDatabaseTables(testTables)
@@ -129,9 +129,9 @@ describe('appStore', () => {
         columns: ['id', 'name', 'email'],
         rows: [
           { id: 1, name: 'John Doe', email: 'john@example.com' },
-          { id: 2, name: 'Jane Smith', email: 'jane@example.com' }
+          { id: 2, name: 'Jane Smith', email: 'jane@example.com' },
         ],
-        totalRows: 2
+        totalRows: 2,
       }
       
       setTableData(testData)
@@ -164,7 +164,7 @@ describe('appStore', () => {
       expect(selectedRow).toEqual({
         rowData: testRowData,
         isEditing: false,
-        originalData: testRowData
+        originalData: testRowData,
       })
     })
 
@@ -223,10 +223,12 @@ describe('appStore', () => {
       
       // Simulate some edits by directly modifying the state
       useAppStore.setState(state => ({
-        selectedRow: state.selectedRow ? {
-          ...state.selectedRow,
-          rowData: { id: 1, name: 'John Smith' }
-        } : null
+        selectedRow: state.selectedRow
+          ? {
+              ...state.selectedRow,
+              rowData: { id: 1, name: 'John Smith' },
+            }
+          : null,
       }))
       
       cancelEditingRow()

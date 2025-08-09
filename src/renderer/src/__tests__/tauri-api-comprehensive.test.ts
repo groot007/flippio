@@ -27,7 +27,7 @@ Object.defineProperty(globalThis, 'document', {
     readyState: 'complete',
     addEventListener: vi.fn(),
   },
-  writable: true
+  writable: true,
 })
 
 Object.defineProperty(globalThis, 'window', {
@@ -35,7 +35,7 @@ Object.defineProperty(globalThis, 'window', {
     api: undefined,
     env: undefined,
   },
-  writable: true
+  writable: true,
 })
 
 describe('tauri API - critical infrastructure tests', () => {
@@ -68,11 +68,11 @@ describe('tauri API - critical infrastructure tests', () => {
         'device:pushIOSDbFile',
         'device:getIOSDeviceDatabaseFiles',
         'simulator:getIOSSimulatorDatabaseFiles',
-        'simulator:uploadSimulatorIOSDbFile'
+        'simulator:uploadSimulatorIOSDbFile',
       ]
 
       // Test that command mapping doesn't throw errors
-      deviceCommands.forEach(command => {
+      deviceCommands.forEach((command) => {
         expect(() => {
           // Commands should be properly mapped in COMMAND_MAP
           const parts = command.split(':')
@@ -93,7 +93,7 @@ describe('tauri API - critical infrastructure tests', () => {
       const testCases = [
         { electron: 'adb:getDevices', tauri: 'adb_get_devices' },
         { electron: 'device:getIOsDevices', tauri: 'device_get_ios_devices' },
-        { electron: 'db:getTableData', tauri: 'db_get_table_data' }
+        { electron: 'db:getTableData', tauri: 'db_get_table_data' },
       ]
 
       testCases.forEach(({ electron, tauri }) => {
@@ -109,7 +109,7 @@ describe('tauri API - critical infrastructure tests', () => {
       const validResponse = {
         success: true,
         data: { devices: ['device1'] },
-        error: undefined
+        error: undefined,
       }
       mockInvoke.mockResolvedValue(validResponse)
 
@@ -133,7 +133,7 @@ describe('tauri API - critical infrastructure tests', () => {
         'string response',
         { invalid: true },
         { success: 'not a boolean' },
-        []
+        [],
       ]
 
       for (const response of malformedResponses) {
@@ -145,7 +145,8 @@ describe('tauri API - critical infrastructure tests', () => {
           if (result !== null && result !== undefined) {
             expect(result).toBeDefined()
           }
-        } catch (error) {
+        }
+        catch (error) {
           // Validation errors are expected for malformed responses
           expect(error).toBeDefined()
         }
@@ -155,7 +156,7 @@ describe('tauri API - critical infrastructure tests', () => {
     it('should validate error responses properly', async () => {
       const errorResponse = {
         success: false,
-        error: 'Device not found'
+        error: 'Device not found',
       }
       mockInvoke.mockResolvedValue(errorResponse)
 
@@ -170,7 +171,7 @@ describe('tauri API - critical infrastructure tests', () => {
       const ambiguousResponse = {
         success: true,
         data: { devices: [] },
-        error: 'Warning: No devices found'
+        error: 'Warning: No devices found',
       }
       mockInvoke.mockResolvedValue(ambiguousResponse)
 
@@ -195,7 +196,7 @@ describe('tauri API - critical infrastructure tests', () => {
         new Error('Device offline'),
         new Error('adb: device unauthorized'),
         new Error('iOS device not paired'),
-        new Error('libimobiledevice not found')
+        new Error('libimobiledevice not found'),
       ]
 
       for (const error of deviceErrors) {
@@ -208,7 +209,7 @@ describe('tauri API - critical infrastructure tests', () => {
       const dependencyErrors = [
         new Error('adb command not found'),
         new Error('idevice_id not found'),
-        new Error('xcrun command not found')
+        new Error('xcrun command not found'),
       ]
 
       for (const error of dependencyErrors) {
@@ -223,7 +224,8 @@ describe('tauri API - critical infrastructure tests', () => {
 
       try {
         await mockInvoke('adb_get_devices', { deviceId: 'test-device' })
-      } catch (error) {
+      }
+      catch (error) {
         expect(error).toBeInstanceOf(Error)
         expect((error as Error).message).toContain('adb_get_devices')
       }
@@ -235,14 +237,14 @@ describe('tauri API - critical infrastructure tests', () => {
       it('should merge Android, iOS, and simulator devices', async () => {
         // Mock responses for all device types
         const androidDevices = { success: true, data: [
-          { id: 'android1', name: 'Pixel 6', platform: 'android' }
-        ]}
+          { id: 'android1', name: 'Pixel 6', platform: 'android' },
+        ] }
         const iosDevices = { success: true, data: [
-          { id: 'ios1', name: 'iPhone 14', platform: 'ios' }
-        ]}
+          { id: 'ios1', name: 'iPhone 14', platform: 'ios' },
+        ] }
         const simulators = { success: true, data: [
-          { id: 'sim1', name: 'iPhone 14 Pro', state: 'Booted', model: 'iPhone 14 Pro' }
-        ]}
+          { id: 'sim1', name: 'iPhone 14 Pro', state: 'Booted', model: 'iPhone 14 Pro' },
+        ] }
 
         mockInvoke
           .mockResolvedValueOnce(androidDevices)
@@ -282,8 +284,8 @@ describe('tauri API - critical infrastructure tests', () => {
           data: [
             { id: 'sim1', name: 'iPhone 14', state: 'Booted', model: 'iPhone 14' },
             { id: 'sim2', name: 'iPhone 15', state: 'Shutdown', model: 'iPhone 15' },
-            { id: 'sim3', name: 'iPad Air', state: 'Booted', model: 'iPad Air' }
-          ]
+            { id: 'sim3', name: 'iPad Air', state: 'Booted', model: 'iPad Air' },
+          ],
         }
 
         mockInvoke
@@ -311,12 +313,12 @@ describe('tauri API - critical infrastructure tests', () => {
           deviceId: iPhoneId,
           localFilePath: '/local/app.db',
           packageName: 'com.app',
-          remoteLocation: '/remote/app.db'
+          remoteLocation: '/remote/app.db',
         })
       })
 
       it('should auto-detect simulator by ID pattern', async () => {
-        const simulatorId = 'ABCD1234-5678-90EF-ABCD-123456789ABC'  // Proper hex UUID
+        const simulatorId = 'ABCD1234-5678-90EF-ABCD-123456789ABC' // Proper hex UUID
         mockInvoke.mockResolvedValue({ success: true, data: 'uploaded' })
 
         await tauriApi.api.pushDatabaseFile(simulatorId, '/local/app.db', 'com.app', '/remote/app.db')
@@ -326,7 +328,7 @@ describe('tauri API - critical infrastructure tests', () => {
           deviceId: simulatorId,
           localPath: '/local/app.db',
           packageName: 'com.app',
-          remotePath: '/remote/app.db'
+          remotePath: '/remote/app.db',
         })
       })
 
@@ -340,7 +342,7 @@ describe('tauri API - critical infrastructure tests', () => {
           deviceId: androidId,
           localPath: '/local/app.db',
           packageName: 'com.app',
-          remotePath: '/remote/app.db'
+          remotePath: '/remote/app.db',
         })
       })
 
@@ -361,7 +363,7 @@ describe('tauri API - critical infrastructure tests', () => {
         const validPaths = [
           '/Users/test/app.db',
           '/var/mobile/Containers/Data/Application/UUID/Documents/app.sqlite',
-          'C:\\Users\\test\\app.db'
+          'C:\\Users\\test\\app.db',
         ]
 
         for (const path of validPaths) {
@@ -396,7 +398,7 @@ describe('tauri API - critical infrastructure tests', () => {
         expect(result.success).toBe(true)
         expect(result.tables).toEqual(tableData)
         expect(mockInvoke).toHaveBeenCalledWith('db_get_tables', { 
-          currentDbPath: '/test/db.sqlite' 
+          currentDbPath: '/test/db.sqlite', 
         })
       })
 
@@ -404,12 +406,12 @@ describe('tauri API - critical infrastructure tests', () => {
         const tableInfo = {
           columns: [
             { name: 'id', type: 'INTEGER' },
-            { name: 'name', type: 'TEXT' }
+            { name: 'name', type: 'TEXT' },
           ],
           rows: [
             { id: 1, name: 'John' },
-            { id: 2, name: 'Jane' }
-          ]
+            { id: 2, name: 'Jane' },
+          ],
         }
         mockInvoke.mockResolvedValue({ success: true, data: tableInfo })
 
@@ -425,15 +427,15 @@ describe('tauri API - critical infrastructure tests', () => {
 
     describe('crud operations with change tracking', () => {
       const changeTrackingParams = [
-        'users',                    // tableName
-        { id: 1, name: 'John' },   // row/condition data
-        'test-condition',          // condition for update/delete
-        '/test/db.sqlite',         // currentDbPath
-        'device123',               // deviceId
-        'Test Device',             // deviceName
-        'android',                 // deviceType
-        'com.example.app',         // packageName
-        'Example App'              // appName
+        'users', // tableName
+        { id: 1, name: 'John' }, // row/condition data
+        'test-condition', // condition for update/delete
+        '/test/db.sqlite', // currentDbPath
+        'device123', // deviceId
+        'Test Device', // deviceName
+        'android', // deviceType
+        'com.example.app', // packageName
+        'Example App', // appName
       ]
 
       it('should handle row updates with full change tracking', async () => {
@@ -450,7 +452,7 @@ describe('tauri API - critical infrastructure tests', () => {
           deviceName: 'Test Device',
           deviceType: 'android',
           packageName: 'com.example.app',
-          appName: 'Example App'
+          appName: 'Example App',
         }))
         expect(result).toHaveProperty('result')
       })
@@ -466,7 +468,7 @@ describe('tauri API - critical infrastructure tests', () => {
         expect(mockInvoke).toHaveBeenCalledWith('db_insert_table_row', expect.objectContaining({
           tableName: 'users',
           row: { id: 1, name: 'John' },
-          currentDbPath: '/test/db.sqlite'
+          currentDbPath: '/test/db.sqlite',
         }))
         expect(result).toHaveProperty('result')
       })
@@ -482,7 +484,7 @@ describe('tauri API - critical infrastructure tests', () => {
         expect(mockInvoke).toHaveBeenCalledWith('db_delete_table_row', expect.objectContaining({
           tableName: 'users',
           condition: 'test-condition',
-          currentDbPath: '/test/db.sqlite'
+          currentDbPath: '/test/db.sqlite',
         }))
         expect(result).toHaveProperty('result')
       })
@@ -497,7 +499,7 @@ describe('tauri API - critical infrastructure tests', () => {
 
         expect(mockInvoke).toHaveBeenCalledWith('db_clear_table', expect.objectContaining({
           tableName: 'users',
-          currentDbPath: '/test/db.sqlite'
+          currentDbPath: '/test/db.sqlite',
         }))
         expect(result).toHaveProperty('result')
       })
@@ -512,7 +514,7 @@ describe('tauri API - critical infrastructure tests', () => {
 
         expect(mockInvoke).toHaveBeenCalledWith('db_add_new_row_with_defaults', expect.objectContaining({
           tableName: 'users',
-          currentDbPath: '/test/db.sqlite'
+          currentDbPath: '/test/db.sqlite',
         }))
         expect(result).toHaveProperty('result')
       })
@@ -529,7 +531,7 @@ describe('tauri API - critical infrastructure tests', () => {
         expect(mockInvoke).toHaveBeenCalledWith('db_execute_query', {
           query,
           dbPath,
-          params: undefined
+          params: undefined,
         })
         expect(result).toHaveProperty('result')
       })
@@ -541,7 +543,7 @@ describe('tauri API - critical infrastructure tests', () => {
       const contextKey = 'custom-context-123'
       const tableName = 'users'
       const changeHistory = [
-        { id: 1, operation: 'INSERT', timestamp: '2023-01-01T00:00:00Z' }
+        { id: 1, operation: 'INSERT', timestamp: '2023-01-01T00:00:00Z' },
       ]
       
       mockInvoke.mockResolvedValue({ success: true, data: changeHistory })
@@ -550,7 +552,7 @@ describe('tauri API - critical infrastructure tests', () => {
 
       expect(mockInvoke).toHaveBeenCalledWith('get_database_change_history', {
         contextKey,
-        tableName
+        tableName,
       })
       expect(result.success).toBe(true)
       expect(result.data).toEqual(changeHistory)
@@ -559,7 +561,7 @@ describe('tauri API - critical infrastructure tests', () => {
     it('should get context summaries for all databases', async () => {
       const summaries = [
         { contextKey: 'ctx1', changeCount: 5 },
-        { contextKey: 'ctx2', changeCount: 3 }
+        { contextKey: 'ctx2', changeCount: 3 },
       ]
       
       mockInvoke.mockResolvedValue({ success: true, data: summaries })
@@ -589,7 +591,7 @@ describe('tauri API - critical infrastructure tests', () => {
       const result = await tauriApi.api.generateCustomFileContextKey(databasePath)
 
       expect(mockInvoke).toHaveBeenCalledWith('generate_custom_file_context_key_command', { 
-        databasePath 
+        databasePath, 
       })
       expect(result.data).toBe(contextKey)
     })
@@ -597,47 +599,47 @@ describe('tauri API - critical infrastructure tests', () => {
 
   describe('📁 File Operations', () => {
     describe('file dialog operations', () => {
-    it('should handle file selection dialog', async () => {
-      const fileResponse = {
-        success: true,
-        data: {
-          canceled: false,
-          file_paths: ['/selected/file.db']
+      it('should handle file selection dialog', async () => {
+        const fileResponse = {
+          success: true,
+          data: {
+            canceled: false,
+            file_paths: ['/selected/file.db'],
+          },
         }
-      }
       
-      mockInvoke.mockResolvedValue(fileResponse)
+        mockInvoke.mockResolvedValue(fileResponse)
 
-      const result = await tauriApi.api.openFile()
+        const result = await tauriApi.api.openFile()
 
-      expect(result.canceled).toBe(false)
-      expect(result.filePaths).toEqual(['/selected/file.db'])
-    })
+        expect(result.canceled).toBe(false)
+        expect(result.filePaths).toEqual(['/selected/file.db'])
+      })
 
-    it('should handle canceled file selection', async () => {
-      const canceledResponse = {
-        success: true,
-        data: {
-          canceled: true,
-          file_paths: []
+      it('should handle canceled file selection', async () => {
+        const canceledResponse = {
+          success: true,
+          data: {
+            canceled: true,
+            file_paths: [],
+          },
         }
-      }
       
-      mockInvoke.mockResolvedValue(canceledResponse)
+        mockInvoke.mockResolvedValue(canceledResponse)
 
-      const result = await tauriApi.api.openFile()
+        const result = await tauriApi.api.openFile()
 
-      expect(result.canceled).toBe(true)
-      expect(result.filePaths).toEqual([])
-    })
+        expect(result.canceled).toBe(true)
+        expect(result.filePaths).toEqual([])
+      })
 
       it('should handle export file dialog with options', async () => {
         const options = {
           dbFilePath: '/current/db.sqlite',
           defaultPath: '/export/location.db',
           filters: [
-            { name: 'Database Files', extensions: ['db', 'sqlite'] }
-          ]
+            { name: 'Database Files', extensions: ['db', 'sqlite'] },
+          ],
         }
         const savedPath = '/saved/file.db'
         
@@ -649,8 +651,8 @@ describe('tauri API - critical infrastructure tests', () => {
           options: {
             db_file_path: options.dbFilePath,
             default_path: options.defaultPath,
-            filters: options.filters
-          }
+            filters: options.filters,
+          },
         })
         expect(result).toBe(savedPath)
       })
@@ -671,7 +673,7 @@ describe('tauri API - critical infrastructure tests', () => {
 
         expect(mockInvoke).toHaveBeenCalledWith('save_dropped_file', {
           fileContent: expect.any(Array),
-          filename: 'test.db'
+          filename: 'test.db',
         })
         expect(result).toBe(savedPath)
       })
@@ -686,8 +688,8 @@ describe('tauri API - critical infrastructure tests', () => {
           available: true,
           version: '2.1.0',
           notes: 'Bug fixes and improvements',
-          date: '2023-12-01'
-        }
+          date: '2023-12-01',
+        },
       }
       
       mockInvoke.mockResolvedValue(updateInfo)
@@ -704,7 +706,7 @@ describe('tauri API - critical infrastructure tests', () => {
     it('should handle no updates available', async () => {
       mockInvoke.mockResolvedValue({
         success: true,
-        data: { available: false }
+        data: { available: false },
       })
 
       const result = await tauriApi.api.checkForUpdates()
@@ -755,11 +757,11 @@ describe('tauri API - critical infrastructure tests', () => {
       // Test loading state
       Object.defineProperty(globalThis.document, 'readyState', { 
         value: 'loading',
-        writable: true 
+        writable: true, 
       })
       Object.defineProperty(globalThis.document, 'addEventListener', { 
         value: addEventListener,
-        writable: true 
+        writable: true, 
       })
 
       // Should call addEventListener for DOMContentLoaded
@@ -772,8 +774,7 @@ describe('tauri API - critical infrastructure tests', () => {
       mockInvoke.mockResolvedValue({ success: true, data: {} })
 
       const concurrentCalls = Array.from({ length: 10 }, (_, i) => 
-        mockInvoke(`test_command_${i}`)
-      )
+        mockInvoke(`test_command_${i}`))
 
       const results = await Promise.all(concurrentCalls)
       
@@ -785,7 +786,7 @@ describe('tauri API - critical infrastructure tests', () => {
     it('should handle large data payloads', async () => {
       const largeDataset = Array.from({ length: 10000 }, (_, i) => ({
         id: i,
-        data: `large data entry ${i}`.repeat(100)
+        data: `large data entry ${i}`.repeat(100),
       }))
       
       mockInvoke.mockResolvedValue({ success: true, data: largeDataset })
@@ -802,13 +803,13 @@ describe('tauri API - critical infrastructure tests', () => {
           '📱 iPhone 15 Pro',
           '🤖 Samsung Galaxy',
           '华为 Mate 50',
-          'Тест устройство'
+          'Тест устройство',
         ],
         paths: [
           '/data/data/com.app-test/databases/app (1).db',
           '/Users/тест/файл.sqlite',
-          '/路径/数据库.db'
-        ]
+          '/路径/数据库.db',
+        ],
       }
       
       mockInvoke.mockResolvedValue({ success: true, data: unicodeData })
@@ -838,10 +839,10 @@ describe('tauri API - critical infrastructure tests', () => {
   describe('🔒 Security and Input Validation', () => {
     it('should handle SQL injection attempts in parameters', async () => {
       const maliciousInputs = [
-        "'; DROP TABLE users; --",
-        "1' OR '1'='1",
-        "UNION SELECT * FROM sqlite_master",
-        "../../../etc/passwd"
+        '\'; DROP TABLE users; --',
+        '1\' OR \'1\'=\'1',
+        'UNION SELECT * FROM sqlite_master',
+        '../../../etc/passwd',
       ]
 
       for (const input of maliciousInputs) {
@@ -858,7 +859,7 @@ describe('tauri API - critical infrastructure tests', () => {
         '../../../sensitive/file.db',
         '/etc/passwd',
         'C:\\Windows\\System32\\config\\SAM',
-        '\\\\network\\share\\file.db'
+        '\\\\network\\share\\file.db',
       ]
 
       for (const path of suspiciousPaths) {

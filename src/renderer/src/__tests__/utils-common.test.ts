@@ -63,12 +63,12 @@ describe('common utility functions tests', () => {
       const complexJson = JSON.stringify({
         users: [
           { id: 1, profile: { name: 'John', settings: { theme: 'dark' } } },
-          { id: 2, profile: { name: 'Jane', settings: { theme: 'light' } } }
+          { id: 2, profile: { name: 'Jane', settings: { theme: 'light' } } },
         ],
         metadata: {
           total: 2,
-          filters: { active: true }
-        }
+          filters: { active: true },
+        },
       })
       expect(isJsonValue(complexJson)).toBe(true)
     })
@@ -155,7 +155,7 @@ describe('common utility functions tests', () => {
       const validJsonStrings = [
         '{"user_preferences": {"theme": "dark", "notifications": true}}',
         '[{"type": "login", "timestamp": 1234567890}]',
-        '{"metadata": {"version": "1.0", "features": ["auth", "sync"]}}'
+        '{"metadata": {"version": "1.0", "features": ["auth", "sync"]}}',
       ]
 
       const invalidJsonStrings = [
@@ -163,21 +163,22 @@ describe('common utility functions tests', () => {
         '"just a string"',
         '123',
         'true',
-        '{"unclosed": true'
+        '{"unclosed": true',
       ]
 
-      validJsonStrings.forEach(jsonStr => {
+      validJsonStrings.forEach((jsonStr) => {
         expect(isJsonValue(jsonStr)).toBe(true)
         const parsed = parseJson(jsonStr)
         expect(typeof parsed).toBe('object')
         expect(parsed).not.toBe(jsonStr) // Should be parsed, not original string
       })
 
-      invalidJsonStrings.forEach(str => {
+      invalidJsonStrings.forEach((str) => {
         if (isJsonValue(str)) {
           // If it's considered valid JSON, parsing should work
           expect(() => parseJson(str)).not.toThrow()
-        } else {
+        }
+        else {
           // If not valid JSON for objects/arrays, parseJson should return original
           const result = parseJson(str)
           // For malformed JSON, it should return original string
@@ -193,10 +194,10 @@ describe('common utility functions tests', () => {
       const mobileAppData = [
         '{"session_data": {"user_id": 123, "last_activity": "2023-12-01T10:00:00Z"}}',
         '{"app_settings": {"push_notifications": true, "sync_frequency": 300}}',
-        '[{"event": "app_open", "timestamp": 1701419200}, {"event": "feature_used", "feature": "camera"}]'
+        '[{"event": "app_open", "timestamp": 1701419200}, {"event": "feature_used", "feature": "camera"}]',
       ]
 
-      mobileAppData.forEach(data => {
+      mobileAppData.forEach((data) => {
         expect(isJsonValue(data)).toBe(true)
         const parsed = parseJson(data)
         expect(parsed).toBeTruthy()
@@ -215,10 +216,10 @@ describe('common utility functions tests', () => {
         '{}', // Empty object
         '[]', // Empty array
         '{"data": null}', // Object with null value
-        '{"array": []}' // Object with empty array
+        '{"array": []}', // Object with empty array
       ]
 
-      edgeCases.forEach(testCase => {
+      edgeCases.forEach((testCase) => {
         // Should not throw errors
         expect(() => isJsonValue(testCase)).not.toThrow()
         expect(() => parseJson(testCase)).not.toThrow()
@@ -237,8 +238,8 @@ describe('common utility functions tests', () => {
         data: Array.from({ length: 1000 }, (_, i) => ({
           id: i,
           name: `item_${i}`,
-          active: i % 2 === 0
-        }))
+          active: i % 2 === 0,
+        })),
       }
       const largeJsonString = JSON.stringify(largeObject)
 
@@ -265,10 +266,10 @@ describe('common utility functions tests', () => {
         '{duplicate: duplicate}',
         '[1, 2, 3,]', // Trailing comma
         '{"extra": "comma",}',
-        '{missing: "quotes"}'
+        '{missing: "quotes"}',
       ]
 
-      malformedCases.forEach(malformed => {
+      malformedCases.forEach((malformed) => {
         expect(() => isJsonValue(malformed)).not.toThrow()
         expect(() => parseJson(malformed)).not.toThrow()
         

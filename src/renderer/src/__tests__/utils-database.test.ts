@@ -11,12 +11,12 @@ describe('database utility functions tests', () => {
       const cols = [
         { name: 'id' },
         { name: 'name' },
-        { name: 'email' }
+        { name: 'email' },
       ]
       const rowData = {
         id: 123,
         name: 'John Doe',
-        email: 'john@example.com'
+        email: 'john@example.com',
       }
 
       const result = buildUniqueCondition(cols, rowData)
@@ -27,12 +27,12 @@ describe('database utility functions tests', () => {
       const cols = [
         { name: 'user_id' },
         { name: 'name' },
-        { name: 'status' }
+        { name: 'status' },
       ]
       const rowData = {
         user_id: 456,
         name: 'Jane Smith',
-        status: 'active'
+        status: 'active',
       }
 
       const result = buildUniqueCondition(cols, rowData)
@@ -43,12 +43,12 @@ describe('database utility functions tests', () => {
       const cols = [
         { name: 'name' },
         { name: 'email' },
-        { name: 'status' }
+        { name: 'status' },
       ]
       const rowData = {
         name: 'John Doe',
         email: 'john@example.com',
-        status: 'active'
+        status: 'active',
       }
 
       const result = buildUniqueCondition(cols, rowData)
@@ -59,12 +59,12 @@ describe('database utility functions tests', () => {
       const cols = [
         { name: 'name' },
         { name: 'email' },
-        { name: 'phone' }
+        { name: 'phone' },
       ]
       const rowData = {
         name: 'John Doe',
         email: null,
-        phone: undefined
+        phone: undefined,
       }
 
       const result = buildUniqueCondition(cols, rowData)
@@ -75,12 +75,12 @@ describe('database utility functions tests', () => {
       const cols = [
         { name: 'name' },
         { name: 'email' },
-        { name: 'phone' }
+        { name: 'phone' },
       ]
       const rowData = {
         name: 'John Doe',
         email: '',
-        phone: '555-1234'
+        phone: '555-1234',
       }
 
       const result = buildUniqueCondition(cols, rowData)
@@ -91,12 +91,12 @@ describe('database utility functions tests', () => {
       const cols = [
         { name: 'id' },
         { name: 'active' },
-        { name: 'verified' }
+        { name: 'verified' },
       ]
       const rowData = {
         id: 123,
         active: true,
-        verified: false
+        verified: false,
       }
 
       const result = buildUniqueCondition(cols, rowData)
@@ -106,11 +106,11 @@ describe('database utility functions tests', () => {
     it('should handle boolean values when no ID present', () => {
       const cols = [
         { name: 'active' },
-        { name: 'verified' }
+        { name: 'verified' },
       ]
       const rowData = {
         active: true,
-        verified: false
+        verified: false,
       }
 
       const result = buildUniqueCondition(cols, rowData)
@@ -121,12 +121,12 @@ describe('database utility functions tests', () => {
       const cols = [
         { name: 'score' },
         { name: 'count' },
-        { name: 'rating' }
+        { name: 'rating' },
       ]
       const rowData = {
         score: 95.5,
         count: 0,
-        rating: -1
+        rating: -1,
       }
 
       const result = buildUniqueCondition(cols, rowData)
@@ -136,11 +136,11 @@ describe('database utility functions tests', () => {
     it('should escape single quotes in string values', () => {
       const cols = [
         { name: 'name' },
-        { name: 'description' }
+        { name: 'description' },
       ]
       const rowData = {
         name: 'O\'Connor',
-        description: 'It\'s a test with \'quotes\''
+        description: 'It\'s a test with \'quotes\'',
       }
 
       const result = buildUniqueCondition(cols, rowData)
@@ -151,12 +151,12 @@ describe('database utility functions tests', () => {
       const cols = [
         { name: 'name' },
         { name: 'email' },
-        { name: 'phone' }
+        { name: 'phone' },
       ]
       const rowData = {
         name: null,
         email: undefined,
-        phone: ''
+        phone: '',
       }
 
       const result = buildUniqueCondition(cols, rowData)
@@ -166,11 +166,11 @@ describe('database utility functions tests', () => {
     it('should handle mixed null and non-null values in fallback', () => {
       const cols = [
         { name: 'optional_field' },
-        { name: 'required_field' }
+        { name: 'required_field' },
       ]
       const rowData = {
         optional_field: null,
-        required_field: undefined
+        required_field: undefined,
       }
 
       const result = buildUniqueCondition(cols, rowData)
@@ -181,12 +181,12 @@ describe('database utility functions tests', () => {
       const cols = [
         { name: 'user_id' },
         { name: 'id' },
-        { name: 'name' }
+        { name: 'name' },
       ]
       const rowData = {
         user_id: 456,
         id: 123,
-        name: 'John'
+        name: 'John',
       }
 
       const result = buildUniqueCondition(cols, rowData)
@@ -197,11 +197,11 @@ describe('database utility functions tests', () => {
     it('should handle case insensitive ID field detection', () => {
       const cols = [
         { name: 'ID' },
-        { name: 'name' }
+        { name: 'name' },
       ]
       const rowData = {
         ID: 789,
-        name: 'Jane'
+        name: 'Jane',
       }
 
       const result = buildUniqueCondition(cols, rowData)
@@ -213,7 +213,7 @@ describe('database utility functions tests', () => {
         { field: 'user_id', value: 123 },
         { field: 'USER_ID', value: 456 },
         { field: 'productId', value: 789 }, // This won't match _id pattern
-        { field: 'category_id', value: 101 }
+        { field: 'category_id', value: 101 },
       ]
 
       idVariations.forEach(({ field, value }) => {
@@ -224,7 +224,8 @@ describe('database utility functions tests', () => {
         
         if (field.toLowerCase().endsWith('_id')) {
           expect(result).toBe(`${field} = ${value}`)
-        } else {
+        }
+        else {
           // Should use all fields since it doesn't match ID pattern
           expect(result).toContain('name = \'Test\'')
         }
@@ -234,11 +235,11 @@ describe('database utility functions tests', () => {
     it('should handle special string values', () => {
       const cols = [
         { name: 'name' },
-        { name: 'data' }
+        { name: 'data' },
       ]
       const rowData = {
         name: '',
-        data: '   whitespace   '
+        data: '   whitespace   ',
       }
 
       const result = buildUniqueCondition(cols, rowData)
@@ -248,11 +249,11 @@ describe('database utility functions tests', () => {
     it('should handle array-like string representations', () => {
       const cols = [
         { name: 'tags' },
-        { name: 'metadata' }
+        { name: 'metadata' },
       ]
       const rowData = {
         tags: '[\"tag1\", \"tag2\"]',
-        metadata: '{\"key\": \"value\"}'
+        metadata: '{\"key\": \"value\"}',
       }
 
       const result = buildUniqueCondition(cols, rowData)
@@ -282,7 +283,7 @@ describe('database utility functions tests', () => {
         const cols = [{ name: 'user id' }, { name: 'first name' }]
         const rowData = {
           'user id': 123,
-          'first name': 'John'
+          'first name': 'John',
         }
 
         const result = buildUniqueCondition(cols, rowData)
@@ -303,7 +304,7 @@ describe('database utility functions tests', () => {
         const cols = [{ name: 'name' }, { name: 'emoji' }]
         const rowData = {
           name: '测试用户',
-          emoji: '🎉🚀'
+          emoji: '🎉🚀',
         }
 
         const result = buildUniqueCondition(cols, rowData)
@@ -317,13 +318,13 @@ describe('database utility functions tests', () => {
           { name: 'id' },
           { name: 'email' },
           { name: 'username' },
-          { name: 'created_at' }
+          { name: 'created_at' },
         ]
         const userData = {
           id: 123,
           email: 'user@example.com',
           username: 'john_doe',
-          created_at: '2023-12-01 10:00:00'
+          created_at: '2023-12-01 10:00:00',
         }
 
         const result = buildUniqueCondition(userCols, userData)
@@ -334,12 +335,12 @@ describe('database utility functions tests', () => {
         const logCols = [
           { name: 'timestamp' },
           { name: 'level' },
-          { name: 'message' }
+          { name: 'message' },
         ]
         const logData = {
           timestamp: '2023-12-01 10:00:00',
           level: 'ERROR',
-          message: 'Database connection failed'
+          message: 'Database connection failed',
         }
 
         const result = buildUniqueCondition(logCols, logData)
@@ -350,12 +351,12 @@ describe('database utility functions tests', () => {
         const junctionCols = [
           { name: 'user_id' },
           { name: 'role_id' },
-          { name: 'assigned_at' }
+          { name: 'assigned_at' },
         ]
         const junctionData = {
           user_id: 123,
           role_id: 456,
-          assigned_at: '2023-12-01 10:00:00'
+          assigned_at: '2023-12-01 10:00:00',
         }
 
         const result = buildUniqueCondition(junctionCols, junctionData)

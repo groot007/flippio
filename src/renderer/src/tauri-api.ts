@@ -41,7 +41,7 @@ function validateDeviceResponse<T>(response: any): DeviceResponse<T> {
     throw new APIValidationError(
       'Invalid API response format: response must be an object',
       'INVALID_RESPONSE_FORMAT',
-      { response }
+      { response },
     )
   }
   
@@ -49,7 +49,7 @@ function validateDeviceResponse<T>(response: any): DeviceResponse<T> {
     throw new APIValidationError(
       'Invalid API response: missing or invalid success field',
       'MISSING_SUCCESS_FIELD',
-      { response }
+      { response },
     )
   }
   
@@ -79,16 +79,17 @@ function validateInput(value: any, fieldName: string, options: {
     throw new APIValidationError(
       `Required field '${fieldName}' is missing`,
       'MISSING_REQUIRED_FIELD',
-      { fieldName, value }
+      { fieldName, value },
     )
   }
   
   if (value !== undefined && value !== null) {
+    // eslint-disable-next-line
     if (type && typeof value !== type) {
       throw new APIValidationError(
         `Field '${fieldName}' must be of type ${type}, got ${typeof value}`,
         'INVALID_FIELD_TYPE',
-        { fieldName, expectedType: type, actualType: typeof value, value }
+        { fieldName, expectedType: type, actualType: typeof value, value },
       )
     }
     
@@ -96,7 +97,7 @@ function validateInput(value: any, fieldName: string, options: {
       throw new APIValidationError(
         `Field '${fieldName}' does not match required pattern`,
         'PATTERN_MISMATCH',
-        { fieldName, pattern: pattern.toString(), value }
+        { fieldName, pattern: pattern.toString(), value },
       )
     }
     
@@ -104,7 +105,7 @@ function validateInput(value: any, fieldName: string, options: {
       throw new APIValidationError(
         `Field '${fieldName}' exceeds maximum length of ${maxLength}`,
         'FIELD_TOO_LONG',
-        { fieldName, maxLength, actualLength: value.length }
+        { fieldName, maxLength, actualLength: value.length },
       )
     }
   }
@@ -118,13 +119,13 @@ async function withRetry<T>(
     baseDelay?: number
     maxDelay?: number
     retryOn?: (error: Error) => boolean
-  } = {}
+  } = {},
 ): Promise<T> {
   const { 
     maxRetries = 3, 
     baseDelay = 1000, 
     maxDelay = 10000,
-    retryOn = () => true 
+    retryOn = () => true, 
   } = options
   
   let lastError: Error
@@ -132,7 +133,8 @@ async function withRetry<T>(
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
       return await fn()
-    } catch (error) {
+    }
+    catch (error) {
       lastError = error as Error
       
       if (attempt === maxRetries || !retryOn(lastError)) {
@@ -149,7 +151,7 @@ async function withRetry<T>(
   throw new APIValidationError(
     `API call failed after ${maxRetries + 1} attempts: ${lastError.message}`,
     'MAX_RETRIES_EXCEEDED',
-    { maxRetries, lastError: lastError.message }
+    { maxRetries, lastError: lastError.message },
   )
 }
 
@@ -215,7 +217,7 @@ async function invokeCommandWithResponse<T>(electronCommand: string, dataFieldNa
     throw new APIValidationError(
       `Command not found: ${electronCommand}`,
       'COMMAND_NOT_FOUND',
-      { electronCommand, availableCommands: Object.keys(COMMAND_MAP) }
+      { electronCommand, availableCommands: Object.keys(COMMAND_MAP) },
     )
   }
 
@@ -228,10 +230,10 @@ async function invokeCommandWithResponse<T>(electronCommand: string, dataFieldNa
     baseDelay: 500,
     retryOn: (error: Error) => {
       // Retry on network errors but not on validation errors
-      return !error.message.includes('validation') && 
-             !error.message.includes('unauthorized') &&
-             !error.message.includes('not found')
-    }
+      return !error.message.includes('validation') 
+        && !error.message.includes('unauthorized')
+        && !error.message.includes('not found')
+    },
   } : { maxRetries: 0 }
 
   return await withRetry(async () => {
@@ -276,7 +278,7 @@ async function invokeCommandWithResponse<T>(electronCommand: string, dataFieldNa
       throw new APIValidationError(
         `Failed to execute command ${tauriCommand}: ${(error as Error).message}`,
         'COMMAND_EXECUTION_FAILED',
-        { tauriCommand, electronCommand, originalError: (error as Error).message }
+        { tauriCommand, electronCommand, originalError: (error as Error).message },
       )
     }
   }, retryOptions)
@@ -430,10 +432,10 @@ export const api = {
     
     // Validate file paths for security
     const suspiciousPatterns = [
-      /\.\./,                    // Directory traversal
-      /[<>:"|?*]/,              // Windows forbidden chars
+      /\.\./, // Directory traversal
+      /[<>:"|?*]/, // Windows forbidden chars
       // eslint-disable-next-line no-control-regex
-      /[\x00-\x1F\x7F]/,        // Control characters
+      /[\x00-\x1F\x7F]/, // Control characters
     ]
     
     for (const pattern of suspiciousPatterns) {
@@ -441,7 +443,7 @@ export const api = {
         throw new APIValidationError(
           'File paths contain potentially dangerous characters',
           'SUSPICIOUS_FILE_PATH',
-          { localPath, remotePath }
+          { localPath, remotePath },
         )
       }
     }
@@ -511,7 +513,7 @@ export const api = {
       throw new APIValidationError(
         'Invalid database file extension. Expected .db, .sqlite, or .sqlite3',
         'INVALID_FILE_EXTENSION',
-        { filePath }
+        { filePath },
       )
     }
     
@@ -544,7 +546,7 @@ export const api = {
       throw new APIValidationError(
         'Invalid table name. Must start with letter or underscore and contain only alphanumeric characters and underscores',
         'INVALID_TABLE_NAME',
-        { tableName }
+        { tableName },
       )
     }
     
@@ -704,7 +706,7 @@ export const api = {
             throw new APIValidationError(
               'Filter extensions must be an array',
               'INVALID_FILTER_EXTENSIONS',
-              { filter }
+              { filter },
             )
           }
         }

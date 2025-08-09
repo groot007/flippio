@@ -65,13 +65,13 @@ describe('common utilities', () => {
           name: 'John Doe',
           contacts: [
             { type: 'email', value: 'john@example.com' },
-            { type: 'phone', value: '+1234567890' }
+            { type: 'phone', value: '+1234567890' },
           ],
           settings: {
             theme: 'dark',
-            notifications: true
-          }
-        }
+            notifications: true,
+          },
+        },
       })
       expect(isJsonValue(complexJson)).toBe(true)
     })
@@ -139,13 +139,13 @@ describe('common utilities', () => {
           name: 'John Doe',
           contacts: [
             { type: 'email', value: 'john@example.com' },
-            { type: 'phone', value: '+1234567890' }
+            { type: 'phone', value: '+1234567890' },
           ],
           settings: {
             theme: 'dark',
-            notifications: true
-          }
-        }
+            notifications: true,
+          },
+        },
       }
       const jsonString = JSON.stringify(complexObject)
       const result = parseJson(jsonString)
@@ -163,7 +163,7 @@ describe('common utilities', () => {
       const result = parseJson(escapedJson)
       expect(result).toEqual({ 
         quote: 'He said "Hello"', 
-        path: 'C:\\folder\\file.txt' 
+        path: 'C:\\folder\\file.txt', 
       })
     })
   })

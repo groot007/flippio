@@ -11,11 +11,11 @@ const mockApi = {
   getApplications: vi.fn(),
   getDatabaseFiles: vi.fn(),
   getTables: vi.fn(),
-  getTableData: vi.fn()
+  getTableData: vi.fn(),
 }
 
 vi.mock('../../api/tauri-api', () => ({
-  tauriApi: mockApi
+  tauriApi: mockApi,
 }))
 
 vi.mock('ag-grid-react', () => ({
@@ -37,7 +37,7 @@ vi.mock('ag-grid-react', () => ({
         ))}
       </div>
     )
-  })
+  }),
 }))
 
 function resetStores() {
@@ -58,7 +58,7 @@ function resetStores() {
   tableStore.setTableData({
     rows: [],
     columns: [],
-    isCustomQuery: false
+    isCustomQuery: false,
   })
   tableStore.setIsLoadingTableData(false)
 }
@@ -96,7 +96,7 @@ describe('component Integration Tests', () => {
       
       await act(async () => {
         useAppStore.getState().setDevices([
-          { value: 'device-1', label: 'Test Android', description: 'Android device' }
+          { value: 'device-1', label: 'Test Android', description: 'Android device' },
         ])
       })
       
@@ -110,11 +110,11 @@ describe('component Integration Tests', () => {
       
       await act(async () => {
         useAppStore.getState().setDevices([
-          { value: 'device-1', label: 'Test Android', description: 'Android device' }
+          { value: 'device-1', label: 'Test Android', description: 'Android device' },
         ])
         useAppStore.getState().setSelectedDevice('device-1')
         useAppStore.getState().setApplications([
-          { id: 'app1', name: 'Test App', deviceId: 'device-1' }
+          { id: 'app1', name: 'Test App', deviceId: 'device-1' },
         ])
       })
       
@@ -136,7 +136,7 @@ describe('component Integration Tests', () => {
           filename: 'test.db',
           deviceType: 'android',
           packageName: 'com.test.app',
-          location: '/data/data/com.test.app'
+          location: '/data/data/com.test.app',
         })
       })
       
@@ -156,11 +156,11 @@ describe('component Integration Tests', () => {
           filename: 'test.db',
           deviceType: 'android',
           packageName: 'com.test.app',
-          location: '/data/data/com.test.app'
+          location: '/data/data/com.test.app',
         })
         useCurrentDatabaseSelection.getState().setSelectedDatabaseTable({
           name: 'users',
-          deviceType: 'android'
+          deviceType: 'android',
         })
       })
       
@@ -178,11 +178,11 @@ describe('component Integration Tests', () => {
         useTableData.getState().setTableData({
           rows: [
             { id: 1, name: 'John', email: 'john@test.com' },
-            { id: 2, name: 'Jane', email: 'jane@test.com' }
+            { id: 2, name: 'Jane', email: 'jane@test.com' },
           ],
           columns: ['id', 'name', 'email'],
           isCustomQuery: false,
-          tableName: 'users'
+          tableName: 'users',
         })
       })
       
@@ -201,7 +201,7 @@ describe('component Integration Tests', () => {
           rows: [{ id: 1, name: 'John', email: 'john@test.com' }],
           columns: ['id', 'name', 'email'],
           isCustomQuery: false,
-          tableName: 'users'
+          tableName: 'users',
         })
       })
       

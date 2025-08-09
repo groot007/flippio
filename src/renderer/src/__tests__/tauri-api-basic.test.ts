@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 const mockInvoke = vi.fn()
 
 vi.mock('@tauri-apps/api/core', () => ({
-  invoke: mockInvoke
+  invoke: mockInvoke,
 }))
 
 describe('tauri-api basic tests', () => {
