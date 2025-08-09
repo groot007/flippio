@@ -57,6 +57,18 @@ vi.mock('@tauri-apps/api/core', () => ({
   invoke: vi.fn().mockResolvedValue({ success: true }),
 }))
 
+// Mock next-themes to prevent window.matchMedia issues
+vi.mock('next-themes', () => ({
+  ThemeProvider: ({ children }: { children: React.ReactNode }) => children,
+  useTheme: () => ({
+    theme: 'light',
+    setTheme: vi.fn(),
+    resolvedTheme: 'light',
+    themes: ['light', 'dark'],
+    systemTheme: 'light',
+  }),
+}))
+
 beforeAll(() => {
   Object.defineProperty(window, 'matchMedia', {
     writable: true,
