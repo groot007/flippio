@@ -128,31 +128,54 @@ export function useChangeHistoryRefresh() {
   
   return {
     refreshChangeHistory: () => {
-      console.log('🔄 refreshChangeHistory called - invalidating queries')
-      queryClient.invalidateQueries({
-        queryKey: ['changeHistory'],
-      })
+      console.log('🔄 [Refresh] refreshChangeHistory called - invalidating queries')
+      try {
+        queryClient.invalidateQueries({
+          queryKey: ['changeHistory'],
+        })
+        console.log('🔄 [Refresh] Successfully invalidated changeHistory queries')
+      } catch (error) {
+        console.error('🔄 [Refresh] Error invalidating changeHistory queries:', error)
+      }
     },
     refreshContextSummaries: () => {
-      queryClient.invalidateQueries({
-        queryKey: ['contextSummaries'],
-      })
+      console.log('🔄 [Refresh] refreshContextSummaries called')
+      try {
+        queryClient.invalidateQueries({
+          queryKey: ['contextSummaries'],
+        })
+        console.log('🔄 [Refresh] Successfully invalidated contextSummaries queries')
+      } catch (error) {
+        console.error('🔄 [Refresh] Error invalidating contextSummaries queries:', error)
+      }
     },
     refreshDiagnostics: () => {
-      queryClient.invalidateQueries({
-        queryKey: ['changeHistoryDiagnostics'],
-      })
+      console.log('🔄 [Refresh] refreshDiagnostics called')
+      try {
+        queryClient.invalidateQueries({
+          queryKey: ['changeHistoryDiagnostics'],
+        })
+        console.log('🔄 [Refresh] Successfully invalidated diagnostics queries')
+      } catch (error) {
+        console.error('🔄 [Refresh] Error invalidating diagnostics queries:', error)
+      }
     },
     refreshAll: () => {
-      queryClient.invalidateQueries({
-        queryKey: ['changeHistory'],
-      })
-      queryClient.invalidateQueries({
-        queryKey: ['contextSummaries'],
-      })
-      queryClient.invalidateQueries({
-        queryKey: ['changeHistoryDiagnostics'],
-      })
+      console.log('🔄 [Refresh] refreshAll called')
+      try {
+        queryClient.invalidateQueries({
+          queryKey: ['changeHistory'],
+        })
+        queryClient.invalidateQueries({
+          queryKey: ['contextSummaries'],
+        })
+        queryClient.invalidateQueries({
+          queryKey: ['changeHistoryDiagnostics'],
+        })
+        console.log('🔄 [Refresh] Successfully invalidated all queries')
+      } catch (error) {
+        console.error('🔄 [Refresh] Error invalidating all queries:', error)
+      }
     },
   }
 }

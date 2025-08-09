@@ -109,8 +109,39 @@ impl ChangeHistoryManager {
     
     // Clear all changes for a specific context
     pub async fn clear_changes(&self, context_key: &str) {
+        println!("🧹 [Manager] clear_changes called for context: {}", context_key);
         let mut changes_map = self.changes.write().await;
+        
+        let had_changes = changes_map.contains_key(context_key);
+        let changes_count = if had_changes {
+            changes_map.get(context_key).map(|c| c.len()).unwrap_or(0)
+        } else {
+            0
+        };
+        
+        println!("🧹 [Manager] Context exists: {}, Changes count: {}", had_changes, changes_count);
+        
         changes_map.remove(context_key);
+        
+        println!("🧹 [Manager] Context cleared. Remaining contexts: {}", changes_map.len());
+    }
+    
+    // Clear ALL changes from memory - nuclear option
+    pub async fn clear_all_changes(&self) {
+        println!("💥 [Manager] clear_all_changes called - clearing entire change history");
+        let mut changes_map = self.changes.write().await;
+        
+        let total_contexts = changes_map.len();
+        let total_changes: usize = changes_map.values().map(|c| c.len()).sum();
+        
+        println!("💥 [Manager] Before clear - Contexts: {}, Total changes: {}", total_contexts, total_changes);
+        
+        changes_map.clear();
+        
+        // Reset memory usage counter
+        self.memory_usage_mb.store(0, Ordering::Relaxed);
+        
+        println!("💥 [Manager] After clear - Contexts: {}, Total changes: 0", changes_map.len());
     }
     
     // Get all active contexts (for debugging/admin purposes)

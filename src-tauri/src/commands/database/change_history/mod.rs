@@ -29,6 +29,7 @@ pub use commands::{
     get_context_summary,
     get_all_context_summaries,
     clear_context_changes,
+    clear_all_change_history,
     get_change_history_diagnostics,
     generate_context_from_app_state,
 };

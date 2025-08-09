@@ -190,7 +190,45 @@ pub async fn clear_context_changes(
     context_key: String,
     history_manager: State<'_, ChangeHistoryManager>,
 ) -> Result<DbResponse<bool>, String> {
+    println!("🧹 [Backend] clear_context_changes called with key: {}", context_key);
+    
+    // Check how many changes exist before clearing
+    let changes_before = history_manager.get_changes(&context_key).await;
+    println!("🧹 [Backend] Changes count before clear: {}", changes_before.len());
+    
     history_manager.clear_changes(&context_key).await;
+    
+    // Check after clearing
+    let changes_after = history_manager.get_changes(&context_key).await;
+    println!("🧹 [Backend] Changes count after clear: {}", changes_after.len());
+    
+    println!("🧹 [Backend] clear_context_changes completed successfully");
+    
+    Ok(DbResponse {
+        success: true,
+        data: Some(true),
+        error: None,
+    })
+}
+
+// NUCLEAR OPTION: Clear ALL change history from memory
+#[command]
+pub async fn clear_all_change_history(
+    history_manager: State<'_, ChangeHistoryManager>,
+) -> Result<DbResponse<bool>, String> {
+    println!("💥 [Backend] clear_all_change_history called - NUCLEAR OPTION");
+    
+    // Get diagnostics before clearing
+    let contexts_before = history_manager.get_active_contexts().await;
+    println!("💥 [Backend] Active contexts before clear: {:?}", contexts_before);
+    
+    history_manager.clear_all_changes().await;
+    
+    // Get diagnostics after clearing
+    let contexts_after = history_manager.get_active_contexts().await;
+    println!("💥 [Backend] Active contexts after clear: {:?}", contexts_after);
+    
+    println!("💥 [Backend] clear_all_change_history completed successfully");
     
     Ok(DbResponse {
         success: true,

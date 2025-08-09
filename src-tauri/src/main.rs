@@ -85,6 +85,7 @@ pub fn run() {
             commands::database::change_history::commands::get_context_summary,
             commands::database::change_history::commands::get_all_context_summaries,
             commands::database::change_history::commands::clear_context_changes,
+            commands::database::change_history::commands::clear_all_change_history,
             commands::database::change_history::commands::get_change_history_diagnostics,
             // Common commands (file dialogs)
             commands::common::dialog_select_file,

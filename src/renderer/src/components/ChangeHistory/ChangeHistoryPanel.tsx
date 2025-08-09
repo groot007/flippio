@@ -11,10 +11,11 @@ import {
   Text,
 } from '@chakra-ui/react'
 import { useChangeHistory } from '@renderer/hooks/useChangeHistory'
-import { useClearChangeHistoryMutation } from '@renderer/hooks/useChangeHistoryMutations'
+import { useClearAllChangeHistoryMutation } from '@renderer/hooks/useChangeHistoryMutations'
 import { useCurrentDatabaseSelection, useCurrentDeviceSelection } from '@renderer/store'
 import { useColorMode } from '@renderer/ui/color-mode'
-import { formatOperationType, getOperationColor, getOperationTypeString } from '@renderer/utils/operationTypeUtils'
+import { formatOperationType, getOperationBadgeColor, getOperationTextColor, getOperationTypeString } from '@renderer/utils/operationTypeUtils'
+import { useQueryClient } from '@tanstack/react-query'
 import { formatDistanceToNow } from 'date-fns'
 import { useState } from 'react'
 import { LuClock, LuDatabase, LuRefreshCw, LuTrash2, LuX } from 'react-icons/lu'
@@ -28,6 +29,7 @@ export function ChangeHistoryPanel({ isOpen, onClose }: ChangeHistoryPanelProps)
   const { colorMode } = useColorMode()
   const isDark = colorMode === 'dark'
   const [selectedChange, setSelectedChange] = useState<ChangeEvent | null>(null)
+  const queryClient = useQueryClient()
   
   const { selectedDevice, selectedApplication } = useCurrentDeviceSelection()
   const { selectedDatabaseFile } = useCurrentDatabaseSelection()
@@ -39,12 +41,46 @@ export function ChangeHistoryPanel({ isOpen, onClose }: ChangeHistoryPanelProps)
     refetch,
   } = useChangeHistory(50, 0)
   
-  const clearHistoryMutation = useClearChangeHistoryMutation()
+  const clearHistoryMutation = useClearAllChangeHistoryMutation()
 
-  const handleClearHistory = () => {
-    // eslint-disable-next-line no-alert
-    if (window.confirm('Are you sure you want to clear all change history for this database?')) {
-      clearHistoryMutation.mutate()
+  const handleClearHistory = async () => {
+    try {
+      console.log('🧹 [UI] User confirmed - starting clear mutation...')
+        
+      const deviceId = selectedDevice?.id
+      const packageName = selectedApplication?.bundleId || selectedDatabaseFile?.packageName
+      const databasePath = selectedDatabaseFile?.path
+        
+      if (deviceId && packageName && databasePath) {
+        queryClient.setQueryData(['changeHistory', deviceId, packageName, databasePath, 50, 0], [])
+      }
+        
+      await clearHistoryMutation.mutateAsync()
+        
+      if (deviceId && packageName && databasePath) {
+        queryClient.removeQueries({
+          queryKey: ['changeHistory'],
+        })
+          
+        queryClient.setQueryData(['changeHistory', deviceId, packageName, databasePath, 50, 0], [])
+      }
+        
+      await refetch()        
+    }
+    catch (error) {
+      console.error('🧹 [UI] Failed to clear history:', error)
+    }
+  }
+
+  const handleRefresh = async () => {
+    console.log('🔄 [UI] Refresh button clicked')
+    try {
+      console.log('🔄 [UI] Calling refetch...')
+      const result = await refetch()
+      console.log('🔄 [UI] Refetch result:', result)
+    }
+    catch (error) {
+      console.error('🔄 [UI] Failed to refresh history:', error)
     }
   }
 
@@ -66,7 +102,7 @@ export function ChangeHistoryPanel({ isOpen, onClose }: ChangeHistoryPanelProps)
                   aria-label="Refresh history"
                   size="sm"
                   variant="ghost"
-                  onClick={() => refetch()}
+                  onClick={handleRefresh}
                   disabled={isLoading}
                 >
                   <LuRefreshCw />
@@ -78,6 +114,7 @@ export function ChangeHistoryPanel({ isOpen, onClose }: ChangeHistoryPanelProps)
                   colorScheme="red"
                   onClick={handleClearHistory}
                   disabled={clearHistoryMutation.isPending}
+                  loading={clearHistoryMutation.isPending}
                 >
                   <LuTrash2 />
                 </IconButton>
@@ -162,104 +199,109 @@ export function ChangeHistoryPanel({ isOpen, onClose }: ChangeHistoryPanelProps)
                 {/* Change List */}
                 {changes.length > 0 && (
                   <Stack gap={2}>
-                    {[...changes].reverse().map(change => (
-                      <Box
-                        key={change.id}
-                        p={3}
-                        cursor="pointer"
-                        onClick={() => setSelectedChange(selectedChange?.id === change.id ? null : change)}
-                        bg={selectedChange?.id === change.id ? (isDark ? 'gray.700' : 'gray.50') : undefined}
-                        _hover={{ bg: isDark ? 'gray.700' : 'gray.50' }}
-                        borderRadius="md"
-                        borderWidth="1px"
-                        borderColor={isDark ? 'gray.600' : 'gray.200'}
-                      >
-                        {/* Change Header */}
-                        <Flex justify="space-between" align="center" w="full" mb={2}>
-                          <Flex align="center" gap={2}>
-                            <Badge
-                              colorScheme={getOperationColor(getOperationTypeString(change.operationType))}
-                              variant="solid"
-                              fontSize="xs"
-                            >
-                              {formatOperationType(change.operationType)}
-                            </Badge>
+                    {[...changes].reverse().map((change) => {
+                      const operationTypeStr = getOperationTypeString(change.operationType)
+                      return (
+                        <Box
+                          key={change.id}
+                          p={3}
+                          cursor="pointer"
+                          onClick={() => setSelectedChange(selectedChange?.id === change.id ? null : change)}
+                          bg={selectedChange?.id === change.id ? (isDark ? 'gray.700' : 'gray.50') : undefined}
+                          _hover={{ bg: isDark ? 'gray.700' : 'gray.50' }}
+                          borderRadius="md"
+                          borderWidth="1px"
+                          borderColor={isDark ? 'gray.600' : 'gray.200'}
+                          transition="all 0.2s ease"
+                        >
+                          {/* Change Header */}
+                          <Flex justify="space-between" align="center" w="full" mb={2}>
+                            <Flex align="center" gap={2}>
+                              <Badge
+                                backgroundColor={getOperationBadgeColor(operationTypeStr, isDark)}
+                                color={getOperationTextColor(operationTypeStr, isDark)}
+                                variant="solid"
+                                fontSize="xs"
+                              >
+                                {formatOperationType(change.operationType)}
+                              </Badge>
+                            </Flex>
+                            <Text fontSize="xs" color={isDark ? 'gray.400' : 'gray.500'}>
+                              {formatDistanceToNow(new Date(change.timestamp), { addSuffix: true })}
+                            </Text>
                           </Flex>
-                          <Text fontSize="xs" color={isDark ? 'gray.400' : 'gray.500'}>
-                            {formatDistanceToNow(new Date(change.timestamp), { addSuffix: true })}
-                          </Text>
-                        </Flex>
 
-                        <Text fontSize="sm" color={isDark ? 'gray.300' : 'gray.700'} mb={1}>
-                          Table: 
-                          {' '}
-                          {change.tableName}
-                        </Text>
-
-                        {change.metadata.affectedRows > 0 && (
-                          <Text fontSize="xs" color={isDark ? 'gray.400' : 'gray.500'} mb={2}>
-                            {change.metadata.affectedRows}
+                          <Text fontSize="sm" color={isDark ? 'gray.300' : 'gray.700'} mb={1}>
+                            Table: 
                             {' '}
-                            row
-                            {change.metadata.affectedRows === 1 ? '' : 's'}
-                            {' '}
-                            affected
+                            {change.tableName}
                           </Text>
-                        )}
 
-                        {/* Expanded Details */}
-                        {selectedChange?.id === change.id && (
-                          <Box w="full" pt={2} borderTop="1px" borderColor={isDark ? 'gray.600' : 'gray.200'}>
-                            <Text fontSize="sm" fontWeight="bold" mb={2} color={isDark ? 'gray.200' : 'gray.800'}>Field Changes:</Text>
-                            {change.changes.length === 0
-                              ? (
-                                  <Text fontSize="sm" color={isDark ? 'gray.400' : 'gray.500'} mb={2}>No field changes recorded</Text>
-                                )
-                              : (
-                                  <Stack gap={2} mb={2}>
-                                    {change.changes.map((fieldChange, idx) => (
-                                      <Box key={idx} fontSize="xs">
-                                        <Text fontWeight="bold" mb={1} color={isDark ? 'gray.300' : 'gray.700'}>
-                                          {fieldChange.fieldName}
-                                          :
-                                        </Text>
-                                        <Flex direction="column" gap={1}>
-                                          <Text color="red.500">
-                                            - 
-                                            {' '}
-                                            {fieldChange.oldValue !== null ? String(fieldChange.oldValue) : 'null'}
+                          {change.metadata.affectedRows > 0 && (
+                            <Text fontSize="xs" color={isDark ? 'gray.400' : 'gray.500'} mb={2}>
+                              {change.metadata.affectedRows}
+                              {' '}
+                              row
+                              {change.metadata.affectedRows === 1 ? '' : 's'}
+                              {' '}
+                              affected
+                            </Text>
+                          )}
+
+                          {/* Expanded Details */}
+                          {selectedChange?.id === change.id && (
+                            <Box w="full" pt={2} borderTop="1px" borderColor={isDark ? 'gray.600' : 'gray.200'}>
+                              <Text fontSize="sm" fontWeight="bold" mb={2} color={isDark ? 'gray.200' : 'gray.800'}>Field Changes:</Text>
+                              {change.changes.length === 0
+                                ? (
+                                    <Text fontSize="sm" color={isDark ? 'gray.400' : 'gray.500'} mb={2}>No field changes recorded</Text>
+                                  )
+                                : (
+                                    <Stack gap={2} mb={2}>
+                                      {change.changes.map((fieldChange, idx) => (
+                                        <Box key={idx} fontSize="xs">
+                                          <Text fontWeight="bold" mb={1} color={isDark ? 'gray.300' : 'gray.700'}>
+                                            {fieldChange.fieldName}
+                                            :
                                           </Text>
-                                          <Text color="green.500">
-                                            + 
-                                            {' '}
-                                            {fieldChange.newValue !== null ? String(fieldChange.newValue) : 'null'}
-                                          </Text>
-                                        </Flex>
-                                      </Box>
-                                    ))}
-                                  </Stack>
-                                )}
-                            
-                            {/* {change.metadata.sqlStatement && (
-                              <Box>
-                                <Text fontSize="sm" fontWeight="bold" mb={1}>SQL:</Text>
-                                <Text
-                                  fontSize="xs"
-                                  fontFamily="mono"
-                                  bg={isDark ? 'gray.900' : 'gray.100'}
-                                  p={2}
-                                  borderRadius="md"
-                                  overflowX="auto"
-                                  whiteSpace="pre-wrap"
-                                >
-                                  {change.metadata.sqlStatement}
-                                </Text>
-                              </Box>
-                            )} */}
-                          </Box>
-                        )}
-                      </Box>
-                    ))}
+                                          <Flex direction="column" gap={1}>
+                                            <Text color="red.500">
+                                              - 
+                                              {' '}
+                                              {fieldChange.oldValue !== null ? String(fieldChange.oldValue) : 'null'}
+                                            </Text>
+                                            <Text color="green.500">
+                                              + 
+                                              {' '}
+                                              {fieldChange.newValue !== null ? String(fieldChange.newValue) : 'null'}
+                                            </Text>
+                                          </Flex>
+                                        </Box>
+                                      ))}
+                                    </Stack>
+                                  )}
+                              
+                              {/* {change.metadata.sqlStatement && (
+                                <Box>
+                                  <Text fontSize="sm" fontWeight="bold" mb={1}>SQL:</Text>
+                                  <Text
+                                    fontSize="xs"
+                                    fontFamily="mono"
+                                    bg={isDark ? 'gray.900' : 'gray.100'}
+                                    p={2}
+                                    borderRadius="md"
+                                    overflowX="auto"
+                                    whiteSpace="pre-wrap"
+                                  >
+                                    {change.metadata.sqlStatement}
+                                  </Text>
+                                </Box>
+                              )} */}
+                            </Box>
+                          )}
+                        </Box>
+                      )
+                    })}
                   </Stack>
                 )}
 

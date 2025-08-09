@@ -108,6 +108,7 @@ beforeAll(() => {
     getContextSummaries: vi.fn(),
     getChangeHistoryDiagnostics: vi.fn(),
     clearContextChanges: vi.fn(),
+    clearAllChangeHistory: vi.fn(),
     openFile: vi.fn(),
     exportFile: vi.fn(),
     webUtils: vi.fn(),

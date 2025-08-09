@@ -53,6 +53,7 @@ beforeAll(() => {
     getContextSummaries: vi.fn().mockResolvedValue({ success: true, summaries: [] }),
     getChangeHistoryDiagnostics: vi.fn().mockResolvedValue({ success: true, diagnostics: {} }),
     clearContextChanges: vi.fn().mockResolvedValue({ success: true }),
+    clearAllChangeHistory: vi.fn().mockResolvedValue({ success: true }),
     webUtils: {
       getPathForFile: vi.fn().mockResolvedValue(''),
     },

@@ -14,25 +14,49 @@ export function useClearChangeHistoryMutation() {
 
   return useMutation({
     mutationFn: async () => {
+      console.log('🧹 [Clear History] Starting clear mutation...')
+      
       const deviceId = selectedDevice?.id
       const packageName = selectedApplication?.bundleId || selectedDatabaseFile?.packageName
       const databasePath = selectedDatabaseFile?.path
 
+      console.log('🧹 [Clear History] Context:', { deviceId, packageName, databasePath })
+
       if (!deviceId || !packageName || !databasePath) {
+        console.error('🧹 [Clear History] Missing required context:', { deviceId, packageName, databasePath })
         throw new Error('Missing required context for clearing change history')
       }
 
       const contextKey = generateContextKeySync(deviceId, packageName, databasePath)
+      console.log('🧹 [Clear History] Generated context key:', contextKey)
+      
+      console.log('🧹 [Clear History] Calling API...')
       const result = await window.api.clearContextChanges(contextKey)
+      console.log('🧹 [Clear History] API result:', result)
 
       if (!result.success) {
+        console.error('🧹 [Clear History] API failed:', result.error)
         throw new Error(result.error || 'Failed to clear change history')
       }
 
+      console.log('🧹 [Clear History] Successfully cleared')
       return result
     },
     onSuccess: () => {
-      // Invalidate all change history queries
+      console.log('🧹 [Clear History] Mutation success - invalidating queries')
+      
+      // More aggressive cache clearing
+      queryClient.removeQueries({
+        queryKey: ['changeHistory'],
+      })
+      queryClient.removeQueries({
+        queryKey: ['contextSummaries'],
+      })
+      queryClient.removeQueries({
+        queryKey: ['changeHistoryDiagnostics'],
+      })
+      
+      // Also invalidate to trigger refetch
       queryClient.invalidateQueries({
         queryKey: ['changeHistory'],
       })
@@ -48,15 +72,78 @@ export function useClearChangeHistoryMutation() {
         description: 'All change history for this database has been cleared',
         type: 'success',
         duration: 3000,
+        closable: true,
       })
     },
     onError: (error) => {
-      console.error('Error clearing change history:', error)
+      console.error('🧹 [Clear History] Mutation error:', error)
       toaster.create({
         title: 'Clear Failed',
         description: error instanceof Error ? error.message : 'Failed to clear change history',
         type: 'error',
         duration: 5000,
+        closable: true,
+      })
+    },
+  })
+}
+
+/**
+ * Nuclear option: Clear ALL change history from memory
+ */
+export function useClearAllChangeHistoryMutation() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async () => {
+      console.log('💥 [Nuclear Clear] Starting nuclear clear mutation...')
+      
+      console.log('💥 [Nuclear Clear] Calling API...')
+      const result = await window.api.clearAllChangeHistory()
+      console.log('💥 [Nuclear Clear] API result:', result)
+
+      if (!result.success) {
+        console.error('💥 [Nuclear Clear] API failed:', result.error)
+        throw new Error(result.error || 'Failed to clear all change history')
+      }
+
+      console.log('💥 [Nuclear Clear] Successfully cleared all history')
+      return result
+    },
+    onSuccess: () => {
+      console.log('💥 [Nuclear Clear] Mutation success - clearing all caches')
+      
+      // Nuclear cache clearing - remove everything related to change history
+      queryClient.removeQueries({
+        queryKey: ['changeHistory'],
+      })
+      queryClient.removeQueries({
+        queryKey: ['contextSummaries'],
+      })
+      queryClient.removeQueries({
+        queryKey: ['changeHistoryDiagnostics'],
+      })
+      
+      // Set empty data immediately to prevent reverting
+      queryClient.setQueryData(['changeHistory'], [])
+      queryClient.setQueryData(['contextSummaries'], [])
+
+      toaster.create({
+        title: 'All Change History Cleared',
+        description: 'Complete change history database has been wiped clean',
+        type: 'success',
+        duration: 3000,
+        closable: true,
+      })
+    },
+    onError: (error) => {
+      console.error('💥 [Nuclear Clear] Mutation error:', error)
+      toaster.create({
+        title: 'Nuclear Clear Failed',
+        description: error instanceof Error ? error.message : 'Failed to clear all change history',
+        type: 'error',
+        duration: 5000,
+        closable: true,
       })
     },
   })

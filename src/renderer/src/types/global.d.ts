@@ -83,6 +83,7 @@ declare global {
       getContextSummaries: () => Promise<any>
       getChangeHistoryDiagnostics: () => Promise<any>
       clearContextChanges: (contextKey: string) => Promise<any>
+      clearAllChangeHistory: () => Promise<any>
 
       // File dialog methods
       openFile: () => Promise<any>

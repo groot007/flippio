@@ -67,6 +67,7 @@ const COMMAND_MAP = {
   'db:getContextSummaries': 'get_all_context_summaries',
   'db:getChangeHistoryDiagnostics': 'get_change_history_diagnostics',
   'db:clearContextChanges': 'clear_context_changes',
+  'db:clearAllChangeHistory': 'clear_all_change_history',
 
   // Common commands
   'dialog:selectFile': 'dialog_select_file',
@@ -425,6 +426,9 @@ export const api = {
 
   clearContextChanges: (contextKey: string) =>
     invokeCommandWithResponse('db:clearContextChanges', 'result', contextKey),
+
+  clearAllChangeHistory: () =>
+    invokeCommandWithResponse('db:clearAllChangeHistory', 'result'),
 
   // File dialog methods
   openFile: async () => {
