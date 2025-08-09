@@ -124,13 +124,13 @@ export interface DatabaseOperationContext {
 export function extractContextFromState(
   selectedDevice: any,
   selectedApplication: any,
-  selectedDatabaseFile: any
+  selectedDatabaseFile: any,
 ): DatabaseOperationContext {
   return {
     deviceId: selectedDevice?.id,
     deviceName: selectedDevice?.name || selectedDevice?.description,
     deviceType: selectedDevice?.deviceType || selectedDevice?.type,
     packageName: selectedApplication?.bundleId || selectedDatabaseFile?.packageName,
-    appName: selectedApplication?.name || selectedApplication?.displayName
+    appName: selectedApplication?.name || selectedApplication?.displayName,
   }
 }

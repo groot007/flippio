@@ -41,7 +41,7 @@ export interface ChangeEvent {
     | { BulkInsert: { count: number } }
     | { BulkUpdate: { count: number } }
     | { BulkDelete: { count: number } }
-    | { Revert: { original_change_id: string; cascade_reverted_ids: string[] } }
+    | { Revert: { original_change_id: string, cascade_reverted_ids: string[] } }
   userContext: {
     deviceId: string
     deviceName: string

@@ -19,13 +19,13 @@ interface BaseMutationConfig<TVariables, TData> {
  * Base hook for database mutations with common functionality
  */
 export function useBaseDatabaseMutation<TVariables extends ChangeHistoryContext, TData>(
-  config: BaseMutationConfig<TVariables, TData>
+  config: BaseMutationConfig<TVariables, TData>,
 ): UseMutationResult<TData, Error, TVariables> {
   const queryClient = useQueryClient()
   const { setSelectedRow } = useRowEditingStore()
   const { refresh: refreshDatabase } = useDatabaseRefresh({ 
     showSuccessToast: false, 
-    showErrorToast: false 
+    showErrorToast: false, 
   })
   const { refreshChangeHistory } = useChangeHistoryRefresh()
 

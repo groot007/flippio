@@ -49,10 +49,14 @@ export function getOperationTypeString(operationType: OperationType): string {
   
   if (typeof operationType === 'object' && operationType !== null) {
     // Handle Rust enum variants
-    if ('BulkInsert' in operationType) return 'insert'
-    if ('BulkUpdate' in operationType) return 'update'
-    if ('BulkDelete' in operationType) return 'delete'
-    if ('Revert' in operationType) return 'revert'
+    if ('BulkInsert' in operationType) 
+      return 'insert'
+    if ('BulkUpdate' in operationType) 
+      return 'update'
+    if ('BulkDelete' in operationType) 
+      return 'delete'
+    if ('Revert' in operationType) 
+      return 'revert'
     
     // Handle legacy format
     if ('type' in operationType) {
@@ -69,17 +73,17 @@ export function getOperationTypeString(operationType: OperationType): string {
 export function getOperationColor(type: string): string {
   switch (type.toLowerCase()) {
     case 'insert':
-      return 'green'    // Addition operations - positive
+      return 'green' // Addition operations - positive
     case 'update':
-      return 'blue'     // Modification operations - neutral
+      return 'blue' // Modification operations - neutral
     case 'delete':
-      return 'red'      // Removal operations - destructive
+      return 'red' // Removal operations - destructive
     case 'clear':
-      return 'orange'   // Bulk removal - warning
+      return 'orange' // Bulk removal - warning
     case 'revert':
-      return 'purple'   // Undo operations - special
+      return 'purple' // Undo operations - special
     default:
-      return 'gray'     // Unknown operations
+      return 'gray' // Unknown operations
   }
 }
 
@@ -89,17 +93,17 @@ export function getOperationColor(type: string): string {
 export function getOperationBadgeColor(type: string, isDark: boolean): string {
   switch (type.toLowerCase()) {
     case 'insert':
-      return isDark ? '#22543D' : '#C6F6D5'    // Soft green
+      return isDark ? '#22543D' : '#C6F6D5' // Soft green
     case 'update':
-      return isDark ? '#2A4365' : '#BEE3F8'    // Soft blue
+      return isDark ? '#2A4365' : '#BEE3F8' // Soft blue
     case 'delete':
-      return isDark ? '#742A2A' : '#FED7D7'    // Soft red
+      return isDark ? '#742A2A' : '#FED7D7' // Soft red
     case 'clear':
-      return isDark ? '#C05621' : '#FEEBC8'    // Soft orange
+      return isDark ? '#C05621' : '#FEEBC8' // Soft orange
     case 'revert':
-      return isDark ? '#553C9A' : '#E9D8FD'    // Soft purple
+      return isDark ? '#553C9A' : '#E9D8FD' // Soft purple
     default:
-      return isDark ? '#4A5568' : '#E2E8F0'    // Soft gray
+      return isDark ? '#4A5568' : '#E2E8F0' // Soft gray
   }
 }
 
@@ -109,17 +113,17 @@ export function getOperationBadgeColor(type: string, isDark: boolean): string {
 export function getOperationTextColor(type: string, isDark: boolean): string {
   switch (type.toLowerCase()) {
     case 'insert':
-      return isDark ? '#C6F6D5' : '#22543D'    // Good contrast green
+      return isDark ? '#C6F6D5' : '#22543D' // Good contrast green
     case 'update':
-      return isDark ? '#BEE3F8' : '#2A4365'    // Good contrast blue
+      return isDark ? '#BEE3F8' : '#2A4365' // Good contrast blue
     case 'delete':
-      return isDark ? '#FED7D7' : '#742A2A'    // Good contrast red
+      return isDark ? '#FED7D7' : '#742A2A' // Good contrast red
     case 'clear':
-      return isDark ? '#FEEBC8' : '#C05621'    // Good contrast orange
+      return isDark ? '#FEEBC8' : '#C05621' // Good contrast orange
     case 'revert':
-      return isDark ? '#E9D8FD' : '#553C9A'    // Good contrast purple
+      return isDark ? '#E9D8FD' : '#553C9A' // Good contrast purple
     default:
-      return isDark ? '#E2E8F0' : '#4A5568'    // Good contrast gray
+      return isDark ? '#E2E8F0' : '#4A5568' // Good contrast gray
   }
 }
 
