@@ -71,7 +71,7 @@ export function DataGrid() {
         context.deviceName,
         context.deviceType,
         context.packageName,
-        context.appName
+        context.appName,
       )
 
       if (!result.success) {
@@ -143,12 +143,6 @@ export function DataGrid() {
     }
   }, [data, selectedDatabaseTable, tableData?.isCustomQuery, setTableData, setIsLoadingTableData])
 
-  useEffect(() => {
-    if (tableData?.rows?.length) {
-      gridRef.current?.api?.autoSizeAllColumns()
-    }
-  }, [tableData])
-
   // Sync with AG Grid pagination events
   useEffect(() => {
     if (gridRef.current?.api) {
@@ -201,12 +195,51 @@ export function DataGrid() {
     return { ...mainStyle, ...bg }
   }, [colorMode])
 
-  // Pagination calculations
   const totalRows = tableData?.rows?.length || 0
   
   const handlePageSizeChange = useCallback((newPageSize: number) => {
     setPageSize(newPageSize)
   }, [])
+
+  const columnsSizing = useCallback((params) => {
+    const allColIds = params.api.getColumns()?.map(col => col.getColId()) || []
+
+    allColIds.forEach((colId) => {
+      const column = params.api.getColumn(colId)
+      if (column) {
+        const rowData = []
+        params.api.forEachNodeAfterFilterAndSort((node) => {
+          const value = node.data[colId]
+          if (value !== null && value !== undefined) {
+            rowData.push(String(value))
+          }
+        })
+    
+        const headerWidth = colId.length * 8 + 60 
+      
+        const maxContentLength = rowData.length > 0 
+          ? Math.max(...rowData.map(content => content.length))
+          : 0
+        const contentWidth = maxContentLength * 8 + 20
+      
+        const calculatedWidth = Math.min(Math.max(headerWidth, contentWidth), 300)
+            
+        params.api.setColumnWidths([{ key: colId, newWidth: calculatedWidth }])
+      }
+    })
+  }, [])
+
+  useEffect(() => {
+    if (gridRef.current?.api && tableData?.rows?.length) {
+      const timeoutId = setTimeout(() => {
+        if (gridRef.current?.api) {
+          columnsSizing({ api: gridRef.current.api })
+        }
+      }, 0)
+
+      return () => clearTimeout(timeoutId)
+    }
+  }, [tableData?.rows, tableData?.columns, columnsSizing])
 
   if (isLoadingTableData) {
     return (
@@ -250,6 +283,7 @@ export function DataGrid() {
           paginationPageSize={pageSize}
           loading={false}
           suppressCellFocus={false}
+          onFirstDataRendered={columnsSizing}
         />
       </Box>
 

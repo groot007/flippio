@@ -18,62 +18,32 @@ export function useChangeHistory(limit = 50, offset = 0) {
   // Enable query if we have at least a database path (custom files need only this)
   const isEnabled = !!databasePath
   
-  console.log('🔍 useChangeHistory context:', {
-    deviceId,
-    packageName,
-    databasePath,
-    isEnabled,
-    isCustomFile: !deviceId || !packageName,
-  })
-  
   return useQuery({
     queryKey: ['changeHistory', deviceId, packageName, databasePath, limit, offset],
     queryFn: async () => {
-      console.log('🔍 [useChangeHistory] Query function started');
-      console.log('🔍 [useChangeHistory] Input validation:', { deviceId, packageName, databasePath });
-      
       if (!databasePath) {
-        console.error('🔍 [useChangeHistory] Missing database path');
+        console.error('🔍 [useChangeHistory] Missing database path')
         throw new Error('Database path is required for change history')
       }
       
-      console.log('🔍 [useChangeHistory] Generating context key...');
       const contextKey = await generateContextKey(deviceId, packageName, databasePath)
-      console.log('🔍 [useChangeHistory] Generated contextKey:', contextKey)
       
-      console.log('🔍 [useChangeHistory] Calling API...');
       const result = await window.api.getChangeHistory(contextKey)
       
-      console.log('🔍 [useChangeHistory] API result:', result)
-      console.log('🔍 [useChangeHistory] API result keys:', Object.keys(result));
-      console.log('🔍 [useChangeHistory] API result.success:', result.success);
-      console.log('🔍 [useChangeHistory] API result.data:', result.data);
-      console.log('🔍 [useChangeHistory] API result.error:', result.error);
-      
       if (!result.success) {
-        console.error('🔍 [useChangeHistory] API call failed:', result.error);
         throw new Error(result.error || 'Failed to fetch change history')
       }
       
-      // Apply client-side pagination since the API doesn't support it yet
       const changes = result.data as ChangeEvent[] || []
-      console.log('🔍 [useChangeHistory] Parsed changes:', changes)
-      console.log('🔍 [useChangeHistory] Changes type:', typeof changes)
-      console.log('🔍 [useChangeHistory] Changes is array:', Array.isArray(changes))
-      console.log('🔍 [useChangeHistory] Changes length:', changes.length)
       
       if (changes.length > 0) {
-        console.log('🔍 [useChangeHistory] First change:', changes[0]);
+        console.log('🔍 [useChangeHistory] First change:', changes[0])
       }
       
       const start = offset
       const end = start + limit
       const paginatedChanges = changes.slice(start, end)
-      
-      console.log('🔍 [useChangeHistory] Pagination:', { start, end, limit, offset });
-      console.log('🔍 [useChangeHistory] Paginated changes length:', paginatedChanges.length);
-      console.log('🔍 [useChangeHistory] Returning:', paginatedChanges);
-      
+    
       return paginatedChanges
     },
     enabled: isEnabled,
@@ -136,7 +106,8 @@ export function useChangeHistoryRefresh() {
           queryKey: ['changeHistory'],
         })
         console.log('🔄 [Refresh] Successfully invalidated changeHistory queries')
-      } catch (error) {
+      }
+      catch (error) {
         console.error('🔄 [Refresh] Error invalidating changeHistory queries:', error)
       }
     },
@@ -147,7 +118,8 @@ export function useChangeHistoryRefresh() {
           queryKey: ['contextSummaries'],
         })
         console.log('🔄 [Refresh] Successfully invalidated contextSummaries queries')
-      } catch (error) {
+      }
+      catch (error) {
         console.error('🔄 [Refresh] Error invalidating contextSummaries queries:', error)
       }
     },
@@ -158,7 +130,8 @@ export function useChangeHistoryRefresh() {
           queryKey: ['changeHistoryDiagnostics'],
         })
         console.log('🔄 [Refresh] Successfully invalidated diagnostics queries')
-      } catch (error) {
+      }
+      catch (error) {
         console.error('🔄 [Refresh] Error invalidating diagnostics queries:', error)
       }
     },
@@ -175,7 +148,8 @@ export function useChangeHistoryRefresh() {
           queryKey: ['changeHistoryDiagnostics'],
         })
         console.log('🔄 [Refresh] Successfully invalidated all queries')
-      } catch (error) {
+      }
+      catch (error) {
         console.error('🔄 [Refresh] Error invalidating all queries:', error)
       }
     },
