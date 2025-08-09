@@ -6,7 +6,7 @@ use tokio::sync::RwLock;
 use tauri_plugin_log;
 
 mod commands;
-use commands::database::{DbPool, DatabaseConnectionManager};
+use commands::database::{DbPool, DatabaseConnectionManager, ChangeHistoryManager};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -15,10 +15,14 @@ pub fn run() {
     let connection_manager = DatabaseConnectionManager::new();
     let db_cache = connection_manager.get_cache();
     
+    // Initialize change history manager (Phase 1)
+    let change_history_manager = ChangeHistoryManager::new();
+    
     let mut builder = tauri::Builder::default()
         .plugin(tauri_plugin_log::Builder::new().build())
         .manage(db_pool)
         .manage(db_cache)
+        .manage(change_history_manager)
         .setup(|_app| {
             // Start background cleanup task after Tauri runtime is initialized
             let connection_manager = DatabaseConnectionManager::new();
@@ -68,11 +72,22 @@ pub fn run() {
             commands::database::db_insert_table_row,
             commands::database::db_add_new_row_with_defaults,
             commands::database::db_delete_table_row,
+            commands::database::db_clear_table,
             commands::database::db_execute_query,
             commands::database::db_get_connection_stats,
             commands::database::db_clear_cache_for_path,
             commands::database::db_clear_all_cache,
             commands::database::db_switch_database,
+            // Change History commands (Phase 1)
+            commands::database::change_history::commands::record_database_change_safe,
+            commands::database::change_history::commands::get_database_change_history,
+            commands::database::change_history::commands::get_last_change_time,
+            commands::database::change_history::commands::get_context_summary,
+            commands::database::change_history::commands::get_all_context_summaries,
+            commands::database::change_history::commands::clear_context_changes,
+            commands::database::change_history::commands::clear_all_change_history,
+            commands::database::change_history::commands::get_change_history_diagnostics,
+            commands::database::change_history::commands::generate_custom_file_context_key_command,
             // Common commands (file dialogs)
             commands::common::dialog_select_file,
             commands::common::dialog_save_file,

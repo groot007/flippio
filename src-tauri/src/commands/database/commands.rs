@@ -1,6 +1,13 @@
 // Database commands - enhanced with connection caching
 use crate::commands::database::types::*;
 use crate::commands::database::helpers::{get_default_value_for_type, ensure_database_file_permissions};
+use crate::commands::database::change_history::{
+    capture_old_values_for_update, extract_context_from_path,
+    record_change_with_safety, create_change_event, OperationType
+};
+use crate::commands::database::change_tracking::{
+    create_field_changes_optimized, extract_row_values
+};
 use serde_json;
 use sqlx::{sqlite::SqlitePool, Row, Column, ValueRef, TypeInfo};
 use std::collections::HashMap;
@@ -387,10 +394,17 @@ pub async fn db_get_info(
 pub async fn db_update_table_row(
     state: State<'_, DbPool>,
     db_cache: State<'_, DbConnectionCache>,
+    change_history: State<'_, super::change_history::ChangeHistoryManager>,
     table_name: String,
     row: HashMap<String, serde_json::Value>,
     condition: String,
     current_db_path: Option<String>,
+    // Context information for change tracking (optional for backward compatibility)
+    device_id: Option<String>,
+    device_name: Option<String>,
+    device_type: Option<String>,
+    package_name: Option<String>,
+    app_name: Option<String>,
 ) -> Result<DbResponse<u64>, String> {
     // Validate that we have a specific database path for write operations
     let db_path = match current_db_path.clone() {
@@ -438,6 +452,18 @@ pub async fn db_update_table_row(
     
     log::info!("🔧 Executing UPDATE query on database '{}': {}", db_path, query);
     
+    // PHASE 2: Capture old values for change tracking (non-fatal if fails)
+    let old_values = match capture_old_values_for_update(&pool, &table_name, &condition, &columns).await {
+        Ok(values) => {
+            log::debug!("📝 Captured old values for change tracking");
+            Some(values)
+        }
+        Err(e) => {
+            log::warn!("⚠️ Failed to capture old values for change tracking (non-fatal): {}", e);
+            None
+        }
+    };
+    
     let mut query_builder = sqlx::query(&query);
     
     for col in &columns {
@@ -469,6 +495,46 @@ pub async fn db_update_table_row(
         Ok(result) => {
             let rows_affected = result.rows_affected();
             log::info!("✅ UPDATE successful on database '{}': {} rows affected", db_path, rows_affected);
+            
+            // PHASE 2: Record change in history (non-fatal if fails)
+            if let Some(old_vals) = old_values {
+                let user_context = extract_context_from_path(
+                    &db_path,
+                    device_id,
+                    device_name,
+                    device_type,
+                    package_name,
+                    app_name,
+                );
+                
+                let field_changes = create_field_changes_optimized(
+                    &OperationType::Update,
+                    &old_vals,
+                    &row
+                );
+                
+                if !field_changes.is_empty() {
+                    match create_change_event(
+                        &db_path,
+                        &table_name,
+                        OperationType::Update,
+                        user_context,
+                        field_changes,
+                        None, // TODO: Extract primary key from condition
+                        Some(query.clone()),
+                    ) {
+                        Ok(change_event) => {
+                            let _ = record_change_with_safety(&change_history, change_event).await;
+                        }
+                        Err(e) => {
+                            log::warn!("⚠️ Failed to create change event (non-fatal): {}", e);
+                        }
+                    }
+                } else {
+                    log::debug!("📝 No field changes detected, skipping change record");
+                }
+            }
+            
             Ok(DbResponse {
                 success: true,
                 data: Some(rows_affected),
@@ -543,9 +609,16 @@ pub async fn db_update_table_row(
 pub async fn db_insert_table_row(
     state: State<'_, DbPool>,
     db_cache: State<'_, DbConnectionCache>,
+    change_history: State<'_, super::change_history::ChangeHistoryManager>,
     table_name: String,
     row: HashMap<String, serde_json::Value>,
     current_db_path: Option<String>,
+    // Context information for change tracking (optional for backward compatibility)
+    device_id: Option<String>,
+    device_name: Option<String>,
+    device_type: Option<String>,
+    package_name: Option<String>,
+    app_name: Option<String>,
 ) -> Result<DbResponse<i64>, String> {
     // Validate that we have a specific database path for write operations
     let db_path = match current_db_path.clone() {
@@ -625,6 +698,44 @@ pub async fn db_insert_table_row(
         Ok(result) => {
             let row_id = result.last_insert_rowid();
             log::info!("✅ INSERT successful on database '{}': new row ID {}", db_path, row_id);
+            
+            // PHASE 2: Record change in history (non-fatal if fails)
+            let user_context = extract_context_from_path(
+                &db_path,
+                device_id,
+                device_name,
+                device_type,
+                package_name,
+                app_name,
+            );
+            
+            // For INSERT, all values are "new" values, no old values
+            let empty_old_values = HashMap::new();
+            let field_changes = create_field_changes_optimized(
+                &OperationType::Insert,
+                &empty_old_values,
+                &row
+            );
+            
+            if !field_changes.is_empty() {
+                match create_change_event(
+                    &db_path,
+                    &table_name,
+                    OperationType::Insert,
+                    user_context,
+                    field_changes,
+                    Some(row_id.to_string()), // Use the inserted row ID as identifier
+                    Some(query.clone()),
+                ) {
+                    Ok(change_event) => {
+                        let _ = record_change_with_safety(&change_history, change_event).await;
+                    }
+                    Err(e) => {
+                        log::warn!("⚠️ Failed to create change event for INSERT (non-fatal): {}", e);
+                    }
+                }
+            }
+            
             Ok(DbResponse {
                 success: true,
                 data: Some(row_id),
@@ -748,8 +859,15 @@ pub async fn db_insert_table_row(
 pub async fn db_add_new_row_with_defaults(
     state: State<'_, DbPool>,
     db_cache: State<'_, DbConnectionCache>,
+    change_history: State<'_, super::change_history::ChangeHistoryManager>,
     table_name: String,
     current_db_path: Option<String>,
+    // Context information for change tracking (optional for backward compatibility)
+    device_id: Option<String>,
+    device_name: Option<String>,
+    device_type: Option<String>,
+    package_name: Option<String>,
+    app_name: Option<String>,
 ) -> Result<DbResponse<i64>, String> {
     // Validate that we have a specific database path for write operations
     let db_path = match current_db_path.clone() {
@@ -799,6 +917,43 @@ pub async fn db_add_new_row_with_defaults(
         Ok(result) => {
             let row_id = result.last_insert_rowid();
             log::info!("✅ INSERT DEFAULT VALUES successful on database '{}': new row ID {}", db_path, row_id);
+            
+            // Record change in history (non-fatal if fails)
+            log::info!("🔍 Attempting to record change - context params: device_id={:?}, device_name={:?}, device_type={:?}, package_name={:?}, app_name={:?}", 
+                       device_id, device_name, device_type, package_name, app_name);
+                       
+            if let (Some(device_id), Some(device_name), Some(device_type), Some(package_name), Some(app_name)) = 
+                (device_id, device_name, device_type, package_name, app_name) {
+                log::info!("✅ All context parameters available, creating change event");
+                let user_context = extract_context_from_path(
+                    &db_path,
+                    Some(device_id),
+                    Some(device_name),
+                    Some(device_type),
+                    Some(package_name),
+                    Some(app_name),
+                );
+                
+                // For INSERT DEFAULT VALUES, we don't know the exact values inserted
+                let _empty_old_values: HashMap<String, serde_json::Value> = HashMap::new();
+                let _empty_row: HashMap<String, serde_json::Value> = HashMap::new(); // We'll populate with default indicator
+                let field_changes = vec![]; // Empty since we don't know the actual values
+                
+                if let Ok(change_event) = create_change_event(
+                    &db_path,
+                    &table_name,
+                    OperationType::Insert,
+                    user_context,
+                    field_changes,
+                    Some(row_id.to_string()),
+                    Some(query.clone()),
+                ) {
+                    let _ = record_change_with_safety(&change_history, change_event).await;
+                }
+            } else {
+                log::warn!("⚠️ Cannot record change - missing context parameters");
+            }
+            
             Ok(DbResponse {
                 success: true,
                 data: Some(row_id),
@@ -821,6 +976,34 @@ pub async fn db_add_new_row_with_defaults(
                             Ok(result) => {
                                 let row_id = result.last_insert_rowid();
                                 log::info!("✅ INSERT DEFAULT VALUES retry successful on database '{}': new row ID {}", db_path, row_id);
+                                
+                                // Record change in history (non-fatal if fails) - retry case
+                                log::info!("🔍 Recording change for retry case");
+                                if let (Some(device_id), Some(device_name), Some(device_type), Some(package_name), Some(app_name)) = 
+                                    (&device_id, &device_name, &device_type, &package_name, &app_name) {
+                                    log::info!("✅ Retry case - All context parameters available");
+                                    let user_context = extract_context_from_path(
+                                        &db_path,
+                                        Some(device_id.clone()),
+                                        Some(device_name.clone()),
+                                        Some(device_type.clone()),
+                                        Some(package_name.clone()),
+                                        Some(app_name.clone()),
+                                    );
+                                    
+                                    if let Ok(change_event) = create_change_event(
+                                        &db_path,
+                                        &table_name,
+                                        OperationType::Insert,
+                                        user_context,
+                                        vec![], // Empty since we don't know the actual values
+                                        Some(row_id.to_string()),
+                                        Some(query.clone()),
+                                    ) {
+                                        let _ = record_change_with_safety(&change_history, change_event).await;
+                                    }
+                                }
+                                
                                 return Ok(DbResponse {
                                     success: true,
                                     data: Some(row_id),
@@ -841,6 +1024,34 @@ pub async fn db_add_new_row_with_defaults(
                                                 Ok(result) => {
                                                     let row_id = result.last_insert_rowid();
                                                     log::info!("✅ INSERT DEFAULT VALUES final retry successful on database '{}': new row ID {}", db_path, row_id);
+                                                    
+                                                    // Record change in history (non-fatal if fails) - final retry case
+                                                    log::info!("🔍 Recording change for final retry case");
+                                                    if let (Some(device_id), Some(device_name), Some(device_type), Some(package_name), Some(app_name)) = 
+                                                        (&device_id, &device_name, &device_type, &package_name, &app_name) {
+                                                        log::info!("✅ Final retry case - All context parameters available");
+                                                        let user_context = extract_context_from_path(
+                                                            &db_path,
+                                                            Some(device_id.clone()),
+                                                            Some(device_name.clone()),
+                                                            Some(device_type.clone()),
+                                                            Some(package_name.clone()),
+                                                            Some(app_name.clone()),
+                                                        );
+                                                        
+                                                        if let Ok(change_event) = create_change_event(
+                                                            &db_path,
+                                                            &table_name,
+                                                            OperationType::Insert,
+                                                            user_context,
+                                                            vec![], // Empty since we don't know the actual values
+                                                            Some(row_id.to_string()),
+                                                            Some(query.clone()),
+                                                        ) {
+                                                            let _ = record_change_with_safety(&change_history, change_event).await;
+                                                        }
+                                                    }
+                                                    
                                                     return Ok(DbResponse {
                                                         success: true,
                                                         data: Some(row_id),
@@ -879,9 +1090,16 @@ pub async fn db_add_new_row_with_defaults(
 pub async fn db_delete_table_row(
     state: State<'_, DbPool>,
     db_cache: State<'_, DbConnectionCache>,
+    change_history: State<'_, super::change_history::ChangeHistoryManager>,
     table_name: String,
     condition: String,
     current_db_path: Option<String>,
+    // Context information for change tracking (optional for backward compatibility)
+    device_id: Option<String>,
+    device_name: Option<String>,
+    device_type: Option<String>,
+    package_name: Option<String>,
+    app_name: Option<String>,
 ) -> Result<DbResponse<u64>, String> {
     // Validate that we have a specific database path for write operations
     let db_path = match current_db_path.clone() {
@@ -942,10 +1160,69 @@ pub async fn db_delete_table_row(
     let query = format!("DELETE FROM {} WHERE {}", table_name, condition);
     log::info!("🔧 Executing DELETE query on database '{}': {}", db_path, query);
     
+    // PHASE 2: Capture old values before deletion for change tracking (non-fatal if fails)
+    let old_values = match sqlx::query(&format!("SELECT * FROM {} WHERE {}", table_name, condition))
+        .fetch_all(&pool)
+        .await 
+    {
+        Ok(rows) => {
+            log::debug!("📝 Captured {} rows for deletion tracking", rows.len());
+            Some(rows)
+        }
+        Err(e) => {
+            log::warn!("⚠️ Failed to capture old values for delete tracking (non-fatal): {}", e);
+            None
+        }
+    };
+    
     match sqlx::query(&query).execute(&pool).await {
         Ok(result) => {
             let rows_affected = result.rows_affected();
             log::info!("✅ DELETE successful on database '{}': {} rows affected", db_path, rows_affected);
+            
+            // PHASE 2: Record change in history (non-fatal if fails)
+            if let Some(deleted_rows) = old_values {
+                let user_context = extract_context_from_path(
+                    &db_path,
+                    device_id,
+                    device_name,
+                    device_type,
+                    package_name,
+                    app_name,
+                );
+                
+                // Record each deleted row as a separate change event
+                for (row_index, row) in deleted_rows.iter().enumerate() {
+                    let old_row_values = extract_row_values(row);
+                    let empty_new_values = std::collections::HashMap::new();
+                    
+                    let field_changes = create_field_changes_optimized(
+                        &OperationType::Delete,
+                        &old_row_values,
+                        &empty_new_values,
+                    );
+                    
+                    if !field_changes.is_empty() {
+                        match create_change_event(
+                            &db_path,
+                            &table_name,
+                            OperationType::Delete,
+                            user_context.clone(),
+                            field_changes,
+                            Some(format!("deleted_row_{}", row_index)),
+                            Some(query.clone()),
+                        ) {
+                            Ok(change_event) => {
+                                let _ = record_change_with_safety(&change_history, change_event).await;
+                            }
+                            Err(e) => {
+                                log::warn!("⚠️ Failed to create change event for DELETE (non-fatal): {}", e);
+                            }
+                        }
+                    }
+                }
+            }
+            
             Ok(DbResponse {
                 success: true,
                 data: Some(rows_affected),
@@ -1409,6 +1686,178 @@ async fn get_current_pool(
         }
         None => {
             Err("No database connection available".to_string())
+        }
+    }
+}
+
+#[tauri::command]
+pub async fn db_clear_table(
+    state: State<'_, DbPool>,
+    db_cache: State<'_, DbConnectionCache>,
+    change_history: State<'_, super::change_history::ChangeHistoryManager>,
+    table_name: String,
+    current_db_path: Option<String>,
+    // Context information for change tracking (optional for backward compatibility)
+    device_id: Option<String>,
+    device_name: Option<String>,
+    device_type: Option<String>,
+    package_name: Option<String>,
+    app_name: Option<String>,
+) -> Result<DbResponse<u64>, String> {
+    // Validate that we have a specific database path for write operations
+    let db_path = match current_db_path.clone() {
+        Some(path) => {
+            log::info!("📝 CLEAR TABLE operation for table '{}' on database: {}", table_name, path);
+            path
+        }
+        None => {
+            log::error!("❌ CLEAR TABLE operation requires a specific database path");
+            return Ok(DbResponse {
+                success: false,
+                data: None,
+                error: Some("CLEAR TABLE operation requires a specific database path - no database selected".to_string()),
+            });
+        }
+    };
+
+    // Get the current pool using the helper function
+    let pool = match get_current_pool(&state, &db_cache, current_db_path.clone()).await {
+        Ok(pool) => pool,
+        Err(e) => {
+            log::error!("❌ Failed to get connection for CLEAR TABLE operation: {}", e);
+            return Ok(DbResponse {
+                success: false,
+                data: None,
+                error: Some(format!("Database connection error: {}", e)),
+            });
+        }
+    };
+    
+    // Ensure database file permissions are correct before write operation
+    if let Err(permission_error) = ensure_database_file_permissions(&db_path) {
+        log::error!("❌ Failed to ensure database permissions: {}", permission_error);
+        return Ok(DbResponse {
+            success: false,
+            data: None,
+            error: Some(format!("Database permission error: {}", permission_error)),
+        });
+    }
+    
+    // Safety checks
+    if table_name.trim().is_empty() {
+        return Ok(DbResponse {
+            success: false,
+            data: None,
+            error: Some("Table name cannot be empty".to_string()),
+        });
+    }
+    
+    // First, count how many rows will be deleted for change tracking
+    let row_count = match sqlx::query_scalar::<_, i64>(&format!("SELECT COUNT(*) FROM {}", table_name))
+        .fetch_one(&pool)
+        .await 
+    {
+        Ok(count) => count as usize,
+        Err(e) => {
+            log::warn!("⚠️ Failed to count rows before clear (non-fatal): {}", e);
+            0 // Continue with operation even if count fails
+        }
+    };
+    
+    let query = format!("DELETE FROM {}", table_name);
+    log::info!("🔧 Executing CLEAR TABLE query on database '{}': {}", db_path, query);
+    
+    match sqlx::query(&query).execute(&pool).await {
+        Ok(result) => {
+            let rows_affected = result.rows_affected();
+            log::info!("✅ CLEAR TABLE successful on database '{}': {} rows deleted", db_path, rows_affected);
+            
+            // Record change in history (non-fatal if fails)
+            let user_context = extract_context_from_path(
+                &db_path,
+                device_id,
+                device_name,
+                device_type,
+                package_name,
+                app_name,
+            );
+            
+            // Create a bulk delete or clear operation type based on count
+            let operation_type = if row_count > 0 {
+                OperationType::BulkDelete { count: row_count }
+            } else {
+                OperationType::Clear
+            };
+            
+            // For clear operations, we don't track individual field changes
+            let field_changes = vec![];
+            
+            match create_change_event(
+                &db_path,
+                &table_name,
+                operation_type,
+                user_context,
+                field_changes,
+                None, // No specific row identifier for bulk operations
+                Some(query.clone()),
+            ) {
+                Ok(change_event) => {
+                    let _ = record_change_with_safety(&change_history, change_event).await;
+                }
+                Err(e) => {
+                    log::warn!("⚠️ Failed to create change event for CLEAR TABLE (non-fatal): {}", e);
+                }
+            }
+            
+            Ok(DbResponse {
+                success: true,
+                data: Some(rows_affected),
+                error: None,
+            })
+        }
+        Err(e) => {
+            log::error!("❌ CLEAR TABLE failed on database '{}': {}", db_path, e);
+            
+            // If it's a read-only error, try to fix permissions and retry once
+            if e.to_string().contains("readonly database") || e.to_string().contains("attempt to write a readonly database") {
+                log::warn!("🔄 Detected read-only database error, attempting to fix permissions and retry");
+                
+                match ensure_database_file_permissions(&db_path) {
+                    Ok(()) => {
+                        log::info!("✅ Fixed permissions, retrying CLEAR TABLE operation");
+                        
+                        // Retry the operation once
+                        match sqlx::query(&query).execute(&pool).await {
+                            Ok(result) => {
+                                let rows_affected = result.rows_affected();
+                                log::info!("✅ CLEAR TABLE retry successful on database '{}': {} rows deleted", db_path, rows_affected);
+                                return Ok(DbResponse {
+                                    success: true,
+                                    data: Some(rows_affected),
+                                    error: None,
+                                });
+                            }
+                            Err(retry_error) => {
+                                log::error!("❌ CLEAR TABLE retry also failed: {}", retry_error);
+                                return Ok(DbResponse {
+                                    success: false,
+                                    data: None,
+                                    error: Some(format!("Clear table operation failed after retry: {}", retry_error)),
+                                });
+                            }
+                        }
+                    }
+                    Err(permission_retry_error) => {
+                        log::error!("❌ Failed to fix permissions for retry: {}", permission_retry_error);
+                    }
+                }
+            }
+            
+            Ok(DbResponse {
+                success: false,
+                data: None,
+                error: Some(format!("Clear table operation failed: {}", e)),
+            })
         }
     }
 }

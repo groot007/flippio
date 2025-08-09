@@ -7,11 +7,13 @@ import {
   Text,
   VStack,
 } from '@chakra-ui/react'
+import { useChangeHistoryRefresh } from '@renderer/hooks/useChangeHistory'
 import { useTableDataQuery } from '@renderer/hooks/useTableDataQuery'
 import { useCurrentDatabaseSelection, useCurrentDeviceSelection, useTableData } from '@renderer/store'
 import { useRowEditingStore } from '@renderer/store/useRowEditingStore'
 import { useColorMode } from '@renderer/ui/color-mode'
 import { toaster } from '@renderer/ui/toaster'
+import { extractContextFromState } from '@renderer/utils/contextKey'
 import { colorSchemeDark, colorSchemeLight, themeQuartz } from 'ag-grid-community'
 import { AgGridReact } from 'ag-grid-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -41,7 +43,8 @@ export function DataGrid() {
   } = useTableData()
   const { setSelectedRow } = useRowEditingStore()
   const { selectedDatabaseTable, selectedDatabaseFile } = useCurrentDatabaseSelection()
-  const { selectedDevice } = useCurrentDeviceSelection()
+  const { selectedDevice, selectedApplication } = useCurrentDeviceSelection()
+  const { refreshChangeHistory } = useChangeHistoryRefresh()
   const gridTheme = themeQuartz.withPart(colorMode === 'dark' ? colorSchemeDark : colorSchemeLight)
   const gridRef = useRef<AgGridReact>(null)
   const [isAddingRow, setIsAddingRow] = useState(false)
@@ -57,8 +60,19 @@ export function DataGrid() {
     try {
       setIsAddingRow(true)
 
+      // Extract context for change history
+      const context = extractContextFromState(selectedDevice, selectedApplication, selectedDatabaseFile)
+
       // Use the new addNewRowWithDefaults method to let SQLite handle default values
-      const result = await window.api.addNewRowWithDefaults(selectedDatabaseTable.name, selectedDatabaseFile?.path)
+      const result = await window.api.addNewRowWithDefaults(
+        selectedDatabaseTable.name, 
+        selectedDatabaseFile?.path,
+        context.deviceId,
+        context.deviceName,
+        context.deviceType,
+        context.packageName,
+        context.appName,
+      )
 
       if (!result.success) {
         throw new Error(result.error || 'Failed to create new row')
@@ -83,8 +97,9 @@ export function DataGrid() {
         )
       }
 
-      // Refresh the table data
+      // Refresh the table data and change history
       refetchTableData()
+      refreshChangeHistory()
 
       toaster.create({
         title: 'Row created',
@@ -127,12 +142,6 @@ export function DataGrid() {
       setIsLoadingTableData(false)
     }
   }, [data, selectedDatabaseTable, tableData?.isCustomQuery, setTableData, setIsLoadingTableData])
-
-  useEffect(() => {
-    if (tableData?.rows?.length) {
-      gridRef.current?.api?.autoSizeAllColumns()
-    }
-  }, [tableData])
 
   // Sync with AG Grid pagination events
   useEffect(() => {
@@ -186,12 +195,51 @@ export function DataGrid() {
     return { ...mainStyle, ...bg }
   }, [colorMode])
 
-  // Pagination calculations
   const totalRows = tableData?.rows?.length || 0
   
   const handlePageSizeChange = useCallback((newPageSize: number) => {
     setPageSize(newPageSize)
   }, [])
+
+  const columnsSizing = useCallback((params) => {
+    const allColIds = params.api.getColumns()?.map(col => col.getColId()) || []
+
+    allColIds.forEach((colId) => {
+      const column = params.api.getColumn(colId)
+      if (column) {
+        const rowData = []
+        params.api.forEachNodeAfterFilterAndSort((node) => {
+          const value = node.data[colId]
+          if (value !== null && value !== undefined) {
+            rowData.push(String(value))
+          }
+        })
+    
+        const headerWidth = colId.length * 8 + 60 
+      
+        const maxContentLength = rowData.length > 0 
+          ? Math.max(...rowData.map(content => content.length))
+          : 0
+        const contentWidth = maxContentLength * 8 + 20
+      
+        const calculatedWidth = Math.min(Math.max(headerWidth, contentWidth), 300)
+            
+        params.api.setColumnWidths([{ key: colId, newWidth: calculatedWidth }])
+      }
+    })
+  }, [])
+
+  useEffect(() => {
+    if (gridRef.current?.api && tableData?.rows?.length) {
+      const timeoutId = setTimeout(() => {
+        if (gridRef.current?.api) {
+          columnsSizing({ api: gridRef.current.api })
+        }
+      }, 0)
+
+      return () => clearTimeout(timeoutId)
+    }
+  }, [tableData?.rows, tableData?.columns, columnsSizing])
 
   if (isLoadingTableData) {
     return (
@@ -235,6 +283,7 @@ export function DataGrid() {
           paginationPageSize={pageSize}
           loading={false}
           suppressCellFocus={false}
+          onFirstDataRendered={columnsSizing}
         />
       </Box>
 

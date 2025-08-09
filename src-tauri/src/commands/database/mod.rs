@@ -3,6 +3,8 @@ pub mod types;
 pub mod helpers;
 pub mod commands;
 pub mod connection_manager;
+pub mod change_history;
+pub mod change_tracking;
 
 #[cfg(test)]
 pub mod tests;
@@ -11,3 +13,6 @@ pub mod tests;
 pub use types::*;
 pub use commands::*;
 pub use connection_manager::DatabaseConnectionManager;
+
+// Re-export change history components
+pub use change_history::ChangeHistoryManager;

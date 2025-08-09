@@ -26,12 +26,64 @@ declare global {
       getTables: (dbPath?: string) => Promise<any>
       openDatabase: (filePath: string) => Promise<any>
       getTableInfo: (tableName: string, dbPath?: string) => Promise<any>
-      updateTableRow: (tableName: string, row: any, condition: any, dbPath?: string) => Promise<any>
+      updateTableRow: (
+        tableName: string, 
+        row: any, 
+        condition: any, 
+        dbPath?: string,
+        deviceId?: string,
+        deviceName?: string,
+        deviceType?: string,
+        packageName?: string,
+        appName?: string
+      ) => Promise<any>
       executeQuery: (query: string, dbPath: string) => Promise<any>
-      insertTableRow: (table: string, row: any, dbPath?: string) => Promise<any>
-      addNewRowWithDefaults: (table: string, dbPath?: string) => Promise<any>
-      deleteTableRow: (table: string, condition: any, dbPath?: string) => Promise<any>
+      insertTableRow: (
+        table: string, 
+        row: any, 
+        dbPath?: string,
+        deviceId?: string,
+        deviceName?: string,
+        deviceType?: string,
+        packageName?: string,
+        appName?: string
+      ) => Promise<any>
+      addNewRowWithDefaults: (
+        table: string, 
+        dbPath?: string,
+        deviceId?: string,
+        deviceName?: string,
+        deviceType?: string,
+        packageName?: string,
+        appName?: string
+      ) => Promise<any>
+      deleteTableRow: (
+        table: string, 
+        condition: any, 
+        dbPath?: string,
+        deviceId?: string,
+        deviceName?: string,
+        deviceType?: string,
+        packageName?: string,
+        appName?: string
+      ) => Promise<any>
+      clearTable: (
+        tableName: string,
+        dbPath?: string,
+        deviceId?: string,
+        deviceName?: string,
+        deviceType?: string,
+        packageName?: string,
+        appName?: string
+      ) => Promise<any>
       switchDatabase: (filePath: string) => Promise<any>
+
+      // Change history methods
+      getChangeHistory: (contextKey: string, tableName?: string) => Promise<any>
+      getContextSummaries: () => Promise<any>
+      getChangeHistoryDiagnostics: () => Promise<any>
+      clearContextChanges: (contextKey: string) => Promise<any>
+      clearAllChangeHistory: () => Promise<any>
 
       // File dialog methods
       openFile: () => Promise<any>

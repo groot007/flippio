@@ -6,6 +6,7 @@ export default antfu({
     'resources/**', // For a specific resources directory
     'docs/**', // For documentation directory
     '**/*.toml',
+    '**/*.md',
   ],
   rules: {
     'no-use-before-define': 'off',

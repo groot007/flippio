@@ -1,11 +1,29 @@
 import type { RenderOptions } from '@testing-library/react'
 import { Provider } from '@renderer/ui/provider'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { act, render as rtlRender } from '@testing-library/react'
 
+function createTestQueryClient() {
+  return new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+      },
+      mutations: {
+        retry: false,
+      },
+    },
+  })
+}
+
 export function render(ui: React.ReactNode, options?: RenderOptions) {
+  const testQueryClient = createTestQueryClient()
+  
   return rtlRender(<>{ui}</>, {
     wrapper: (props: React.PropsWithChildren) => (
-      <Provider>{props.children}</Provider>
+      <QueryClientProvider client={testQueryClient}>
+        <Provider>{props.children}</Provider>
+      </QueryClientProvider>
     ),
     ...options,
   })

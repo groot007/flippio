@@ -13,6 +13,7 @@ import { LuChevronLeft, LuChevronRight, LuTrash2 } from 'react-icons/lu'
 import { useClearTableMutation } from '@/hooks/useTableMutations'
 import { useCurrentDatabaseSelection } from '@/store/useCurrentDatabaseSelection'
 import { useCurrentDeviceSelection } from '@/store/useCurrentDeviceSelection'
+import { ChangeHistoryIndicator } from '../ChangeHistory'
 import { ClearTableDialog } from '../SidePanel/ClearTableDialog'
 
 interface TableFooterProps {
@@ -142,6 +143,10 @@ export function TableFooter({ gridRef, totalRows, onPageSizeChange }: TableFoote
         >
           <LuTrash2 color="flipioAccent.purple" />
         </Button>
+      </Flex>
+
+      <Flex alignItems="center" gap={2} marginLeft={6}>
+        <ChangeHistoryIndicator />
       </Flex>
 
       {/* Center pagination controls */}

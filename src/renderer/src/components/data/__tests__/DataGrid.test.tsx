@@ -1,12 +1,8 @@
-import { render, screen } from '@testing-library/react'
+import { screen } from '@testing-library/react'
 import React from 'react'
 import { beforeAll, describe, expect, it, vi } from 'vitest'
-import { Provider } from '../../../ui/provider'
+import { render } from '../../../test-utils/render'
 import { DataGrid } from '../DataGrid'
-
-function TestWrapper({ children }: { children: React.ReactNode }) {
-  return <Provider>{children}</Provider>
-}
 
 beforeAll(() => {
   Object.defineProperty(window, 'matchMedia', {
@@ -109,42 +105,26 @@ vi.mock('../TableFooter', () => ({
 
 describe('dataGrid', () => {
   it('renders the DataGrid component', () => {
-    render(
-      <TestWrapper>
-        <DataGrid />
-      </TestWrapper>,
-    )
+    render(<DataGrid />)
 
     expect(screen.getByTestId('ag-grid')).toBeInTheDocument()
   })
 
   it('renders table data', () => {
-    render(
-      <TestWrapper>
-        <DataGrid />
-      </TestWrapper>,
-    )
+    render(<DataGrid />)
 
     expect(screen.getByText('John Doe')).toBeInTheDocument()
   })
 
   it('renders table footer', () => {
-    render(
-      <TestWrapper>
-        <DataGrid />
-      </TestWrapper>,
-    )
+    render(<DataGrid />)
 
     expect(screen.getByTestId('table-footer')).toBeInTheDocument()
   })
 
   it('shows add new row button when table is selected', () => {
-    render(
-      <TestWrapper>
-        <DataGrid />
-      </TestWrapper>,
-    )
+    render(<DataGrid />)
 
     expect(screen.getByLabelText('Add new row')).toBeInTheDocument()
   })
-}) 
+})

@@ -1,4 +1,5 @@
 import { Button, Flex, Spinner } from '@chakra-ui/react'
+import { useChangeHistoryRefresh } from '@renderer/hooks/useChangeHistory'
 import { useTableDataQuery } from '@renderer/hooks/useTableDataQuery'
 import { useCurrentDatabaseSelection, useCurrentDeviceSelection, useTableData } from '@renderer/store'
 import { useRowEditingStore } from '@renderer/store/useRowEditingStore'
@@ -27,9 +28,10 @@ export const RowEditor: React.FC<RowEditorProps> = ({
 }) => {
   const { selectedRow, setSelectedRow } = useRowEditingStore()
   const tableData = useTableData(state => state.tableData)
-  const { selectedDevice } = useCurrentDeviceSelection()
+  const { selectedDevice, selectedApplication } = useCurrentDeviceSelection()
   const { selectedDatabaseFile, selectedDatabaseTable } = useCurrentDatabaseSelection()
   const { refetch: refetchTable } = useTableDataQuery(selectedDatabaseTable?.name || '')
+  const { refreshChangeHistory } = useChangeHistoryRefresh()
 
   const startEditing = useCallback(() => {
     if (selectedRow?.rowData) {
@@ -58,18 +60,18 @@ export const RowEditor: React.FC<RowEditorProps> = ({
       
       const validation = validateRowData(editedData, columnTypes)
       if (!validation.isValid) {
-        const firstError = Object.entries(validation.errors)[0]
-        if (firstError) {
-          toaster.create({
-            title: 'Invalid Data',
-            description: `${firstError[0]}: ${firstError[1]}`,
-            type: 'error',
-            duration: 6000,
-            meta: {
-              closable: true,
-            },
-          })
-        }
+        const firstError = validation.errors && Object.entries(validation.errors)[0]
+        toaster.create({
+          title: 'Invalid Data',
+          description: firstError
+            ? `${firstError[0]}: ${firstError[1]}`
+            : 'An unknown validation error occurred.',
+          type: 'error',
+          duration: 6000,
+          meta: {
+            closable: true,
+          },
+        })
         setIsLoading(false)
         return
       }
@@ -85,6 +87,11 @@ export const RowEditor: React.FC<RowEditorProps> = ({
         validation.convertedData || editedData,
         condition,
         selectedDatabaseFile?.path,
+        selectedDevice?.id,
+        selectedDevice?.name,
+        selectedDevice?.deviceType,
+        selectedApplication?.bundleId,
+        selectedApplication?.name,
       )
 
       if (!result.success) {
@@ -134,6 +141,7 @@ export const RowEditor: React.FC<RowEditorProps> = ({
         columnInfo: selectedRow.columnInfo, // Preserve column information
       })
       refetchTable()
+      refreshChangeHistory()
       setIsEditing(false)
 
       // Only show success message if push succeeded or no push was needed
