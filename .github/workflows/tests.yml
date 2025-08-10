@@ -1,0 +1,50 @@
+name: Tests
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  frontend-tests:
+    name: Frontend Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    env:
+      NODE_ENV: test
+      CI: true
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: yarn
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Run frontend tests
+        run: yarn test
+
+  # rust-tests:
+  #   name: Rust Tests
+  #   runs-on: ubuntu-latest
+
+  #   steps:
+  #     - uses: actions/checkout@v4
+
+  #     - name: Setup Rust
+  #       uses: dtolnay/rust-toolchain@stable
+
+  #     - name: Cache Rust dependencies
+  #       uses: swatinem/rust-cache@v2
+  #       with:
+  #         workspaces: ./src-tauri -> target
+
+  #     - name: Run Rust tests
+  #       run: cd src-tauri && cargo test
