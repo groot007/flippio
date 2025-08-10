@@ -4,6 +4,7 @@ pub mod helpers;
 pub mod adb;
 pub mod ios;
 pub mod virtual_device;
+pub mod embedded_tools;
 
 // Re-export all public functions and types from sub-modules
 pub use adb::*;

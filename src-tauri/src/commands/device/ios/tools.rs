@@ -64,11 +64,18 @@ pub fn get_tool_command(tool_name: &str) -> Result<String, String> {
 
 /// Get command string for a tool with automatic error handling (legacy compatibility)
 pub fn get_tool_command_legacy(tool_name: &str) -> String {
+    println!("🔧 [Tool] Resolving tool: {}", tool_name);
     match get_tool_command(tool_name) {
-        Ok(path) => path,
-        Err(_) => {
+        Ok(path) => {
+            println!("🔧 [Tool] ✅ Resolved '{}' to: {}", tool_name, path);
+            path
+        }
+        Err(err) => {
+            println!("🔧 [Tool] ❌ Failed to resolve '{}': {}", tool_name, err);
             error!("❌ All tool resolution methods failed for '{}', using bare command", tool_name);
-            tool_name.to_string() // Last resort fallback
+            let fallback = tool_name.to_string();
+            println!("🔧 [Tool] 🔄 Using fallback: {}", fallback);
+            fallback // Last resort fallback
         }
     }
 }
