@@ -601,11 +601,9 @@ describe('tauri API - critical infrastructure tests', () => {
     describe('file dialog operations', () => {
       it('should handle file selection dialog', async () => {
         const fileResponse = {
-          success: true,
-          data: {
-            canceled: false,
-            file_paths: ['/selected/file.db'],
-          },
+          canceled: false,
+          file_paths: ['/selected/file.db'],
+          file_path: '/selected/file.db',
         }
       
         mockInvoke.mockResolvedValue(fileResponse)
@@ -618,11 +616,9 @@ describe('tauri API - critical infrastructure tests', () => {
 
       it('should handle canceled file selection', async () => {
         const canceledResponse = {
-          success: true,
-          data: {
-            canceled: true,
-            file_paths: [],
-          },
+          canceled: true,
+          file_paths: null,
+          file_path: null,
         }
       
         mockInvoke.mockResolvedValue(canceledResponse)
