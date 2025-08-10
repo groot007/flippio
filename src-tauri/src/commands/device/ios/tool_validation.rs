@@ -154,7 +154,7 @@ impl IOSToolValidator {
 
     /// Create predefined discovery strategies
     fn create_discovery_strategies() -> Vec<ToolDiscoveryStrategy> {
-        let mut strategies = vec![
+        let strategies = vec![
             // Strategy 1: Homebrew (Apple Silicon) - Priority for M1/M2 Macs
             ToolDiscoveryStrategy {
                 name: "Homebrew (Apple Silicon)".to_string(),
@@ -270,7 +270,7 @@ impl IOSToolValidator {
                 
                 // Windows bundled tools: check multiple possible locations
                 
-                // 1. Same directory as executable
+                // 1. Same directory as executable (Tauri sidecar binaries)
                 paths.push(exe_dir.to_path_buf());
                 
                 // 2. Resources subdirectory (Tauri bundled resources)
@@ -278,10 +278,13 @@ impl IOSToolValidator {
                 info!("📁 Generated Tauri resource path: {}", resource_path.display());
                 paths.push(resource_path);
                 
-                // 3. Direct resources path
+                // 3. Direct resources path (alternative Tauri structure)
                 paths.push(exe_dir.join("resources").join("libimobiledevice-windows"));
                 
-                // 4. Bin subdirectory
+                // 4. Alternative Tauri sidecar location
+                paths.push(exe_dir.join("..").join("resources").join("libimobiledevice-windows"));
+                
+                // 5. Bin subdirectory
                 paths.push(exe_dir.join("bin"));
             }
         } else {
@@ -365,7 +368,7 @@ impl IOSToolValidator {
     }
 
     /// Try to fix executable permissions
-    fn try_fix_permissions(_path: &Path) -> Result<(), String> {
+    fn try_fix_permissions(path: &Path) -> Result<(), String> {
         #[cfg(unix)]
         {
             use std::fs;

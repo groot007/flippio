@@ -60,9 +60,25 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
-    "externalBin": [],
+    "externalBin": [
+      "macos-deps/afcclient",
+      "macos-deps/idevice_id",
+      "macos-deps/ideviceinfo",
+      "macos-deps/ideviceinstaller",
+      "../resources/libimobiledevice-windows/afcclient",
+      "../resources/libimobiledevice-windows/idevice_id",
+      "../resources/libimobiledevice-windows/ideviceinfo",
+      "../resources/libimobiledevice-windows/ideviceinstaller",
+      "../resources/libimobiledevice-windows/idevicebackup2",
+      "../resources/libimobiledevice-windows/idevicepair",
+      "../resources/libimobiledevice-windows/idevicesyslog",
+      "../resources/libimobiledevice-windows/iproxy",
+      "../resources/adb-platform-tools/adb",
+      "../resources/adb-platform-tools/fastboot"
+    ],
     "resources": [
-      "../resources/libimobiledevice-windows/"
+      "../resources/libimobiledevice-windows/",
+      "../resources/adb-platform-tools/"
     ],
     "windows": {
       "certificateThumbprint": null,

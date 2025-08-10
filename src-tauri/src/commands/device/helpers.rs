@@ -125,6 +125,11 @@ pub fn force_clean_temp_dir() -> Result<PathBuf, Box<dyn std::error::Error + Sen
 
 // Helper function to get ADB executable path
 pub fn get_adb_path() -> String {
+    // First try to find bundled ADB in resources
+    if let Some(bundled_path) = get_adb_tool_path("adb") {
+        return bundled_path.to_string_lossy().to_string();
+    }
+    
     // Try to find ADB in common locations
     let possible_paths = vec![
         "adb",  // System PATH
@@ -155,6 +160,79 @@ pub fn get_adb_path() -> String {
     
     // Fallback to just "adb" and hope it's in PATH
     "adb".to_string()
+}
+
+// Helper function to get ADB platform tools path from bundled resources
+pub fn get_adb_tool_path(tool_name: &str) -> Option<std::path::PathBuf> {
+    if let Ok(exe_path) = std::env::current_exe() {
+        log::info!("[adb] current_exe: {:?}", exe_path);
+
+        if let Some(exe_dir) = exe_path.parent() {
+            // ✅ 1. Windows: Check for bundled .exe files in the same directory as the executable
+            #[cfg(target_os = "windows")]
+            {
+                let windows_tool = format!("{}.exe", tool_name);
+                let windows_path = exe_dir.join(&windows_tool);
+                if windows_path.exists() {
+                    log::info!(
+                        "[adb] Using bundled Windows '{}' from exe directory: {:?}",
+                        tool_name,
+                        windows_path
+                    );
+                    return Some(windows_path);
+                }
+            }
+
+            // ✅ 2. macOS Production: Check bundled resources in Contents/Resources/adb-platform-tools/
+            #[cfg(target_os = "macos")]
+            {
+                if let Some(resources_path) = exe_dir
+                    .parent() // Contents/
+                    .map(|p| p.join("Resources").join("adb-platform-tools").join(tool_name))
+                {
+                    if resources_path.exists() {
+                        log::info!(
+                            "[adb] Using bundled macOS '{}' from Contents/Resources/adb-platform-tools/: {:?}",
+                            tool_name,
+                            resources_path
+                        );
+                        return Some(resources_path);
+                    }
+                }
+            }
+
+            // ✅ 3. Development: Check resources directory relative to project
+            let dev_path = exe_dir
+                .parent()
+                .and_then(|p| p.parent())  // target/debug/
+                .and_then(|p| p.parent())  // target/
+                .map(|p| {
+                    #[cfg(target_os = "windows")]
+                    return p.join("resources/adb-platform-tools").join(format!("{}.exe", tool_name));
+                    
+                    #[cfg(not(target_os = "windows"))]
+                    return p.join("resources/adb-platform-tools").join(tool_name);
+                });
+
+            if let Some(ref dev_path) = dev_path {
+                if dev_path.exists() {
+                    log::info!(
+                        "[adb] Using dev '{}' from: {:?}",
+                        tool_name,
+                        dev_path
+                    );
+                    return Some(dev_path.clone());
+                }
+            }
+        }
+    }
+
+    // ❗ Fallback: system PATH
+    log::warn!(
+        "[adb] Falling back to system '{}' from PATH",
+        tool_name
+    );
+    None
 }
 
 // Execute ADB command with proper error handling
@@ -218,26 +296,54 @@ pub fn get_libimobiledevice_tool_path(tool_name: &str) -> Option<std::path::Path
         log::info!("[libimobiledevice] current_exe: {:?}", exe_path);
 
         if let Some(exe_dir) = exe_path.parent() {
-            // ✅ 1. Production: Contents/MacOs/<tool>
-            if let Some(resources_path) = exe_dir
-                .parent() // Contents/
-                .map(|p| p.join("MacOs").join(tool_name))
+            // ✅ 1. Windows: Check for bundled .exe files in the same directory as the executable
+            #[cfg(target_os = "windows")]
             {
-                if resources_path.exists() {
+                let windows_tool = format!("{}.exe", tool_name);
+                let windows_path = exe_dir.join(&windows_tool);
+                if windows_path.exists() {
                     log::info!(
-                        "[libimobiledevice] Using bundled '{}' from Contents/MacOs/: {:?}",
+                        "[libimobiledevice] Using bundled Windows '{}' from exe directory: {:?}",
                         tool_name,
-                        resources_path
+                        windows_path
                     );
-                    return Some(resources_path);
+                    return Some(windows_path);
                 }
             }
 
+            // ✅ 2. macOS Production: Contents/MacOs/<tool>
+            #[cfg(target_os = "macos")]
+            {
+                if let Some(resources_path) = exe_dir
+                    .parent() // Contents/
+                    .map(|p| p.join("MacOs").join(tool_name))
+                {
+                    if resources_path.exists() {
+                        log::info!(
+                            "[libimobiledevice] Using bundled macOS '{}' from Contents/MacOs/: {:?}",
+                            tool_name,
+                            resources_path
+                        );
+                        return Some(resources_path);
+                    }
+                }
+            }
+
+            // ✅ 3. Development: Check for development paths (both Windows and macOS)
             let dev_path = exe_dir
                 .parent()
                 .and_then(|p| p.parent())  // target/debug/
                 .and_then(|p| p.parent())  // target/
-                .map(|p| p.join("resources/libimobiledevice/tools").join(tool_name));
+                .map(|p| {
+                    #[cfg(target_os = "windows")]
+                    return p.join("resources/libimobiledevice-windows").join(format!("{}.exe", tool_name));
+                    
+                    #[cfg(target_os = "macos")]
+                    return p.join("resources/libimobiledevice/tools").join(tool_name);
+                    
+                    #[cfg(not(any(target_os = "windows", target_os = "macos")))]
+                    return p.join("resources/libimobiledevice/tools").join(tool_name);
+                });
 
             if let Some(ref dev_path) = dev_path {
                 if dev_path.exists() {
@@ -375,6 +481,7 @@ mod tests {
         let temp_path = get_temp_dir_path();
         assert!(temp_path.to_string_lossy().contains("flippio-db-temp"));
         
+        
         // Test that ensure_temp_dir works
         let result = ensure_temp_dir();
         assert!(result.is_ok());
@@ -384,5 +491,37 @@ mod tests {
         assert!(result.is_ok());
         
         Ok(())
+    }
+
+    #[test]
+    fn test_get_adb_tool_path() {
+        // Test that get_adb_tool_path returns something meaningful
+        let result = get_adb_tool_path("adb");
+        
+        // The function should either find a path or return None
+        match result {
+            Some(path) => {
+                assert!(!path.to_string_lossy().is_empty());
+                assert!(path.to_string_lossy().contains("adb"));
+            }
+            None => {
+                // This is acceptable if no bundled ADB is found
+                println!("No bundled ADB tool found, falling back to system PATH");
+            }
+        }
+    }
+
+    #[test]
+    fn test_get_adb_tool_path_empty_tool() {
+        let result = get_adb_tool_path("");
+        // Empty tool name should not find anything
+        assert!(result.is_none());
+    }
+
+    #[test]
+    fn test_get_adb_tool_path_nonexistent_tool() {
+        let result = get_adb_tool_path("nonexistent_adb_tool_12345");
+        // Nonexistent tool should return None
+        assert!(result.is_none());
     }
 }

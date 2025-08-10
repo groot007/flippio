@@ -4,8 +4,6 @@
 //! fails with exit code -1073741701 (STATUS_INVALID_IMAGE_FORMAT)
 
 use std::path::{Path, PathBuf};
-use std::process::Command;
-use log::{info, warn, error};
 
 #[derive(Debug)]
 pub struct DependencyCheckResult {
