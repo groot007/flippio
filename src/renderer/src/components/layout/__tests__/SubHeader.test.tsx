@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, screen, waitFor } from '@testing-library/react'
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { render } from '../../../test-utils/render'
 import { SubHeader } from '../SubHeader'
@@ -177,7 +177,10 @@ describe('subHeader component', () => {
     render(<SubHeader />)
 
     const refreshButton = screen.getByTestId('refresh-db')
-    fireEvent.click(refreshButton)
+    
+    await act(async () => {
+      fireEvent.click(refreshButton)
+    })
 
     await waitFor(() => {
       expect(mockHandleDBRefresh).toHaveBeenCalledTimes(1)
@@ -202,7 +205,10 @@ describe('subHeader component', () => {
     render(<SubHeader />)
 
     const openButton = screen.getByText('Open')
-    fireEvent.click(openButton)
+    
+    await act(async () => {
+      fireEvent.click(openButton)
+    })
 
     await waitFor(() => {
       expect(globalThis.window.api.openFile).toHaveBeenCalledTimes(1)
@@ -213,18 +219,24 @@ describe('subHeader component', () => {
     render(<SubHeader />)
 
     const exportButton = screen.getByText('Export')
-    fireEvent.click(exportButton)
+    
+    await act(async () => {
+      fireEvent.click(exportButton)
+    })
 
     await waitFor(() => {
       expect(globalThis.window.api.exportFile).toHaveBeenCalledTimes(1)
     })
   })
 
-  it('opens SQL modal when SQL button is clicked', () => {
+  it('opens SQL modal when SQL button is clicked', async () => {
     render(<SubHeader />)
 
     const sqlButton = screen.getByText('SQL')
-    fireEvent.click(sqlButton)
+    
+    await act(async () => {
+      fireEvent.click(sqlButton)
+    })
 
     // The modal should be opened (testing the button click functionality)
     expect(sqlButton).toBeInTheDocument()

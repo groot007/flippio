@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, screen, waitFor } from '@testing-library/react'
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { render } from '../../../test-utils/render'
 import AppHeader from '../AppHeader'
@@ -107,7 +107,9 @@ describe('appHeader component', () => {
     const refreshButton = screen.getByTestId('refresh-devices')
     expect(refreshButton).toBeInTheDocument()
 
-    fireEvent.click(refreshButton)
+    await act(async () => {
+      fireEvent.click(refreshButton)
+    })
 
     await waitFor(() => {
       expect(mockRefreshDevices).toHaveBeenCalledTimes(1)

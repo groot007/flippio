@@ -178,7 +178,9 @@ describe('flippio User Workflow Integration Tests', () => {
       expect(refreshButton).not.toHaveAttribute('disabled')
     }, { timeout: 3000 })
     
-    fireEvent.click(refreshButton)
+    await act(async () => {
+      fireEvent.click(refreshButton)
+    })
 
     // After clicking, verify the app is still functional
     await waitFor(() => {
@@ -201,7 +203,10 @@ describe('flippio User Workflow Integration Tests', () => {
 
     // Test open file functionality
     const openButton = screen.getByText('Open')
-    fireEvent.click(openButton)
+    
+    await act(async () => {
+      fireEvent.click(openButton)
+    })
 
     await waitFor(() => {
       expect(globalThis.window.api.openFile).toHaveBeenCalled()
@@ -223,7 +228,10 @@ describe('flippio User Workflow Integration Tests', () => {
 
     // Find and click SQL button
     const sqlButton = screen.getByText('SQL')
-    fireEvent.click(sqlButton)
+    
+    await act(async () => {
+      fireEvent.click(sqlButton)
+    })
 
     // SQL modal should be visible (modal functionality tested separately)
     expect(sqlButton).toBeInTheDocument()
@@ -259,7 +267,9 @@ describe('flippio User Workflow Integration Tests', () => {
     const virtualDeviceButton = screen.getByTitle('Launch Emulator')
     expect(virtualDeviceButton).toBeInTheDocument()
 
-    fireEvent.click(virtualDeviceButton)
+    await act(async () => {
+      fireEvent.click(virtualDeviceButton)
+    })
 
     // Modal or functionality should be triggered (exact behavior depends on implementation)
   })

@@ -1,17 +1,19 @@
 import { act, fireEvent, screen, waitFor } from '@testing-library/react'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { useCurrentDatabaseSelection, useTableData } from '../../features/database/stores'
-import { useCurrentDeviceSelection } from '../../features/devices/stores'
-import { Main } from '../../pages/Main'
 import { render } from '../../test-utils/render'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { Main } from '../../pages/Main'
+import { useCurrentDeviceSelection } from '../../store/useCurrentDeviceSelection'
+import { useCurrentDatabaseSelection } from '../../store/useCurrentDatabaseSelection'
+import { useTableData } from '../../store/useTableData'
+import { useRowEditingStore } from '../../store/useRowEditingStore'
 
-const mockApi = vi.hoisted(() => ({
+const mockApi = {
   getDevices: vi.fn(),
   getApplications: vi.fn(),
   getDatabaseFiles: vi.fn(),
   getTables: vi.fn(),
   getTableData: vi.fn(),
-}))
+}
 
 const mockUseTableDataQuery = vi.hoisted(() => vi.fn(() => ({
   data: null as any,
@@ -50,32 +52,25 @@ vi.mock('ag-grid-react', () => ({
 }))
 
 function resetStores() {
+  const appStore = useCurrentDeviceSelection.getState()
+  appStore.setDevicesList([])
+  appStore.setSelectedDevice(null)
+  appStore.setApplicationsList([])
+  appStore.setSelectedApplication(null)
+  appStore.setIsDBPulling(false)
+  
   const dbStore = useCurrentDatabaseSelection.getState()
   dbStore.setSelectedDatabaseFile(null)
   dbStore.setSelectedDatabaseTable(null)
-  
-  const deviceStore = useCurrentDeviceSelection.getState()
-  deviceStore.setSelectedDevice(null)
-  deviceStore.setSelectedApplication(null)
+  dbStore.setDatabaseFiles([])
+  dbStore.setDatabaseTables([])
   
   const tableStore = useTableData.getState()
   tableStore.setTableData(null)
   tableStore.setIsLoadingTableData(false)
   
-  // Reset mocks
-  vi.clearAllMocks()
-  mockApi.getDevices.mockResolvedValue({ success: true, data: [] })
-  mockApi.getApplications.mockResolvedValue({ success: true, data: [] })
-  mockApi.getDatabaseFiles.mockResolvedValue({ success: true, data: [] })
-  mockApi.getTables.mockResolvedValue({ success: true, data: [] })
-  mockApi.getTableData.mockResolvedValue({ success: true, data: { rows: [], columns: [] } })
-  
-  // Reset query mock to default state
-  mockUseTableDataQuery.mockReturnValue({
-    data: null,
-    isLoading: false,
-    error: null,
-  })
+  const rowStore = useRowEditingStore.getState()
+  rowStore.setSelectedRow(null)
 }
 
 describe('component Integration Tests', () => {
@@ -111,13 +106,7 @@ describe('component Integration Tests', () => {
       
       await act(async () => {
         useCurrentDeviceSelection.getState().setDevicesList([
-          { 
-            id: 'device-1', 
-            name: 'Test Android', 
-            model: 'Test Model',
-            deviceType: 'android',
-            description: 'Android device', 
-          },
+          { deviceType: 'android', id: 'device-1', model: 'Test Model', name: 'Test Android', label: 'Test Android', description: 'Android device' },
         ])
       })
       
@@ -131,27 +120,11 @@ describe('component Integration Tests', () => {
       
       await act(async () => {
         useCurrentDeviceSelection.getState().setDevicesList([
-          { 
-            id: 'device-1', 
-            name: 'Test Android', 
-            model: 'Test Model',
-            deviceType: 'android',
-            description: 'Android device', 
-          },
+          { deviceType: 'android', id: 'device-1', model: 'Test Model', name: 'Test Android', label: 'Test Android', description: 'Android device' },
         ])
-        useCurrentDeviceSelection.getState().setSelectedDevice({
-          id: 'device-1', 
-          name: 'Test Android', 
-          model: 'Test Model',
-          deviceType: 'android',
-          description: 'Android device', 
-        })
+        useCurrentDeviceSelection.getState().setSelectedDevice({ deviceType: 'android', id: 'device-1', model: 'Test Model', name: 'Test Android', label: 'Test Android', description: 'Android device' })
         useCurrentDeviceSelection.getState().setApplicationsList([
-          { 
-            name: 'Test App', 
-            bundleId: 'com.test.app',
-            packageName: 'com.test.app',
-          },
+          { name: 'Test App', bundleId: 'com.test.app1' },
         ])
       })
       
@@ -166,17 +139,8 @@ describe('component Integration Tests', () => {
       render(<Main />)
       
       await act(async () => {
-        useCurrentDeviceSelection.getState().setSelectedDevice({
-          id: 'device-1', 
-          name: 'Test Android', 
-          model: 'Test Model',
-          deviceType: 'android',
-        })
-        useCurrentDeviceSelection.getState().setSelectedApplication({
-          name: 'Test App', 
-          bundleId: 'com.test.app',
-          packageName: 'com.test.app',
-        })
+        useCurrentDeviceSelection.getState().setSelectedDevice({ deviceType: 'android', id: 'device-1', model: 'Test Model', name: 'Test Android' })
+        useCurrentDeviceSelection.getState().setSelectedApplication({ name: 'Test App', bundleId: 'com.test.app1' })
         useCurrentDatabaseSelection.getState().setSelectedDatabaseFile({
           path: '/path/to/test.db',
           filename: 'test.db',
@@ -195,17 +159,8 @@ describe('component Integration Tests', () => {
       render(<Main />)
       
       await act(async () => {
-        useCurrentDeviceSelection.getState().setSelectedDevice({
-          id: 'device-1', 
-          name: 'Test Android', 
-          model: 'Test Model',
-          deviceType: 'android',
-        })
-        useCurrentDeviceSelection.getState().setSelectedApplication({
-          name: 'Test App', 
-          bundleId: 'com.test.app',
-          packageName: 'com.test.app',
-        })
+        useCurrentDeviceSelection.getState().setSelectedDevice({ deviceType: 'android', id: 'device-1', model: 'Test Model', name: 'Test Android' })
+        useCurrentDeviceSelection.getState().setSelectedApplication({ name: 'Test App', bundleId: 'com.test.app1' })
         useCurrentDatabaseSelection.getState().setSelectedDatabaseFile({
           path: '/path/to/test.db',
           filename: 'test.db',
@@ -227,9 +182,10 @@ describe('component Integration Tests', () => {
 
   describe('aG Grid Integration', () => {
     it('should render grid when data is available', async () => {
-      // Mock the query to return test data
-      mockUseTableDataQuery.mockReturnValue({
-        data: {
+      render(<Main />)
+      
+      await act(async () => {
+        useTableData.getState().setTableData({
           rows: [
             { id: 1, name: 'John', email: 'john@test.com' },
             { id: 2, name: 'Jane', email: 'jane@test.com' },
@@ -239,37 +195,7 @@ describe('component Integration Tests', () => {
             { name: 'name', type: 'TEXT' },
             { name: 'email', type: 'TEXT' },
           ],
-        },
-        isLoading: false,
-        error: null,
-      })
-
-      render(<Main />)
-      
-      await act(async () => {
-        // Set up necessary state for the grid to render
-        const currentDeviceStore = useCurrentDeviceSelection.getState()
-        currentDeviceStore.setSelectedDevice({
-          id: 'test-device',
-          name: 'Test Device',
-          model: 'Test Model',
-          deviceType: 'desktop',
-        })
-        currentDeviceStore.setSelectedApplication({
-          name: 'Test App',
-          bundleId: 'com.test.app',
-          packageName: 'com.test.app',
-        })
-        
-        const currentDatabaseStore = useCurrentDatabaseSelection.getState()
-        currentDatabaseStore.setSelectedDatabaseFile({
-          path: '/test/path',
-          filename: 'test.db',
-          packageName: 'com.test.app',
-          location: 'local',
-        })
-        currentDatabaseStore.setSelectedDatabaseTable({
-          name: 'users',
+          tableName: 'users',
         })
       })
       
@@ -281,46 +207,17 @@ describe('component Integration Tests', () => {
     })
 
     it('should handle row selection', async () => {
-      // Mock the query to return test data
-      mockUseTableDataQuery.mockReturnValue({
-        data: {
+      render(<Main />)
+      
+      await act(async () => {
+        useTableData.getState().setTableData({
           rows: [{ id: 1, name: 'John', email: 'john@test.com' }],
           columns: [
             { name: 'id', type: 'INTEGER' },
             { name: 'name', type: 'TEXT' },
             { name: 'email', type: 'TEXT' },
           ],
-        },
-        isLoading: false,
-        error: null,
-      })
-
-      render(<Main />)
-      
-      await act(async () => {
-        // Set up necessary state for the grid to render
-        const currentDeviceStore = useCurrentDeviceSelection.getState()
-        currentDeviceStore.setSelectedDevice({
-          id: 'test-device',
-          name: 'Test Device',
-          model: 'Test Model',
-          deviceType: 'desktop',
-        })
-        currentDeviceStore.setSelectedApplication({
-          name: 'Test App',
-          bundleId: 'com.test.app',
-          packageName: 'com.test.app',
-        })
-        
-        const currentDatabaseStore = useCurrentDatabaseSelection.getState()
-        currentDatabaseStore.setSelectedDatabaseFile({
-          path: '/test/path',
-          filename: 'test.db',
-          packageName: 'com.test.app',
-          location: 'local',
-        })
-        currentDatabaseStore.setSelectedDatabaseTable({
-          name: 'users',
+          tableName: 'users',
         })
       })
       
@@ -353,12 +250,7 @@ describe('component Integration Tests', () => {
       const { unmount } = render(<Main />)
       
       await act(async () => {
-        useCurrentDeviceSelection.getState().setSelectedDevice({
-          id: 'device-1', 
-          name: 'Test Android', 
-          model: 'Test Model',
-          deviceType: 'android',
-        })
+        useCurrentDeviceSelection.getState().setSelectedDevice({ deviceType: 'android', id: 'device-1', model: 'Test Model', name: 'Test Android' })
       })
       
       unmount()

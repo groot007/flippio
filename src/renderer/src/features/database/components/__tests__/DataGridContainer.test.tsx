@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import React from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { DataGridContainer } from '../DataGridContainer'
@@ -104,7 +104,9 @@ describe('dataGridContainer', () => {
     const addButton = screen.getByTestId('add-row-button')
     expect(addButton).toHaveTextContent('Add Row')
     
-    fireEvent.click(addButton)
+    await act(async () => {
+      fireEvent.click(addButton)
+    })
     
     await waitFor(() => {
       expect(mockApi.addNewRowWithDefaults).toHaveBeenCalledWith(
@@ -131,14 +133,19 @@ describe('dataGridContainer', () => {
     render(<DataGridContainer />)
     
     const addButton = screen.getByTestId('add-row-button')
-    fireEvent.click(addButton)
+    
+    await act(async () => {
+      fireEvent.click(addButton)
+    })
     
     // Should show loading state
     expect(addButton).toHaveTextContent('Adding...')
     expect(addButton).toBeDisabled()
     
     // Resolve the promise
-    resolveAddRow!({ success: true })
+    await act(async () => {
+      resolveAddRow!({ success: true })
+    })
     
     await waitFor(() => {
       expect(addButton).toHaveTextContent('Add Row')
@@ -155,7 +162,10 @@ describe('dataGridContainer', () => {
     render(<DataGridContainer />)
     
     const addButton = screen.getByTestId('add-row-button')
-    fireEvent.click(addButton)
+    
+    await act(async () => {
+      fireEvent.click(addButton)
+    })
     
     await waitFor(() => {
       expect(mockApi.addNewRowWithDefaults).toHaveBeenCalled()
@@ -168,7 +178,10 @@ describe('dataGridContainer', () => {
     render(<DataGridContainer />)
     
     const addButton = screen.getByTestId('add-row-button')
-    fireEvent.click(addButton)
+    
+    await act(async () => {
+      fireEvent.click(addButton)
+    })
     
     await waitFor(() => {
       expect(mockApi.addNewRowWithDefaults).toHaveBeenCalled()
