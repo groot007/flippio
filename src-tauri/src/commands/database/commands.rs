@@ -1306,7 +1306,22 @@ async fn get_cached_connection(
     // Ensure file permissions are correct
     ensure_database_file_permissions(&normalized_path)?;
 
-    let pool = match SqlitePool::connect(&format!("sqlite:{}?mode=rwc", normalized_path)).await {
+    // Handle Windows UNC paths and special characters in database URLs
+    let connection_string = if normalized_path.starts_with("\\\\?\\") {
+        // Windows long path format - convert to regular path for SQLite
+        let clean_path = normalized_path.strip_prefix("\\\\?\\").unwrap_or(&normalized_path);
+        format!("sqlite:{}?mode=rwc", clean_path.replace('\\', "/"))
+    } else if cfg!(windows) && normalized_path.contains('\\') {
+        // Regular Windows path - convert backslashes to forward slashes for SQLite URL
+        format!("sqlite:{}?mode=rwc", normalized_path.replace('\\', "/"))
+    } else {
+        // Unix paths are fine as-is
+        format!("sqlite:{}?mode=rwc", normalized_path)
+    };
+
+    log::info!("🔗 Connecting with URL: {}", connection_string);
+
+    let pool = match SqlitePool::connect(&connection_string).await {
         Ok(pool) => {
             log::info!("✅ Successfully connected to database: {}", normalized_path);
             pool

@@ -1,5 +1,6 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
-#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+// But allow console in debug builds for logging
+#![cfg_attr(all(not(debug_assertions), target_os = "windows"), windows_subsystem = "windows")]
 
 use std::sync::Arc;
 use tokio::sync::RwLock;
@@ -16,7 +17,17 @@ pub fn run() {
     let db_cache = connection_manager.get_cache();
     
     let mut builder = tauri::Builder::default()
-        .plugin(tauri_plugin_log::Builder::new().build())
+        .plugin(
+            tauri_plugin_log::Builder::new()
+                .target(tauri_plugin_log::Target::new(
+                    tauri_plugin_log::TargetKind::Stdout,
+                ))
+                .target(tauri_plugin_log::Target::new(
+                    tauri_plugin_log::TargetKind::LogDir { file_name: Some("flippio".to_string()) },
+                ))
+                .level(log::LevelFilter::Info)
+                .build()
+        )
         .manage(db_pool)
         .manage(db_cache)
         .setup(|_app| {
@@ -25,6 +36,7 @@ pub fn run() {
             tauri::async_runtime::spawn(async move {
                 connection_manager.start_cleanup_task().await;
             });
+            
             Ok(())
         })
         .plugin(tauri_plugin_dialog::init())
@@ -84,7 +96,13 @@ pub fn run() {
             commands::updater::download_and_install_update,
             // iOS diagnostic commands
             commands::device::ios::diagnostic::diagnose_ios_device,
-            commands::device::ios::diagnostic::check_ios_device_status
+            commands::device::ios::diagnostic::check_ios_device_status,
+            // Windows dependency diagnostic commands
+            commands::device::diagnostic_check_windows_dependencies,
+            commands::device::diagnostic_get_ideviceinstaller_help,
+            commands::device::diagnostic_test_ideviceinstaller_execution,
+            // Debug commands
+            debug_test_ios_tools,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
@@ -92,4 +110,39 @@ pub fn run() {
 
 fn main() {
     run();
+}
+
+// Debug command to test iOS tools and show results
+#[tauri::command]
+async fn debug_test_ios_tools() -> Result<std::collections::HashMap<String, String>, String> {
+    use commands::device::ios::tools::get_tool_command_legacy;
+    
+    let mut results = std::collections::HashMap::new();
+    
+    // Test common iOS tools
+    let tools = vec!["idevice_id", "ideviceinfo", "ideviceinstaller", "afcclient"];
+    
+    println!("🔍 [DEBUG] Testing iOS tools...");
+    results.insert("debug_info".to_string(), "Testing iOS tools resolution".to_string());
+    
+    for tool in tools {
+        println!("🔍 [DEBUG] Testing tool: {}", tool);
+        let resolved_path = get_tool_command_legacy(tool);
+        results.insert(format!("tool_{}", tool), resolved_path.clone());
+        println!("🔍 [DEBUG] Tool '{}' resolved to: {}", tool, resolved_path);
+    }
+    
+    // Add system info
+    results.insert("os".to_string(), std::env::consts::OS.to_string());
+    results.insert("arch".to_string(), std::env::consts::ARCH.to_string());
+    
+    if let Ok(exe_path) = std::env::current_exe() {
+        results.insert("exe_path".to_string(), exe_path.to_string_lossy().to_string());
+        if let Some(exe_dir) = exe_path.parent() {
+            results.insert("exe_dir".to_string(), exe_dir.to_string_lossy().to_string());
+        }
+    }
+    
+    println!("🔍 [DEBUG] Tool test completed");
+    Ok(results)
 }

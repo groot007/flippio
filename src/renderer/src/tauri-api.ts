@@ -64,6 +64,9 @@ const COMMAND_MAP = {
   // Common commands
   'dialog:selectFile': 'dialog_select_file',
   'dialog:saveFile': 'dialog_save_file',
+  
+  // Debug commands
+  'debugTestIOSTools': 'debug_test_ios_tools',
 }
 
 // Helper function for commands that need to preserve Electron-style response structure
@@ -151,8 +154,17 @@ export const api = {
       const androidResp = await invokeCommandWithResponse('adb:getDevices', 'devices')
       // Fetch physical iOS devices (simulators and physical)
       const iosResp = await invokeCommandWithResponse('device:getIOsDevices', 'devices')
-      // Fetch iOS simulators
-      const iosSimulatorsResp = await invokeCommandWithResponse('getIOSSimulators', 'simulators')
+      
+      // Only fetch iOS simulators on macOS (simctl is not available on Windows/Linux)
+      let iosSimulatorsResp: any = { success: false, simulators: [] }
+      if (navigator.platform.indexOf('Mac') !== -1 || navigator.userAgent.indexOf('Mac') !== -1) {
+        try {
+          iosSimulatorsResp = await invokeCommandWithResponse('getIOSSimulators', 'simulators')
+        } catch (error) {
+          console.log('iOS Simulators not available on this platform:', error)
+          iosSimulatorsResp = { success: false, simulators: [] }
+        }
+      }
 
       const allDevices = []
 
@@ -434,6 +446,10 @@ export const api = {
       }
     },
   },
+
+  // Debug methods
+  debugTestIOSTools: () => 
+    invokeCommandWithResponse('debugTestIOSTools', 'result'),
 }
 
 // Environment variables (matching Electron preload)

@@ -7,6 +7,8 @@ use super::super::types::{DeviceResponse, Package};
 use super::tools::get_tool_command_legacy;
 use super::diagnostic::get_ios_error_help;
 use tauri_plugin_shell::ShellExt;
+use crate::commands::device::ios::tool_validation::find_ios_tool;
+use crate::commands::device::ios::windows_dependencies::diagnose_ideviceinstaller_issue;
 use log::{info, error};
 
 /// Get list of iOS packages (for simulators)
@@ -183,7 +185,23 @@ pub async fn device_get_ios_device_packages(app_handle: tauri::AppHandle, device
     
     info!("ideviceinstaller XML exit status: {:?}", xml_output.status);
     
-    if xml_output.status.success() {
+    // Handle Windows-specific DLL dependency issues for ideviceinstaller
+    let is_xml_success = if cfg!(target_os = "windows") {
+        match xml_output.status.code() {
+            Some(-1073741701) => {
+                // This specific exit code indicates DLL dependency issues
+                // Log this but don't treat it as a complete failure - try fallback
+                error!("⚠️ ideviceinstaller has DLL dependency issues (exit code -1073741701). This may indicate missing Visual C++ Redistributable or other Windows dependencies.");
+                false
+            },
+            Some(0) => true,
+            _ => xml_output.status.success(),
+        }
+    } else {
+        xml_output.status.success()
+    };
+    
+    if is_xml_success {
         let xml_content = String::from_utf8_lossy(&xml_output.stdout);
         info!("📱 XML output received, length: {} characters", xml_content.len());
         
@@ -220,12 +238,55 @@ pub async fn device_get_ios_device_packages(app_handle: tauri::AppHandle, device
     
     info!("ideviceinstaller regular exit status: {:?}", output.status);
     
-    if !output.status.success() {
+    // Handle Windows-specific DLL dependency issues for ideviceinstaller
+    let is_regular_success = if cfg!(target_os = "windows") {
+        match output.status.code() {
+            Some(-1073741701) => {
+                // This specific exit code indicates DLL dependency issues
+                error!("❌ ideviceinstaller has DLL dependency issues (exit code -1073741701)");
+                
+                // Find the ideviceinstaller tool path for diagnostics
+                if let Ok(tool_path) = find_ios_tool("ideviceinstaller") {
+                    // Run comprehensive dependency check
+                    let diagnostic_message = diagnose_ideviceinstaller_issue(&tool_path);
+                    error!("� Dependency diagnosis:\n{}", diagnostic_message);
+                } else {
+                    error!("�💡 This usually means missing Visual C++ Redistributable packages or libimobiledevice DLL dependencies");
+                    error!("💡 To fix this issue:");
+                    error!("   1. Install Microsoft Visual C++ Redistributable (latest version)");
+                    error!("   2. Ensure all libimobiledevice DLL files are in the same directory as the executable");
+                    error!("   3. Check that libplist, libusb, and other dependencies are present");
+                }
+                false
+            },
+            Some(0) => true,
+            _ => output.status.success(),
+        }
+    } else {
+        output.status.success()
+    };
+    
+    if !is_regular_success {
         let error_msg = String::from_utf8_lossy(&output.stderr);
         error!("❌ ideviceinstaller command failed: {}", error_msg);
         
-        // Provide user-friendly error message
-        let user_friendly_error = get_ios_error_help(&error_msg);
+        // Provide user-friendly error message for Windows DLL issues
+        let user_friendly_error = if cfg!(target_os = "windows") && 
+                                     output.status.code() == Some(-1073741701) {
+            // Get comprehensive diagnostic information
+            if let Ok(tool_path) = find_ios_tool("ideviceinstaller") {
+                diagnose_ideviceinstaller_issue(&tool_path)
+            } else {
+                "iOS app listing failed due to missing Windows dependencies.\n\n\
+                This error usually occurs when required Visual C++ Redistributable packages are missing.\n\n\
+                To fix this issue:\n\
+                1. Download and install Microsoft Visual C++ Redistributable (latest version) from Microsoft's website\n\
+                2. Restart Flippio after installation\n\n\
+                If the problem persists, you can still access iOS device databases without app listing functionality.".to_string()
+            }
+        } else {
+            get_ios_error_help(&error_msg)
+        };
         
         return Ok(DeviceResponse {
             success: false,
