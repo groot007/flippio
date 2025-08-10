@@ -8,7 +8,7 @@ import { listen } from '@tauri-apps/api/event'
 async function initializeEventSystem() {
   try {
     // Test basic event functionality to ensure the plugin internals are loaded
-    const unlisten = await listen('tauri://test-event', () => {})
+    const unlisten = await listen('tauri://test-event', () => { })
     await unlisten()
     console.log('Event system initialized successfully')
   }
@@ -44,7 +44,7 @@ function validateDeviceResponse<T>(response: any): DeviceResponse<T> {
       { response },
     )
   }
-  
+
   if (typeof response.success !== 'boolean') {
     throw new APIValidationError(
       'Invalid API response: missing or invalid success field',
@@ -52,17 +52,17 @@ function validateDeviceResponse<T>(response: any): DeviceResponse<T> {
       { response },
     )
   }
-  
+
   // Validate that error responses don't have data
   if (response.success === false && response.data !== undefined) {
     console.warn('API response has both error and data fields:', response)
   }
-  
+
   // Validate that successful responses have appropriate data
   if (response.success === true && response.data === undefined && response.error) {
     console.warn('API response marked as successful but contains error:', response)
   }
-  
+
   return response as DeviceResponse<T>
 }
 
@@ -74,7 +74,7 @@ function validateInput(value: any, fieldName: string, options: {
   maxLength?: number
 } = {}): void {
   const { required = false, type, pattern, maxLength } = options
-  
+
   if (required && (value === undefined || value === null)) {
     throw new APIValidationError(
       `Required field '${fieldName}' is missing`,
@@ -82,7 +82,7 @@ function validateInput(value: any, fieldName: string, options: {
       { fieldName, value },
     )
   }
-  
+
   if (value !== undefined && value !== null) {
     // eslint-disable-next-line
     if (type && typeof value !== type) {
@@ -92,7 +92,7 @@ function validateInput(value: any, fieldName: string, options: {
         { fieldName, expectedType: type, actualType: typeof value, value },
       )
     }
-    
+
     if (pattern && typeof value === 'string' && !pattern.test(value)) {
       throw new APIValidationError(
         `Field '${fieldName}' does not match required pattern`,
@@ -100,7 +100,7 @@ function validateInput(value: any, fieldName: string, options: {
         { fieldName, pattern: pattern.toString(), value },
       )
     }
-    
+
     if (maxLength && typeof value === 'string' && value.length > maxLength) {
       throw new APIValidationError(
         `Field '${fieldName}' exceeds maximum length of ${maxLength}`,
@@ -113,7 +113,7 @@ function validateInput(value: any, fieldName: string, options: {
 
 // Retry logic for critical commands
 async function withRetry<T>(
-  fn: () => Promise<T>, 
+  fn: () => Promise<T>,
   options: {
     maxRetries?: number
     baseDelay?: number
@@ -121,33 +121,33 @@ async function withRetry<T>(
     retryOn?: (error: Error) => boolean
   } = {},
 ): Promise<T> {
-  const { 
-    maxRetries = 3, 
-    baseDelay = 1000, 
+  const {
+    maxRetries = 3,
+    baseDelay = 1000,
     maxDelay = 10000,
-    retryOn = () => true, 
+    retryOn = () => true,
   } = options
-  
+
   let lastError: Error
-  
+
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
       return await fn()
     }
     catch (error) {
       lastError = error as Error
-      
+
       if (attempt === maxRetries || !retryOn(lastError)) {
         break
       }
-      
+
       const delay = Math.min(baseDelay * (2 ** attempt), maxDelay)
       console.warn(`API call failed (attempt ${attempt + 1}/${maxRetries + 1}), retrying in ${delay}ms:`, lastError.message)
-      
+
       await new Promise(resolve => setTimeout(resolve, delay))
     }
   }
-  
+
   throw new APIValidationError(
     `API call failed after ${maxRetries + 1} attempts: ${lastError.message}`,
     'MAX_RETRIES_EXCEEDED',
@@ -206,11 +206,11 @@ const COMMAND_MAP = {
 // Helper function for commands that need to preserve Electron-style response structure
 async function invokeCommandWithResponse<T>(electronCommand: string, dataFieldName: string, ...args: any[]): Promise<{ success: boolean, [key: string]: any }> {
   console.log('🔍 [invokeCommandWithResponse] Called with:', { electronCommand, dataFieldName, args })
-  
+
   // Validate inputs
   validateInput(electronCommand, 'electronCommand', { required: true, type: 'string', maxLength: 100 })
   validateInput(dataFieldName, 'dataFieldName', { required: true, type: 'string', maxLength: 50 })
-  
+
   const tauriCommand = COMMAND_MAP[electronCommand as keyof typeof COMMAND_MAP]
   if (!tauriCommand) {
     console.error('🔍 [invokeCommandWithResponse] Command not found:', electronCommand)
@@ -225,16 +225,19 @@ async function invokeCommandWithResponse<T>(electronCommand: string, dataFieldNa
 
   // Use retry logic for critical device communication commands
   const isDeviceCommand = electronCommand.includes('device:') || electronCommand.includes('adb:')
-  const retryOptions = isDeviceCommand ? {
-    maxRetries: 2,
-    baseDelay: 500,
-    retryOn: (error: Error) => {
-      // Retry on network errors but not on validation errors
-      return !error.message.includes('validation') 
-        && !error.message.includes('unauthorized')
-        && !error.message.includes('not found')
-    },
-  } : { maxRetries: 0 }
+
+  const retryOptions = isDeviceCommand
+    ? {
+        maxRetries: 2,
+        baseDelay: 500,
+        retryOn: (error: Error) => {
+        // Retry on network errors but not on validation errors
+          return !error.message.includes('validation')
+            && !error.message.includes('unauthorized')
+            && !error.message.includes('not found')
+        },
+      } 
+    : { maxRetries: 0 }
 
   return await withRetry(async () => {
     try {
@@ -268,12 +271,12 @@ async function invokeCommandWithResponse<T>(electronCommand: string, dataFieldNa
     }
     catch (error) {
       console.error(`🔍 [invokeCommandWithResponse] Exception invoking ${tauriCommand}:`, error)
-      
+
       // Re-throw APIValidationErrors as-is
       if (error instanceof APIValidationError) {
         throw error
       }
-      
+
       // Wrap other errors
       throw new APIValidationError(
         `Failed to execute command ${tauriCommand}: ${(error as Error).message}`,
@@ -429,7 +432,7 @@ export const api = {
     validateInput(localPath, 'localPath', { required: true, type: 'string', maxLength: 500 })
     validateInput(packageName, 'packageName', { required: true, type: 'string', maxLength: 200 })
     validateInput(remotePath, 'remotePath', { required: true, type: 'string', maxLength: 500 })
-    
+
     // Validate file paths for security
     const suspiciousPatterns = [
       /\.\./, // Directory traversal
@@ -437,7 +440,7 @@ export const api = {
       // eslint-disable-next-line no-control-regex
       /[\x00-\x1F\x7F]/, // Control characters
     ]
-    
+
     for (const pattern of suspiciousPatterns) {
       if (pattern.test(localPath) || pattern.test(remotePath)) {
         throw new APIValidationError(
@@ -451,13 +454,13 @@ export const api = {
     // Determine device type if not provided
     if (!deviceType) {
       if (deviceId.match(/^[A-F0-9-]{36,40}$/i)) {
-        deviceType = 'iphone-device' 
+        deviceType = 'iphone-device'
       }
       else if (deviceId.match(/^[A-F0-9-]{8,}$/i)) {
-        deviceType = 'simulator' 
+        deviceType = 'simulator'
       }
       else {
-        deviceType = 'android' 
+        deviceType = 'android'
       }
     }
     console.log('DEVICE TYPE:', deviceType)
@@ -479,14 +482,14 @@ export const api = {
     if (dbPath) {
       validateInput(dbPath, 'dbPath', { type: 'string', maxLength: 500 })
     }
-    
+
     try {
-      const response = await invoke<any>('db_get_tables', { 
-        currentDbPath: dbPath, 
+      const response = await invoke<any>('db_get_tables', {
+        currentDbPath: dbPath,
       })
-      
+
       const validatedResponse = validateDeviceResponse(response)
-      
+
       if (validatedResponse.success && validatedResponse.data) {
         return {
           success: true,
@@ -507,7 +510,7 @@ export const api = {
 
   openDatabase: async (filePath: string) => {
     validateInput(filePath, 'filePath', { required: true, type: 'string', maxLength: 500 })
-    
+
     // Additional file path validation
     if (!filePath.match(/\.(db|sqlite|sqlite3)$/i)) {
       throw new APIValidationError(
@@ -516,11 +519,11 @@ export const api = {
         { filePath },
       )
     }
-    
+
     try {
       const response = await invoke<any>('db_open', { filePath })
       const validatedResponse = validateDeviceResponse(response)
-      
+
       return {
         success: validatedResponse.success,
         path: validatedResponse.data,
@@ -540,7 +543,7 @@ export const api = {
     if (dbPath) {
       validateInput(dbPath, 'dbPath', { type: 'string', maxLength: 500 })
     }
-    
+
     // Validate table name for SQL injection
     if (!/^[a-z_]\w*$/i.test(tableName)) {
       throw new APIValidationError(
@@ -549,15 +552,15 @@ export const api = {
         { tableName },
       )
     }
-    
+
     try {
-      const response = await invoke<DeviceResponse<any>>('db_get_table_data', { 
+      const response = await invoke<DeviceResponse<any>>('db_get_table_data', {
         tableName,
-        currentDbPath: dbPath, 
+        currentDbPath: dbPath,
       })
-      
+
       const validatedResponse = validateDeviceResponse(response)
-      
+
       if (validatedResponse.success && validatedResponse.data) {
         const tableData = validatedResponse.data as { columns: any[], rows: any[] }
         // Transform to match Electron API structure
@@ -580,9 +583,9 @@ export const api = {
   },
 
   updateTableRow: (
-    tableName: string, 
-    row: any, 
-    condition: any, 
+    tableName: string,
+    row: any,
+    condition: any,
     dbPath?: string,
     deviceId?: string,
     deviceName?: string,
@@ -596,11 +599,11 @@ export const api = {
     invokeCommandWithResponse('db:executeQuery', 'result', query, dbPath),
 
   insertTableRow: (
-    tableName: string, 
-    row: any, 
+    tableName: string,
+    row: any,
     dbPath?: string,
     deviceId?: string,
-    deviceName?: string, 
+    deviceName?: string,
     deviceType?: string,
     packageName?: string,
     appName?: string,
@@ -608,7 +611,7 @@ export const api = {
     invokeCommandWithResponse('db:insertTableRow', 'result', tableName, row, dbPath, deviceId, deviceName, deviceType, packageName, appName),
 
   addNewRowWithDefaults: (
-    tableName: string, 
+    tableName: string,
     dbPath?: string,
     deviceId?: string,
     deviceName?: string,
@@ -619,8 +622,8 @@ export const api = {
     invokeCommandWithResponse('db:addNewRowWithDefaults', 'result', tableName, dbPath, deviceId, deviceName, deviceType, packageName, appName),
 
   deleteTableRow: (
-    tableName: string, 
-    condition: any, 
+    tableName: string,
+    condition: any,
     dbPath?: string,
     deviceId?: string,
     deviceName?: string,
@@ -681,7 +684,7 @@ export const api = {
       const response = await invoke<any>('dialog_select_file')
       const validatedResponse = validateDeviceResponse(response)
       const fileData = validatedResponse.data as { canceled?: boolean, file_paths?: string[], file_path?: string[] }
-      
+
       return {
         canceled: fileData?.canceled || false,
         filePaths: fileData?.file_paths || fileData?.file_path || [],
@@ -698,7 +701,7 @@ export const api = {
     if (options) {
       validateInput(options.dbFilePath, 'dbFilePath', { type: 'string', maxLength: 500 })
       validateInput(options.defaultPath, 'defaultPath', { type: 'string', maxLength: 500 })
-      
+
       if (options.filters && Array.isArray(options.filters)) {
         for (const filter of options.filters) {
           validateInput(filter.name, 'filter.name', { type: 'string', maxLength: 100 })
@@ -712,7 +715,7 @@ export const api = {
         }
       }
     }
-    
+
     try {
       // Transform camelCase to snake_case for Rust
       const transformedOptions = {
@@ -784,13 +787,13 @@ export const api = {
         // Read the file content as array buffer
         const arrayBuffer = await file.arrayBuffer()
         const uint8Array = new Uint8Array(arrayBuffer)
-        
+
         // Call our Tauri command to save the dropped file content
         const filePath = await invoke<string>('save_dropped_file', {
           fileContent: Array.from(uint8Array),
           filename: file.name,
         })
-        
+
         return filePath
       }
       catch (error) {
@@ -813,8 +816,8 @@ export default api
 // Function to initialize the global API
 function initializeGlobalAPI() {
   if (typeof window !== 'undefined') {
-    ;(window as any).api = api
-    ;(window as any).env = env
+    ; (window as any).api = api
+    ; (window as any).env = env
   }
 }
 
