@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildUniqueCondition } from '../database'
+import { buildUniqueCondition } from '../../shared/utils/database'
 
 describe('database utilities', () => {
   describe('buildUniqueCondition', () => {

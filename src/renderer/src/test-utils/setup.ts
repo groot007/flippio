@@ -85,7 +85,7 @@ beforeAll(() => {
   })
 
   // Mock Tauri internals to prevent metadata access errors
-  globalThis.__TAURI_INTERNALS__ = {
+  ;(globalThis as any).__TAURI_INTERNALS__ = {
     metadata: {
       currentWindow: { label: 'test-window' },
       webviews: [{ label: 'test-webview' }],

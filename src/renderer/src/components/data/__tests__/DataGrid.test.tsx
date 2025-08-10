@@ -28,7 +28,7 @@ beforeAll(() => {
 })
 
 // Mock the hooks with simple implementations
-vi.mock('@renderer/hooks/useTableDataQuery', () => ({
+vi.mock('@renderer/features/database/hooks/useTableDataQuery', () => ({
   useTableDataQuery: () => ({
     data: {
       rows: [{ id: 1, name: 'John Doe', email: 'john@example.com' }],
@@ -39,18 +39,13 @@ vi.mock('@renderer/hooks/useTableDataQuery', () => ({
       ],
     },
     error: null,
+    isLoading: false,
     refetch: vi.fn(),
   }),
 }))
 
-vi.mock('@renderer/store/useRowEditingStore', () => ({
+vi.mock('@renderer/features/database/stores', () => ({
   useRowEditingStore: () => ({ setSelectedRow: vi.fn() }),
-}))
-
-vi.mock('@renderer/store', () => ({
-  useCurrentDeviceSelection: () => ({
-    selectedDevice: { id: 'device1', name: 'Test Device' },
-  }),
   useCurrentDatabaseSelection: () => ({
     selectedDatabaseFile: { 
       filename: 'test.db', 
@@ -60,21 +55,17 @@ vi.mock('@renderer/store', () => ({
     },
     selectedDatabaseTable: { name: 'users', columns: 3 },
   }),
-  useTableData: () => ({
-    isLoadingTableData: false,
-    setIsLoadingTableData: vi.fn(),
-    tableData: {
-      rows: [{ id: 1, name: 'John Doe', email: 'john@example.com' }],
-      columns: [
-        { name: 'id', type: 'INTEGER' },
-        { name: 'name', type: 'TEXT' },
-        { name: 'email', type: 'TEXT' },
-      ],
-      isCustomQuery: false,
-      tableName: 'users',
-    },
-    setTableData: vi.fn(),
+}))
+
+vi.mock('@renderer/features/devices/stores', () => ({
+  useCurrentDeviceSelection: () => ({
+    selectedDevice: { id: 'device1', name: 'Test Device' },
+    selectedApplication: { bundleId: 'com.test.app', name: 'Test App' },
   }),
+}))
+
+vi.mock('@renderer/features/change-history/hooks', () => ({
+  useChangeHistoryRefresh: () => ({ refreshChangeHistory: vi.fn() }),
 }))
 
 vi.mock('@renderer/ui/color-mode', () => ({
@@ -98,9 +89,9 @@ vi.mock('ag-grid-react', () => ({
   )),
 }))
 
-// Mock TableFooter
-vi.mock('../TableFooter', () => ({
-  TableFooter: () => <div data-testid="table-footer">Footer</div>,
+// Mock TableFooterContainer
+vi.mock('@renderer/features/database/components/table-footer', () => ({
+  TableFooterContainer: () => <div data-testid="table-footer">Footer</div>,
 }))
 
 describe('dataGrid', () => {

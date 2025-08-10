@@ -1,10 +1,10 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   toCamelCase,
   toSnakeCase,
   transformToCamelCase,
   transformToSnakeCase,
-} from '../utils/caseTransformer'
+} from '@renderer/shared/utils/caseTransformer'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 describe('case transformer utility tests', () => {
   beforeEach(() => {

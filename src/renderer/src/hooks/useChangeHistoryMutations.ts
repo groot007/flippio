@@ -1,7 +1,7 @@
+import { generateContextKeySync } from '@renderer/shared/utils/contextKey'
 import { useCurrentDatabaseSelection } from '@renderer/store/useCurrentDatabaseSelection'
 import { useCurrentDeviceSelection } from '@renderer/store/useCurrentDeviceSelection'
 import { toaster } from '@renderer/ui/toaster'
-import { generateContextKeySync } from '@renderer/utils/contextKey'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 /**

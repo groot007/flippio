@@ -1,7 +1,7 @@
 import type { ChangeEvent, ContextSummary } from '@renderer/types/changeHistory'
+import { generateContextKey } from '@renderer/shared/utils/contextKey'
 import { useCurrentDatabaseSelection } from '@renderer/store/useCurrentDatabaseSelection'
 import { useCurrentDeviceSelection } from '@renderer/store/useCurrentDeviceSelection'
-import { generateContextKey } from '@renderer/utils/contextKey'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 /**

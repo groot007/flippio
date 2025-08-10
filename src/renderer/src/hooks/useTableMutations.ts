@@ -1,6 +1,6 @@
 import type { MutationContext } from '@renderer/types/changeHistory'
-import { buildUniqueCondition } from '@renderer/utils'
-import { extractContextParams } from '@renderer/utils/contextBuilder'
+import { extractContextParams } from '@renderer/shared/utils/contextBuilder'
+import { buildUniqueCondition } from '@renderer/shared/utils/database'
 import { useBaseDatabaseMutation } from './useBaseDatabaseMutation'
 
 interface DeleteRowVariables extends MutationContext {

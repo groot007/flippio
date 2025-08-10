@@ -78,6 +78,7 @@ pub fn run() {
             commands::database::db_clear_cache_for_path,
             commands::database::db_clear_all_cache,
             commands::database::db_switch_database,
+            commands::database::db_diagnose_corruption,
             // Change History commands (Phase 1)
             commands::database::change_history::commands::record_database_change_safe,
             commands::database::change_history::commands::get_database_change_history,

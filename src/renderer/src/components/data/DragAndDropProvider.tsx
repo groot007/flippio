@@ -1,6 +1,7 @@
 import { Box, Flex, Icon, Text } from '@chakra-ui/react'
 import { keyframes } from '@emotion/react'
-import { useCurrentDatabaseSelection, useCurrentDeviceSelection } from '@renderer/store'
+import { useCurrentDatabaseSelection } from '@renderer/features/database/stores'
+import { useCurrentDeviceSelection } from '@renderer/features/devices/stores'
 import { useColorMode } from '@renderer/ui/color-mode'
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow'
 import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react'
@@ -181,7 +182,7 @@ export const DragAndDropProvider: React.FC<DragAndDropProviderProps> = ({ childr
           else if (event.payload.type === 'drop') {
             console.log('File dropped:', event.payload.paths)
             setIsDragging(false)
-            if (event.payload.paths && event.payload.paths.length > 0) {
+            if (event.payload.paths && event.payload.paths.length > 0 && event.payload.paths[0]) {
               handleFile(event.payload.paths[0])
             }
           }
@@ -195,6 +196,7 @@ export const DragAndDropProvider: React.FC<DragAndDropProviderProps> = ({ childr
       }
       catch (error) {
         console.error('Error setting up file drop listener:', error)
+        return undefined
       }
     }
 
@@ -244,7 +246,7 @@ export const DragAndDropProvider: React.FC<DragAndDropProviderProps> = ({ childr
     dragCounterRef.current = 0
     setIsDragging(false)
 
-    if (e.dataTransfer?.files && e.dataTransfer.files.length > 0) {
+    if (e.dataTransfer?.files && e.dataTransfer.files.length > 0 && e.dataTransfer.files[0]) {
       handleFile(e.dataTransfer.files[0])
     }
   }, [handleFile])

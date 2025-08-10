@@ -21,7 +21,7 @@ beforeAll(() => {
 
 const mockRefreshDevices = vi.fn().mockResolvedValue(undefined)
 
-vi.mock('@renderer/hooks/useDevices', () => ({
+vi.mock('@renderer/features/devices/hooks/useDevices', () => ({
   useDevices: () => ({
     data: [
       { id: 'device1', name: 'Test Device 1', deviceType: 'android', label: 'Android Device' },
@@ -34,7 +34,7 @@ vi.mock('@renderer/hooks/useDevices', () => ({
   }),
 }))
 
-vi.mock('@renderer/hooks/useApplications', () => ({
+vi.mock('@renderer/features/devices/hooks/useApplications', () => ({
   useApplications: () => ({
     data: [
       { name: 'Test App 1', bundleId: 'com.test.app1' },
@@ -50,7 +50,7 @@ vi.mock('@tauri-apps/api/core', () => ({
 }))
 
 vi.mock('@renderer/store', () => ({
-  useCurrentDeviceSelection: (selector) => {
+  useCurrentDeviceSelection: (selector: any) => {
     const state = {
       selectedDevice: null,
       setSelectedDevice: vi.fn(),
@@ -63,7 +63,7 @@ vi.mock('@renderer/store', () => ({
     }
     return selector(state)
   },
-  useCurrentDatabaseSelection: (selector) => {
+  useCurrentDatabaseSelection: (selector: any) => {
     const state = {
       selectedDatabaseFile: null,
       setSelectedDatabaseFile: vi.fn(),
