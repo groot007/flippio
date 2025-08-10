@@ -682,12 +682,12 @@ export const api = {
   openFile: async () => {
     try {
       const response = await invoke<any>('dialog_select_file')
-      const validatedResponse = validateDeviceResponse(response)
-      const fileData = validatedResponse.data as { canceled?: boolean, file_paths?: string[], file_path?: string[] }
+      // dialog_select_file returns DialogResult directly, not wrapped in DeviceResponse
+      const dialogResult = response as { canceled?: boolean, file_paths?: string[], file_path?: string }
 
       return {
-        canceled: fileData?.canceled || false,
-        filePaths: fileData?.file_paths || fileData?.file_path || [],
+        canceled: dialogResult?.canceled || false,
+        filePaths: dialogResult?.file_paths || (dialogResult?.file_path ? [dialogResult.file_path] : []),
       }
     }
     catch (error) {
