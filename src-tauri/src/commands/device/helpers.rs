@@ -164,6 +164,21 @@ pub fn get_adb_path() -> String {
 
 // Helper function to get ADB platform tools path from bundled resources
 pub fn get_adb_tool_path(tool_name: &str) -> Option<std::path::PathBuf> {
+    // ✅ 0. Windows: Try embedded ADB tool first (highest priority)
+    #[cfg(target_os = "windows")]
+    {
+        if tool_name == "adb" {
+            if let Some(embedded_path) = crate::commands::device::embedded_tools::get_embedded_adb_tool_path() {
+                log::info!(
+                    "[adb] Using embedded Windows '{}': {:?}",
+                    tool_name,
+                    embedded_path
+                );
+                return Some(embedded_path);
+            }
+        }
+    }
+
     if let Ok(exe_path) = std::env::current_exe() {
         log::info!("[adb] current_exe: {:?}", exe_path);
 
@@ -292,6 +307,19 @@ pub fn find_android_emulator_path() -> String {
 
 // Helper function to get libimobiledevice tool path
 pub fn get_libimobiledevice_tool_path(tool_name: &str) -> Option<std::path::PathBuf> {
+    // ✅ 0. Windows: Try embedded tools first (highest priority)
+    #[cfg(target_os = "windows")]
+    {
+        if let Some(embedded_path) = crate::commands::device::embedded_tools::get_embedded_ios_tool_path(tool_name) {
+            log::info!(
+                "[libimobiledevice] Using embedded Windows '{}': {:?}",
+                tool_name,
+                embedded_path
+            );
+            return Some(embedded_path);
+        }
+    }
+
     if let Ok(exe_path) = std::env::current_exe() {
         log::info!("[libimobiledevice] current_exe: {:?}", exe_path);
 

@@ -5,6 +5,11 @@
 
 use std::path::{Path, PathBuf};
 
+#[cfg(windows)]
+use std::process::Command;
+#[cfg(windows)]
+use log::{info, warn, error};
+
 #[derive(Debug)]
 pub struct DependencyCheckResult {
     pub tool_exists: bool,

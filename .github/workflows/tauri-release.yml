@@ -50,6 +50,13 @@ jobs:
       - name: Install frontend dependencies
         run: yarn install --frozen-lockfile
 
+      - name: Configure platform-specific external binaries
+        if: runner.os == 'Windows'
+        run: |
+          # Use Windows-specific configuration
+          cp src-tauri/tauri.windows.conf.json src-tauri/tauri.conf.json
+          echo "Using Windows-specific configuration"
+
       - name: Write .env file
         run: |
           echo "${{ secrets.FLIPPIO }}" > .env

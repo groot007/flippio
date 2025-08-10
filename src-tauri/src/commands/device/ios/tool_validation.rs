@@ -154,7 +154,8 @@ impl IOSToolValidator {
 
     /// Create predefined discovery strategies
     fn create_discovery_strategies() -> Vec<ToolDiscoveryStrategy> {
-        let strategies = vec![
+        #[allow(unused_mut)]
+        let mut strategies = vec![
             // Strategy 1: Homebrew (Apple Silicon) - Priority for M1/M2 Macs
             ToolDiscoveryStrategy {
                 name: "Homebrew (Apple Silicon)".to_string(),
