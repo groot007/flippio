@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, screen, waitFor } from '@testing-library/react'
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { render } from '../../test-utils/render'
 import { SidePanel } from '../SidePanel/SidePanel'
@@ -87,11 +87,14 @@ vi.mock('@renderer/hooks/useTableMutations', () => ({
   }),
 }))
 
-vi.mock('@renderer/store', () => ({
+vi.mock('@renderer/features/devices/stores', () => ({
   useCurrentDeviceSelection: () => ({
     selectedDevice: { id: 'device1', name: 'Test Device' },
     selectedApplication: { bundleId: 'com.test.app', name: 'Test App' },
   }),
+}))
+
+vi.mock('@renderer/features/database/stores', () => ({
   useCurrentDatabaseSelection: () => ({
     selectedDatabaseFile: { filename: 'test.db', path: '/path/to/test.db', deviceType: 'android' },
     selectedDatabaseTable: { name: 'users', columns: 3 },
@@ -108,9 +111,6 @@ vi.mock('@renderer/store', () => ({
       tableName: 'users',
     },
   }),
-}))
-
-vi.mock('@renderer/store/useRowEditingStore', () => ({
   useRowEditingStore: () => ({
     selectedRow: {
       rowData: { id: 1, name: 'Test User', email: 'test@example.com' },
@@ -173,7 +173,10 @@ describe('sidePanel component', () => {
 
     await waitFor(() => {
       const closeButton = screen.getByLabelText('Close panel')
-      fireEvent.click(closeButton)
+      
+      act(() => {
+        fireEvent.click(closeButton)
+      })
     })
 
     expect(mockSetSelectedRow).toHaveBeenCalledWith(null)

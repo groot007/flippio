@@ -1,5 +1,5 @@
 import type { DatabaseFile } from '@renderer/types'
-import { transformToCamelCase } from '@renderer/utils/caseTransformer'
+import { transformToCamelCase } from '@renderer/shared/utils/caseTransformer'
 import { useQuery } from '@tanstack/react-query'
 
 interface Device {

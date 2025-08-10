@@ -1,4 +1,4 @@
-import { useCurrentDatabaseSelection } from '@renderer/store'
+import { useCurrentDatabaseSelection } from '@renderer/features/database/stores'
 import { useQuery } from '@tanstack/react-query'
 
 interface TableDataResponse {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { isJsonValue, parseJson } from '../common'
+import { isJsonValue, parseJson } from '../../shared/utils/common'
 
 describe('common utilities', () => {
   describe('isJsonValue', () => {

@@ -1,5 +1,5 @@
+import { isJsonValue, parseJson } from '@renderer/shared/utils/common'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { isJsonValue, parseJson } from '../utils/common'
 
 // Mock console methods
 vi.spyOn(console, 'warn').mockImplementation(() => {})

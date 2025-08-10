@@ -1,5 +1,5 @@
+import { buildUniqueCondition } from '@renderer/shared/utils/database'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { buildUniqueCondition } from '../utils/database'
 
 describe('database utility functions tests', () => {
   beforeEach(() => {
@@ -275,7 +275,7 @@ describe('database utility functions tests', () => {
         const rowData = {}
 
         const result = buildUniqueCondition(cols, rowData)
-        // With no data, it falls back to using columns with NULL values
+        // With empty data, return IS NULL conditions for all columns
         expect(result).toBe('id IS NULL AND name IS NULL')
       })
 

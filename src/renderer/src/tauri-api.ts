@@ -5,7 +5,7 @@ import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 
 // Initialize event system early
-async function initializeEventSystem() {
+export async function initializeEventSystem() {
   try {
     // Test basic event functionality to ensure the plugin internals are loaded
     const unlisten = await listen('tauri://test-event', () => {})
@@ -128,8 +128,8 @@ async function withRetry<T>(
     retryOn = () => true, 
   } = options
   
-  let lastError: Error
-  
+  let lastError: Error | undefined
+
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
       return await fn()
@@ -149,9 +149,9 @@ async function withRetry<T>(
   }
   
   throw new APIValidationError(
-    `API call failed after ${maxRetries + 1} attempts: ${lastError.message}`,
+    `API call failed after ${maxRetries + 1} attempts: ${lastError?.message || 'Unknown error'}`,
     'MAX_RETRIES_EXCEEDED',
-    { maxRetries, lastError: lastError.message },
+    { maxRetries, lastError: lastError?.message || 'Unknown error' },
   )
 }
 
@@ -189,6 +189,7 @@ const COMMAND_MAP = {
   'db:clearTable': 'db_clear_table',
   'db:executeQuery': 'db_execute_query',
   'db:switchDatabase': 'db_switch_database',
+  'db:diagnoseCorruption': 'db_diagnose_corruption',
 
   // Change history commands
   'db:getChangeHistory': 'get_database_change_history',
@@ -225,16 +226,18 @@ async function invokeCommandWithResponse<T>(electronCommand: string, dataFieldNa
 
   // Use retry logic for critical device communication commands
   const isDeviceCommand = electronCommand.includes('device:') || electronCommand.includes('adb:')
-  const retryOptions = isDeviceCommand ? {
-    maxRetries: 2,
-    baseDelay: 500,
-    retryOn: (error: Error) => {
-      // Retry on network errors but not on validation errors
-      return !error.message.includes('validation') 
-        && !error.message.includes('unauthorized')
-        && !error.message.includes('not found')
-    },
-  } : { maxRetries: 0 }
+  const retryOptions = isDeviceCommand 
+    ? {
+        maxRetries: 2,
+        baseDelay: 500,
+        retryOn: (error: Error) => {
+          // Retry on network errors but not on validation errors
+          return !error.message.includes('validation') 
+            && !error.message.includes('unauthorized')
+            && !error.message.includes('not found')
+        },
+      } 
+    : { maxRetries: 0 }
 
   return await withRetry(async () => {
     try {
@@ -244,8 +247,9 @@ async function invokeCommandWithResponse<T>(electronCommand: string, dataFieldNa
       console.log('🔍 [invokeCommandWithResponse] Parameter names:', paramNames)
 
       for (let i = 0; i < args.length && i < paramNames.length; i++) {
-        if (args[i] !== undefined) {
-          parameters[paramNames[i]] = args[i]
+        const paramName = paramNames[i]
+        if (args[i] !== undefined && paramName) {
+          parameters[paramName] = args[i]
         }
       }
 
@@ -348,7 +352,7 @@ export const api = {
       // Fetch iOS simulators
       const iosSimulatorsResp = await invokeCommandWithResponse('getIOSSimulators', 'simulators')
 
-      const allDevices = []
+      const allDevices: any[] = []
 
       // Add physical Android devices with labels
       if (androidResp.success && androidResp.devices) {
@@ -644,6 +648,9 @@ export const api = {
   switchDatabase: (filePath: string) =>
     invokeCommandWithResponse('db:switchDatabase', 'result', filePath),
 
+  diagnoseCorruption: (filePath: string) =>
+    invokeCommandWithResponse('db:diagnoseCorruption', 'data', filePath),
+
   // Change history methods
   getChangeHistory: async (contextKey: string, tableName?: string) => {
     console.log('🔍 [API] getChangeHistory called with:', { contextKey, tableName })
@@ -679,12 +686,12 @@ export const api = {
   openFile: async () => {
     try {
       const response = await invoke<any>('dialog_select_file')
-      const validatedResponse = validateDeviceResponse(response)
-      const fileData = validatedResponse.data as { canceled?: boolean, file_paths?: string[], file_path?: string[] }
+      // dialog_select_file returns DialogResult directly, not wrapped in DeviceResponse
+      const fileData = response as { canceled?: boolean, file_paths?: string[], file_path?: string }
       
       return {
         canceled: fileData?.canceled || false,
-        filePaths: fileData?.file_paths || fileData?.file_path || [],
+        filePaths: fileData?.file_paths || (fileData?.file_path ? [fileData.file_path] : []),
       }
     }
     catch (error) {

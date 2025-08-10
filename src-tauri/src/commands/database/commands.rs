@@ -1861,3 +1861,154 @@ pub async fn db_clear_table(
         }
     }
 }
+
+#[derive(serde::Serialize, serde::Deserialize, Debug)]
+pub struct DatabaseDiagnostic {
+    pub file_exists: bool,
+    pub file_size: u64,
+    pub is_readable: bool,
+    pub is_writable: bool,
+    pub has_sqlite_header: bool,
+    pub sqlite_version: Option<String>,
+    pub wal_files_present: Vec<String>,
+    pub corruption_detected: bool,
+    pub integrity_check_passed: bool,
+    pub recommendations: Vec<String>,
+}
+
+#[tauri::command]
+pub async fn db_diagnose_corruption(
+    file_path: String,
+) -> Result<DbResponse<DatabaseDiagnostic>, String> {
+    log::info!("Diagnosing database corruption for: {}", file_path);
+    
+    let mut diagnostic = DatabaseDiagnostic {
+        file_exists: false,
+        file_size: 0,
+        is_readable: false,
+        is_writable: false,
+        has_sqlite_header: false,
+        sqlite_version: None,
+        wal_files_present: Vec::new(),
+        corruption_detected: false,
+        integrity_check_passed: false,
+        recommendations: Vec::new(),
+    };
+    
+    // Check if file exists
+    let path = std::path::Path::new(&file_path);
+    diagnostic.file_exists = path.exists();
+    
+    if !diagnostic.file_exists {
+        diagnostic.recommendations.push("File does not exist. Verify the file path is correct.".to_string());
+        return Ok(DbResponse {
+            success: true,
+            data: Some(diagnostic),
+            error: None,
+        });
+    }
+    
+    // Check file size and permissions
+    if let Ok(metadata) = std::fs::metadata(&file_path) {
+        diagnostic.file_size = metadata.len();
+        diagnostic.is_readable = !metadata.permissions().readonly();
+        
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            let mode = metadata.permissions().mode();
+            diagnostic.is_writable = (mode & 0o200) != 0;
+        }
+        #[cfg(windows)]
+        {
+            diagnostic.is_writable = !metadata.permissions().readonly();
+        }
+    }
+    
+    // Check for SQLite header
+    if let Ok(mut file) = std::fs::File::open(&file_path) {
+        use std::io::Read;
+        let mut header = [0u8; 16];
+        if let Ok(_) = file.read_exact(&mut header) {
+            let header_str = String::from_utf8_lossy(&header);
+            diagnostic.has_sqlite_header = header_str.starts_with("SQLite format");
+        }
+    }
+    
+    // Check for WAL files
+    if let Some(parent) = path.parent() {
+        if let Some(stem) = path.file_stem().and_then(|s| s.to_str()) {
+            for suffix in ["wal", "shm"] {
+                let aux_path = parent.join(format!("{}.db-{}", stem, suffix));
+                if aux_path.exists() {
+                    diagnostic.wal_files_present.push(format!("{}.db-{}", stem, suffix));
+                }
+            }
+        }
+    }
+    
+    // Try to open database and run integrity check
+    match SqlitePool::connect(&format!("sqlite://{}", file_path)).await {
+        Ok(pool) => {
+            // Try to get SQLite version
+            if let Ok(row) = sqlx::query("SELECT sqlite_version()").fetch_one(&pool).await {
+                if let Ok(version) = row.try_get::<String, _>(0) {
+                    diagnostic.sqlite_version = Some(version);
+                }
+            }
+            
+            // Run integrity check
+            match sqlx::query("PRAGMA integrity_check").fetch_one(&pool).await {
+                Ok(row) => {
+                    if let Ok(result) = row.try_get::<String, _>(0) {
+                        diagnostic.integrity_check_passed = result == "ok";
+                        if !diagnostic.integrity_check_passed {
+                            diagnostic.corruption_detected = true;
+                            diagnostic.recommendations.push(format!("Database integrity check failed: {}", result));
+                        }
+                    }
+                }
+                Err(e) => {
+                    diagnostic.corruption_detected = true;
+                    diagnostic.recommendations.push(format!("Could not run integrity check: {}", e));
+                }
+            }
+            
+            pool.close().await;
+        }
+        Err(e) => {
+            diagnostic.corruption_detected = true;
+            diagnostic.recommendations.push(format!("Cannot open database: {}", e));
+        }
+    }
+    
+    // Generate recommendations
+    if diagnostic.file_size == 0 {
+        diagnostic.recommendations.push("Database file is empty. This may indicate a failed extraction.".to_string());
+    }
+    
+    if !diagnostic.has_sqlite_header {
+        diagnostic.recommendations.push("File does not have a valid SQLite header. This is not a SQLite database.".to_string());
+    }
+    
+    if !diagnostic.is_writable {
+        diagnostic.recommendations.push("Database file is read-only. Try setting write permissions.".to_string());
+    }
+    
+    if !diagnostic.wal_files_present.is_empty() {
+        diagnostic.recommendations.push("WAL files detected. These may cause locking issues. Consider removing them.".to_string());
+    }
+    
+    if diagnostic.corruption_detected {
+        diagnostic.recommendations.push("Database appears to be corrupted. Try:".to_string());
+        diagnostic.recommendations.push("1. Re-extract the database from the device".to_string());
+        diagnostic.recommendations.push("2. Use SQLite recovery tools (sqlite3 .recover)".to_string());
+        diagnostic.recommendations.push("3. Restore from a backup if available".to_string());
+    }
+    
+    Ok(DbResponse {
+        success: true,
+        data: Some(diagnostic),
+        error: None,
+    })
+}

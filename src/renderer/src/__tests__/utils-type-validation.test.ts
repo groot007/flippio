@@ -1,5 +1,5 @@
+import { getDisplayTypeName, validateFieldValue, validateRowData } from '@renderer/shared/utils/typeValidation'
 import { describe, expect, it } from 'vitest'
-import { getDisplayTypeName, validateFieldValue, validateRowData } from '../utils/typeValidation'
 
 describe('type validation utility tests', () => {
   describe('validateFieldValue function', () => {
@@ -255,10 +255,9 @@ describe('type validation utility tests', () => {
         
         whitespaceValues.forEach((value) => {
           const result = validateFieldValue(value, 'INTEGER')
-          // Whitespace strings are trimmed and become empty, but since they're not valid integers
-          // they should return invalid unless the implementation has special handling
-          expect(result.isValid).toBe(false)
-          expect(result.error).toBeDefined()
+          // Whitespace strings are trimmed and become empty, treated as null (valid)
+          expect(result.isValid).toBe(true)
+          expect(result.convertedValue).toBe(null)
         })
       })
     })

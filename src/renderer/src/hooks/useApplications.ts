@@ -1,4 +1,4 @@
-import { transformToCamelCase } from '@renderer/utils/caseTransformer'
+import { transformToCamelCase } from '@renderer/shared/utils/caseTransformer'
 import { useQuery } from '@tanstack/react-query'
 
 export interface Device {

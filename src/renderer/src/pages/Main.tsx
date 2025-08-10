@@ -1,25 +1,27 @@
-import { VStack } from '@chakra-ui/react'
-import { DataGrid } from '@renderer/components/data/DataGrid'
-import { DragAndDropProvider } from '@renderer/components/data/DragAndDropProvider'
-import AppHeader from '@renderer/components/layout/AppHeader'
-import { SubHeader } from '@renderer/components/layout/SubHeader'
-import { SidePanel } from '@renderer/components/SidePanel'
+import { Box, Flex } from '@chakra-ui/react'
+import { DataGridContainer } from '@renderer/features/database/components'
+import { DragAndDropProvider } from '@renderer/features/database/components/drag-and-drop-provider'
+import { AppHeaderContainer } from '@renderer/features/layout/components/app-header'
+import { SidePanelContainer } from '@renderer/features/layout/components/side-panel'
+import { SubHeaderContainer } from '@renderer/features/layout/components/sub-header'
 
 export function Main() {
   return (
     <DragAndDropProvider>
-      <VStack
+      <Flex
+        direction="column"
         height="100vh"
         bg="bgPrimary"
         overflow="hidden"
-        gap={0}
         fontFamily="body"
       >
-        <AppHeader />
-        <SubHeader />
-        <DataGrid />
-        <SidePanel />
-      </VStack>
+        <AppHeaderContainer />
+        <SubHeaderContainer />
+        <Box flex="1" overflow="hidden" position="relative">
+          <DataGridContainer />
+        </Box>
+        <SidePanelContainer />
+      </Flex>
     </DragAndDropProvider>
   )
 }

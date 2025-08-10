@@ -9,8 +9,8 @@ interface ApplicationInfo {
 interface RecentlyUsedApp {
   bundleId: string
   name: string
-  deviceId: string
-  deviceName: string
+  deviceId?: string
+  deviceName?: string
   lastUsed: number
   useCount: number
 }
@@ -29,23 +29,29 @@ export const useRecentlyUsedApps = create<RecentlyUsedAppsStore>()(
       recentApps: [],
 
       addRecentApp: (app: ApplicationInfo, deviceId: string, deviceName: string) => {
+        // Skip apps without bundleId
+        if (!app.bundleId) {
+          return
+        }
+        
         const { recentApps } = get()
         const now = Date.now()
-        
+
         // Find existing app entry for this device
         const existingIndex = recentApps.findIndex(
           recent => recent.bundleId === app.bundleId && recent.deviceId === deviceId,
         )
-
+        
         let updatedRecentApps: RecentlyUsedApp[]
 
-        if (existingIndex >= 0) {
+        if (existingIndex >= 0 && recentApps[existingIndex]) {
           // Update existing entry
           updatedRecentApps = [...recentApps]
+          const existingApp = updatedRecentApps[existingIndex]!
           updatedRecentApps[existingIndex] = {
-            ...updatedRecentApps[existingIndex],
+            ...existingApp,
             lastUsed: now,
-            useCount: updatedRecentApps[existingIndex].useCount + 1,
+            useCount: existingApp.useCount + 1,
             name: app.name, // Update name in case it changed
           }
         }

@@ -34,7 +34,7 @@ vi.mock('@renderer/store/useCurrentDatabaseSelection', () => ({
   }),
 }))
 
-vi.mock('@renderer/utils/contextKey', () => ({
+vi.mock('@renderer/shared/utils/contextKey', () => ({
   generateContextKey: vi.fn().mockResolvedValue('test-context-key'),
 }))
 
@@ -110,7 +110,7 @@ describe('useChangeHistory', () => {
     })
 
     expect(result.current.data).toHaveLength(10)
-    expect(result.current.data?.[0].id).toBe('21') // offset 20, so starts at index 20
+    expect(result.current.data?.[0]?.id).toBe('21') // offset 20, so starts at index 20
   })
 
   it('should handle API errors', async () => {
