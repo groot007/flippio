@@ -30,21 +30,3 @@ jobs:
 
       - name: Run frontend tests
         run: yarn test
-
-  # rust-tests:
-  #   name: Rust Tests
-  #   runs-on: ubuntu-latest
-
-  #   steps:
-  #     - uses: actions/checkout@v4
-
-  #     - name: Setup Rust
-  #       uses: dtolnay/rust-toolchain@stable
-
-  #     - name: Cache Rust dependencies
-  #       uses: swatinem/rust-cache@v2
-  #       with:
-  #         workspaces: ./src-tauri -> target
-
-  #     - name: Run Rust tests
-  #       run: cd src-tauri && cargo test
