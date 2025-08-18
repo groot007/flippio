@@ -331,7 +331,7 @@ pub async fn adb_get_android_database_files(
     log::info!("Getting Android database files for device: {} package: {}", device_id, package_name);
     
     // Force clean temp directory before pulling to avoid stale data
-    if let Err(e) = force_clean_temp_dir_before_pull() {
+    if let Err(e) = force_clean_temp_dir() {
         error!("Failed to force clean temp directory: {}", e);
         // Continue anyway, but log the error
     } else {

@@ -109,7 +109,7 @@ pub async fn touch_database_file(file_path: String) -> Result<String, String> {
 /// Tauri command to force clean temp directory before refreshing database files
 #[tauri::command]
 pub async fn force_clean_temp_directory() -> Result<String, String> {
-    match force_clean_temp_dir_before_pull() {
+    match force_clean_temp_dir() {
         Ok(temp_dir) => {
             log::info!("🗑️ Successfully force cleaned temp directory: {}", temp_dir.display());
             Ok(format!("Temp directory cleaned: {}", temp_dir.display()))
@@ -121,32 +121,15 @@ pub async fn force_clean_temp_directory() -> Result<String, String> {
     }
 }
 
-/// Force clean all temp files (use sparingly, e.g., app shutdown)
-#[allow(dead_code)]
+/// Force clean all temp files (removes ALL files and recreates directory)
+/// Use when you want to ensure completely clean state before pulling new database files
 pub fn force_clean_temp_dir() -> Result<PathBuf, Box<dyn std::error::Error + Send + Sync>> {
     let temp_dir = get_temp_dir_path();
     
     // Remove existing temp directory if it exists
     if temp_dir.exists() {
         fs::remove_dir_all(&temp_dir)?;
-        log::info!("🗑️ Force cleaned entire temp directory");
-    }
-    
-    // Create fresh temp directory
-    fs::create_dir_all(&temp_dir)?;
-    
-    Ok(temp_dir)
-}
-
-/// Force clean temp directory before pulling database files to avoid stale data
-/// This removes ALL files in the temp directory to ensure clean state
-pub fn force_clean_temp_dir_before_pull() -> Result<PathBuf, Box<dyn std::error::Error + Send + Sync>> {
-    let temp_dir = get_temp_dir_path();
-    
-    // Remove existing temp directory if it exists
-    if temp_dir.exists() {
-        fs::remove_dir_all(&temp_dir)?;
-        log::info!("🗑️ Force cleaned temp directory before database pull to avoid stale data");
+        log::info!("🗑️ Force cleaned entire temp directory to avoid stale data");
     }
     
     // Create fresh temp directory

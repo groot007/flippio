@@ -4,7 +4,7 @@
 //! detection, pulling, and pushing of database files.
 
 use super::super::types::{DeviceResponse, DatabaseFile};
-use super::super::helpers::{clean_temp_dir, force_clean_temp_dir_before_pull};
+use super::super::helpers::force_clean_temp_dir;
 use super::file_utils::pull_ios_db_file;
 use super::tools::get_tool_command_legacy;
 use tauri_plugin_shell::ShellExt;
@@ -23,7 +23,7 @@ pub async fn get_ios_device_database_files(
     
     info!("Step 1: Force cleaning temporary directory to avoid stale data");
     // Force clean temp directory before pulling new files to avoid stale data
-    if let Err(e) = force_clean_temp_dir_before_pull() {
+    if let Err(e) = force_clean_temp_dir() {
         log::warn!("❌ Failed to force clean temp directory: {}", e);
     } else {
         info!("✅ Successfully force cleaned temp directory before pulling new database files");

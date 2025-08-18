@@ -154,7 +154,7 @@ impl IOSToolValidator {
 
     /// Create predefined discovery strategies
     fn create_discovery_strategies() -> Vec<ToolDiscoveryStrategy> {
-        let mut strategies = vec![
+        let strategies = vec![
             // Strategy 1: Homebrew (Apple Silicon) - Priority for M1/M2 Macs
             ToolDiscoveryStrategy {
                 name: "Homebrew (Apple Silicon)".to_string(),
@@ -365,7 +365,7 @@ impl IOSToolValidator {
     }
 
     /// Try to fix executable permissions
-    fn try_fix_permissions(_path: &Path) -> Result<(), String> {
+    fn try_fix_permissions(path: &Path) -> Result<(), String> {
         #[cfg(unix)]
         {
             use std::fs;
