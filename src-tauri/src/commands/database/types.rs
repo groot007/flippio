@@ -87,12 +87,13 @@ pub struct DbInfo {
     pub tables: Vec<TableInfo>,
 }
 
-// Connection management configuration
-#[allow(dead_code)]
+// Configuration for the connection manager
+#[derive(Debug, Clone)]
 pub struct ConnectionConfig {
     pub max_connections: usize,
     pub connection_ttl: Duration,
     pub cleanup_interval: Duration,
+    pub cache_disabled: bool,
 }
 
 impl Default for ConnectionConfig {
@@ -101,6 +102,17 @@ impl Default for ConnectionConfig {
             max_connections: 10,           // Maximum 10 concurrent database connections
             connection_ttl: Duration::from_secs(300), // 5 minutes TTL
             cleanup_interval: Duration::from_secs(60), // Cleanup every minute
+            cache_disabled: false,         // Cache enabled by default
+        }
+    }
+}
+
+impl ConnectionConfig {
+    /// Create a new configuration with caching disabled
+    pub fn with_cache_disabled() -> Self {
+        Self {
+            cache_disabled: true,
+            ..Default::default()
         }
     }
 }

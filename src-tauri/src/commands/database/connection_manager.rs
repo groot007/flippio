@@ -39,6 +39,12 @@ impl DatabaseConnectionManager {
     pub async fn get_connection(&self, db_path: &str) -> Result<SqlitePool, String> {
         let normalized_path = self.normalize_path(db_path);
         
+        // If caching is disabled, always create fresh connections
+        if self.config.cache_disabled {
+            info!("🚫 Cache disabled - creating fresh connection for: {}", normalized_path);
+            return self.create_new_connection(&normalized_path).await;
+        }
+        
         // Try to get existing connection from cache
         {
             let mut cache_guard = self.cache.write().await;
@@ -65,8 +71,8 @@ impl DatabaseConnectionManager {
         info!("🔗 Creating new connection for: {}", normalized_path);
         let pool = self.create_new_connection(&normalized_path).await?;
         
-        // Add to cache
-        {
+        // Add to cache only if caching is enabled
+        if !self.config.cache_disabled {
             let mut cache_guard = self.cache.write().await;
             
             // Check cache size limit

@@ -6,13 +6,13 @@ use tokio::sync::RwLock;
 use tauri_plugin_log;
 
 mod commands;
-use commands::database::{DbPool, DatabaseConnectionManager, ChangeHistoryManager};
+use commands::database::{DbPool, DatabaseConnectionManager, ChangeHistoryManager, ConnectionConfig};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     // Initialize database connection management
     let db_pool: DbPool = Arc::new(RwLock::new(None)); // Legacy pool for compatibility
-    let connection_manager = DatabaseConnectionManager::new();
+    let connection_manager = DatabaseConnectionManager::with_config(ConnectionConfig::with_cache_disabled());
     let db_cache = connection_manager.get_cache();
     
     // Initialize change history manager (Phase 1)
@@ -25,7 +25,7 @@ pub fn run() {
         .manage(change_history_manager)
         .setup(|_app| {
             // Start background cleanup task after Tauri runtime is initialized
-            let connection_manager = DatabaseConnectionManager::new();
+            let connection_manager = DatabaseConnectionManager::with_config(ConnectionConfig::with_cache_disabled());
             tauri::async_runtime::spawn(async move {
                 connection_manager.start_cleanup_task().await;
             });
@@ -94,6 +94,7 @@ pub fn run() {
             commands::common::save_dropped_file,
             // Device helper commands
             commands::device::helpers::touch_database_file,
+            commands::device::helpers::force_clean_temp_directory,
             // Updater commands
             commands::updater::check_for_updates,
             commands::updater::download_and_install_update,
