@@ -1540,9 +1540,9 @@ pub async fn db_switch_database(
     })
 }
 
-/// Get or create a database connection from cache
+/// Get or create a database connection (cache disabled - always creates fresh connections)
 async fn get_cached_connection(
-    db_cache: &DbConnectionCache,
+    _db_cache: &DbConnectionCache,
     db_path: &str,
 ) -> Result<SqlitePool, String> {
     let normalized_path = match std::fs::canonicalize(db_path) {
@@ -1550,30 +1550,8 @@ async fn get_cached_connection(
         Err(_) => db_path.to_string(),
     };
     
-    // Try to get existing connection from cache
-    {
-        let mut cache_guard = db_cache.write().await;
-        
-        if let Some(cached_conn) = cache_guard.get_mut(&normalized_path) {
-            // Check if connection should be removed (time-expired OR pool is closed)
-            if !cached_conn.should_be_removed(std::time::Duration::from_secs(300)) {
-                cached_conn.update_last_used();
-                log::info!("📦 Reusing cached connection for: {}", normalized_path);
-                return Ok(cached_conn.pool.clone());
-            } else {
-                if cached_conn.is_pool_closed() {
-                    log::warn!("🚫 Cached connection pool is closed, removing from cache: {}", normalized_path);
-                } else {
-                    log::info!("⏰ Cached connection expired for: {}", normalized_path);
-                }
-                // Remove the invalid connection from cache
-                cache_guard.remove(&normalized_path);
-            }
-        }
-    }
-
-    // Create new connection
-    log::info!("🔗 Creating new connection for: {}", normalized_path);
+    // Cache disabled - always create fresh connections
+    log::info!("🚫 Cache disabled - creating fresh connection for: {}", normalized_path);
     
     // Validate file exists
     if !std::path::Path::new(&normalized_path).exists() {
@@ -1593,30 +1571,8 @@ async fn get_cached_connection(
             return Err(format!("Could not connect to database: {}", e));
         }
     };
-    
-    // Add to cache
-    {
-        let mut cache_guard = db_cache.write().await;
-        
-        // Implement simple cache size limit (remove oldest if needed)
-        const MAX_CACHE_SIZE: usize = 10;
-        if cache_guard.len() >= MAX_CACHE_SIZE {
-            // Find and remove the oldest entry
-            if let Some((oldest_key, _)) = cache_guard
-                .iter()
-                .min_by_key(|(_, conn)| conn.last_used)
-                .map(|(k, v)| (k.clone(), v.clone()))
-            {
-                log::info!("🧹 Removing oldest cached connection: {}", oldest_key);
-                cache_guard.remove(&oldest_key);
-                // Don't explicitly close - let it be garbage collected
-            }
-        }
-        
-        cache_guard.insert(normalized_path.clone(), CachedConnection::new(pool.clone()));
-        log::info!("💾 Cached new connection for: {}", normalized_path);
-    }
 
+    // Don't add to cache since cache is disabled
     Ok(pool)
 }
 

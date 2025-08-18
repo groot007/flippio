@@ -4,6 +4,7 @@
 //! database file management and app data access.
 
 use super::super::types::{DeviceResponse, DatabaseFile};
+use super::super::helpers::force_clean_temp_dir;
 use tauri::{State};
 use tauri_plugin_shell::ShellExt;
 use log::{info, error};
@@ -94,6 +95,13 @@ pub async fn get_ios_simulator_database_files(
     info!("=== GET iOS SIMULATOR DATABASE FILES STARTED ===");
     info!("Device ID (Simulator): {}", device_id);
     info!("Package name: {}", package_name);
+    
+    // Force clean temp directory before processing simulator database files to avoid stale data
+    if let Err(e) = force_clean_temp_dir() {
+        log::warn!("❌ Failed to force clean temp directory: {}", e);
+    } else {
+        info!("✅ Successfully force cleaned temp directory before simulator database processing");
+    }
     
     let shell = app_handle.shell();
     let mut database_files = Vec::new();

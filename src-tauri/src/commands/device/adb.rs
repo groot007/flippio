@@ -330,9 +330,12 @@ pub async fn adb_get_android_database_files(
 ) -> Result<DeviceResponse<Vec<DatabaseFile>>, String> {
     log::info!("Getting Android database files for device: {} package: {}", device_id, package_name);
     
-    // Clean temp directory at the start
-    if let Err(e) = clean_temp_dir() {
-        error!("Failed to clean temp directory: {}", e);
+    // Force clean temp directory before pulling to avoid stale data
+    if let Err(e) = force_clean_temp_dir() {
+        error!("Failed to force clean temp directory: {}", e);
+        // Continue anyway, but log the error
+    } else {
+        info!("✅ Successfully force cleaned temp directory before database pull");
     }
     
     let mut database_files = Vec::new();

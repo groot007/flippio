@@ -106,19 +106,35 @@ pub async fn touch_database_file(file_path: String) -> Result<String, String> {
     }
 }
 
-/// Force clean all temp files (use sparingly, e.g., app shutdown)
-#[allow(dead_code)]
+/// Tauri command to force clean temp directory before refreshing database files
+#[tauri::command]
+pub async fn force_clean_temp_directory() -> Result<String, String> {
+    match force_clean_temp_dir() {
+        Ok(temp_dir) => {
+            log::info!("🗑️ Successfully force cleaned temp directory: {}", temp_dir.display());
+            Ok(format!("Temp directory cleaned: {}", temp_dir.display()))
+        }
+        Err(e) => {
+            log::error!("❌ Failed to force clean temp directory: {}", e);
+            Err(format!("Failed to clean temp directory: {}", e))
+        }
+    }
+}
+
+/// Force clean all temp files (removes ALL files and recreates directory)
+/// Use when you want to ensure completely clean state before pulling new database files
 pub fn force_clean_temp_dir() -> Result<PathBuf, Box<dyn std::error::Error + Send + Sync>> {
     let temp_dir = get_temp_dir_path();
     
     // Remove existing temp directory if it exists
     if temp_dir.exists() {
         fs::remove_dir_all(&temp_dir)?;
-        log::info!("🗑️ Force cleaned entire temp directory");
+        log::info!("🗑️ Force cleaned entire temp directory to avoid stale data");
     }
     
     // Create fresh temp directory
     fs::create_dir_all(&temp_dir)?;
+    log::info!("📁 Created fresh temp directory for database operations");
     
     Ok(temp_dir)
 }
@@ -292,15 +308,22 @@ mod tests {
     fn test_clean_temp_dir() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         // Test that clean_temp_dir preserves recent files and creates directory
         let temp_dir = get_temp_dir_path();
-        let _ = ensure_temp_dir()?; // Ensure temp dir exists
+        
+        // Ensure temp dir exists first
+        let created_dir = ensure_temp_dir()?;
+        assert!(created_dir.exists(), "Temp directory should be created");
         
         // Create a recent file (should be preserved since it's less than 1 hour old)
         let recent_file = temp_dir.join("recent_file.txt");
         fs::write(&recent_file, "recent content")?;
+        assert!(recent_file.exists(), "Test file should be created");
         
         // Run clean_temp_dir
         let result = clean_temp_dir()?;
-        assert!(result.exists());
+        
+        // The result should be the temp directory path and it should exist
+        assert!(result.exists(), "Temp directory should exist after clean_temp_dir");
+        assert_eq!(result, temp_dir, "clean_temp_dir should return the temp directory path");
         
         // Recent file should still exist (since it's new)
         assert!(recent_file.exists(), "Recent file should be preserved");
