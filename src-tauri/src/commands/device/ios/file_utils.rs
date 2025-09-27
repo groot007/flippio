@@ -3,7 +3,7 @@
 //! This module provides file transfer utilities and helper functions
 //! for iOS device file operations.
 
-use super::super::helpers::{ensure_temp_dir};
+use super::super::helpers::{ensure_temp_dir, generate_unique_filename};
 use super::super::types::{DatabaseFileMetadata};
 use super::tools::get_tool_command_legacy;
 use tauri_plugin_shell::ShellExt;
@@ -31,14 +31,13 @@ pub async fn pull_ios_db_file(
     let temp_dir = ensure_temp_dir()?;
     info!("✅ Temp directory: {}", temp_dir.display());
     
-    info!("Step 2: Extracting filename from remote path");
-    let filename = Path::new(remote_path).file_name()
-        .ok_or("Invalid remote path")?
-        .to_string_lossy();
-    info!("✅ Extracted filename: {}", filename);
+    info!("Step 2: Generating unique filename from remote path");
+    // Generate unique filename to avoid conflicts when multiple files have the same name
+    let unique_filename = generate_unique_filename(remote_path)?;
+    info!("✅ Generated unique filename: {}", unique_filename);
     
     info!("Step 3: Creating local file path");
-    let local_path = temp_dir.join(&*filename);
+    let local_path = temp_dir.join(&unique_filename);
     info!("✅ Local path: {}", local_path.display());
     
     if is_device {

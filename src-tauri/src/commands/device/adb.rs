@@ -22,11 +22,10 @@ async fn pull_android_db_file(
     let temp_dir = ensure_temp_dir()?;
     info!("Temp directory: {:?}", temp_dir);
     
-    let filename = Path::new(remote_path).file_name()
-        .ok_or("Invalid remote path")?
-        .to_string_lossy();
-    let local_path = temp_dir.join(&*filename);
-    info!("Local path will be: {:?}", local_path);
+    // Generate unique filename to avoid conflicts when multiple files have the same name
+    let unique_filename = generate_unique_filename(remote_path)?;
+    let local_path = temp_dir.join(&unique_filename);
+    info!("Local path will be: {:?} (unique filename: {})", local_path, unique_filename);
     
     // Execute ADB command based on admin access
     if admin_access {

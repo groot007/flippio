@@ -6,7 +6,13 @@ interface CustomSelectProps {
   label: string
   options: {
     label: string
-    value: string
+    value?: string
+    options?: {
+      label: string
+      value: string
+      description?: string
+      isRecentlyUsed?: boolean
+    }[]
     description?: string
     isRecentlyUsed?: boolean
   }[]
@@ -71,6 +77,30 @@ const FLSelect: React.FC<CustomSelectProps> = ({
           <HStack ml={3} mr={1} color="textSecondary">{icon}</HStack>
           {children}
         </chakraComponents.Control>
+      )
+    },
+    GroupHeading: ({ children }: any) => {
+      return (
+        <Box
+          px={3}
+          py={2}
+          bg="bgSecondary"
+          borderBottom="1px solid"
+          borderColor="borderPrimary"
+          position="sticky"
+          top={0}
+          zIndex={1}
+        >
+          <Text 
+            fontSize="xs" 
+            fontWeight="bold" 
+            color="textSecondary" 
+            textTransform="uppercase" 
+            letterSpacing="0.05em"
+          >
+            {children}
+          </Text>
+        </Box>
       )
     },
     Option: ({ children, ...props }: any) => {
@@ -214,6 +244,28 @@ const FLSelect: React.FC<CustomSelectProps> = ({
         input: provided => ({
           ...provided,
           color: 'textPrimary',
+        }),
+        group: provided => ({
+          ...provided,
+          paddingTop: 0,
+          paddingBottom: 0,
+        }),
+        groupHeading: provided => ({
+          ...provided,
+          bg: 'bgSecondary',
+          color: 'textSecondary',
+          fontSize: 'xs',
+          fontWeight: 'bold',
+          textTransform: 'uppercase',
+          letterSpacing: '0.05em',
+          py: 2,
+          px: 3,
+          borderBottom: '1px solid',
+          borderColor: 'borderPrimary',
+          position: 'sticky',
+          top: 0,
+          zIndex: 1,
+          margin: 0,
         }),
       }}
     />
