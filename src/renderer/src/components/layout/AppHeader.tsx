@@ -1,4 +1,5 @@
 import { Box, Button, HStack, Spinner } from '@chakra-ui/react'
+import { DeviceInfoModal } from '@renderer/components/common/DeviceInfoModal'
 import { useApplications } from '@renderer/hooks/useApplications'
 import { useDevices } from '@renderer/hooks/useDevices'
 import { useCurrentDatabaseSelection, useCurrentDeviceSelection, useRecentlyUsedApps } from '@renderer/store'
@@ -36,9 +37,34 @@ function AppHeader() {
   } = useApplications(selectedDevice)
 
   const [isPackageSetModalOpen, setIsPackageSetModalOpen] = useState(false)
+  const [deviceInfoModal, setDeviceInfoModal] = useState<{
+    isOpen: boolean
+    deviceId: string
+    deviceType: string
+    deviceName: string
+  }>({
+    isOpen: false,
+    deviceId: '',
+    deviceType: '',
+    deviceName: '',
+  })
+  
   const closePackageSeModal = useCallback(() => {
     setIsPackageSetModalOpen(false)
   }, [setIsPackageSetModalOpen])
+
+  const handleDeviceInfoClick = useCallback((device: any) => {
+    setDeviceInfoModal({
+      isOpen: true,
+      deviceId: device.id,
+      deviceType: device.deviceType || device.device_type || 'unknown',
+      deviceName: device.name || device.label || device.id,
+    })
+  }, [])
+
+  const closeDeviceInfoModal = useCallback(() => {
+    setDeviceInfoModal(prev => ({ ...prev, isOpen: false }))
+  }, [])
 
   useEffect(() => {
     let timer: NodeJS.Timeout
@@ -145,9 +171,11 @@ function AppHeader() {
         label: device.label || `${device.name} ${osVersion}`,
         value: device.id,
         description: device.description || (device.deviceType?.includes('iphone') ? 'iOS' : 'Android'),
+        showInfoIcon: true,
+        onInfoClick: handleDeviceInfoClick,
         ...device,
       }
-    }), [devicesList])
+    }), [devicesList, handleDeviceInfoClick])
 
   const applicationSelectOptions = useMemo(() => {
     if (!selectedDevice) 
@@ -316,6 +344,14 @@ function AppHeader() {
         isOpen={isPackageSetModalOpen}
         onClose={closePackageSeModal}
         onPackageSet={closePackageSeModal}
+      />
+
+      <DeviceInfoModal
+        isOpen={deviceInfoModal.isOpen}
+        onClose={closeDeviceInfoModal}
+        deviceId={deviceInfoModal.deviceId}
+        deviceType={deviceInfoModal.deviceType}
+        deviceName={deviceInfoModal.deviceName}
       />
     </>
   )

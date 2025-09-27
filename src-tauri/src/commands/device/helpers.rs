@@ -1,10 +1,55 @@
 use std::fs;
 use std::path::{Path, PathBuf};
 use log::{info, error};
+use std::collections::hash_map::DefaultHasher;
+use std::hash::{Hash, Hasher};
 
 // Temp directory utilities
 pub fn get_temp_dir_path() -> PathBuf {
     std::env::temp_dir().join("flippio-db-temp")
+}
+
+/// Generate a unique local filename based on remote path to avoid conflicts
+/// when multiple files have the same name but come from different device locations
+pub fn generate_unique_filename(remote_path: &str) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
+    let path = Path::new(remote_path);
+    let filename = path.file_name()
+        .ok_or("Invalid remote path: no filename")?
+        .to_string_lossy();
+    
+    // Get the parent directory for uniqueness
+    let parent_dir = path.parent()
+        .map(|p| p.to_string_lossy())
+        .unwrap_or_default();
+    
+    // Create a short hash of the full path for uniqueness
+    let mut hasher = DefaultHasher::new();
+    remote_path.hash(&mut hasher);
+    let path_hash = hasher.finish();
+    
+    // Extract meaningful parent folder name for readability
+    let parent_suffix = if !parent_dir.is_empty() {
+        // Get the last meaningful directory component
+        let path_parts: Vec<&str> = parent_dir.split('/').filter(|s| !s.is_empty()).collect();
+        if let Some(last_dir) = path_parts.last() {
+            format!("_{}", last_dir)
+        } else {
+            String::new()
+        }
+    } else {
+        String::new()
+    };
+    
+    // Handle files with and without extensions
+    if let Some(stem) = path.file_stem().map(|s| s.to_string_lossy()) {
+        if let Some(ext) = path.extension().map(|s| s.to_string_lossy()) {
+            Ok(format!("{}{}_{:x}.{}", stem, parent_suffix, path_hash, ext))
+        } else {
+            Ok(format!("{}{}_{:x}", stem, parent_suffix, path_hash))
+        }
+    } else {
+        Ok(format!("{}_{:x}", filename, path_hash))
+    }
 }
 
 pub fn ensure_temp_dir() -> Result<PathBuf, Box<dyn std::error::Error + Send + Sync>> {

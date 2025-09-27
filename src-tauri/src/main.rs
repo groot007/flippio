@@ -48,6 +48,7 @@ pub fn run() {
             commands::device::adb_get_packages,
             commands::device::adb_get_android_database_files,
             commands::device::adb_push_database_file,
+            commands::device::adb_get_device_info,
             // Device commands (iOS)
             commands::device::device_get_ios_devices,
             commands::device::device_get_ios_packages,
@@ -55,6 +56,7 @@ pub fn run() {
             commands::device::get_ios_device_database_files,
             commands::device::device_check_app_existence,
             commands::device::device_push_ios_database_file,
+            commands::device::ios_get_device_info,
             // IOS Simulator commands
             commands::device::get_ios_simulator_database_files,
             commands::device::upload_simulator_ios_db_file,

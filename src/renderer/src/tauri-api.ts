@@ -162,12 +162,14 @@ const COMMAND_MAP = {
   'adb:getPackages': 'adb_get_packages',
   'adb:getAndroidDatabaseFiles': 'adb_get_android_database_files',
   'adb:pushDatabaseFile': 'adb_push_database_file',
+  'adb:getDeviceInfo': 'adb_get_device_info',
   'device:getIOsDevices': 'device_get_ios_devices',
   'device:getIosPackages': 'device_get_ios_packages',
   'device:getIosDevicePackages': 'device_get_ios_device_packages',
   'device:checkAppExistence': 'device_check_app_existence',
   'device:pushIOSDbFile': 'device_push_ios_database_file',
   'device:getIOSDeviceDatabaseFiles': 'get_ios_device_database_files',
+  'ios:getDeviceInfo': 'ios_get_device_info',
   'simulator:getIOSSimulatorDatabaseFiles': 'get_ios_simulator_database_files',
   'simulator:uploadSimulatorIOSDbFile': 'upload_simulator_ios_db_file',
 
@@ -295,12 +297,14 @@ function getParameterNames(command: string): string[] {
     adb_get_packages: ['deviceId'],
     adb_get_android_database_files: ['deviceId', 'packageName'],
     adb_push_database_file: ['deviceId', 'localPath', 'packageName', 'remotePath'],
+    adb_get_device_info: ['deviceId'],
     device_push_ios_database_file: ['deviceId', 'localPath', 'packageName', 'remotePath'],
     device_get_ios_packages: ['deviceId'],
     device_get_ios_device_packages: ['deviceId'],
     get_ios_device_database_files: ['deviceId', 'packageName'],
     get_ios_simulator_database_files: ['deviceId', 'packageName'],
     device_check_app_existence: ['deviceId', 'packageName'],
+    ios_get_device_info: ['deviceId'],
     upload_simulator_ios_db_file: ['deviceId', 'localFilePath', 'packageName', 'remoteLocation'],
     launch_android_emulator: ['emulatorId'],
     launch_ios_simulator: ['simulatorId'],
@@ -776,6 +780,37 @@ export const api = {
     }
     catch (error) {
       console.error('Error downloading update:', error)
+      return { success: false, error: (error as Error).message }
+    }
+  },
+
+  // Device info methods
+  adbGetDeviceInfo: async (deviceId: string) => {
+    try {
+      const response = await invokeCommandWithResponse('adb:getDeviceInfo', 'data', deviceId)
+      return {
+        success: response.success,
+        data: response.data,
+        error: response.error,
+      }
+    }
+    catch (error) {
+      console.error('Error getting Android device info:', error)
+      return { success: false, error: (error as Error).message }
+    }
+  },
+
+  iosGetDeviceInfo: async (deviceId: string) => {
+    try {
+      const response = await invokeCommandWithResponse('ios:getDeviceInfo', 'data', deviceId)
+      return {
+        success: response.success,
+        data: response.data,
+        error: response.error,
+      }
+    }
+    catch (error) {
+      console.error('Error getting iOS device info:', error)
       return { success: false, error: (error as Error).message }
     }
   },

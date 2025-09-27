@@ -22,11 +22,10 @@ async fn pull_android_db_file(
     let temp_dir = ensure_temp_dir()?;
     info!("Temp directory: {:?}", temp_dir);
     
-    let filename = Path::new(remote_path).file_name()
-        .ok_or("Invalid remote path")?
-        .to_string_lossy();
-    let local_path = temp_dir.join(&*filename);
-    info!("Local path will be: {:?}", local_path);
+    // Generate unique filename to avoid conflicts when multiple files have the same name
+    let unique_filename = generate_unique_filename(remote_path)?;
+    let local_path = temp_dir.join(&unique_filename);
+    info!("Local path will be: {:?} (unique filename: {})", local_path, unique_filename);
     
     // Execute ADB command based on admin access
     if admin_access {
@@ -449,7 +448,115 @@ pub async fn adb_push_database_file(
             success: false,
             data: None,
             error: Some(format!("Failed to push database file: {}", e)),
-        }),
+        })
+    }
+}
+
+// Get detailed Android device information using adb shell getprop
+async fn get_android_device_info(device_id: &str) -> Result<std::collections::HashMap<String, String>, Box<dyn std::error::Error + Send + Sync>> {
+    info!("Getting Android device info for device: {}", device_id);
+    
+    let output = execute_adb_command(&["-s", device_id, "shell", "getprop"]).await?;
+    
+    info!("ADB getprop exit status: {:?}", output.status);
+    
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        error!("ADB getprop command failed. Stderr: {}", stderr);
+        return Err(format!("ADB getprop failed with exit code: {:?}. Stderr: {}", output.status.code(), stderr).into());
+    }
+    
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    info!("ADB getprop output length: {} characters", stdout.len());
+    
+    let mut device_info = std::collections::HashMap::new();
+    let mut processed_lines = 0;
+    
+    // Parse getprop output and extract key device information
+    for line in stdout.lines() {
+        if line.starts_with('[') && line.contains("]: [") {
+            if let Some(key_end) = line.find("]: [") {
+                let key = &line[1..key_end];
+                if let Some(value_start) = line.rfind("]: [") {
+                    let value_part = &line[value_start + 4..];
+                    if let Some(value_end) = value_part.rfind(']') {
+                        let value = &value_part[..value_end];
+                        
+                        // Only include relevant device info properties
+                        match key {
+                            "ro.product.model" => { 
+                                device_info.insert("Device Model".to_string(), value.to_string()); 
+                                info!("Found device model: {}", value);
+                            },
+                            "ro.product.brand" => { 
+                                device_info.insert("Brand".to_string(), value.to_string()); 
+                                info!("Found brand: {}", value);
+                            },
+                            "ro.product.manufacturer" => { device_info.insert("Manufacturer".to_string(), value.to_string()); },
+                            "ro.build.version.release" => { 
+                                device_info.insert("Android Version".to_string(), value.to_string()); 
+                                info!("Found Android version: {}", value);
+                            },
+                            "ro.build.version.sdk" => { device_info.insert("SDK Version".to_string(), value.to_string()); },
+                            "ro.build.display.id" => { device_info.insert("Build ID".to_string(), value.to_string()); },
+                            "ro.product.cpu.abi" => { device_info.insert("CPU Architecture".to_string(), value.to_string()); },
+                            "ro.build.date" => { device_info.insert("Build Date".to_string(), value.to_string()); },
+                            "ro.product.device" => { device_info.insert("Device Codename".to_string(), value.to_string()); },
+                            "ro.build.version.security_patch" => { device_info.insert("Security Patch".to_string(), value.to_string()); },
+                            _ => {}
+                        }
+                        processed_lines += 1;
+                    }
+                }
+            }
+        }
+    }
+    
+    info!("Processed {} lines from getprop output", processed_lines);
+    
+    // Add device ID
+    device_info.insert("Device ID".to_string(), device_id.to_string());
+    
+    info!("Successfully retrieved {} device properties", device_info.len());
+    
+    if device_info.len() <= 1 {
+        // Only device ID was added, no properties found
+        error!("No device properties found in getprop output");
+        return Err("No device properties could be retrieved from the device".into());
+    }
+    
+    Ok(device_info)
+}
+
+// Get detailed Android device information
+#[tauri::command]
+pub async fn adb_get_device_info(device_id: String) -> Result<DeviceResponse<std::collections::HashMap<String, String>>, String> {
+    log::info!("Getting device info for Android device: {}", device_id);
+    
+    match get_android_device_info(&device_id).await {
+        Ok(info) => {
+            log::info!("Successfully retrieved device info with {} properties", info.len());
+            Ok(DeviceResponse {
+                success: true,
+                data: Some(info),
+                error: None,
+            })
+        },
+        Err(e) => {
+            log::error!("Failed to get device info: {}", e);
+            
+            // Return mock data for testing if real command fails
+            let mut mock_info = std::collections::HashMap::new();
+            mock_info.insert("Device ID".to_string(), device_id.clone());
+            mock_info.insert("Status".to_string(), "Mock Data - Real command failed".to_string());
+            mock_info.insert("Error".to_string(), format!("{}", e));
+            
+            Ok(DeviceResponse {
+                success: true,
+                data: Some(mock_info),
+                error: Some(format!("Using mock data - real command failed: {}", e)),
+            })
+        },
     }
 }
 

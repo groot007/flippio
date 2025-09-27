@@ -11,6 +11,7 @@ import { useDatabaseTables } from '@renderer/hooks/useDatabaseTables'
 import { useTableDataQuery } from '@renderer/hooks/useTableDataQuery'
 import { useCurrentDatabaseSelection, useCurrentDeviceSelection, useTableData } from '@renderer/store'
 import { toaster } from '@renderer/ui/toaster'
+import { groupDatabaseFilesByLocation } from '@renderer/utils/databaseFileGrouping'
 import { useDatabaseRefresh } from '@renderer/utils/databaseRefresh'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { LuDatabase, LuFilter, LuFolderOpen, LuRefreshCcw, LuTable, LuUpload, LuX } from 'react-icons/lu'
@@ -118,12 +119,8 @@ export function SubHeader() {
     setSelectedDatabaseTable(table)
   }, [setSelectedDatabaseTable, setTableData])
 
-  const dbFileOptions = useMemo(() =>
-    databaseFiles?.map(file => ({
-      label: file.filename,
-      value: file.path,
-      ...file,
-    })) ?? [], [databaseFiles])
+  const dbFileOptions = useMemo(() => 
+    groupDatabaseFilesByLocation(databaseFiles), [databaseFiles])
 
   const tableOptions = useMemo(() =>
     databaseTables?.map(table => ({
@@ -262,6 +259,7 @@ export function SubHeader() {
                   icon={<LuDatabase color="var(--chakra-colors-flipioPrimary)" />}
                   onChange={handleDatabaseFileChange}
                   isDisabled={!selectedApplication?.bundleId || isDBPulling}
+                  menuListWidth={350}
                 />
               )}
 
