@@ -8,7 +8,6 @@ use super::super::types::{DatabaseFileMetadata};
 use super::tools::get_tool_command_legacy;
 use tauri_plugin_shell::ShellExt;
 use log::{info, error};
-use std::path::Path;
 use std::fs;
 use chrono;
 use serde_json;

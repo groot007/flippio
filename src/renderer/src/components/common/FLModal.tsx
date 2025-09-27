@@ -6,8 +6,8 @@ interface FLModalProps {
   title: string
   acceptBtn: string
   onAccept: () => void
-  rejectBtn: string
-  onReject: () => void
+  rejectBtn?: string
+  onReject?: () => void
   disabled?: boolean
 }
 

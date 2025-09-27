@@ -1,6 +1,6 @@
-import { Box, HStack, Icon, Text, VStack } from '@chakra-ui/react'
+import { Box, Button, HStack, Icon, Text, VStack } from '@chakra-ui/react'
 import { chakraComponents, Select } from 'chakra-react-select'
-import { LuPin } from 'react-icons/lu'
+import { LuInfo, LuPin } from 'react-icons/lu'
 
 interface CustomSelectProps {
   label: string
@@ -12,9 +12,13 @@ interface CustomSelectProps {
       value: string
       description?: string
       isRecentlyUsed?: boolean
+      showInfoIcon?: boolean
+      onInfoClick?: (option: any) => void
     }[]
     description?: string
     isRecentlyUsed?: boolean
+    showInfoIcon?: boolean
+    onInfoClick?: (option: any) => void
   }[]
   value: any
   onChange: (value: any) => void
@@ -106,7 +110,12 @@ const FLSelect: React.FC<CustomSelectProps> = ({
     Option: ({ children, ...props }: any) => {
       return (
         <chakraComponents.Option {...props}>
-          <Box position="relative" width="100%">
+          <Box
+            position="relative" 
+            width="100%" 
+            display="flex" 
+            alignItems="center"
+          >
             {showPinIcon && props.data.isRecentlyUsed && (
               <Icon
                 as={LuPin}
@@ -124,6 +133,7 @@ const FLSelect: React.FC<CustomSelectProps> = ({
               justifyContent="flex-start" 
               gap={0}
               pl={showPinIcon && props.data.isRecentlyUsed ? 4 : 0}
+              flex={1}
             >
               <Text fontSize="sm" fontWeight="medium" color="textPrimary">
                 {props.data.label}
@@ -134,6 +144,24 @@ const FLSelect: React.FC<CustomSelectProps> = ({
                 </Text>
               )}
             </VStack>
+            {props.data.showInfoIcon && props.data.onInfoClick && (
+              <Button
+                variant="ghost"
+                size="sm"
+                p={1}
+                ml={2}
+                color="textSecondary"
+                _hover={{ color: 'flipioPrimary', bg: 'bgTertiary' }}
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  props.data.onInfoClick(props.data)
+                }}
+                title="View device information"
+              >
+                <LuInfo size={14} />
+              </Button>
+            )}
           </Box>
         </chakraComponents.Option>
       )
