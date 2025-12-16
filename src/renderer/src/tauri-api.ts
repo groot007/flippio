@@ -352,8 +352,33 @@ export const api = {
       const androidResp = await invokeCommandWithResponse('adb:getDevices', 'devices')
       // Fetch physical iOS devices (simulators and physical)
       const iosResp = await invokeCommandWithResponse('device:getIOsDevices', 'devices')
-      // Fetch iOS simulators
-      const iosSimulatorsResp = await invokeCommandWithResponse('getIOSSimulators', 'simulators')
+      
+      /**
+       * Fetch iOS simulators
+       * Sometimes for some reason this command hangs and blocks the JS thread
+       * hence we use abortController for cancel that after 5 seconds 
+       */
+      let iosSimulatorsResp: { success: boolean, simulators: any[] } = { success: false, simulators: [] }
+      const abortController = new AbortController()
+      const timeoutId = setTimeout(() => abortController.abort(), 5000)
+      
+      try {
+        const result = await Promise.race([
+          invokeCommandWithResponse('getIOSSimulators', 'simulators'),
+          new Promise<{ success: boolean, simulators: any[] }>((_, reject) => {
+            abortController.signal.addEventListener('abort', () => {
+              reject(new Error('iOS Simulators fetch timed out'))
+            })
+          }),
+        ])
+        iosSimulatorsResp = { success: result.success, simulators: result.simulators || [] }
+        clearTimeout(timeoutId)
+      }
+      catch (error) {
+        clearTimeout(timeoutId)
+        console.warn('Failed to fetch iOS simulators, continuing without them:', error)
+        iosSimulatorsResp = { success: false, simulators: [] }
+      }
 
       const allDevices = []
 
