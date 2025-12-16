@@ -356,7 +356,7 @@ export const api = {
       /**
        * Fetch iOS simulators
        * Sometimes for some reason this command hangs and blocks the JS thread
-       * hence we use abortController for cancel that after 5 seconds 
+       * hence we use abortController to cancel it after 5 seconds 
        */
       let iosSimulatorsResp: { success: boolean, simulators: any[] } = { success: false, simulators: [] }
       const abortController = new AbortController()
