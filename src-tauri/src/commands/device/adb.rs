@@ -219,44 +219,51 @@ pub async fn adb_get_devices(_app_handle: tauri::AppHandle) -> Result<DeviceResp
     
     if output.status.success() {
         let devices_output = String::from_utf8_lossy(&output.stdout);
+        log::info!("ADB devices output: {}", devices_output);
         let mut devices = Vec::new();
         
         for line in devices_output.lines().skip(1) {
-            if !line.trim().is_empty() && line.contains("device") {
-                let parts: Vec<&str> = line.split_whitespace().collect();
-                if parts.len() >= 2 {
-                    let device_id = parts[0].to_string();
-                    let mut model = "Unknown".to_string();
-                    let mut device_name = device_id.clone();
-                    
-                    // Determine if it's an Android device or emulator
-                    // If the line contains "usb:" it's a physical device, otherwise it's an emulator
-                    let is_physical_device = line.contains("usb:");
-                    let description = if is_physical_device {
-                        "Android device".to_string()
-                    } else {
-                        "Android emulator".to_string()
-                    };
-                    
-                    // Parse device properties
-                    for part in &parts[2..] {
-                        if part.starts_with("model:") {
-                            model = part.replace("model:", "");
-                        } else if part.starts_with("device:") {
-                            device_name = part.replace("device:", "");
-                        }
+            let trimmed_line = line.trim();
+            if trimmed_line.is_empty() {
+                continue;
+            }
+            
+            let parts: Vec<&str> = trimmed_line.split_whitespace().collect();
+            log::info!("Parsing line: '{}', parts: {:?}", trimmed_line, parts);
+            
+            if parts.len() >= 2 && parts[1] == "device" {
+                let device_id = parts[0].to_string();
+                let mut model = "Unknown".to_string();
+                let mut device_name = device_id.clone();
+                
+                let is_physical_device = trimmed_line.contains("usb:");
+                let description = if is_physical_device {
+                    "Android device".to_string()
+                } else {
+                    "Android emulator".to_string()
+                };
+                
+                for part in &parts[2..] {
+                    if part.starts_with("model:") {
+                        model = part.replace("model:", "");
+                    } else if part.starts_with("device:") {
+                        device_name = part.replace("device:", "");
                     }
-                    
-                    devices.push(Device {
-                        id: device_id,
-                        name: device_name,
-                        model,
-                        device_type: "android".to_string(),
-                        description,
-                    });
                 }
+                
+                log::info!("Found device: id={}, name={}, model={}", device_id, device_name, model);
+                
+                devices.push(Device {
+                    id: device_id,
+                    name: device_name,
+                    model,
+                    device_type: "android".to_string(),
+                    description,
+                });
             }
         }
+        
+        log::info!("Total Android devices found: {}", devices.len());
         
         Ok(DeviceResponse {
             success: true,
