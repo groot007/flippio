@@ -9,7 +9,10 @@ use super::diagnostic::get_ios_error_help;
 use tauri_plugin_shell::ShellExt;
 use crate::commands::device::ios::tool_validation::find_ios_tool;
 use crate::commands::device::ios::windows_dependencies::diagnose_ideviceinstaller_issue;
-use log::{info, error};
+use log::{info, warn, error};
+use serde_json::Value;
+use std::process::Command;
+use tauri::command;
 
 /// Get list of iOS packages (for simulators)
 #[tauri::command]
@@ -244,19 +247,11 @@ pub async fn device_get_ios_device_packages(app_handle: tauri::AppHandle, device
             Some(-1073741701) => {
                 // This specific exit code indicates DLL dependency issues
                 error!("❌ ideviceinstaller has DLL dependency issues (exit code -1073741701)");
-                
-                // Find the ideviceinstaller tool path for diagnostics
-                if let Ok(tool_path) = find_ios_tool("ideviceinstaller") {
-                    // Run comprehensive dependency check
-                    let diagnostic_message = diagnose_ideviceinstaller_issue(&tool_path);
-                    error!("� Dependency diagnosis:\n{}", diagnostic_message);
-                } else {
-                    error!("�💡 This usually means missing Visual C++ Redistributable packages or libimobiledevice DLL dependencies");
-                    error!("💡 To fix this issue:");
-                    error!("   1. Install Microsoft Visual C++ Redistributable (latest version)");
-                    error!("   2. Ensure all libimobiledevice DLL files are in the same directory as the executable");
-                    error!("   3. Check that libplist, libusb, and other dependencies are present");
-                }
+                error!("💡 This usually means missing Visual C++ Redistributable packages or libimobiledevice DLL dependencies");
+                error!("💡 To fix this issue:");
+                error!("   1. Install Microsoft Visual C++ Redistributable (latest version)");
+                error!("   2. Ensure all libimobiledevice DLL files are in the same directory as the executable");
+                error!("   3. Check that libplist, libusb, and other dependencies are present");
                 false
             },
             Some(0) => true,
@@ -273,17 +268,12 @@ pub async fn device_get_ios_device_packages(app_handle: tauri::AppHandle, device
         // Provide user-friendly error message for Windows DLL issues
         let user_friendly_error = if cfg!(target_os = "windows") && 
                                      output.status.code() == Some(-1073741701) {
-            // Get comprehensive diagnostic information
-            if let Ok(tool_path) = find_ios_tool("ideviceinstaller") {
-                diagnose_ideviceinstaller_issue(&tool_path)
-            } else {
-                "iOS app listing failed due to missing Windows dependencies.\n\n\
-                This error usually occurs when required Visual C++ Redistributable packages are missing.\n\n\
-                To fix this issue:\n\
-                1. Download and install Microsoft Visual C++ Redistributable (latest version) from Microsoft's website\n\
-                2. Restart Flippio after installation\n\n\
-                If the problem persists, you can still access iOS device databases without app listing functionality.".to_string()
-            }
+            "iOS app listing failed due to missing Windows dependencies.\n\n\
+            This error usually occurs when required Visual C++ Redistributable packages are missing.\n\n\
+            To fix this issue:\n\
+            1. Download and install Microsoft Visual C++ Redistributable (latest version) from Microsoft's website\n\
+            2. Restart Flippio after installation\n\n\
+            If the problem persists, you can still access iOS device databases without app listing functionality.".to_string()
         } else {
             get_ios_error_help(&error_msg)
         };

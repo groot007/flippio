@@ -17,6 +17,8 @@ pub mod file_utils;
 pub mod tools;
 pub mod tool_validation;
 pub mod diagnostic;
+pub mod windows_dependencies;
+pub mod diagnostic_commands;
 
 #[cfg(test)]
 pub mod tests;
@@ -26,4 +28,5 @@ pub use device::*;
 pub use packages::*;
 pub use simulator::*; 
 pub use database::*;
+pub use diagnostic_commands::*;
 // Tools commands available but not auto-exported (can be used via direct module path)

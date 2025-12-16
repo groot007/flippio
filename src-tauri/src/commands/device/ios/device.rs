@@ -14,21 +14,30 @@ use std::time::Duration;
 #[tauri::command]
 pub async fn device_get_ios_devices(app_handle: tauri::AppHandle) -> Result<DeviceResponse<Vec<Device>>, String> {
     info!("=== GET iOS DEVICES STARTED ===");
+    println!("🍎 [iOS] Starting iOS device detection...");
     
     let shell = app_handle.shell();
     let idevice_id_cmd = get_tool_command_legacy("idevice_id");
     
+    println!("🍎 [iOS] Using idevice_id command: {}", idevice_id_cmd);
+
     // Get list of device IDs (local USB devices only)
     let output = shell.command(&idevice_id_cmd)
         .args(["-l"])
         .output()
         .await
-        .map_err(|e| format!("Failed to execute idevice_id -l: {}", e))?;
+        .map_err(|e| {
+            let error_msg = format!("Failed to execute idevice_id -l: {}", e);
+            println!("🍎 [iOS] ERROR: {}", error_msg);
+            error_msg
+        })?;
 
+    println!("🍎 [iOS] idevice_id exit status: {:?}", output.status);
     info!("idevice_id exit status: {:?}", output);
     
     if !output.status.success() {
         let error_msg = String::from_utf8_lossy(&output.stderr);
+        println!("🍎 [iOS] ERROR: idevice_id failed: {}", error_msg);
         error!("❌ idevice_id command failed: {}", error_msg);
         return Ok(DeviceResponse {
             success: false,
@@ -38,8 +47,10 @@ pub async fn device_get_ios_devices(app_handle: tauri::AppHandle) -> Result<Devi
     }
     
     let device_ids = String::from_utf8_lossy(&output.stdout);
+    println!("🍎 [iOS] Device IDs found: {} characters", device_ids.len());
     info!("📱 Raw device IDs from idevice_id -l:");
     for (i, line) in device_ids.lines().enumerate() {
+        println!("🍎 [iOS] Line {}: '{}'", i + 1, line);
         info!("  Line {}: '{}'", i + 1, line);
     }
     
@@ -53,9 +64,11 @@ pub async fn device_get_ios_devices(app_handle: tauri::AppHandle) -> Result<Devi
         }
         
         info!("🔍 Processing device ID: '{}'", device_id);
+        println!("🍎 [iOS] Processing device ID: '{}'", device_id);
         
         // Get device name using ideviceinfo
         let ideviceinfo_cmd = get_tool_command_legacy("ideviceinfo");
+        println!("🍎 [iOS] Using ideviceinfo: {}", ideviceinfo_cmd);
         let device_name = match shell.command(&ideviceinfo_cmd)
             .args(["-u", device_id])
             .output()
@@ -86,9 +99,12 @@ pub async fn device_get_ios_devices(app_handle: tauri::AppHandle) -> Result<Devi
     }
     
     info!("📊 Final device list:");
+    println!("🍎 [iOS] Final device list:");
     for (i, device) in devices.iter().enumerate() {
+        println!("🍎 [iOS] Device {}: ID='{}', Name='{}'", i + 1, device.id, device.name);
         info!("  Device {}: ID='{}', Name='{}'", i + 1, device.id, device.name);
     }
+    println!("🍎 [iOS] Found {} iOS devices total", devices.len());
     info!("Found {} iOS devices total", devices.len());
     
     Ok(DeviceResponse {

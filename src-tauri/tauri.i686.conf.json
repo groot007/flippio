@@ -1,6 +1,6 @@
 {
   "productName": "Flippio",
-  "version": "0.3.21",
+  "version": "0.3.17",
   "identifier": "com.flippio.app",
   "build": {
     "beforeDevCommand": "npm run dev:renderer",
@@ -75,20 +75,6 @@
         ],
         "displayLanguageSelector": false
       }
-    },
-    "macOS": {
-      "signingIdentity": "Developer ID Application: Mykola Stanislavchuk (4SVA48D93U)",
-      "frameworks": [
-        "macos-deps/libcrypto.3.dylib",
-        "macos-deps/libssl.3.dylib",
-        "macos-deps/libusbmuxd-2.0.7.dylib",
-        "macos-deps/libimobiledevice-glue-1.0.0.dylib",
-        "macos-deps/libplist-2.0.4.dylib",
-        "macos-deps/libzip.5.5.dylib",
-        "macos-deps/liblzma.5.dylib",
-        "macos-deps/libimobiledevice-1.0.6.dylib",
-        "macos-deps/libzstd.1.5.7.dylib"
-      ]
     }
   },
   "plugins": {

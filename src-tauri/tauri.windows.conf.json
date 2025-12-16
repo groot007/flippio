@@ -1,6 +1,6 @@
 {
   "productName": "Flippio",
-  "version": "0.3.21",
+  "version": "0.3.17",
   "identifier": "com.flippio.app",
   "build": {
     "beforeDevCommand": "npm run dev:renderer",
@@ -60,7 +60,13 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
-    "externalBin": [],
+    "externalBin": [
+      "../resources/libimobiledevice-windows/afcclient",
+      "../resources/libimobiledevice-windows/idevice_id",
+      "../resources/libimobiledevice-windows/ideviceinfo",
+      "../resources/libimobiledevice-windows/ideviceinstaller",
+      "../resources/adb-platform-tools/adb"
+    ],
     "resources": [],
     "windows": {
       "certificateThumbprint": null,
