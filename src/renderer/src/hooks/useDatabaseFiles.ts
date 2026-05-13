@@ -18,41 +18,46 @@ interface DatabaseFilesResponse {
   error?: string
 }
 
+export async function fetchDatabaseFilesForSelection(
+  selectedDevice: Device,
+  selectedApplication: Application,
+) {
+  console.log('Fetching database files for device:', selectedDevice, 'and application:', selectedApplication)
+  if (!selectedDevice?.id || !selectedApplication?.bundleId) {
+    throw new Error('Device or application not selected')
+  }
+
+  console.log('Selected device:', selectedDevice)
+
+  let fetchFunction: (deviceId: string, bundleId: string) => Promise<DatabaseFilesResponse>
+
+  if (selectedDevice.deviceType === 'iphone-device') {
+    fetchFunction = window.api.getIOSDeviceDatabaseFiles
+  }
+  else if (selectedDevice.deviceType.includes('simulator')) {
+    console.log('Fetching iOS simulator database files_____')
+    fetchFunction = window.api.getIOSSimulatorDatabaseFiles
+  }
+  else {
+    fetchFunction = window.api.getAndroidDatabaseFiles
+  }
+
+  const response = await fetchFunction(selectedDevice.id, selectedApplication.bundleId)
+
+  if (!response.success) {
+    throw new Error(response.error || 'Failed to fetch database files')
+  }
+
+  return transformToCamelCase(response.files)
+}
+
 export function useDatabaseFiles(
   selectedDevice: Device | null,
   selectedApplication: Application | null,
 ) {
   return useQuery({
     queryKey: ['databaseFiles', selectedDevice?.id, selectedApplication?.bundleId],
-    queryFn: async () => {
-      console.log('Fetching database files for device:', selectedDevice, 'and application:', selectedApplication)
-      if (!selectedDevice?.id || !selectedApplication?.bundleId) {
-        throw new Error('Device or application not selected')
-      }
-
-      console.log('Selected device:', selectedDevice)
-
-      let fetchFunction: (deviceId: string, bundleId: string) => Promise<DatabaseFilesResponse>
-
-      if (selectedDevice.deviceType === 'iphone-device') {
-        fetchFunction = window.api.getIOSDeviceDatabaseFiles
-      }
-      else if (selectedDevice.deviceType.includes('simulator')) {
-        console.log('Fetching iOS simulator database files_____')
-        fetchFunction = window.api.getIOSSimulatorDatabaseFiles
-      }
-      else {
-        fetchFunction = window.api.getAndroidDatabaseFiles
-      }
-
-      const response = await fetchFunction(selectedDevice.id, selectedApplication.bundleId)
-
-      if (!response.success) {
-        throw new Error(response.error || 'Failed to fetch database files')
-      }
-
-      return transformToCamelCase(response.files)
-    },
+    queryFn: () => fetchDatabaseFilesForSelection(selectedDevice as Device, selectedApplication as Application),
     enabled: !!selectedDevice?.id && !!selectedApplication?.bundleId,
     gcTime: 0,
     staleTime: 0,

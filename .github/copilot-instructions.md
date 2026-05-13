@@ -2,10 +2,10 @@
 
 ## Architecture Overview
 
-**Flippio** is a Tauri 2.0 desktop application for inspecting mobile device databases (iOS/Android). It combines:
-- **Backend**: Rust with SQLx, external binaries (`idevice*` tools, `adb`), and extensive async command handling
-- **Frontend**: React + TypeScript with Chakra UI, Zustand stores, and React Query for state management
-- **Bridge**: Custom `tauri-api.ts` that maps Electron-style APIs to Tauri's `invoke()` system
+**Flippio** = Tauri 2 desktop app for iOS/Android DB inspect.
+- **Backend**: Rust, SQLx, `idevice*`, `adb`, async commands
+- **Frontend**: React + TypeScript, Chakra UI, Zustand, React Query
+- **Bridge**: `tauri-api.ts` map Electron-like API to Tauri `invoke()`
 
 ## Critical Development Workflows
 
@@ -22,9 +22,9 @@ npm run tauri:build:signed  # Uses env vars from .env
 ```
 
 ### Testing Strategy
-- **Frontend**: Vitest with jsdom, extensive mocking in `test-utils/`
-- **Backend**: Cargo test with fixtures in `src-tauri/tests/fixtures/databases/`
-- **Integration**: Use `Makefile` commands for comprehensive testing workflow
+- Frontend: Vitest + jsdom + mocks in `test-utils/`
+- Backend: Cargo test + fixtures in `src-tauri/tests/fixtures/databases/`
+- Integration: use `Makefile`
 ```bash
 make test-all          # Full test suite
 make quick-test-platforms  # Fast platform-specific tests
@@ -32,10 +32,10 @@ make coverage-html     # Generate coverage with llvm-cov
 ```
 
 ### External Dependencies Management
-**Critical**: Flippio bundles iOS tools (`idevice*`) and Android SDK tools. CI fails without them.
-- Use `tauri-ci.conf.json` for CI builds (no external binaries)
-- macOS deps in `src-tauri/macos-deps/` with universal binaries
-- CI uses simplified config to avoid cross-platform binary issues
+- Flippio bundle iOS `idevice*` tools + Android SDK tools. CI break without them.
+- CI builds use `tauri-ci.conf.json`
+- macOS universal deps live in `src-tauri/macos-deps/`
+- CI config simplified to avoid cross-platform binary issues
 
 ## Project-Specific Patterns
 
@@ -50,7 +50,7 @@ useRowEditingStore.ts    // Side panel editing state
 ```
 
 ### Tauri Command Integration
-**Pattern**: All Rust commands return `DeviceResponse<T>` with consistent error handling:
+Rust commands return `DeviceResponse<T>`:
 ```rust
 pub struct DeviceResponse<T> {
     pub success: bool,
@@ -59,19 +59,18 @@ pub struct DeviceResponse<T> {
 }
 ```
 
-**Frontend mapping** in `tauri-api.ts` converts snake_case Rust commands to camelCase frontend APIs:
+Frontend `tauri-api.ts` map snake_case Rust commands to camelCase APIs:
 ```typescript
 // Maps 'adb:getDevices' -> 'adb_get_devices'
 const COMMAND_MAP = { /* ... */ }
 ```
 
 ### Database Connection Patterns
-- **Rust**: Uses `DbConnectionCache` with connection pooling via SQLx
-- **Frontend**: Always passes `currentDbPath` parameter for multi-database support
-- **Testing**: Generate fixtures with `scripts/generate-test-databases.js`
+- Rust use `DbConnectionCache` + SQLx pooling
+- Frontend always pass `currentDbPath` for multi-DB support
+- Test fixtures from `scripts/generate-test-databases.js`
 
 ### Device Detection Logic
-Flippio supports multiple device types with platform-specific detection:
 ```typescript
 // Device type detection in tauri-api.ts
 if (deviceId.match(/^[A-F0-9-]{36,40}$/i)) deviceType = 'iphone-device'
@@ -80,25 +79,22 @@ else deviceType = 'android'
 ```
 
 ### Error Handling Conventions
-- **Backend**: Use `DeviceResponse<T>` wrapper for all commands
-- **Frontend**: Toast notifications via Chakra UI's `useToast`
-- **Logging**: Tauri plugin + Sentry integration for production error tracking
+- Backend: `DeviceResponse<T>`
+- Frontend: toast notifications
+- Logging: Tauri plugin + Sentry in prod
 
 ## Component Testing Patterns
 
 ### Provider Wrapping
-All tests use custom render function with providers:
 ```typescript
 // From test-utils/render.tsx
 <QueryClientProvider client={testQueryClient}>
   <Provider>  {/* Chakra UI */}
     {component}
-  </Provider>
 </QueryClientProvider>
 ```
 
 ### Store Mocking
-Reset stores before each test:
 ```typescript
 beforeEach(() => {
   useAppStore.getState().setDevices([])
@@ -107,7 +103,6 @@ beforeEach(() => {
 ```
 
 ### AG Grid Testing
-Mock AG Grid components entirely due to complex DOM requirements:
 ```typescript
 vi.mock('ag-grid-react', () => ({ AgGridReact: MockAgGridReact }))
 ```
@@ -115,28 +110,28 @@ vi.mock('ag-grid-react', () => ({ AgGridReact: MockAgGridReact }))
 ## Integration Points & Cross-Component Communication
 
 ### Device → App → Database Flow
-1. `useDevices` hook fetches all devices (Android + iOS + simulators)
-2. Device selection triggers `useApplications` query
-3. App selection triggers `useDatabaseFiles` query
-4. Database selection opens connection pool and enables table browsing
+1. `useDevices` fetch all devices
+2. Device select triggers `useApplications`
+3. App select triggers `useDatabaseFiles`
+4. DB select opens pool, enables table browse
 
 ### File Upload/Export Flow
-- **Import**: Uses `webUtils.getPathForFile()` → `save_dropped_file` command
-- **Export**: Uses `dialog_save_file` command with platform-specific file filters
-- **Push to device**: Platform-specific commands (ADB vs libimobiledevice)
+- Import: `webUtils.getPathForFile()` -> `save_dropped_file`
+- Export: `dialog_save_file` with platform filters
+- Push: platform-specific commands, ADB vs libimobiledevice
 
 ### Auto-Updater Integration
-- Production builds include updater artifacts (`createUpdaterArtifacts: true`)
-- Uses GitHub releases with signed updates (`pubkey` in `tauri.conf.json`)
-- Frontend checks for updates via `checkForUpdates()` command
+- Prod builds include updater artifacts: `createUpdaterArtifacts: true`
+- GitHub releases + signed updates, `pubkey` in `tauri.conf.json`
+- Frontend call `checkForUpdates()`
 
 ## Development Environment Setup
 
 ### Required Tools
-- **macOS**: Xcode command line tools, iOS Simulator
-- **Android**: Android SDK, `adb` in PATH
-- **Rust**: Latest stable with `llvm-cov` for coverage
-- **Node**: v20+ with Yarn package manager
+- macOS: Xcode command line tools, iOS Simulator
+- Android: Android SDK, `adb` in PATH
+- Rust: latest stable + `llvm-cov`
+- Node: v20+ + Yarn
 
 ### Environment Variables (.env)
 ```bash
@@ -146,12 +141,12 @@ VITE_POSTHOG_API_KEY="phc_..."
 ```
 
 ### Pre-commit Automation
-Git hooks in `.git/hooks/pre-push` run full test suite (currently disabled but configured).
+- `.git/hooks/pre-push` wired for full test suite, now disabled
 
 ## Device-Specific Database Extraction Workflows
 
 ### Android Database Extraction (ADB)
-**Multi-location Priority Search**: Android searches multiple data directories in priority order:
+Priority search:
 ```rust
 // Priority locations: secured → public → fallback
 let locations = vec![
@@ -161,32 +156,31 @@ let locations = vec![
 ];
 ```
 
-**Two-stage Access Pattern**:
-1. **Admin Access** (preferred): Uses `adb shell run-as <package> find` + `exec-out run-as <package> cat`
-2. **Standard Access** (fallback): Uses `adb pull` for publicly accessible files
+Access pattern:
+1. Preferred: `adb shell run-as <package> find` + `exec-out run-as <package> cat`
+2. Fallback: `adb pull`
 
-**Critical Implementation**: Uses shell redirection for admin access to bypass permission issues:
+Admin extraction:
 ```bash
 adb -s device exec-out run-as package cat /path/file.db > local_file.db
 ```
 
 ### iOS Physical Device Extraction (libimobiledevice)
-**Single-location Documents Access**: iOS apps store databases in sandboxed Documents directory:
+Documents access:
 ```rust
 // Uses afcclient (Apple File Conduit client) for file access
 let cmd_args = ["--documents", package_name, "-u", device_id, "ls", "Documents"];
 // Pull: afcclient --documents package -u device pull /Documents/file.db local_file.db
 ```
 
-**Workflow Pattern**:
-1. **Discovery**: `afcclient --documents <app> -u <device> ls Documents`
-2. **Extraction**: `afcclient --documents <app> -u <device> pull /Documents/<file> <local_path>`
-3. **Verification**: Check SQLite header and file size after pull
+Flow:
+1. `afcclient --documents <app> -u <device> ls Documents`
+2. `afcclient --documents <app> -u <device> pull /Documents/<file> <local_path>`
+3. Verify SQLite header + file size
 
-**Tool Dependencies**: Requires bundled `idevice_id`, `ideviceinfo`, `afcclient` binaries with codesigning.
+Need bundled `idevice_id`, `ideviceinfo`, `afcclient`, codesigned.
 
 ### iOS Simulator Extraction (xcrun simctl)
-**Direct Filesystem Access**: Simulators store app data in accessible host filesystem:
 ```bash
 # Get app container path
 xcrun simctl get_app_container <simulator_id> <bundle_id> data
@@ -194,29 +188,28 @@ xcrun simctl get_app_container <simulator_id> <bundle_id> data
 find <container_path>/Documents -name "*.db" -o -name "*.sqlite*"
 ```
 
-**Key Differences from Device**:
-- No security sandbox restrictions
-- Direct file system copy operations
-- Uses host OS file permissions
-- Supports in-place editing without pull/push cycle
+Simulator differences:
+- no sandbox restriction
+- direct FS copy
+- host OS permissions
+- in-place edit possible, no pull/push cycle
 
 ### Database Push Workflows
 
-**Android Push** (Two-step process):
-1. `adb push <local_file> /sdcard/<temp_file>` (stage to public location)
-2. `adb shell run-as <package> cp /sdcard/<temp_file> <app_data_path>` (move to secured location)
+Android push:
+1. `adb push <local_file> /sdcard/<temp_file>`
+2. `adb shell run-as <package> cp /sdcard/<temp_file> <app_data_path>`
 
-**iOS Device Push**:
+iOS device push:
 ```bash
 afcclient --documents <package> -u <device> push <local_file> /Documents/<remote_file>
 ```
 
-**iOS Simulator Push**:
-Direct filesystem copy (same as standard file operations).
+iOS simulator push: direct filesystem copy.
 
 ### Error Handling Patterns
 
-**Connection Pool Management**: Always close database connections before file operations:
+Close DB connections before file ops:
 ```rust
 // Critical: Close DB connections to prevent file locks during push/pull
 let mut pool_guard = db_pool_state.write().await;
@@ -225,7 +218,7 @@ if let Some(pool) = pool_guard.take() {
 }
 ```
 
-**Device Type Detection Logic**:
+Device type detection:
 ```typescript
 // Automatic device type detection for appropriate extraction method
 if (deviceId.match(/^[A-F0-9-]{36,40}$/i)) deviceType = 'iphone-device'  // Physical iPhone
@@ -233,5 +226,16 @@ else if (deviceId.match(/^[A-F0-9-]{8,}$/i)) deviceType = 'simulator'    // iOS 
 else deviceType = 'android'  // Android device/emulator
 ```
 
-## Copilot Code editing instructions
-- **DONT ADD COMMENTS**: Copilot should not add comments to the code. only jsdoc comments are allowed. (on component level)
+## Communication Style
+
+- Use Caveman plugin style for normal chat to save tokens
+- Talk terse, direct, technical
+- Drop filler, hedging, pleasantries
+- Keep code, paths, commands, errors exact
+- If safety or destructive action warning needed, switch to clear normal wording first
+
+## Copilot Code Editing Instructions
+
+- DONT ADD COMMENTS
+- Only JSDoc comments allowed
+- JSDoc only at component level

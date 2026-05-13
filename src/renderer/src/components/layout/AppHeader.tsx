@@ -1,9 +1,11 @@
 import { Box, Button, HStack, Spinner } from '@chakra-ui/react'
 import { DeviceInfoModal } from '@renderer/components/common/DeviceInfoModal'
-import { useApplications } from '@renderer/hooks/useApplications'
+import { fetchApplicationsForDevice, useApplications } from '@renderer/hooks/useApplications'
+import { fetchDatabaseFilesForSelection } from '@renderer/hooks/useDatabaseFiles'
 import { useDevices } from '@renderer/hooks/useDevices'
 import { useCurrentDatabaseSelection, useCurrentDeviceSelection, useRecentlyUsedApps } from '@renderer/store'
 import { toaster } from '@renderer/ui/toaster'
+import { useQueryClient } from '@tanstack/react-query'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { LuPackage, LuRefreshCcw, LuRocket, LuSmartphone } from 'react-icons/lu'
 import FLSelect from './../common/FLSelect'
@@ -20,13 +22,17 @@ function AppHeader() {
   const setSelectedApplication = useCurrentDeviceSelection(state => state.setSelectedApplication)
   const selectedDatabaseFile = useCurrentDatabaseSelection(state => state.selectedDatabaseFile)
   const setSelectedDatabaseFile = useCurrentDatabaseSelection(state => state.setSelectedDatabaseFile)
+  const setSelectedDatabaseTable = useCurrentDatabaseSelection(state => state.setSelectedDatabaseTable)
   
   const { addRecentApp, getRecentAppsForDevice } = useRecentlyUsedApps()
+  const queryClient = useQueryClient()
 
   const {
     data: devicesList = [],
     refetch: refreshDevices,
     isFetching: isRefreshing,
+    isPending: isDevicesPending,
+    isFetched: hasFetchedDevices,
   } = useDevices()
 
   const {
@@ -127,42 +133,145 @@ function AppHeader() {
   }, [isApplicationsError, applicationsError, selectedDevice])
 
   useEffect(() => {
-    if (!devicesList.find(device => device.id === selectedDevice?.id)) {
+    if (!selectedDevice) {
+      return
+    }
+
+    const matchedDevice = devicesList.find(device => device.id === selectedDevice.id)
+
+    if (!matchedDevice) {
       setSelectedApplication(null)
       setSelectedDevice(null)
+      setSelectedDatabaseTable(null)
       
       // Only clear database file if it's not a custom file (desktop type)
       if (selectedDatabaseFile?.deviceType !== 'desktop') {
         setSelectedDatabaseFile(null)
       }
-    }
-  }, [devicesList, selectedDevice, selectedDatabaseFile, setSelectedApplication, setSelectedDevice, setSelectedDatabaseFile])
 
-  const handleRefreshDevices = useCallback(() => {
-    refreshDevices()
-      .then(() => {
-        toaster.create({
-          title: 'Success',
-          description: 'Device list refreshed',
-          type: 'success',
-          duration: 3000,
-          meta: {
-            closable: true,
-          },
+      return
+    }
+
+    if (matchedDevice !== selectedDevice) {
+      setSelectedDevice(matchedDevice)
+    }
+  }, [devicesList, selectedDevice, selectedDatabaseFile, setSelectedApplication, setSelectedDevice, setSelectedDatabaseFile, setSelectedDatabaseTable])
+
+  useEffect(() => {
+    if (!selectedApplication) {
+      return
+    }
+
+    if (isLoading) {
+      return
+    }
+
+    const matchedApplication = applicationsList.find(app => app.bundleId === selectedApplication.bundleId)
+
+    if (!matchedApplication) {
+      setSelectedApplication(null)
+      setSelectedDatabaseTable(null)
+      setSelectedDatabaseFile(null)
+      return
+    }
+
+    if (matchedApplication !== selectedApplication) {
+      setSelectedApplication(matchedApplication)
+    }
+  }, [applicationsList, isLoading, selectedApplication, setSelectedApplication, setSelectedDatabaseFile, setSelectedDatabaseTable])
+
+  const handleRefreshDevices = useCallback(async () => {
+    try {
+      const devicesResult = await refreshDevices()
+      const refreshedDevices = devicesResult.data ?? []
+      const matchedDevice = selectedDevice
+        ? refreshedDevices.find(device => device.id === selectedDevice.id) ?? null
+        : null
+
+      if (selectedDevice && !matchedDevice) {
+        setSelectedDevice(null)
+        setSelectedApplication(null)
+        setSelectedDatabaseTable(null)
+        if (selectedDatabaseFile?.deviceType !== 'desktop') {
+          setSelectedDatabaseFile(null)
+        }
+      }
+
+      if (matchedDevice) {
+        setSelectedDevice(matchedDevice)
+
+        const applications = await queryClient.fetchQuery({
+          queryKey: ['applications', matchedDevice.id, matchedDevice.deviceType],
+          queryFn: () => fetchApplicationsForDevice(matchedDevice),
+          staleTime: 0,
         })
+
+        if (selectedApplication) {
+          const matchedApplication = applications.find(app => app.bundleId === selectedApplication.bundleId) ?? null
+
+          if (matchedApplication) {
+            setSelectedApplication(matchedApplication)
+
+            if (selectedDatabaseFile?.deviceType !== 'desktop') {
+              const databaseFiles = await queryClient.fetchQuery({
+                queryKey: ['databaseFiles', matchedDevice.id, matchedApplication.bundleId],
+                queryFn: () => fetchDatabaseFilesForSelection(matchedDevice, matchedApplication),
+                staleTime: 0,
+              })
+
+              if (selectedDatabaseFile) {
+                const matchedDatabaseFile = databaseFiles.find(file => file.path === selectedDatabaseFile.path) ?? null
+
+                if (matchedDatabaseFile) {
+                  setSelectedDatabaseFile(matchedDatabaseFile)
+                }
+                else {
+                  setSelectedDatabaseFile(null)
+                  setSelectedDatabaseTable(null)
+                }
+              }
+            }
+          }
+          else {
+            setSelectedApplication(null)
+            setSelectedDatabaseFile(null)
+            setSelectedDatabaseTable(null)
+          }
+        }
+      }
+
+      toaster.create({
+        title: 'Success',
+        description: 'Device list refreshed',
+        type: 'success',
+        duration: 3000,
+        meta: {
+          closable: true,
+        },
       })
-      .catch((err) => {
-        toaster.create({
-          title: 'Error refreshing devices',
-          description: err.message,
-          type: 'error',
-          duration: 3000,
-          meta: {
-            closable: true,
-          },
-        })
+    }
+    catch (err) {
+      toaster.create({
+        title: 'Error refreshing devices',
+        description: err instanceof Error ? err.message : 'Failed to refresh devices',
+        type: 'error',
+        duration: 3000,
+        meta: {
+          closable: true,
+        },
       })
-  }, [])
+    }
+  }, [
+    queryClient,
+    refreshDevices,
+    selectedApplication,
+    selectedDatabaseFile,
+    selectedDevice,
+    setSelectedApplication,
+    setSelectedDatabaseFile,
+    setSelectedDatabaseTable,
+    setSelectedDevice,
+  ])
 
   const devicesSelectOptions = useMemo(() =>
     devicesList.map((device) => {
@@ -224,10 +333,27 @@ function AppHeader() {
     return [...recentAppOptions, ...otherAppOptions]
   }, [applicationsList, selectedDevice, getRecentAppsForDevice])
 
+  const selectedDeviceOption = useMemo(() => {
+    if (!selectedDevice) {
+      return null
+    }
+
+    return devicesSelectOptions.find(device => device.id === selectedDevice.id) ?? null
+  }, [devicesSelectOptions, selectedDevice])
+
+  const selectedApplicationOption = useMemo(() => {
+    if (!selectedApplication) {
+      return null
+    }
+
+    return applicationSelectOptions.find(app => app.bundleId === selectedApplication.bundleId) ?? null
+  }, [applicationSelectOptions, selectedApplication])
+
   const handleDeviceChange = useCallback((value: any) => {
     setSelectedDevice(value)
     setSelectedApplication(null)
-  }, [setSelectedDevice, setSelectedApplication])
+    setSelectedDatabaseTable(null)
+  }, [setSelectedApplication, setSelectedDatabaseTable, setSelectedDevice])
 
   const handlePackageChange = useCallback((value) => {
     setSelectedDatabaseFile(null)
@@ -250,6 +376,8 @@ function AppHeader() {
     }, 1500)
   }, [refreshDevices])
 
+  const isInitialDeviceSync = isDevicesPending && !hasFetchedDevices
+
   return (
     <>
       <Box
@@ -266,22 +394,23 @@ function AppHeader() {
             <FLSelect
               options={devicesSelectOptions}
               label="Select Device"
-              value={selectedDevice}
+              value={selectedDeviceOption}
               icon={<LuSmartphone color="var(--chakra-colors-flipioPrimary)" />}
               onChange={handleDeviceChange}
+              isDisabled={isInitialDeviceSync}
               noOptionsMessage="No devices found. Connect a device or launch an emulator/simulator"
             />
             <FLSelect
               options={applicationSelectOptions}
               label="Select App"
               menuListWidth={300}
-              value={selectedApplication}
+              value={selectedApplicationOption}
               icon={<LuPackage color="var(--chakra-colors-flipioPrimary)" />}
               onChange={handlePackageChange}
               isDisabled={!selectedDevice || isLoading}
               showPinIcon={true}
             />
-            {isLoading && (
+            {(isInitialDeviceSync || isLoading) && (
               <Spinner
                 size="sm"
                 color="flipioPrimary"
