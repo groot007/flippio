@@ -33,6 +33,8 @@ const mockSetSelectedDevice = vi.fn()
 const mockSetSelectedApplication = vi.fn()
 const mockSetSelectedDatabaseFile = vi.fn()
 const mockSetSelectedDatabaseTable = vi.fn()
+const mockClearTableData = vi.fn()
+const mockSetSelectedRow = vi.fn()
 const mockAddRecentApp = vi.fn()
 const mockGetRecentAppsForDevice = vi.fn()
 
@@ -94,6 +96,21 @@ vi.mock('@renderer/store', () => ({
     addRecentApp: mockAddRecentApp,
     getRecentAppsForDevice: mockGetRecentAppsForDevice,
   }),
+  useTableData: (selector) => {
+    const state = {
+      clearTableData: mockClearTableData,
+    }
+    return selector(state)
+  },
+}))
+
+vi.mock('@renderer/store/useRowEditingStore', () => ({
+  useRowEditingStore: (selector) => {
+    const state = {
+      setSelectedRow: mockSetSelectedRow,
+    }
+    return selector(state)
+  },
 }))
 
 vi.mock('@renderer/ui/toaster', () => ({

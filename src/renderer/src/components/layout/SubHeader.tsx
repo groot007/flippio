@@ -7,9 +7,12 @@ import {
   Text,
 } from '@chakra-ui/react'
 import { useDatabaseFiles } from '@renderer/hooks/useDatabaseFiles'
+import { fetchDatabaseFilesForSelection } from '@renderer/hooks/useDatabaseFiles'
 import { useDatabaseTables } from '@renderer/hooks/useDatabaseTables'
 import { useTableDataQuery } from '@renderer/hooks/useTableDataQuery'
 import { useCurrentDatabaseSelection, useCurrentDeviceSelection, useTableData } from '@renderer/store'
+import { useRowEditingStore } from '@renderer/store/useRowEditingStore'
+import { useQueryClient } from '@tanstack/react-query'
 import { toaster } from '@renderer/ui/toaster'
 import { groupDatabaseFilesByLocation } from '@renderer/utils/databaseFileGrouping'
 import { useDatabaseRefresh } from '@renderer/utils/databaseRefresh'
@@ -25,7 +28,9 @@ export function SubHeader() {
   const setSelectedApplication = useCurrentDeviceSelection(state => state.setSelectedApplication)
   const {
     setTableData,
+    clearTableData,
   } = useTableData()
+  const setSelectedRow = useRowEditingStore(state => state.setSelectedRow)
   const tableDataStore = useTableData()
   const selectedDatabaseFile = useCurrentDatabaseSelection(state => state.selectedDatabaseFile)
   const setSelectedDatabaseFile = useCurrentDatabaseSelection(state => state.setSelectedDatabaseFile)
@@ -34,6 +39,7 @@ export function SubHeader() {
 
   const [isQueryModalOpen, setIsQueryModalOpen] = useState(false)
   const [isSettingCustomFile, setIsSettingCustomFile] = useState(false)
+  const queryClient = useQueryClient()
 
   // Handle custom file setting with proper sequencing
   useEffect(() => {
@@ -42,6 +48,9 @@ export function SubHeader() {
       console.log('🔧 [SubHeader] Custom file detected, clearing device/application selections')
       setSelectedDevice(null)
       setSelectedApplication(null)
+      setSelectedDatabaseTable(null)
+      clearTableData()
+      setSelectedRow(null)
       
       // Step 2: Mark custom file setting as complete
       setTimeout(() => {
@@ -49,7 +58,7 @@ export function SubHeader() {
         console.log('🔧 [SubHeader] Custom file setup complete')
       }, 100)
     }
-  }, [selectedDatabaseFile, isSettingCustomFile, setSelectedDevice, setSelectedApplication])
+  }, [clearTableData, isSettingCustomFile, selectedDatabaseFile, setSelectedApplication, setSelectedDatabaseTable, setSelectedDevice, setSelectedRow])
 
   const {
     data: databaseFiles = [],
@@ -90,25 +99,84 @@ export function SubHeader() {
   const databaseTables = tablesData?.tables
 
   const handleDatabaseFileChange = useCallback(async (file) => {
+    let resolvedFile = file
+
+    const openSelectedFile = async (candidatePath: string) => {
+      const response = await window.api.openDatabase(candidatePath)
+
+      if (response === true) {
+        return
+      }
+
+      if (!response?.success) {
+        throw new Error(response?.error || 'Failed to open database')
+      }
+    }
+
+    if (
+      file?.deviceType !== 'desktop'
+      && file?.path
+      && selectedDevice
+      && selectedApplication
+    ) {
+      try {
+        await openSelectedFile(file.path)
+      }
+      catch (error) {
+        const resolvedError = error instanceof Error ? error : new Error(String(error))
+
+        if (!resolvedError.message.includes('Database file does not exist')) {
+          throw resolvedError
+        }
+
+        console.warn('CriticalPath: selected database file path is stale, refetching files', {
+          stalePath: file.path,
+          filename: file.filename ?? null,
+          remotePath: file.remotePath ?? null,
+        })
+
+        const refreshedFiles = await queryClient.fetchQuery({
+          queryKey: ['databaseFiles', selectedDevice.id, selectedApplication.bundleId],
+          queryFn: () => fetchDatabaseFilesForSelection(selectedDevice, selectedApplication),
+          staleTime: 0,
+        })
+
+        const matchedFile = refreshedFiles.find(candidate =>
+          (file.remotePath && candidate.remotePath === file.remotePath)
+          || candidate.path === file.path
+          || candidate.filename === file.filename,
+        )
+
+        if (!matchedFile) {
+          throw resolvedError
+        }
+
+        resolvedFile = matchedFile
+        await openSelectedFile(matchedFile.path)
+      }
+    }
+
     console.info('CriticalPath: database file selected', {
-      path: file?.path ?? null,
-      filename: file?.filename ?? null,
-      deviceType: file?.deviceType ?? null,
+      path: resolvedFile?.path ?? null,
+      filename: resolvedFile?.filename ?? null,
+      deviceType: resolvedFile?.deviceType ?? null,
     })
     // Call database switch cleanup if we have a file path
-    if (file?.path) {
+    if (resolvedFile?.path) {
       try {
-        await window.api.switchDatabase(file.path)
-        console.log('Database switch cleanup completed for:', file.path)
+        await window.api.switchDatabase(resolvedFile.path)
+        console.log('Database switch cleanup completed for:', resolvedFile.path)
       }
       catch (error) {
         console.warn('Database switch cleanup failed (non-critical):', error)
       }
     }
     
-    setSelectedDatabaseFile(file)
+    setSelectedDatabaseFile(resolvedFile)
     setSelectedDatabaseTable(null)
-  }, [setSelectedDatabaseFile, setSelectedDatabaseTable])
+    clearTableData()
+    setSelectedRow(null)
+  }, [clearTableData, queryClient, selectedApplication, selectedDevice, setSelectedDatabaseFile, setSelectedDatabaseTable, setSelectedRow])
 
   const handleTableChange = useCallback((table) => {    
     console.info('CriticalPath: table selected', {
@@ -138,6 +206,27 @@ export function SubHeader() {
       ...table,
     })) ?? [], [databaseTables])
 
+  const selectedDatabaseFileOption = useMemo(() => {
+    if (!selectedDatabaseFile) {
+      return null
+    }
+
+    return dbFileOptions
+      .flatMap(group => group.options)
+      .find(file =>
+        file.path === selectedDatabaseFile.path
+        || (selectedDatabaseFile.remotePath && file.remotePath === selectedDatabaseFile.remotePath),
+      ) ?? null
+  }, [dbFileOptions, selectedDatabaseFile])
+
+  const selectedDatabaseTableOption = useMemo(() => {
+    if (!selectedDatabaseTable) {
+      return null
+    }
+
+    return tableOptions.find(table => table.name === selectedDatabaseTable.name) ?? null
+  }, [selectedDatabaseTable, tableOptions])
+
   // Handler to clear custom query and show default table rows
   const handleClearCustomQuery = useCallback(() => {
     if (!selectedDatabaseTable) 
@@ -155,8 +244,10 @@ export function SubHeader() {
   useEffect(() => {
     if (!selectedDatabaseFile?.filename) {
       setSelectedDatabaseTable(null)
+      clearTableData()
+      setSelectedRow(null)
     }
-  }, [selectedDatabaseFile])
+  }, [clearTableData, selectedDatabaseFile, setSelectedDatabaseTable, setSelectedRow])
 
   const { refresh: handleDBRefresh, isLoading: isRefreshing } = useDatabaseRefresh()
 
@@ -287,7 +378,7 @@ export function SubHeader() {
                 <FLSelect
                   label="Select Database"
                   options={dbFileOptions}
-                  value={selectedDatabaseFile}
+                  value={selectedDatabaseFileOption}
                   icon={<LuDatabase color="var(--chakra-colors-flipioPrimary)" />}
                   onChange={handleDatabaseFileChange}
                   isDisabled={!selectedApplication?.bundleId || isDBPulling}
@@ -299,7 +390,7 @@ export function SubHeader() {
             <FLSelect
               label="Select Table"
               options={tableOptions}
-              value={selectedDatabaseTable}
+              value={selectedDatabaseTableOption}
               icon={<LuTable color="var(--chakra-colors-flipioPrimary)" />}
               onChange={handleTableChange}
               isDisabled={isTableSelectDisabled}

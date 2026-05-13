@@ -11,6 +11,7 @@ interface TableData {
 interface TableDataHook {
   tableData: TableData | null
   setTableData: (data: TableData) => void
+  clearTableData: () => void
   isLoadingTableData: boolean
   setIsLoadingTableData: (loading: boolean) => void
 }
@@ -18,6 +19,7 @@ interface TableDataHook {
 export const useTableData = create<TableDataHook>((set, _get) => ({
   tableData: null,
   setTableData: data => set({ tableData: data }),
+  clearTableData: () => set({ tableData: null }),
   isLoadingTableData: false,
   setIsLoadingTableData: loading => set({ isLoadingTableData: loading }),
 }))

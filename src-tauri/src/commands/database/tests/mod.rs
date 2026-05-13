@@ -68,6 +68,7 @@ pub fn create_test_database(db_path: &str) -> Result<(), rusqlite::Error> {
 mod tests {
     use super::*;
     use crate::commands::database::helpers::*;
+    use sqlx::Row;
 
     #[tokio::test]
     async fn test_database_connection_manager() {
@@ -89,6 +90,59 @@ mod tests {
         
         // Test closing connection
         let _ = manager.close_connection(db_path.to_str().unwrap()).await;
+    }
+
+    #[tokio::test]
+    async fn test_connection_manager_read_after_write_returns_fresh_data() {
+        let temp_dir = TempDir::new().unwrap();
+        let db_path = temp_dir.path().join("critical_path.db");
+
+        create_test_database(db_path.to_str().unwrap()).unwrap();
+
+        let manager = DatabaseConnectionManager::new();
+        let pool = manager.get_connection(db_path.to_str().unwrap()).await.unwrap();
+
+        sqlx::query("UPDATE users SET name = ? WHERE id = ?")
+            .bind("Updated John")
+            .bind(1_i64)
+            .execute(&pool)
+            .await
+            .unwrap();
+
+        let updated_name: String = sqlx::query("SELECT name FROM users WHERE id = ?")
+            .bind(1_i64)
+            .fetch_one(&pool)
+            .await
+            .unwrap()
+            .get("name");
+
+        assert_eq!(updated_name, "Updated John");
+
+        sqlx::query("INSERT INTO users (name, email, age, active) VALUES (?, ?, ?, ?)")
+            .bind("New User")
+            .bind("new@example.com")
+            .bind(22_i64)
+            .bind(true)
+            .execute(&pool)
+            .await
+            .unwrap();
+
+        let count: i64 = sqlx::query("SELECT COUNT(*) as count FROM users")
+            .fetch_one(&pool)
+            .await
+            .unwrap()
+            .get("count");
+
+        assert_eq!(count, 4);
+    }
+
+    #[tokio::test]
+    async fn test_connection_manager_missing_path_returns_clean_error() {
+        let manager = DatabaseConnectionManager::new();
+        let result = manager.get_connection("/tmp/definitely-missing-flippio.db").await;
+
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("Database file does not exist"));
     }
 
     #[test]

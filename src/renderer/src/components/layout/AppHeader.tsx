@@ -3,7 +3,8 @@ import { DeviceInfoModal } from '@renderer/components/common/DeviceInfoModal'
 import { fetchApplicationsForDevice, useApplications } from '@renderer/hooks/useApplications'
 import { fetchDatabaseFilesForSelection } from '@renderer/hooks/useDatabaseFiles'
 import { useDevices } from '@renderer/hooks/useDevices'
-import { useCurrentDatabaseSelection, useCurrentDeviceSelection, useRecentlyUsedApps } from '@renderer/store'
+import { useCurrentDatabaseSelection, useCurrentDeviceSelection, useRecentlyUsedApps, useTableData } from '@renderer/store'
+import { useRowEditingStore } from '@renderer/store/useRowEditingStore'
 import { toaster } from '@renderer/ui/toaster'
 import { useQueryClient } from '@tanstack/react-query'
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -23,6 +24,8 @@ function AppHeader() {
   const selectedDatabaseFile = useCurrentDatabaseSelection(state => state.selectedDatabaseFile)
   const setSelectedDatabaseFile = useCurrentDatabaseSelection(state => state.setSelectedDatabaseFile)
   const setSelectedDatabaseTable = useCurrentDatabaseSelection(state => state.setSelectedDatabaseTable)
+  const clearTableData = useTableData(state => state.clearTableData)
+  const setSelectedRow = useRowEditingStore(state => state.setSelectedRow)
   
   const { addRecentApp, getRecentAppsForDevice } = useRecentlyUsedApps()
   const queryClient = useQueryClient()
@@ -143,6 +146,8 @@ function AppHeader() {
       setSelectedApplication(null)
       setSelectedDevice(null)
       setSelectedDatabaseTable(null)
+      clearTableData()
+      setSelectedRow(null)
       
       // Only clear database file if it's not a custom file (desktop type)
       if (selectedDatabaseFile?.deviceType !== 'desktop') {
@@ -172,6 +177,8 @@ function AppHeader() {
       setSelectedApplication(null)
       setSelectedDatabaseTable(null)
       setSelectedDatabaseFile(null)
+      clearTableData()
+      setSelectedRow(null)
       return
     }
 
@@ -196,6 +203,8 @@ function AppHeader() {
         setSelectedDevice(null)
         setSelectedApplication(null)
         setSelectedDatabaseTable(null)
+        clearTableData()
+        setSelectedRow(null)
         if (selectedDatabaseFile?.deviceType !== 'desktop') {
           setSelectedDatabaseFile(null)
         }
@@ -232,6 +241,8 @@ function AppHeader() {
                 else {
                   setSelectedDatabaseFile(null)
                   setSelectedDatabaseTable(null)
+                  clearTableData()
+                  setSelectedRow(null)
                 }
               }
             }
@@ -240,6 +251,8 @@ function AppHeader() {
             setSelectedApplication(null)
             setSelectedDatabaseFile(null)
             setSelectedDatabaseTable(null)
+            clearTableData()
+            setSelectedRow(null)
           }
         }
       }
@@ -366,8 +379,11 @@ function AppHeader() {
     })
     setSelectedDevice(value)
     setSelectedApplication(null)
+    setSelectedDatabaseFile(null)
     setSelectedDatabaseTable(null)
-  }, [setSelectedApplication, setSelectedDatabaseTable, setSelectedDevice])
+    clearTableData()
+    setSelectedRow(null)
+  }, [clearTableData, setSelectedApplication, setSelectedDatabaseFile, setSelectedDatabaseTable, setSelectedDevice, setSelectedRow])
 
   const handlePackageChange = useCallback((value) => {
     console.info('CriticalPath: app selected', {
@@ -376,13 +392,16 @@ function AppHeader() {
       appName: value?.name ?? null,
     })
     setSelectedDatabaseFile(null)
+    setSelectedDatabaseTable(null)
     setSelectedApplication(value)
+    clearTableData()
+    setSelectedRow(null)
     
     // Add to recently used apps if we have a device and app selected
     if (selectedDevice && value) {
       addRecentApp(value, selectedDevice.id, selectedDevice.name || selectedDevice.id)
     }
-  }, [setSelectedApplication, setSelectedDatabaseFile, selectedDevice, addRecentApp])
+  }, [addRecentApp, clearTableData, selectedDevice, setSelectedApplication, setSelectedDatabaseFile, setSelectedDatabaseTable, setSelectedRow])
 
   const handleOpenVirtualDeviceModal = useCallback(() => {
     setIsVirtualDeviceModalOpen(true)
