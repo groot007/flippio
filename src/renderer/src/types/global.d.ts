@@ -95,6 +95,7 @@ declare global {
           extensions: string[]
         }>
       }) => Promise<any>
+      exportLogs: () => Promise<string | null>
       webUtils: any // Changed from WebUtils to any
 
       // Virtual device methods

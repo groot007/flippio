@@ -28,7 +28,8 @@
             "core:window:allow-set-title",
             "shell:allow-open",
             "fs:default",
-            "dialog:default"
+            "dialog:default",
+            "log:default"
           ]
         }
       ]

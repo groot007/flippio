@@ -50,6 +50,7 @@ vi.mock('@renderer/store/useRowEditingStore', () => ({
 vi.mock('@renderer/store', () => ({
   useCurrentDeviceSelection: () => ({
     selectedDevice: { id: 'device1', name: 'Test Device' },
+    selectedApplication: { bundleId: 'com.test.app', name: 'Test App' },
   }),
   useCurrentDatabaseSelection: () => ({
     selectedDatabaseFile: { 

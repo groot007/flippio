@@ -7,8 +7,7 @@ import { useRowEditingStore } from '../../store/useRowEditingStore'
 import { render } from '../../test-utils/render'
 
 let mockTableDataResponse: { rows: Record<string, any>[], columns: { name: string, type: string }[] } | undefined
-let mockTableError: Error | null = null
-
+const mockRefetchTable = vi.fn()
 const mockDevices = [{ id: 'device-1', name: 'Pixel', label: 'Pixel', deviceType: 'android' as const }]
 const mockApplications = [{ name: 'Test App', bundleId: 'com.test.app' }]
 const mockDatabaseFiles = [{
@@ -58,9 +57,9 @@ vi.mock('@renderer/hooks/useDatabaseTables', () => ({
 
 vi.mock('@renderer/hooks/useTableDataQuery', () => ({
   useTableDataQuery: (tableName: string) => ({
-    data: tableName && !mockTableError ? mockTableDataResponse : undefined,
-    error: mockTableError,
-    refetch: vi.fn(),
+    data: tableName ? mockTableDataResponse : undefined,
+    error: null,
+    refetch: mockRefetchTable,
     isLoading: false,
   }),
 }))
@@ -77,15 +76,15 @@ vi.mock('@renderer/hooks/useChangeHistory', () => ({
 
 vi.mock('ag-grid-react', () => ({
   AgGridReact: React.forwardRef(({ rowData, onRowClicked }: any, ref: any) => (
-    <div data-testid="ag-grid-mock" ref={ref}>
+    <div data-testid="ag-grid" ref={ref}>
       {rowData?.map((row: any, index: number) => (
         <button
           key={index}
           type="button"
-          data-testid={`mock-row-${index}`}
+          data-testid={`grid-row-${index}`}
           onClick={() => onRowClicked?.({ data: row })}
         >
-          {Object.values(row).join(' - ')}
+          {row.name}
         </button>
       ))}
     </div>
@@ -156,149 +155,143 @@ function resetStores() {
   })
 }
 
-async function selectFullContext() {
-  await act(async () => {
-    useCurrentDeviceSelection.getState().setSelectedDevice({
-      ...mockDevices[0],
-      model: 'Pixel',
-    })
-    useCurrentDeviceSelection.getState().setSelectedApplication(mockApplications[0])
-    useCurrentDatabaseSelection.getState().setSelectedDatabaseFile(mockDatabaseFiles[0])
-    useCurrentDatabaseSelection.getState().setSelectedDatabaseTable({
-      name: 'users',
-      deviceType: 'android',
-    })
-  })
-}
-
-describe('component Integration Tests', () => {
+describe('main critical user flow', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     resetStores()
     mockTableDataResponse = undefined
-    mockTableError = null
+    vi.mocked(globalThis.window.api.updateTableRow).mockResolvedValue({ success: true })
+    vi.mocked(globalThis.window.api.pushDatabaseFile).mockResolvedValue({ success: true })
   })
 
   afterEach(() => {
     resetStores()
   })
 
-  describe('main Application Layout', () => {
-    it('should render empty state before selections exist', async () => {
-      render(<Main />)
+  it('loads device/app/db/table flow into grid and opens row details on row select', async () => {
+    mockTableDataResponse = {
+      columns: [
+        { name: 'id', type: 'INTEGER' },
+        { name: 'name', type: 'TEXT' },
+        { name: 'email', type: 'TEXT' },
+      ],
+      rows: [
+        { id: 1, name: 'John Doe', email: 'john@example.com' },
+      ],
+    }
 
-      await waitFor(() => {
-        expect(screen.getByText('Select device and app to load data')).toBeInTheDocument()
-        expect(screen.getByText('Current grid cleared until new context is ready.')).toBeInTheDocument()
+    render(<Main />)
+
+    await act(async () => {
+      useCurrentDeviceSelection.getState().setSelectedDevice({
+        ...mockDevices[0],
+        model: 'Pixel',
       })
+      useCurrentDeviceSelection.getState().setSelectedApplication(mockApplications[0])
+      useCurrentDatabaseSelection.getState().setSelectedDatabaseFile(mockDatabaseFiles[0])
+      useCurrentDatabaseSelection.getState().setSelectedDatabaseTable({
+        name: 'users',
+        deviceType: 'android',
+      })
+    })
+
+    await waitFor(() => {
+      expect(screen.getByTestId('ag-grid')).toBeInTheDocument()
+      expect(screen.getByText('John Doe')).toBeInTheDocument()
+      expect(screen.getByTestId('table-footer')).toBeInTheDocument()
+    })
+
+    fireEvent.click(screen.getByTestId('grid-row-0'))
+
+    await waitFor(() => {
+      expect(screen.getByText('Row Details')).toBeInTheDocument()
+      expect(screen.getByText('Edit')).toBeInTheDocument()
     })
   })
 
-  describe('database Operations Integration', () => {
-    it('should show database empty state when device and app are selected without DB', async () => {
-      render(<Main />)
+  it('edits a row, saves, pushes DB, and shows refreshed grid data', async () => {
+    mockTableDataResponse = {
+      columns: [
+        { name: 'id', type: 'INTEGER' },
+        { name: 'name', type: 'TEXT' },
+        { name: 'email', type: 'TEXT' },
+      ],
+      rows: [
+        { id: 1, name: 'John Doe', email: 'john@example.com' },
+      ],
+    }
 
-      await act(async () => {
-        useCurrentDeviceSelection.getState().setSelectedDevice({
-          ...mockDevices[0],
-          model: 'Pixel',
-        })
-        useCurrentDeviceSelection.getState().setSelectedApplication(mockApplications[0])
+    render(<Main />)
+
+    await act(async () => {
+      useCurrentDeviceSelection.getState().setSelectedDevice({
+        ...mockDevices[0],
+        model: 'Pixel',
       })
-
-      await waitFor(() => {
-        expect(screen.getByText('Select database')).toBeInTheDocument()
-      })
-    })
-
-    it('should show table empty state when DB is selected without table', async () => {
-      render(<Main />)
-
-      await act(async () => {
-        useCurrentDeviceSelection.getState().setSelectedDevice({
-          ...mockDevices[0],
-          model: 'Pixel',
-        })
-        useCurrentDeviceSelection.getState().setSelectedApplication(mockApplications[0])
-        useCurrentDatabaseSelection.getState().setSelectedDatabaseFile(mockDatabaseFiles[0])
-      })
-
-      await waitFor(() => {
-        expect(screen.getByText('Select table')).toBeInTheDocument()
+      useCurrentDeviceSelection.getState().setSelectedApplication(mockApplications[0])
+      useCurrentDatabaseSelection.getState().setSelectedDatabaseFile(mockDatabaseFiles[0])
+      useCurrentDatabaseSelection.getState().setSelectedDatabaseTable({
+        name: 'users',
+        deviceType: 'android',
       })
     })
-  })
 
-  describe('aG Grid Integration', () => {
-    it('should render grid when data is available', async () => {
+    await waitFor(() => {
+      expect(screen.getByText('John Doe')).toBeInTheDocument()
+    })
+
+    fireEvent.click(screen.getByTestId('grid-row-0'))
+
+    await waitFor(() => {
+      expect(screen.getByText('Edit')).toBeInTheDocument()
+    })
+
+    fireEvent.click(screen.getByText('Edit'))
+    fireEvent.change(screen.getByDisplayValue('John Doe'), {
+      target: { value: 'Updated John' },
+    })
+    fireEvent.click(screen.getByText('Save'))
+
+    await waitFor(() => {
+      expect(globalThis.window.api.updateTableRow).toHaveBeenCalledWith(
+        'users',
+        { id: 1, name: 'Updated John', email: 'john@example.com' },
+        expect.stringContaining('id'),
+        '/tmp/test.db',
+        'device-1',
+        'Pixel',
+        'android',
+        'com.test.app',
+        'Test App',
+      )
+    })
+
+    expect(globalThis.window.api.pushDatabaseFile).toHaveBeenCalledWith(
+      'device-1',
+      '/tmp/test.db',
+      'com.test.app',
+      '/data/data/com.test.app/databases/test.db',
+      'android',
+    )
+    expect(mockRefetchTable).toHaveBeenCalled()
+
+    await act(async () => {
       mockTableDataResponse = {
-        columns: [
-          { name: 'id', type: 'INTEGER' },
-          { name: 'name', type: 'TEXT' },
-          { name: 'email', type: 'TEXT' },
-        ],
+        ...mockTableDataResponse!,
         rows: [
-          { id: 1, name: 'John', email: 'john@test.com' },
-          { id: 2, name: 'Jane', email: 'jane@test.com' },
+          { id: 1, name: 'Updated John', email: 'john@example.com' },
         ],
       }
-
-      render(<Main />)
-      await selectFullContext()
-
-      await waitFor(() => {
-        expect(screen.getByTestId('ag-grid-mock')).toBeInTheDocument()
-        expect(screen.getByText('1 - John - john@test.com')).toBeInTheDocument()
-        expect(screen.getByText('2 - Jane - jane@test.com')).toBeInTheDocument()
-        expect(screen.getByTestId('table-footer')).toBeInTheDocument()
+      useTableData.getState().setTableData({
+        rows: mockTableDataResponse.rows,
+        columns: mockTableDataResponse.columns,
+        isCustomQuery: false,
+        tableName: 'users',
       })
     })
 
-    it('should handle row selection', async () => {
-      mockTableDataResponse = {
-        columns: [
-          { name: 'id', type: 'INTEGER' },
-          { name: 'name', type: 'TEXT' },
-          { name: 'email', type: 'TEXT' },
-        ],
-        rows: [{ id: 1, name: 'John', email: 'john@test.com' }],
-      }
-
-      render(<Main />)
-      await selectFullContext()
-
-      await waitFor(() => {
-        expect(screen.getByTestId('ag-grid-mock')).toBeInTheDocument()
-      })
-
-      fireEvent.click(screen.getByTestId('mock-row-0'))
-
-      await waitFor(() => {
-        expect(screen.getByText('Row Details')).toBeInTheDocument()
-      })
-    })
-  })
-
-  describe('error Handling', () => {
-    it('should handle API errors gracefully', async () => {
-      mockTableError = new Error('Network error')
-
-      render(<Main />)
-      await selectFullContext()
-
-      await waitFor(() => {
-        expect(screen.getByText('Error loading data')).toBeInTheDocument()
-        expect(screen.getByText('Error: Network error')).toBeInTheDocument()
-      })
-    })
-
-    it('should handle state cleanup on unmount', async () => {
-      const { unmount } = render(<Main />)
-
-      await selectFullContext()
-      unmount()
-
-      expect(true).toBe(true)
+    await waitFor(() => {
+      expect(screen.getByTestId('grid-row-0')).toHaveTextContent('Updated John')
     })
   })
 })

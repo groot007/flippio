@@ -51,6 +51,25 @@ export function DataGrid() {
   const [pageSize, setPageSize] = useState(20)
 
   const { data, error, refetch: refetchTableData } = useTableDataQuery(selectedDatabaseTable?.name || '')
+  const emptyStateMessage = useMemo(() => {
+    if (!selectedDevice && !selectedDatabaseFile) {
+      return 'Select device and app to load data'
+    }
+
+    if (!selectedApplication && selectedDatabaseFile?.deviceType !== 'desktop') {
+      return 'Select app to load data'
+    }
+
+    if (!selectedDatabaseFile?.path) {
+      return 'Select database'
+    }
+
+    if (!selectedDatabaseTable?.name && !tableData?.isCustomQuery) {
+      return 'Select table'
+    }
+
+    return null
+  }, [selectedApplication, selectedDatabaseFile, selectedDatabaseTable?.name, selectedDevice, tableData?.isCustomQuery])
 
   // Function to create a new row with null values
   const handleAddNewRow = useCallback(async () => {
@@ -258,6 +277,15 @@ export function DataGrid() {
       <Center height="calc(100vh - 140px)" flexDirection="column">
         <Text fontSize="xl" mb={4} color="red.500">Error loading data</Text>
         <Text color="gray.500">{String(error)}</Text>
+      </Center>
+    )
+  }
+
+  if (emptyStateMessage) {
+    return (
+      <Center height="calc(100vh - 140px)" flexDirection="column">
+        <Text fontSize="lg" fontWeight="medium" color="textPrimary">{emptyStateMessage}</Text>
+        <Text color="textSecondary">Current grid cleared until new context is ready.</Text>
       </Center>
     )
   }

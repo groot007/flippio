@@ -1,4 +1,5 @@
-import { useCurrentDatabaseSelection } from '@renderer/store'
+import { useCurrentDatabaseSelection, useCurrentDeviceSelection } from '@renderer/store'
+import { ensureActiveDatabaseFile } from '@renderer/utils/databaseFileResolver'
 import { useQuery } from '@tanstack/react-query'
 
 interface TableDataResponse {
@@ -10,6 +11,9 @@ interface TableDataResponse {
 
 export function useTableDataQuery(tableName: string) {
   const selectedDatabaseFile = useCurrentDatabaseSelection(state => state.selectedDatabaseFile)
+  const setSelectedDatabaseFile = useCurrentDatabaseSelection(state => state.setSelectedDatabaseFile)
+  const selectedDevice = useCurrentDeviceSelection(state => state.selectedDevice)
+  const selectedApplication = useCurrentDeviceSelection(state => state.selectedApplication)
   
   return useQuery({
     queryKey: ['tableData', tableName, selectedDatabaseFile?.path],
@@ -22,19 +26,37 @@ export function useTableDataQuery(tableName: string) {
         throw new Error('No database file selected')
       }
 
-      // Ensure database is opened before fetching table data
-      console.log('🔄 Opening database before fetching table data:', selectedDatabaseFile.path)
-      const openResponse = await window.api.openDatabase(selectedDatabaseFile.path)
-      
-      if (!openResponse.success) {
-        throw new Error(openResponse.error || 'Failed to open database')
-      }
+      console.info('CriticalPath: table data load started', {
+        databasePath: selectedDatabaseFile.path,
+        tableName,
+      })
+
+      let resolvedDatabaseFile = await ensureActiveDatabaseFile({
+        databaseFile: selectedDatabaseFile,
+        selectedDevice,
+        selectedApplication,
+        setSelectedDatabaseFile,
+      })
+
+      console.log('🔄 Opening database before fetching table data:', resolvedDatabaseFile.path)
 
       // Small delay to ensure connection is established
       await new Promise(resolve => setTimeout(resolve, 100))
 
       console.log('📊 Fetching table data for:', tableName)
-      const response: TableDataResponse = await window.api.getTableInfo(tableName, selectedDatabaseFile.path)
+      let response: TableDataResponse = await window.api.getTableInfo(tableName, resolvedDatabaseFile.path)
+
+      if (!response.success && response.error?.includes('Database file does not exist')) {
+        resolvedDatabaseFile = await ensureActiveDatabaseFile({
+          databaseFile: resolvedDatabaseFile,
+          selectedDevice,
+          selectedApplication,
+          setSelectedDatabaseFile,
+          forceRefresh: true,
+        })
+        response = await window.api.getTableInfo(tableName, resolvedDatabaseFile.path)
+      }
+
       console.log('Table data response:', response)
 
       if (!response.success) {
@@ -44,6 +66,13 @@ export function useTableDataQuery(tableName: string) {
       if (!response.columns || !response.rows) {
         throw new Error('Invalid data structure received')
       }
+
+      console.info('CriticalPath: table data load completed', {
+        databasePath: resolvedDatabaseFile.path,
+        tableName,
+        rowCount: response.rows.length,
+        columnCount: response.columns.length,
+      })
 
       return {
         columns: response.columns,

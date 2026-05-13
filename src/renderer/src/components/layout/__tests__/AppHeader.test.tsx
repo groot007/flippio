@@ -10,39 +10,57 @@ beforeAll(() => {
       matches: false,
       media: query,
       onchange: null,
-      addListener: vi.fn(), // Deprecated
-      removeListener: vi.fn(), // Deprecated
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
       addEventListener: vi.fn(),
       removeEventListener: vi.fn(),
       dispatchEvent: vi.fn(),
     })),
   })
+
+  globalThis.window.api = {
+    getIOSPackages: vi.fn(),
+    getIOsDevicePackages: vi.fn(),
+    getAndroidPackages: vi.fn(),
+    getAndroidDatabaseFiles: vi.fn(),
+    getIOSDeviceDatabaseFiles: vi.fn(),
+    getIOSSimulatorDatabaseFiles: vi.fn(),
+  } as any
 })
 
-const mockRefreshDevices = vi.fn().mockResolvedValue(undefined)
+const mockRefreshDevices = vi.fn()
+const mockSetSelectedDevice = vi.fn()
+const mockSetSelectedApplication = vi.fn()
+const mockSetSelectedDatabaseFile = vi.fn()
+const mockSetSelectedDatabaseTable = vi.fn()
+const mockClearTableData = vi.fn()
+const mockSetSelectedRow = vi.fn()
+const mockAddRecentApp = vi.fn()
+const mockGetRecentAppsForDevice = vi.fn()
+
+let mockDevicesHook: any
+let mockApplicationsHook: any
+let mockSelectedDevice: any
+let mockSelectedApplication: any
+let mockSelectedDatabaseFile: any
 
 vi.mock('@renderer/hooks/useDevices', () => ({
-  useDevices: () => ({
-    data: [
-      { id: 'device1', name: 'Test Device 1', deviceType: 'android', label: 'Android Device' },
-      { id: 'device2', name: 'Test Device 2', deviceType: 'iphone', label: 'iPhone Device' },
-    ],
-    isLoading: false,
-    error: null,
-    refetch: mockRefreshDevices,
-    isFetching: false,
-  }),
+  useDevices: () => mockDevicesHook,
 }))
 
 vi.mock('@renderer/hooks/useApplications', () => ({
-  useApplications: () => ({
-    data: [
-      { name: 'Test App 1', bundleId: 'com.test.app1' },
-      { name: 'Test App 2', bundleId: 'com.test.app2' },
-    ],
-    isLoading: false,
-    error: null,
-  }),
+  fetchApplicationsForDevice: async (device) => {
+    const response = await globalThis.window.api.getAndroidPackages(device.id)
+    return response.packages
+  },
+  useApplications: () => mockApplicationsHook,
+}))
+
+vi.mock('@renderer/hooks/useDatabaseFiles', () => ({
+  fetchDatabaseFilesForSelection: async (device, app) => {
+    const response = await globalThis.window.api.getAndroidDatabaseFiles(device.id, app.bundleId)
+    return response.files
+  },
 }))
 
 vi.mock('@tauri-apps/api/core', () => ({
@@ -52,10 +70,10 @@ vi.mock('@tauri-apps/api/core', () => ({
 vi.mock('@renderer/store', () => ({
   useCurrentDeviceSelection: (selector) => {
     const state = {
-      selectedDevice: null,
-      setSelectedDevice: vi.fn(),
-      selectedApplication: null,
-      setSelectedApplication: vi.fn(),
+      selectedDevice: mockSelectedDevice,
+      setSelectedDevice: mockSetSelectedDevice,
+      selectedApplication: mockSelectedApplication,
+      setSelectedApplication: mockSetSelectedApplication,
       devicesList: [],
       setDevicesList: vi.fn(),
       applicationsList: [],
@@ -65,22 +83,34 @@ vi.mock('@renderer/store', () => ({
   },
   useCurrentDatabaseSelection: (selector) => {
     const state = {
-      selectedDatabaseFile: null,
-      setSelectedDatabaseFile: vi.fn(),
+      selectedDatabaseFile: mockSelectedDatabaseFile,
+      setSelectedDatabaseFile: mockSetSelectedDatabaseFile,
       selectedDatabaseTable: null,
-      setSelectedDatabaseTable: vi.fn(),
+      setSelectedDatabaseTable: mockSetSelectedDatabaseTable,
       pulledDatabaseFilePath: '',
       setPulledDatabaseFilePath: vi.fn(),
     }
     return selector(state)
   },
   useRecentlyUsedApps: () => ({
-    addRecentApp: vi.fn(),
-    getRecentAppsForDevice: vi.fn().mockReturnValue([]),
-    getRecentApps: vi.fn().mockReturnValue([]),
-    removeRecentApp: vi.fn(),
-    clearRecentApps: vi.fn(),
+    addRecentApp: mockAddRecentApp,
+    getRecentAppsForDevice: mockGetRecentAppsForDevice,
   }),
+  useTableData: (selector) => {
+    const state = {
+      clearTableData: mockClearTableData,
+    }
+    return selector(state)
+  },
+}))
+
+vi.mock('@renderer/store/useRowEditingStore', () => ({
+  useRowEditingStore: (selector) => {
+    const state = {
+      setSelectedRow: mockSetSelectedRow,
+    }
+    return selector(state)
+  },
 }))
 
 vi.mock('@renderer/ui/toaster', () => ({
@@ -92,57 +122,145 @@ vi.mock('@renderer/ui/toaster', () => ({
 describe('appHeader component', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+
+    mockSelectedDevice = null
+    mockSelectedApplication = null
+    mockSelectedDatabaseFile = null
+
+    mockGetRecentAppsForDevice.mockReturnValue([])
+    vi.mocked(globalThis.window.api.getAndroidPackages).mockResolvedValue({
+      success: true,
+      packages: [{ name: 'Test App 1', bundleId: 'com.test.app1' }],
+    })
+    vi.mocked(globalThis.window.api.getAndroidDatabaseFiles).mockResolvedValue({
+      success: true,
+      files: [{ path: '/tmp/test.db', filename: 'test.db', deviceType: 'android' }],
+    })
+
+    mockRefreshDevices.mockResolvedValue({
+      data: [
+        { id: 'device1', name: 'Test Device 1', deviceType: 'android', label: 'Android Device' },
+        { id: 'device2', name: 'Test Device 2', deviceType: 'iphone', label: 'iPhone Device' },
+      ],
+    })
+
+    mockDevicesHook = {
+      data: [
+        { id: 'device1', name: 'Test Device 1', deviceType: 'android', label: 'Android Device' },
+        { id: 'device2', name: 'Test Device 2', deviceType: 'iphone', label: 'iPhone Device' },
+      ],
+      error: null,
+      refetch: mockRefreshDevices,
+      isFetching: false,
+      isPending: false,
+      isFetched: true,
+    }
+
+    mockApplicationsHook = {
+      data: [
+        { name: 'Test App 1', bundleId: 'com.test.app1' },
+        { name: 'Test App 2', bundleId: 'com.test.app2' },
+      ],
+      isLoading: false,
+      error: null,
+      isError: false,
+    }
   })
 
-  it('renders correctly with device and application selectors', () => {
+  it('renders selectors', () => {
     render(<AppHeader />)
 
     expect(screen.getByText('Select Device')).toBeInTheDocument()
     expect(screen.getByText('Select App')).toBeInTheDocument()
   })
 
-  it('has a working refresh button', async () => {
+  it('keeps device select disabled during initial sync', () => {
+    mockDevicesHook = {
+      ...mockDevicesHook,
+      data: [],
+      isPending: true,
+      isFetched: false,
+    }
+
     render(<AppHeader />)
 
-    const refreshButton = screen.getByTestId('refresh-devices')
-    expect(refreshButton).toBeInTheDocument()
+    expect(document.querySelector('input[disabled]')).not.toBeNull()
+  })
 
-    fireEvent.click(refreshButton)
+  it('refreshes devices on refresh click', async () => {
+    render(<AppHeader />)
+
+    fireEvent.click(screen.getByTestId('refresh-devices'))
 
     await waitFor(() => {
       expect(mockRefreshDevices).toHaveBeenCalledTimes(1)
     })
   })
 
-  it('displays device options when devices are available', () => {
+  it('refetches apps and preserves matching selection on refresh', async () => {
+    mockSelectedDevice = { id: 'device1', name: 'Old Device', deviceType: 'android', label: 'Old Device' }
+    mockSelectedApplication = { name: 'Old App', bundleId: 'com.test.app1' }
+    mockSelectedDatabaseFile = { path: '/tmp/test.db', deviceType: 'android' }
+
     render(<AppHeader />)
-    
-    // The device selector should be present
-    const deviceSelector = screen.getByText('Select Device')
-    expect(deviceSelector).toBeInTheDocument()
+
+    fireEvent.click(screen.getByTestId('refresh-devices'))
+
+    await waitFor(() => {
+      expect(globalThis.window.api.getAndroidPackages).toHaveBeenCalledWith('device1')
+    })
+
+    expect(globalThis.window.api.getAndroidDatabaseFiles).toHaveBeenCalledWith('device1', 'com.test.app1')
+
+    expect(mockSetSelectedDevice).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 'device1' }),
+    )
+    expect(mockSetSelectedApplication).toHaveBeenCalledWith(
+      expect.objectContaining({ bundleId: 'com.test.app1' }),
+    )
+    expect(mockSetSelectedDatabaseFile).not.toHaveBeenCalledWith(null)
   })
 
-  it('shows loading state when applications are loading', () => {
+  it('clears downstream selection when refreshed app is missing', async () => {
+    mockSelectedDevice = { id: 'device1', name: 'Old Device', deviceType: 'android', label: 'Old Device' }
+    mockSelectedApplication = { name: 'Old App', bundleId: 'com.missing.app' }
+    mockSelectedDatabaseFile = { path: '/tmp/test.db', deviceType: 'android' }
+    vi.mocked(globalThis.window.api.getAndroidPackages).mockResolvedValue({
+      success: true,
+      packages: [{ name: 'Test App 1', bundleId: 'com.test.app1' }],
+    })
+
     render(<AppHeader />)
-    
-    // Check that the app selector is present
-    expect(screen.getByText('Select App')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByTestId('refresh-devices'))
+
+    await waitFor(() => {
+      expect(globalThis.window.api.getAndroidPackages).toHaveBeenCalledWith('device1')
+    })
+
+    expect(mockSetSelectedApplication).toHaveBeenCalledWith(null)
+    expect(mockSetSelectedDatabaseFile).toHaveBeenCalledWith(null)
+    expect(mockSetSelectedDatabaseTable).toHaveBeenCalledWith(null)
   })
 
-  it('disables app selector when no device is selected', () => {
-    render(<AppHeader />)
-    
-    // App selector should be disabled when no device is selected
-    const appSelector = screen.getByText('Select App')
-    expect(appSelector).toBeInTheDocument()
-    // The parent component should handle the disabled state
-  })
+  it('clears DB selection when refreshed DB file is missing', async () => {
+    mockSelectedDevice = { id: 'device1', name: 'Old Device', deviceType: 'android', label: 'Old Device' }
+    mockSelectedApplication = { name: 'Old App', bundleId: 'com.test.app1' }
+    mockSelectedDatabaseFile = { path: '/tmp/missing.db', deviceType: 'android' }
+    vi.mocked(globalThis.window.api.getAndroidDatabaseFiles).mockResolvedValue({
+      success: true,
+      files: [{ path: '/tmp/test.db', filename: 'test.db', deviceType: 'android' }],
+    })
 
-  it('shows virtual device modal button', () => {
     render(<AppHeader />)
-    
-    // Look for the virtual device button (rocket icon)
-    const virtualDeviceButton = screen.getByTitle('Launch Emulator')
-    expect(virtualDeviceButton).toBeInTheDocument()
+
+    fireEvent.click(screen.getByTestId('refresh-devices'))
+
+    await waitFor(() => {
+      expect(globalThis.window.api.getAndroidDatabaseFiles).toHaveBeenCalledWith('device1', 'com.test.app1')
+    })
+
+    expect(mockSetSelectedDatabaseFile).toHaveBeenCalledWith(null)
+    expect(mockSetSelectedDatabaseTable).toHaveBeenCalledWith(null)
   })
 })

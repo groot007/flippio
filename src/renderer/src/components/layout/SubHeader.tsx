@@ -10,9 +10,12 @@ import { useDatabaseFiles } from '@renderer/hooks/useDatabaseFiles'
 import { useDatabaseTables } from '@renderer/hooks/useDatabaseTables'
 import { useTableDataQuery } from '@renderer/hooks/useTableDataQuery'
 import { useCurrentDatabaseSelection, useCurrentDeviceSelection, useTableData } from '@renderer/store'
+import { useRowEditingStore } from '@renderer/store/useRowEditingStore'
 import { toaster } from '@renderer/ui/toaster'
 import { groupDatabaseFilesByLocation } from '@renderer/utils/databaseFileGrouping'
+import { ensureActiveDatabaseFile } from '@renderer/utils/databaseFileResolver'
 import { useDatabaseRefresh } from '@renderer/utils/databaseRefresh'
+import { useQueryClient } from '@tanstack/react-query'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { LuDatabase, LuFilter, LuFolderOpen, LuRefreshCcw, LuTable, LuUpload, LuX } from 'react-icons/lu'
 import { CustomQueryModal } from '../data/CustomQueryModal'
@@ -25,7 +28,9 @@ export function SubHeader() {
   const setSelectedApplication = useCurrentDeviceSelection(state => state.setSelectedApplication)
   const {
     setTableData,
+    clearTableData,
   } = useTableData()
+  const setSelectedRow = useRowEditingStore(state => state.setSelectedRow)
   const tableDataStore = useTableData()
   const selectedDatabaseFile = useCurrentDatabaseSelection(state => state.selectedDatabaseFile)
   const setSelectedDatabaseFile = useCurrentDatabaseSelection(state => state.setSelectedDatabaseFile)
@@ -34,6 +39,7 @@ export function SubHeader() {
 
   const [isQueryModalOpen, setIsQueryModalOpen] = useState(false)
   const [isSettingCustomFile, setIsSettingCustomFile] = useState(false)
+  const queryClient = useQueryClient()
 
   // Handle custom file setting with proper sequencing
   useEffect(() => {
@@ -42,6 +48,9 @@ export function SubHeader() {
       console.log('🔧 [SubHeader] Custom file detected, clearing device/application selections')
       setSelectedDevice(null)
       setSelectedApplication(null)
+      setSelectedDatabaseTable(null)
+      clearTableData()
+      setSelectedRow(null)
       
       // Step 2: Mark custom file setting as complete
       setTimeout(() => {
@@ -49,7 +58,7 @@ export function SubHeader() {
         console.log('🔧 [SubHeader] Custom file setup complete')
       }, 100)
     }
-  }, [selectedDatabaseFile, isSettingCustomFile, setSelectedDevice, setSelectedApplication])
+  }, [clearTableData, isSettingCustomFile, selectedDatabaseFile, setSelectedApplication, setSelectedDatabaseTable, setSelectedDevice, setSelectedRow])
 
   const {
     data: databaseFiles = [],
@@ -90,22 +99,43 @@ export function SubHeader() {
   const databaseTables = tablesData?.tables
 
   const handleDatabaseFileChange = useCallback(async (file) => {
+    const resolvedFile = file?.path
+      ? await ensureActiveDatabaseFile({
+          databaseFile: file,
+          selectedDevice,
+          selectedApplication,
+          queryClient,
+          setSelectedDatabaseFile: undefined,
+        })
+      : file
+
+    console.info('CriticalPath: database file selected', {
+      path: resolvedFile?.path ?? null,
+      filename: resolvedFile?.filename ?? null,
+      deviceType: resolvedFile?.deviceType ?? null,
+    })
     // Call database switch cleanup if we have a file path
-    if (file?.path) {
+    if (resolvedFile?.path) {
       try {
-        await window.api.switchDatabase(file.path)
-        console.log('Database switch cleanup completed for:', file.path)
+        await window.api.switchDatabase(resolvedFile.path)
+        console.log('Database switch cleanup completed for:', resolvedFile.path)
       }
       catch (error) {
         console.warn('Database switch cleanup failed (non-critical):', error)
       }
     }
     
-    setSelectedDatabaseFile(file)
+    setSelectedDatabaseFile(resolvedFile)
     setSelectedDatabaseTable(null)
-  }, [setSelectedDatabaseFile, setSelectedDatabaseTable])
+    clearTableData()
+    setSelectedRow(null)
+  }, [clearTableData, queryClient, selectedApplication, selectedDevice, setSelectedDatabaseFile, setSelectedDatabaseTable, setSelectedRow])
 
   const handleTableChange = useCallback((table) => {    
+    console.info('CriticalPath: table selected', {
+      tableName: table?.name ?? null,
+      databasePath: selectedDatabaseFile?.path ?? null,
+    })
     // Clear any existing table data immediately to show loading state
     if (table) {
       setTableData({
@@ -117,7 +147,7 @@ export function SubHeader() {
     }
     
     setSelectedDatabaseTable(table)
-  }, [setSelectedDatabaseTable, setTableData])
+  }, [selectedDatabaseFile?.path, setSelectedDatabaseTable, setTableData])
 
   const dbFileOptions = useMemo(() => 
     groupDatabaseFilesByLocation(databaseFiles), [databaseFiles])
@@ -128,6 +158,27 @@ export function SubHeader() {
       value: table.name,
       ...table,
     })) ?? [], [databaseTables])
+
+  const selectedDatabaseFileOption = useMemo(() => {
+    if (!selectedDatabaseFile) {
+      return null
+    }
+
+    return dbFileOptions
+      .flatMap(group => group.options)
+      .find(file =>
+        file.path === selectedDatabaseFile.path
+        || (selectedDatabaseFile.remotePath && file.remotePath === selectedDatabaseFile.remotePath),
+      ) ?? null
+  }, [dbFileOptions, selectedDatabaseFile])
+
+  const selectedDatabaseTableOption = useMemo(() => {
+    if (!selectedDatabaseTable) {
+      return null
+    }
+
+    return tableOptions.find(table => table.name === selectedDatabaseTable.name) ?? null
+  }, [selectedDatabaseTable, tableOptions])
 
   // Handler to clear custom query and show default table rows
   const handleClearCustomQuery = useCallback(() => {
@@ -146,14 +197,26 @@ export function SubHeader() {
   useEffect(() => {
     if (!selectedDatabaseFile?.filename) {
       setSelectedDatabaseTable(null)
+      clearTableData()
+      setSelectedRow(null)
     }
-  }, [selectedDatabaseFile])
+  }, [clearTableData, selectedDatabaseFile, setSelectedDatabaseTable, setSelectedRow])
 
   const { refresh: handleDBRefresh, isLoading: isRefreshing } = useDatabaseRefresh()
 
   const onRefreshClick = useCallback(async () => {
+    console.info('CriticalPath: database refresh started', {
+      deviceId: selectedDevice?.id ?? null,
+      bundleId: selectedApplication?.bundleId ?? null,
+      databasePath: selectedDatabaseFile?.path ?? null,
+      tableName: selectedDatabaseTable?.name ?? null,
+    })
     await handleDBRefresh()
-  }, [handleDBRefresh])
+    console.info('CriticalPath: database refresh finished', {
+      databasePath: selectedDatabaseFile?.path ?? null,
+      tableName: selectedDatabaseTable?.name ?? null,
+    })
+  }, [handleDBRefresh, selectedApplication?.bundleId, selectedDatabaseFile?.path, selectedDatabaseTable?.name, selectedDevice?.id])
 
   const isNoDB = !databaseFiles?.length && !isDBPulling && selectedApplication?.bundleId && selectedDevice?.id
 
@@ -161,6 +224,9 @@ export function SubHeader() {
     window.api.openFile().then((file) => {
       if (!file.canceled && file.filePaths.length) {
         const filePath = file.filePaths[0]
+        console.info('CriticalPath: custom database file opened', {
+          filePath,
+        })
 
         // Set custom file flag and database file
         setIsSettingCustomFile(true)
@@ -183,6 +249,11 @@ export function SubHeader() {
       return
     }
 
+    console.info('CriticalPath: database export started', {
+      databasePath: selectedDatabaseFile.path,
+      filename: selectedDatabaseFile.filename,
+    })
+
     window.api.exportFile({
       defaultPath: selectedDatabaseFile?.filename,
       filters: [
@@ -196,12 +267,17 @@ export function SubHeader() {
       if (!savedFilePath) {
         return
       }
+      console.info('CriticalPath: database export completed', {
+        databasePath: selectedDatabaseFile.path,
+        savedFilePath,
+      })
       toaster.create({
         title: 'Success',
         description: `Database file exported successfully to ${savedFilePath}`,
         type: 'success',
       })
     }).catch((error) => {
+      console.error('CriticalPath: database export failed', error)
       toaster.create({
         title: 'Error exporting database',
         description: error.message,
@@ -255,7 +331,7 @@ export function SubHeader() {
                 <FLSelect
                   label="Select Database"
                   options={dbFileOptions}
-                  value={selectedDatabaseFile}
+                  value={selectedDatabaseFileOption}
                   icon={<LuDatabase color="var(--chakra-colors-flipioPrimary)" />}
                   onChange={handleDatabaseFileChange}
                   isDisabled={!selectedApplication?.bundleId || isDBPulling}
@@ -267,7 +343,7 @@ export function SubHeader() {
             <FLSelect
               label="Select Table"
               options={tableOptions}
-              value={selectedDatabaseTable}
+              value={selectedDatabaseTableOption}
               icon={<LuTable color="var(--chakra-colors-flipioPrimary)" />}
               onChange={handleTableChange}
               isDisabled={isTableSelectDisabled}

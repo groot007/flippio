@@ -3,7 +3,8 @@
 
 use std::sync::Arc;
 use tokio::sync::RwLock;
-use tauri_plugin_log;
+use chrono::SecondsFormat;
+use tauri_plugin_log::{RotationStrategy, Target, TargetKind, TimezoneStrategy, WEBVIEW_TARGET};
 
 mod commands;
 use commands::database::{DbPool, DatabaseConnectionManager, ChangeHistoryManager, ConnectionConfig};
@@ -19,7 +20,41 @@ pub fn run() {
     let change_history_manager = ChangeHistoryManager::new();
     
     let mut builder = tauri::Builder::default()
-        .plugin(tauri_plugin_log::Builder::new().build())
+        .plugin(
+            tauri_plugin_log::Builder::new()
+                .clear_targets()
+                .format(|out, message, record| {
+                    let timestamp = chrono::Utc::now().to_rfc3339_opts(SecondsFormat::Millis, true);
+                    let source = if record.target().starts_with(WEBVIEW_TARGET) {
+                        "🖥 frontend"
+                    } else {
+                        "⚙ backend"
+                    };
+                    out.finish(format_args!(
+                        "{} [{}] [{}] {}",
+                        timestamp,
+                        record.level(),
+                        source,
+                        message
+                    ))
+                })
+                .timezone_strategy(TimezoneStrategy::UseUtc)
+                .rotation_strategy(RotationStrategy::KeepSome(10))
+                .target(Target::new(TargetKind::Stdout))
+                .target(
+                    Target::new(TargetKind::LogDir {
+                        file_name: Some("frontend".into()),
+                    })
+                    .filter(|metadata| metadata.target().starts_with(WEBVIEW_TARGET)),
+                )
+                .target(
+                    Target::new(TargetKind::LogDir {
+                        file_name: Some("backend".into()),
+                    })
+                    .filter(|metadata| !metadata.target().starts_with(WEBVIEW_TARGET)),
+                )
+                .build(),
+        )
         .manage(db_pool)
         .manage(db_cache)
         .manage(change_history_manager)
@@ -94,6 +129,7 @@ pub fn run() {
             commands::common::dialog_select_file,
             commands::common::dialog_save_file,
             commands::common::save_dropped_file,
+            commands::common::export_logs,
             // Device helper commands
             commands::device::helpers::touch_database_file,
             commands::device::helpers::force_clean_temp_directory,

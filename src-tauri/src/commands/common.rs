@@ -2,9 +2,9 @@
 // Implements file dialog and other common IPC commands
 
 use serde::{Deserialize, Serialize};
+use std::path::{Path, PathBuf};
 use tauri::Manager;
 use tauri_plugin_dialog::{DialogExt};
-use std::path::Path;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DialogResult {
@@ -24,6 +24,105 @@ pub struct SaveDialogOptions {
 pub struct DialogFilter {
     pub name: String,
     pub extensions: Vec<String>,
+}
+
+fn is_exportable_log_file(path: &Path) -> bool {
+    path.file_name()
+        .and_then(|name| name.to_str())
+        .map(|name| {
+            (name.starts_with("frontend") || name.starts_with("backend")) && name.ends_with(".log")
+        })
+        .unwrap_or(false)
+}
+
+fn source_label(source: &str) -> &'static str {
+    match source {
+        "frontend" => "🖥 frontend",
+        "backend" => "⚙ backend",
+        _ => "backend",
+    }
+}
+
+fn normalize_log_line(line: &str, source: &str) -> String {
+    let frontend_label = source_label("frontend");
+    let backend_label = source_label("backend");
+
+    if line.contains(frontend_label) || line.contains(backend_label) {
+        line.to_string()
+    } else if line.contains("[frontend]") {
+        line.replace("[frontend]", &format!("[{}]", frontend_label))
+    } else if line.contains("[backend]") {
+        line.replace("[backend]", &format!("[{}]", backend_label))
+    } else {
+        format!("[{}] {}", source_label(source), line)
+    }
+}
+
+fn collect_merged_logs(log_dir: &Path) -> Result<String, String> {
+    let mut entries: Vec<String> = Vec::new();
+
+    if !log_dir.exists() {
+        return Ok(String::new());
+    }
+
+    let read_dir = std::fs::read_dir(log_dir)
+        .map_err(|e| format!("Failed to read log directory: {}", e))?;
+
+    for entry in read_dir {
+        let entry = entry.map_err(|e| format!("Failed to read log entry: {}", e))?;
+        let path = entry.path();
+
+        if !path.is_file() || !is_exportable_log_file(&path) {
+            continue;
+        }
+
+        let file_name = path
+            .file_name()
+            .and_then(|name| name.to_str())
+            .unwrap_or_default();
+        let source = if file_name.starts_with("frontend") {
+            "frontend"
+        } else {
+            "backend"
+        };
+
+        let content = std::fs::read_to_string(&path)
+            .map_err(|e| format!("Failed to read log file {}: {}", path.display(), e))?;
+
+        for line in content.lines() {
+            let trimmed = line.trim();
+            if !trimmed.is_empty() {
+                entries.push(normalize_log_line(trimmed, source));
+            }
+        }
+    }
+
+    entries.sort();
+    Ok(entries.join("\n"))
+}
+
+async fn prompt_save_path(
+    app_handle: &tauri::AppHandle,
+    default_name: &str,
+    filters: &[(&str, &[&str])],
+) -> Result<Option<PathBuf>, String> {
+    use tokio::sync::oneshot;
+
+    let (tx, rx) = oneshot::channel();
+    let mut dialog = app_handle.dialog().file().set_file_name(default_name);
+
+    for (name, extensions) in filters {
+        dialog = dialog.add_filter(*name, extensions);
+    }
+
+    dialog.save_file(move |file_path| {
+        let _ = tx.send(file_path);
+    });
+
+    match rx.await {
+        Ok(Some(path)) => Ok(Some(path.into_path().map_err(|_| "Invalid save path selected".to_string())?)),
+        Ok(None) | Err(_) => Ok(None),
+    }
 }
 
 #[tauri::command]
@@ -140,6 +239,33 @@ pub async fn dialog_save_file(
         },
         Ok(None) | Err(_) => Ok(None),
     }
+}
+
+#[tauri::command]
+pub async fn export_logs(
+    app_handle: tauri::AppHandle,
+) -> Result<Option<String>, String> {
+    let log_dir = app_handle.path().app_log_dir()
+        .map_err(|e| format!("Failed to get log directory: {}", e))?;
+    let merged_logs = collect_merged_logs(&log_dir)?;
+    let timestamp = chrono::Utc::now().format("%Y-%m-%d_%H-%M-%S");
+    let default_name = format!("flippio-logs-{}.txt", timestamp);
+
+    let save_path = prompt_save_path(
+        &app_handle,
+        &default_name,
+        &[("Text Files", &["txt"]), ("All Files", &["*"])],
+    )
+    .await?;
+
+    let Some(save_path) = save_path else {
+        return Ok(None);
+    };
+
+    std::fs::write(&save_path, merged_logs)
+        .map_err(|e| format!("Failed to write exported logs: {}", e))?;
+
+    Ok(Some(save_path.to_string_lossy().to_string()))
 }
 
 #[cfg(test)]
@@ -292,5 +418,41 @@ mod tests {
         
         assert_eq!(filter.name, "Test Filter");
         assert!(filter.extensions.is_empty());
+    }
+
+    #[test]
+    fn test_normalize_log_line_preserves_existing_source_label() {
+        let line = "2026-01-01T10:00:00.000Z [INFO] [🖥 frontend] hello";
+        assert_eq!(normalize_log_line(line, "frontend"), line);
+    }
+
+    #[test]
+    fn test_normalize_log_line_adds_source_label() {
+        let line = "2026-01-01T10:00:00.000Z [INFO] hello";
+        assert_eq!(
+            normalize_log_line(line, "backend"),
+            "[⚙ backend] 2026-01-01T10:00:00.000Z [INFO] hello"
+        );
+    }
+
+    #[test]
+    fn test_collect_merged_logs_sorts_and_merges() {
+        let temp_dir = tempfile::tempdir().unwrap();
+        std::fs::write(
+            temp_dir.path().join("frontend.log"),
+            "2026-01-01T10:00:01.000Z [INFO] [🖥 frontend] ui\n",
+        )
+        .unwrap();
+        std::fs::write(
+            temp_dir.path().join("backend.log"),
+            "2026-01-01T10:00:00.000Z [INFO] [⚙ backend] api\n",
+        )
+        .unwrap();
+
+        let merged = collect_merged_logs(temp_dir.path()).unwrap();
+        assert_eq!(
+            merged,
+            "2026-01-01T10:00:00.000Z [INFO] [⚙ backend] api\n2026-01-01T10:00:01.000Z [INFO] [🖥 frontend] ui"
+        );
     }
 }
