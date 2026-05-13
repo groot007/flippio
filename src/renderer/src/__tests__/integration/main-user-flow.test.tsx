@@ -155,7 +155,7 @@ function resetStores() {
   })
 }
 
-describe('Main critical user flow', () => {
+describe('main critical user flow', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     resetStores()

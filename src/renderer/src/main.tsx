@@ -2,9 +2,9 @@ import * as Sentry from '@sentry/react'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import './frontend-log'
 import App from './App'
 import './assets/main.css'
+import './frontend-log'
 // Initialize Tauri API (sets up window.api) - must be imported for side effects
 import './tauri-api'
 

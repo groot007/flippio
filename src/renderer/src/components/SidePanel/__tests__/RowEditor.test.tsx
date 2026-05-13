@@ -59,7 +59,7 @@ vi.mock('@renderer/store/useRowEditingStore', () => ({
 }))
 
 vi.mock('@renderer/store', () => ({
-  useTableData: (selector) => selector({
+  useTableData: selector => selector({
     tableData: {
       columns: [
         { name: 'id', type: 'INTEGER' },
@@ -89,7 +89,7 @@ vi.mock('@renderer/ui/toaster', () => ({
   },
 }))
 
-describe('RowEditor critical path', () => {
+describe('rowEditor critical path', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     vi.mocked(globalThis.window.api.updateTableRow).mockResolvedValue({ success: true })

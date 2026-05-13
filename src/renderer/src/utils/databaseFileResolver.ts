@@ -1,6 +1,6 @@
-import { fetchDatabaseFilesForSelection } from '@renderer/hooks/useDatabaseFiles'
 import type { DatabaseFile, DeviceInfo } from '@renderer/types/devices'
 import type { QueryClient } from '@tanstack/react-query'
+import { fetchDatabaseFilesForSelection } from '@renderer/hooks/useDatabaseFiles'
 
 interface ApplicationSelection {
   bundleId: string

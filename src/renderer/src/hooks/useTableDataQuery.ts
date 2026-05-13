@@ -1,5 +1,4 @@
-import { useCurrentDeviceSelection } from '@renderer/store'
-import { useCurrentDatabaseSelection } from '@renderer/store'
+import { useCurrentDatabaseSelection, useCurrentDeviceSelection } from '@renderer/store'
 import { ensureActiveDatabaseFile } from '@renderer/utils/databaseFileResolver'
 import { useQuery } from '@tanstack/react-query'
 

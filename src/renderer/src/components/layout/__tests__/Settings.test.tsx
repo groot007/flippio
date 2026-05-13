@@ -23,7 +23,7 @@ vi.mock('@renderer/ui/toaster', () => ({
   },
 }))
 
-describe('Settings', () => {
+describe('settings', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mocks.checkForUpdates.mockResolvedValue({ data: { available: false } })

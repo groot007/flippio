@@ -12,11 +12,11 @@ const mockSelectedDatabaseFile = {
 }
 
 vi.mock('@renderer/store', () => ({
-  useCurrentDatabaseSelection: (selector) => selector({
+  useCurrentDatabaseSelection: selector => selector({
     selectedDatabaseFile: mockSelectedDatabaseFile,
     setSelectedDatabaseFile: mockSetSelectedDatabaseFile,
   }),
-  useCurrentDeviceSelection: (selector) => selector({
+  useCurrentDeviceSelection: selector => selector({
     selectedDevice: { id: 'device-1', name: 'Pixel', deviceType: 'android' },
     selectedApplication: { bundleId: 'com.test.app', name: 'Test App' },
   }),
