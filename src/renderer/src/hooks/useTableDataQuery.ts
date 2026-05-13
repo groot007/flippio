@@ -1,6 +1,6 @@
-import { fetchDatabaseFilesForSelection } from '@renderer/hooks/useDatabaseFiles'
 import { useCurrentDeviceSelection } from '@renderer/store'
 import { useCurrentDatabaseSelection } from '@renderer/store'
+import { ensureActiveDatabaseFile } from '@renderer/utils/databaseFileResolver'
 import { useQuery } from '@tanstack/react-query'
 
 interface TableDataResponse {
@@ -32,60 +32,14 @@ export function useTableDataQuery(tableName: string) {
         tableName,
       })
 
-      let resolvedDatabaseFile = selectedDatabaseFile
+      let resolvedDatabaseFile = await ensureActiveDatabaseFile({
+        databaseFile: selectedDatabaseFile,
+        selectedDevice,
+        selectedApplication,
+        setSelectedDatabaseFile,
+      })
 
-      const openSelectedDatabase = async (dbPath: string) => {
-        const openResponse = await window.api.openDatabase(dbPath)
-
-        if (!openResponse.success) {
-          throw new Error(openResponse.error || 'Failed to open database')
-        }
-      }
-
-      const shouldRecoverMissingTempFile = (error: Error) =>
-        error.message.includes('Database file does not exist')
-        && resolvedDatabaseFile?.deviceType !== 'desktop'
-        && !!resolvedDatabaseFile?.filename
-        && !!selectedDevice?.id
-        && !!selectedApplication?.bundleId
-
-      const recoverMissingTempDatabaseFile = async (sourceError: Error) => {
-        if (!shouldRecoverMissingTempFile(sourceError)) {
-          throw sourceError
-        }
-
-        console.warn('CriticalPath: selected temp database file missing, refetching database files', {
-          missingPath: resolvedDatabaseFile.path,
-          remotePath: resolvedDatabaseFile.remotePath ?? null,
-          filename: resolvedDatabaseFile.filename,
-        })
-
-        const refreshedDatabaseFiles = await fetchDatabaseFilesForSelection(selectedDevice!, selectedApplication!)
-        const matchedDatabaseFile = refreshedDatabaseFiles.find(file =>
-          (resolvedDatabaseFile.remotePath && file.remotePath === resolvedDatabaseFile.remotePath)
-          || file.path === resolvedDatabaseFile.path
-          || file.filename === resolvedDatabaseFile.filename,
-        )
-
-        if (!matchedDatabaseFile) {
-          throw sourceError
-        }
-
-        resolvedDatabaseFile = matchedDatabaseFile
-        setSelectedDatabaseFile(matchedDatabaseFile)
-        await openSelectedDatabase(matchedDatabaseFile.path)
-      }
-
-      // Ensure database is opened before fetching table data
       console.log('🔄 Opening database before fetching table data:', resolvedDatabaseFile.path)
-
-      try {
-        await openSelectedDatabase(resolvedDatabaseFile.path)
-      }
-      catch (error) {
-        const resolvedError = error instanceof Error ? error : new Error(String(error))
-        await recoverMissingTempDatabaseFile(resolvedError)
-      }
 
       // Small delay to ensure connection is established
       await new Promise(resolve => setTimeout(resolve, 100))
@@ -94,7 +48,13 @@ export function useTableDataQuery(tableName: string) {
       let response: TableDataResponse = await window.api.getTableInfo(tableName, resolvedDatabaseFile.path)
 
       if (!response.success && response.error?.includes('Database file does not exist')) {
-        await recoverMissingTempDatabaseFile(new Error(response.error))
+        resolvedDatabaseFile = await ensureActiveDatabaseFile({
+          databaseFile: resolvedDatabaseFile,
+          selectedDevice,
+          selectedApplication,
+          setSelectedDatabaseFile,
+          forceRefresh: true,
+        })
         response = await window.api.getTableInfo(tableName, resolvedDatabaseFile.path)
       }
 

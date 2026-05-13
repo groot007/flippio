@@ -325,6 +325,12 @@ pub fn get_libimobiledevice_tool_path(tool_name: &str) -> Option<std::path::Path
 mod tests {
     use super::*;
     use std::fs;
+    use std::sync::{Mutex, OnceLock};
+
+    fn temp_dir_test_lock() -> &'static Mutex<()> {
+        static LOCK: OnceLock<Mutex<()>> = OnceLock::new();
+        LOCK.get_or_init(|| Mutex::new(()))
+    }
 
     #[test]
     fn test_get_temp_dir_path() {
@@ -334,6 +340,8 @@ mod tests {
 
     #[test]
     fn test_ensure_temp_dir() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+        let _guard = temp_dir_test_lock().lock().unwrap();
+
         // Test temp dir path generation (without actually creating)
         let temp_dir_path = get_temp_dir_path();
         assert!(temp_dir_path.to_string_lossy().contains("flippio-db-temp"));
@@ -351,6 +359,8 @@ mod tests {
 
     #[test]
     fn test_clean_temp_dir() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+        let _guard = temp_dir_test_lock().lock().unwrap();
+
         // Test that clean_temp_dir preserves recent files and creates directory
         let temp_dir = get_temp_dir_path();
         
@@ -381,6 +391,8 @@ mod tests {
 
     #[test]
     fn test_force_clean_temp_dir() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+        let _guard = temp_dir_test_lock().lock().unwrap();
+
         // Test the force clean functionality
         let temp_dir = get_temp_dir_path();
         let _ = ensure_temp_dir()?;
@@ -432,6 +444,8 @@ mod tests {
 
     #[test]
     fn test_temp_dir_operations_integration() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+        let _guard = temp_dir_test_lock().lock().unwrap();
+
         // Test the path generation logic
         let temp_path = get_temp_dir_path();
         assert!(temp_path.to_string_lossy().contains("flippio-db-temp"));

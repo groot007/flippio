@@ -7,13 +7,13 @@ import {
   Text,
 } from '@chakra-ui/react'
 import { useDatabaseFiles } from '@renderer/hooks/useDatabaseFiles'
-import { fetchDatabaseFilesForSelection } from '@renderer/hooks/useDatabaseFiles'
 import { useDatabaseTables } from '@renderer/hooks/useDatabaseTables'
 import { useTableDataQuery } from '@renderer/hooks/useTableDataQuery'
 import { useCurrentDatabaseSelection, useCurrentDeviceSelection, useTableData } from '@renderer/store'
 import { useRowEditingStore } from '@renderer/store/useRowEditingStore'
 import { useQueryClient } from '@tanstack/react-query'
 import { toaster } from '@renderer/ui/toaster'
+import { ensureActiveDatabaseFile } from '@renderer/utils/databaseFileResolver'
 import { groupDatabaseFilesByLocation } from '@renderer/utils/databaseFileGrouping'
 import { useDatabaseRefresh } from '@renderer/utils/databaseRefresh'
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -99,62 +99,15 @@ export function SubHeader() {
   const databaseTables = tablesData?.tables
 
   const handleDatabaseFileChange = useCallback(async (file) => {
-    let resolvedFile = file
-
-    const openSelectedFile = async (candidatePath: string) => {
-      const response = await window.api.openDatabase(candidatePath)
-
-      if (response === true) {
-        return
-      }
-
-      if (!response?.success) {
-        throw new Error(response?.error || 'Failed to open database')
-      }
-    }
-
-    if (
-      file?.deviceType !== 'desktop'
-      && file?.path
-      && selectedDevice
-      && selectedApplication
-    ) {
-      try {
-        await openSelectedFile(file.path)
-      }
-      catch (error) {
-        const resolvedError = error instanceof Error ? error : new Error(String(error))
-
-        if (!resolvedError.message.includes('Database file does not exist')) {
-          throw resolvedError
-        }
-
-        console.warn('CriticalPath: selected database file path is stale, refetching files', {
-          stalePath: file.path,
-          filename: file.filename ?? null,
-          remotePath: file.remotePath ?? null,
+    const resolvedFile = file?.path
+      ? await ensureActiveDatabaseFile({
+          databaseFile: file,
+          selectedDevice,
+          selectedApplication,
+          queryClient,
+          setSelectedDatabaseFile: undefined,
         })
-
-        const refreshedFiles = await queryClient.fetchQuery({
-          queryKey: ['databaseFiles', selectedDevice.id, selectedApplication.bundleId],
-          queryFn: () => fetchDatabaseFilesForSelection(selectedDevice, selectedApplication),
-          staleTime: 0,
-        })
-
-        const matchedFile = refreshedFiles.find(candidate =>
-          (file.remotePath && candidate.remotePath === file.remotePath)
-          || candidate.path === file.path
-          || candidate.filename === file.filename,
-        )
-
-        if (!matchedFile) {
-          throw resolvedError
-        }
-
-        resolvedFile = matchedFile
-        await openSelectedFile(matchedFile.path)
-      }
-    }
+      : file
 
     console.info('CriticalPath: database file selected', {
       path: resolvedFile?.path ?? null,
