@@ -54,6 +54,37 @@ export function Settings() {
     }
   }
 
+  const handleExportLogs = async () => {
+    try {
+      console.info('CriticalPath: log export started')
+      const exportedPath = await window.api.exportLogs()
+
+      if (!exportedPath) {
+        console.info('CriticalPath: log export canceled')
+        return
+      }
+
+      console.info('CriticalPath: log export completed', {
+        exportedPath,
+      })
+      toaster.create({
+        title: 'Logs Exported',
+        description: `Saved logs to ${exportedPath}`,
+        type: 'success',
+        duration: 5000,
+      })
+    }
+    catch {
+      console.error('CriticalPath: log export failed')
+      toaster.create({
+        title: 'Export Failed',
+        description: 'Unable to export logs. Please try again later.',
+        type: 'error',
+        duration: 5000,
+      })
+    }
+  }
+
   useEffect(() => {
     setTimeout(() => {
       checkForUpdates().then((rez) => {
@@ -130,6 +161,37 @@ export function Settings() {
               >
                 <LuDownload size={16} />
                 <Text>Check for Updates</Text>
+              </Button>
+            </Menu.Item>
+
+            <Menu.Item
+              value="export-logs"
+              px={3}
+              py={2}
+              _hover={{
+                bg: 'bgTertiary',
+              }}
+              _focus={{
+                bg: 'bgTertiary',
+              }}
+              onClick={handleExportLogs}
+            >
+              <Button
+                variant="ghost"
+                size="sm"
+                color="textPrimary"
+                _hover={{ color: 'flipioPrimary' }}
+                display="flex"
+                alignItems="center"
+                gap={2}
+                fontSize="sm"
+                fontWeight="medium"
+                p={0}
+                h="auto"
+                minH="auto"
+              >
+                <LuDownload size={16} />
+                <Text>Export Logs</Text>
               </Button>
             </Menu.Item>
 

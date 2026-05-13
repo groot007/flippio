@@ -203,6 +203,7 @@ const COMMAND_MAP = {
   // Common commands
   'dialog:selectFile': 'dialog_select_file',
   'dialog:saveFile': 'dialog_save_file',
+  'common:exportLogs': 'export_logs',
 }
 
 // Helper function for commands that need to preserve Electron-style response structure
@@ -338,6 +339,7 @@ function getParameterNames(command: string): string[] {
     show_item_in_folder: ['path'],
     dialog_open_file: ['options'],
     dialog_save_file: ['options'],
+    export_logs: [],
   }
   return paramMap[command] || []
 }
@@ -736,6 +738,17 @@ export const api = {
     }
     catch (error) {
       console.error('Error saving file:', error)
+      return null
+    }
+  },
+
+  exportLogs: async () => {
+    try {
+      const response = await invoke<string | null>('export_logs')
+      return response
+    }
+    catch (error) {
+      console.error('Error exporting logs:', error)
       return null
     }
   },

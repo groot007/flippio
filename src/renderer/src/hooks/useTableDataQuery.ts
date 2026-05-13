@@ -22,6 +22,11 @@ export function useTableDataQuery(tableName: string) {
         throw new Error('No database file selected')
       }
 
+      console.info('CriticalPath: table data load started', {
+        databasePath: selectedDatabaseFile.path,
+        tableName,
+      })
+
       // Ensure database is opened before fetching table data
       console.log('🔄 Opening database before fetching table data:', selectedDatabaseFile.path)
       const openResponse = await window.api.openDatabase(selectedDatabaseFile.path)
@@ -44,6 +49,13 @@ export function useTableDataQuery(tableName: string) {
       if (!response.columns || !response.rows) {
         throw new Error('Invalid data structure received')
       }
+
+      console.info('CriticalPath: table data load completed', {
+        databasePath: selectedDatabaseFile.path,
+        tableName,
+        rowCount: response.rows.length,
+        columnCount: response.columns.length,
+      })
 
       return {
         columns: response.columns,

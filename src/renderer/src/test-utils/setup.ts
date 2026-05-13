@@ -15,6 +15,14 @@ const IntersectionObserverMock = vi.fn(() => ({
 vi.stubGlobal('IntersectionObserver', IntersectionObserverMock)
 window.IntersectionObserver = IntersectionObserverMock
 
+const ResizeObserverMock = vi.fn(() => ({
+  disconnect: vi.fn(),
+  observe: vi.fn(),
+  unobserve: vi.fn(),
+}))
+vi.stubGlobal('ResizeObserver', ResizeObserverMock)
+window.ResizeObserver = ResizeObserverMock as any
+
 // Scroll Methods mock
 window.Element.prototype.scrollTo = () => {}
 window.Element.prototype.scrollIntoView = () => {}
@@ -123,6 +131,7 @@ beforeAll(() => {
     clearAllChangeHistory: vi.fn(),
     openFile: vi.fn(),
     exportFile: vi.fn(),
+    exportLogs: vi.fn(),
     webUtils: vi.fn(),
     getAndroidEmulators: vi.fn(),
     getIOSSimulators: vi.fn(),

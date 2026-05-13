@@ -182,6 +182,10 @@ function AppHeader() {
 
   const handleRefreshDevices = useCallback(async () => {
     try {
+      console.info('CriticalPath: refreshing devices from header', {
+        deviceId: selectedDevice?.id ?? null,
+        bundleId: selectedApplication?.bundleId ?? null,
+      })
       const devicesResult = await refreshDevices()
       const refreshedDevices = devicesResult.data ?? []
       const matchedDevice = selectedDevice
@@ -249,8 +253,13 @@ function AppHeader() {
           closable: true,
         },
       })
+      console.info('CriticalPath: device refresh completed', {
+        deviceId: matchedDevice?.id ?? null,
+        bundleId: selectedApplication?.bundleId ?? null,
+      })
     }
     catch (err) {
+      console.error('CriticalPath: device refresh failed', err)
       toaster.create({
         title: 'Error refreshing devices',
         description: err instanceof Error ? err.message : 'Failed to refresh devices',
@@ -350,12 +359,22 @@ function AppHeader() {
   }, [applicationSelectOptions, selectedApplication])
 
   const handleDeviceChange = useCallback((value: any) => {
+    console.info('CriticalPath: device selected', {
+      deviceId: value?.id ?? null,
+      deviceType: value?.deviceType ?? null,
+      deviceName: value?.name ?? value?.label ?? null,
+    })
     setSelectedDevice(value)
     setSelectedApplication(null)
     setSelectedDatabaseTable(null)
   }, [setSelectedApplication, setSelectedDatabaseTable, setSelectedDevice])
 
   const handlePackageChange = useCallback((value) => {
+    console.info('CriticalPath: app selected', {
+      deviceId: selectedDevice?.id ?? null,
+      bundleId: value?.bundleId ?? null,
+      appName: value?.name ?? null,
+    })
     setSelectedDatabaseFile(null)
     setSelectedApplication(value)
     
@@ -371,6 +390,7 @@ function AppHeader() {
 
   const handleCloseVirtualDeviceModal = useCallback(() => {
     setIsVirtualDeviceModalOpen(false)
+    console.info('CriticalPath: virtual device modal closed, scheduling device refresh')
     setTimeout(() => {
       refreshDevices()
     }, 1500)

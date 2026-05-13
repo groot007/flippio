@@ -1,14 +1,12 @@
 import * as Sentry from '@sentry/react'
 import { getCurrentWindow } from '@tauri-apps/api/window'
-// import { attachConsole } from '@tauri-apps/plugin-log'
 import React from 'react'
 import ReactDOM from 'react-dom/client'
+import './frontend-log'
 import App from './App'
 import './assets/main.css'
 // Initialize Tauri API (sets up window.api) - must be imported for side effects
 import './tauri-api'
-
-// attachConsole()
 
 if (import.meta.env.PROD && !import.meta.env.VITEST && typeof window !== 'undefined' && typeof document !== 'undefined') {
   Sentry.init({

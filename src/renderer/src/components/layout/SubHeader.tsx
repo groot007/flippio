@@ -90,6 +90,11 @@ export function SubHeader() {
   const databaseTables = tablesData?.tables
 
   const handleDatabaseFileChange = useCallback(async (file) => {
+    console.info('CriticalPath: database file selected', {
+      path: file?.path ?? null,
+      filename: file?.filename ?? null,
+      deviceType: file?.deviceType ?? null,
+    })
     // Call database switch cleanup if we have a file path
     if (file?.path) {
       try {
@@ -106,6 +111,10 @@ export function SubHeader() {
   }, [setSelectedDatabaseFile, setSelectedDatabaseTable])
 
   const handleTableChange = useCallback((table) => {    
+    console.info('CriticalPath: table selected', {
+      tableName: table?.name ?? null,
+      databasePath: selectedDatabaseFile?.path ?? null,
+    })
     // Clear any existing table data immediately to show loading state
     if (table) {
       setTableData({
@@ -117,7 +126,7 @@ export function SubHeader() {
     }
     
     setSelectedDatabaseTable(table)
-  }, [setSelectedDatabaseTable, setTableData])
+  }, [selectedDatabaseFile?.path, setSelectedDatabaseTable, setTableData])
 
   const dbFileOptions = useMemo(() => 
     groupDatabaseFilesByLocation(databaseFiles), [databaseFiles])
@@ -152,8 +161,18 @@ export function SubHeader() {
   const { refresh: handleDBRefresh, isLoading: isRefreshing } = useDatabaseRefresh()
 
   const onRefreshClick = useCallback(async () => {
+    console.info('CriticalPath: database refresh started', {
+      deviceId: selectedDevice?.id ?? null,
+      bundleId: selectedApplication?.bundleId ?? null,
+      databasePath: selectedDatabaseFile?.path ?? null,
+      tableName: selectedDatabaseTable?.name ?? null,
+    })
     await handleDBRefresh()
-  }, [handleDBRefresh])
+    console.info('CriticalPath: database refresh finished', {
+      databasePath: selectedDatabaseFile?.path ?? null,
+      tableName: selectedDatabaseTable?.name ?? null,
+    })
+  }, [handleDBRefresh, selectedApplication?.bundleId, selectedDatabaseFile?.path, selectedDatabaseTable?.name, selectedDevice?.id])
 
   const isNoDB = !databaseFiles?.length && !isDBPulling && selectedApplication?.bundleId && selectedDevice?.id
 
@@ -161,6 +180,9 @@ export function SubHeader() {
     window.api.openFile().then((file) => {
       if (!file.canceled && file.filePaths.length) {
         const filePath = file.filePaths[0]
+        console.info('CriticalPath: custom database file opened', {
+          filePath,
+        })
 
         // Set custom file flag and database file
         setIsSettingCustomFile(true)
@@ -183,6 +205,11 @@ export function SubHeader() {
       return
     }
 
+    console.info('CriticalPath: database export started', {
+      databasePath: selectedDatabaseFile.path,
+      filename: selectedDatabaseFile.filename,
+    })
+
     window.api.exportFile({
       defaultPath: selectedDatabaseFile?.filename,
       filters: [
@@ -196,12 +223,17 @@ export function SubHeader() {
       if (!savedFilePath) {
         return
       }
+      console.info('CriticalPath: database export completed', {
+        databasePath: selectedDatabaseFile.path,
+        savedFilePath,
+      })
       toaster.create({
         title: 'Success',
         description: `Database file exported successfully to ${savedFilePath}`,
         type: 'success',
       })
     }).catch((error) => {
+      console.error('CriticalPath: database export failed', error)
       toaster.create({
         title: 'Error exporting database',
         description: error.message,
