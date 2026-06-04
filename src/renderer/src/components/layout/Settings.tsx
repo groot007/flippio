@@ -46,9 +46,12 @@ function clearStoredPendingUpdate() {
 }
 
 export function Settings() {
-  const { isChecking, isDownloading, checkForUpdates, downloadAndInstall } = useAutoUpdater()
+  const { updateInfo, isChecking, isDownloading, checkForUpdates, downloadAndInstall } = useAutoUpdater()
   const [availableUpdateModal, setAvailableUpdateModal] = useState<PendingUpdatePayload | null>(null)
   const [installedUpdateModal, setInstalledUpdateModal] = useState<PendingUpdatePayload | null>(null)
+  const updateMenuLabel = updateInfo?.available && updateInfo.version
+    ? `${updateInfo.version} version is available`
+    : 'Check for Updates'
 
   const releaseNotesBody = useMemo(() => {
     const modalState = installedUpdateModal || availableUpdateModal
@@ -187,13 +190,17 @@ export function Settings() {
       clearStoredPendingUpdate()
     }
 
-    setTimeout(() => {
+    const updateCheckTimeout = setTimeout(() => {
       checkForUpdates().then((rez) => {
         if (rez.data?.available) {
           openAvailableUpdateModal(rez.data.version, rez.data.notes)
         }
       })
     }, 5000)
+
+    return () => {
+      clearTimeout(updateCheckTimeout)
+    }
   }, [])
 
   return (
@@ -252,7 +259,7 @@ export function Settings() {
                   minH="auto"
                 >
                   <LuRefreshCw size={16} />
-                  <Text>Check for Updates</Text>
+                  <Text>{updateMenuLabel}</Text>
                 </Button>
               </Menu.Item>
 

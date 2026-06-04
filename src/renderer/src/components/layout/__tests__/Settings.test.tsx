@@ -10,10 +10,17 @@ const mocks = vi.hoisted(() => ({
   checkForUpdates: vi.fn(),
   downloadAndInstall: vi.fn(),
   toasterCreate: vi.fn(),
+  updateInfo: null as null | {
+    available: boolean
+    version?: string
+    releaseNotes?: string
+    releaseDate?: string
+  },
 }))
 
 vi.mock('@renderer/hooks/useAutoUpdater', () => ({
   useAutoUpdater: () => ({
+    updateInfo: mocks.updateInfo,
     isChecking: false,
     isDownloading: false,
     checkForUpdates: mocks.checkForUpdates,
@@ -31,6 +38,7 @@ describe('settings', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     window.localStorage.clear()
+    mocks.updateInfo = null
     mocks.checkForUpdates.mockResolvedValue({ data: { available: false } })
     mocks.downloadAndInstall.mockResolvedValue(true)
     vi.mocked(globalThis.window.api.exportLogs).mockResolvedValue('/tmp/flippio-logs.txt')
@@ -77,6 +85,19 @@ describe('settings', () => {
     })
 
     expect(window.localStorage.getItem(PENDING_UPDATE_STORAGE_KEY)).toContain('0.4.1')
+  })
+
+  it('shows available version in settings item when update exists', async () => {
+    mocks.updateInfo = {
+      available: true,
+      version: '0.4.2',
+    }
+
+    render(<Settings />)
+
+    fireEvent.click(screen.getByTitle('Settings'))
+
+    expect(await screen.findByText('0.4.2 version is available')).toBeInTheDocument()
   })
 
   it('shows post-update changelog modal after restart', async () => {
