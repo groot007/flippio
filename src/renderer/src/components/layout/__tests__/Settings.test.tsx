@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { render } from '../../../test-utils/render'
 import { Settings } from '../Settings'
+import packageJSON from '../../../../../../package.json' with { type: 'json' }
 
 const PENDING_UPDATE_STORAGE_KEY = 'flippio.pending-update-changelog'
 
@@ -80,19 +81,19 @@ describe('settings', () => {
 
   it('shows post-update changelog modal after restart', async () => {
     window.localStorage.setItem(PENDING_UPDATE_STORAGE_KEY, JSON.stringify({
-      version: '0.4.0',
+      version: packageJSON.version,
       notes: 'Fresh improvements shipped',
     }))
 
     render(<Settings />)
 
-    expect(await screen.findByText('Updated to 0.4.0')).toBeInTheDocument()
+    expect(await screen.findByText(`Updated to ${packageJSON.version}`)).toBeInTheDocument()
     expect(screen.getByText('Fresh improvements shipped')).toBeInTheDocument()
 
     fireEvent.click(screen.getByRole('button', { name: 'Close' }))
 
     await waitFor(() => {
-      expect(screen.queryByText('Updated to 0.4.0')).not.toBeInTheDocument()
+      expect(screen.queryByText(`Updated to ${packageJSON.version}`)).not.toBeInTheDocument()
     })
     expect(window.localStorage.getItem(PENDING_UPDATE_STORAGE_KEY)).toBeNull()
   })
