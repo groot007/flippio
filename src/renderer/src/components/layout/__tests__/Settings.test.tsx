@@ -45,7 +45,7 @@ describe('settings', () => {
       expect(globalThis.window.api.exportLogs).toHaveBeenCalledTimes(1)
     })
 
-      expect(mocks.toasterCreate).toHaveBeenCalledWith(
+    expect(mocks.toasterCreate).toHaveBeenCalledWith(
       expect.objectContaining({
         title: 'Logs Exported',
       }),

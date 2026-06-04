@@ -19,7 +19,7 @@ interface UseAutoUpdaterReturn {
       version?: string
       notes?: string
       date?: string
-      }
+    }
     error?: string
   }>
   downloadAndInstall: () => Promise<boolean>
