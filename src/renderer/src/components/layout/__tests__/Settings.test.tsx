@@ -4,6 +4,7 @@ import packageJSON from '../../../../../../package.json' with { type: 'json' }
 import { render } from '../../../test-utils/render'
 import { Settings } from '../Settings'
 
+const LAST_SEEN_VERSION_STORAGE_KEY = 'flippio.last-seen-version'
 const PENDING_UPDATE_STORAGE_KEY = 'flippio.pending-update-changelog'
 
 const mocks = vi.hoisted(() => ({
@@ -117,5 +118,15 @@ describe('settings', () => {
       expect(screen.queryByText(`Updated to ${packageJSON.version}`)).not.toBeInTheDocument()
     })
     expect(window.localStorage.getItem(PENDING_UPDATE_STORAGE_KEY)).toBeNull()
+  })
+
+  it('shows bundled changelog modal when app version changed from an older release', async () => {
+    window.localStorage.setItem(LAST_SEEN_VERSION_STORAGE_KEY, '0.3.22')
+
+    render(<Settings />)
+
+    expect(await screen.findByText(`Updated to ${packageJSON.version}`)).toBeInTheDocument()
+    expect(screen.getByText(`Version ${packageJSON.version}`)).toBeInTheDocument()
+    expect(window.localStorage.getItem(LAST_SEEN_VERSION_STORAGE_KEY)).toBe(packageJSON.version)
   })
 })

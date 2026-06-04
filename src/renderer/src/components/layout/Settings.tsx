@@ -5,8 +5,10 @@ import { ColorModeSwitcher } from '@renderer/ui/color-mode'
 import { toaster } from '@renderer/ui/toaster'
 import { useEffect, useMemo, useState } from 'react'
 import { LuDownload, LuExternalLink, LuGithub, LuRefreshCw, LuSettings } from 'react-icons/lu'
+import changelogMarkdown from '../../../../../CHANGELOG.md?raw'
 import packageJSON from '../../../../../package.json' with { type: 'json' }
 
+const LAST_SEEN_VERSION_STORAGE_KEY = 'flippio.last-seen-version'
 const PENDING_UPDATE_STORAGE_KEY = 'flippio.pending-update-changelog'
 
 interface PendingUpdatePayload {
@@ -45,6 +47,31 @@ function clearStoredPendingUpdate() {
   window.localStorage.removeItem(PENDING_UPDATE_STORAGE_KEY)
 }
 
+function getStoredLastSeenVersion() {
+  return window.localStorage.getItem(LAST_SEEN_VERSION_STORAGE_KEY)
+}
+
+function setStoredLastSeenVersion(version: string) {
+  window.localStorage.setItem(LAST_SEEN_VERSION_STORAGE_KEY, version)
+}
+
+function getBundledReleaseNotes(version: string) {
+  const escapedVersion = version.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const headingRegex = new RegExp(`^## \\[${escapedVersion}\\]$`, 'm')
+  const headingMatch = changelogMarkdown.match(headingRegex)
+
+  if (!headingMatch || headingMatch.index == null) {
+    return undefined
+  }
+
+  const sectionStart = headingMatch.index + headingMatch[0].length
+  const remainingMarkdown = changelogMarkdown.slice(sectionStart)
+  const nextHeadingMatch = remainingMarkdown.match(/^## \[/m)
+  const sectionEnd = nextHeadingMatch?.index ?? remainingMarkdown.length
+
+  return remainingMarkdown.slice(0, sectionEnd).trim()
+}
+
 export function Settings() {
   const { updateInfo, isChecking, isDownloading, checkForUpdates, downloadAndInstall } = useAutoUpdater()
   const [availableUpdateModal, setAvailableUpdateModal] = useState<PendingUpdatePayload | null>(null)
@@ -73,6 +100,8 @@ export function Settings() {
           borderRadius="md"
           px={4}
           py={3}
+          maxH="320px"
+          overflowY="auto"
           whiteSpace="pre-wrap"
           fontSize="sm"
           lineHeight="1.6"
@@ -179,15 +208,29 @@ export function Settings() {
 
   useEffect(() => {
     const pendingUpdate = getStoredPendingUpdate()
+    const lastSeenVersion = getStoredLastSeenVersion()
+
     if (pendingUpdate?.version && pendingUpdate.version === packageJSON.version) {
       setInstalledUpdateModal({
         version: pendingUpdate.version,
         notes: sanitizeReleaseNotes(pendingUpdate.notes),
       })
       clearStoredPendingUpdate()
+      setStoredLastSeenVersion(packageJSON.version)
     }
-    else if (pendingUpdate) {
-      clearStoredPendingUpdate()
+    else {
+      if (pendingUpdate) {
+        clearStoredPendingUpdate()
+      }
+
+      if (lastSeenVersion && lastSeenVersion !== packageJSON.version) {
+        setInstalledUpdateModal({
+          version: packageJSON.version,
+          notes: sanitizeReleaseNotes(getBundledReleaseNotes(packageJSON.version)),
+        })
+      }
+
+      setStoredLastSeenVersion(packageJSON.version)
     }
 
     const updateCheckTimeout = setTimeout(() => {
