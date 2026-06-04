@@ -2,7 +2,7 @@
 
 import type { IconButtonProps, SpanProps } from '@chakra-ui/react'
 import type { ThemeProviderProps } from 'next-themes'
-import { ClientOnly, IconButton, Skeleton, Span } from '@chakra-ui/react'
+import { ClientOnly, HStack, IconButton, Skeleton, Span } from '@chakra-ui/react'
 import { ThemeProvider, useTheme } from 'next-themes'
 import * as React from 'react'
 import { LuMoon, LuSun } from 'react-icons/lu'
@@ -11,7 +11,13 @@ export interface ColorModeProviderProps extends ThemeProviderProps {}
 
 export function ColorModeProvider(props: ColorModeProviderProps) {
   return (
-    <ThemeProvider attribute="class" disableTransitionOnChange {...props} />
+    <ThemeProvider
+      attribute="class"
+      defaultTheme="dark"
+      enableSystem={false}
+      disableTransitionOnChange
+      {...props}
+    />
   )
 }
 
@@ -78,6 +84,56 @@ export const ColorModeButton = React.forwardRef<
     </ClientOnly>
   )
 })
+
+export function ColorModeSwitcher() {
+  const { colorMode, setColorMode } = useColorMode()
+
+  return (
+    <ClientOnly fallback={<Skeleton height="7" width="14" borderRadius="full" />}>
+      <HStack
+        gap={1}
+        p="2px"
+        borderRadius="full"
+        border="1px solid"
+        borderColor="borderSecondary"
+        bg="bgSecondary"
+      >
+        <IconButton
+          aria-label="Use light theme"
+          aria-pressed={colorMode === 'light'}
+          size="xs"
+          variant="ghost"
+          borderRadius="full"
+          color={colorMode === 'light' ? 'white' : 'textSecondary'}
+          bg={colorMode === 'light' ? 'flipioPrimary' : 'transparent'}
+          _hover={{
+            bg: colorMode === 'light' ? 'flipioPrimary' : 'bgTertiary',
+            color: colorMode === 'light' ? 'white' : 'flipioPrimary',
+          }}
+          onClick={() => setColorMode('light')}
+        >
+          <LuSun />
+        </IconButton>
+        <IconButton
+          aria-label="Use dark theme"
+          aria-pressed={colorMode === 'dark'}
+          size="xs"
+          variant="ghost"
+          borderRadius="full"
+          color={colorMode === 'dark' ? 'white' : 'textSecondary'}
+          bg={colorMode === 'dark' ? 'flipioPrimary' : 'transparent'}
+          _hover={{
+            bg: colorMode === 'dark' ? 'flipioPrimary' : 'bgTertiary',
+            color: colorMode === 'dark' ? 'white' : 'flipioPrimary',
+          }}
+          onClick={() => setColorMode('dark')}
+        >
+          <LuMoon />
+        </IconButton>
+      </HStack>
+    </ClientOnly>
+  )
+}
 
 export const LightMode = React.forwardRef<HTMLSpanElement, SpanProps>(
   (props, ref) => {

@@ -305,7 +305,7 @@ export function DataGrid() {
           animateRows={true}
           theme={gridTheme}
           getRowStyle={getRowStyle}
-          rowSelection="single"
+          rowSelection={{ mode: 'singleRow' }}
           onRowClicked={onRowClicked}
           pagination={true}
           paginationPageSize={pageSize}

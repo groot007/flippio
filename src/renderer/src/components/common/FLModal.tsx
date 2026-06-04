@@ -68,19 +68,21 @@ function FLModal({
               gap={3}
               justifyContent="flex-end"
             >
-              <Dialog.ActionTrigger asChild>
-                <Button
-                  variant="ghost"
-                  onClick={onReject}
-                  disabled={disabled}
-                  color="textSecondary"
-                  _hover={{
-                    bg: 'bgTertiary',
-                  }}
-                >
-                  {rejectBtn}
-                </Button>
-              </Dialog.ActionTrigger>
+              {rejectBtn && (
+                <Dialog.ActionTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    onClick={onReject}
+                    disabled={disabled}
+                    color="textSecondary"
+                    _hover={{
+                      bg: 'bgTertiary',
+                    }}
+                  >
+                    {rejectBtn}
+                  </Button>
+                </Dialog.ActionTrigger>
+              )}
               <Button
                 onClick={onAccept}
                 disabled={disabled}

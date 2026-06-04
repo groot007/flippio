@@ -1,13 +1,94 @@
-import { Button, HStack, Link, Menu, Portal, Text } from '@chakra-ui/react'
+import { Box, Button, HStack, Link, Menu, Portal, Text, VStack } from '@chakra-ui/react'
+import FLModal from '@renderer/components/common/FLModal'
 import { useAutoUpdater } from '@renderer/hooks/useAutoUpdater'
-import { ColorModeButton } from '@renderer/ui/color-mode'
+import { ColorModeSwitcher } from '@renderer/ui/color-mode'
 import { toaster } from '@renderer/ui/toaster'
-import { useEffect } from 'react'
-import { LuDownload, LuExternalLink, LuGithub, LuSettings } from 'react-icons/lu'
+import { useEffect, useMemo, useState } from 'react'
+import { LuDownload, LuExternalLink, LuGithub, LuRefreshCw, LuSettings } from 'react-icons/lu'
 import packageJSON from '../../../../../package.json' with { type: 'json' }
 
+const PENDING_UPDATE_STORAGE_KEY = 'flippio.pending-update-changelog'
+
+interface PendingUpdatePayload {
+  version?: string
+  notes?: string
+}
+
+function sanitizeReleaseNotes(notes?: string) {
+  return notes?.trim() || 'Minor fixes and improvements.'
+}
+
+function getStoredPendingUpdate(): PendingUpdatePayload | null {
+  try {
+    const rawValue = window.localStorage.getItem(PENDING_UPDATE_STORAGE_KEY)
+    if (!rawValue) {
+      return null
+    }
+
+    const parsed = JSON.parse(rawValue) as PendingUpdatePayload
+    if (!parsed || typeof parsed !== 'object') {
+      return null
+    }
+
+    return parsed
+  }
+  catch {
+    return null
+  }
+}
+
+function setStoredPendingUpdate(payload: PendingUpdatePayload) {
+  window.localStorage.setItem(PENDING_UPDATE_STORAGE_KEY, JSON.stringify(payload))
+}
+
+function clearStoredPendingUpdate() {
+  window.localStorage.removeItem(PENDING_UPDATE_STORAGE_KEY)
+}
+
 export function Settings() {
-  const { isChecking, checkForUpdates, downloadAndInstall } = useAutoUpdater()
+  const { updateInfo, isChecking, isDownloading, checkForUpdates, downloadAndInstall } = useAutoUpdater()
+  const [availableUpdateModal, setAvailableUpdateModal] = useState<PendingUpdatePayload | null>(null)
+  const [installedUpdateModal, setInstalledUpdateModal] = useState<PendingUpdatePayload | null>(null)
+  const updateMenuLabel = updateInfo?.available && updateInfo.version
+    ? `${updateInfo.version} version is available`
+    : 'Check for Updates'
+
+  const releaseNotesBody = useMemo(() => {
+    const modalState = installedUpdateModal || availableUpdateModal
+    const notes = sanitizeReleaseNotes(modalState?.notes)
+
+    return (
+      <VStack align="stretch" gap={4}>
+        {modalState?.version && (
+          <Text fontWeight="medium">
+            Version
+            {' '}
+            {modalState.version}
+          </Text>
+        )}
+        <Box
+          bg="bgSecondary"
+          border="1px solid"
+          borderColor="borderSecondary"
+          borderRadius="md"
+          px={4}
+          py={3}
+          whiteSpace="pre-wrap"
+          fontSize="sm"
+          lineHeight="1.6"
+        >
+          {notes}
+        </Box>
+      </VStack>
+    )
+  }, [availableUpdateModal, installedUpdateModal])
+
+  const openAvailableUpdateModal = (version?: string, notes?: string) => {
+    setAvailableUpdateModal({
+      version,
+      notes: sanitizeReleaseNotes(notes),
+    })
+  }
 
   const handleCheckForUpdates = async () => {
     try {
@@ -24,16 +105,7 @@ export function Settings() {
         })
       }
       else if (result?.data?.available) {
-        toaster.create({
-          title: 'Update Available',
-          description: `Version ${result.data.version} is available!`,
-          type: 'success',
-          duration: 5000,
-          action: {
-            label: 'Install Now',
-            onClick: downloadAndInstall,
-          },
-        })
+        openAvailableUpdateModal(result.data.version, result.data.notes)
       }
       else {
         toaster.create({
@@ -85,155 +157,204 @@ export function Settings() {
     }
   }
 
+  const handleInstallUpdate = async () => {
+    if (!availableUpdateModal) {
+      return
+    }
+
+    try {
+      setStoredPendingUpdate(availableUpdateModal)
+      await downloadAndInstall()
+    }
+    catch {
+      clearStoredPendingUpdate()
+      toaster.create({
+        title: 'Update Failed',
+        description: 'Unable to download and install the update. Please try again later.',
+        type: 'error',
+        duration: 5000,
+      })
+    }
+  }
+
   useEffect(() => {
-    setTimeout(() => {
+    const pendingUpdate = getStoredPendingUpdate()
+    if (pendingUpdate?.version && pendingUpdate.version === packageJSON.version) {
+      setInstalledUpdateModal({
+        version: pendingUpdate.version,
+        notes: sanitizeReleaseNotes(pendingUpdate.notes),
+      })
+      clearStoredPendingUpdate()
+    }
+    else if (pendingUpdate) {
+      clearStoredPendingUpdate()
+    }
+
+    const updateCheckTimeout = setTimeout(() => {
       checkForUpdates().then((rez) => {
         if (rez.data?.available) {
-          toaster.create({
-            title: 'Update Available',
-            description: `Version ${rez.data.version} is available!`,
-            type: 'success',
-            duration: 5000,
-            action: {
-              label: 'Install Now',
-              onClick: downloadAndInstall,
-            },
-          })
+          openAvailableUpdateModal(rez.data.version, rez.data.notes)
         }
       })
     }, 5000)
+
+    return () => {
+      clearTimeout(updateCheckTimeout)
+    }
   }, [])
 
   return (
-    <Menu.Root>
-      <Menu.Trigger asChild>
-        <Button
-          variant="ghost"
-          size="sm"
-          color="textSecondary"
-          _hover={{
-            bg: 'bgTertiary',
-            color: 'flipioPrimary',
-          }}
-          title="Settings"
-        >
-          <LuSettings size={16} />
-        </Button>
-      </Menu.Trigger>
-      <Portal>
-        <Menu.Positioner>
-          <Menu.Content
-            bg="bgPrimary"
-            border="1px solid"
-            borderColor="borderPrimary"
-            borderRadius="md"
-            boxShadow="lg"
-            py={2}
-            minW="200px"
+    <>
+      <Menu.Root>
+        <Menu.Trigger asChild>
+          <Button
+            variant="ghost"
+            size="sm"
+            color="textSecondary"
+            _hover={{
+              bg: 'bgTertiary',
+              color: 'flipioPrimary',
+            }}
+            title="Settings"
           >
-            <Menu.Item
-              value="check-updates"
-              px={3}
+            <LuSettings size={16} />
+          </Button>
+        </Menu.Trigger>
+        <Portal>
+          <Menu.Positioner>
+            <Menu.Content
+              bg="bgPrimary"
+              border="1px solid"
+              borderColor="borderPrimary"
+              borderRadius="md"
+              boxShadow="lg"
               py={2}
-              _hover={{
-                bg: 'bgTertiary',
-              }}
-              _focus={{
-                bg: 'bgTertiary',
-              }}
-              onClick={handleCheckForUpdates}
-              disabled={isChecking}
+              minW="200px"
             >
-              <Button
-                variant="ghost"
-                size="sm"
-                color="textPrimary"
-                _hover={{ color: 'flipioPrimary' }}
-                display="flex"
-                alignItems="center"
-                gap={2}
-                fontSize="sm"
-                fontWeight="medium"
-                loading={isChecking}
-                p={0}
-                h="auto"
-                minH="auto"
+              <Menu.Item
+                value="check-updates"
+                px={3}
+                py={2}
+                _hover={{
+                  bg: 'bgTertiary',
+                }}
+                _focus={{
+                  bg: 'bgTertiary',
+                }}
+                onClick={handleCheckForUpdates}
+                disabled={isChecking}
               >
-                <LuDownload size={16} />
-                <Text>Check for Updates</Text>
-              </Button>
-            </Menu.Item>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  color="textPrimary"
+                  display="flex"
+                  alignItems="center"
+                  gap={2}
+                  fontSize="sm"
+                  fontWeight="medium"
+                  loading={isChecking}
+                  p={0}
+                  h="auto"
+                  minH="auto"
+                >
+                  <LuRefreshCw size={16} />
+                  <Text>{updateMenuLabel}</Text>
+                </Button>
+              </Menu.Item>
 
-            <Menu.Item
-              value="export-logs"
-              px={3}
-              py={2}
-              _hover={{
-                bg: 'bgTertiary',
-              }}
-              _focus={{
-                bg: 'bgTertiary',
-              }}
-              onClick={handleExportLogs}
-            >
-              <Button
-                variant="ghost"
-                size="sm"
-                color="textPrimary"
-                _hover={{ color: 'flipioPrimary' }}
-                display="flex"
-                alignItems="center"
-                gap={2}
-                fontSize="sm"
-                fontWeight="medium"
-                p={0}
-                h="auto"
-                minH="auto"
+              <Menu.Item
+                value="export-logs"
+                px={3}
+                py={2}
+                _hover={{
+                  bg: 'bgTertiary',
+                }}
+                _focus={{
+                  bg: 'bgTertiary',
+                }}
+                onClick={handleExportLogs}
               >
-                <LuDownload size={16} />
-                <Text>Export Logs</Text>
-              </Button>
-            </Menu.Item>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  color="textPrimary"
+                  display="flex"
+                  alignItems="center"
+                  gap={2}
+                  fontSize="sm"
+                  fontWeight="medium"
+                  p={0}
+                  h="auto"
+                  minH="auto"
+                >
+                  <LuDownload size={16} />
+                  <Text>Export Logs</Text>
+                </Button>
+              </Menu.Item>
 
-            <Menu.Item
-              value="github-link"
-              px={3}
-              py={2}
-              _hover={{
-                bg: 'bgTertiary',
-              }}
-              _focus={{
-                bg: 'bgTertiary',
-              }}
-            >
-              <Link
-                target="_blank"
-                href="https://github.com/groot007/flippio"
-                variant="plain"
-                outline="none"
-                color="textPrimary"
-                _hover={{ color: 'flipioPrimary' }}
-                display="flex"
-                alignItems="center"
-                gap={2}
-                fontSize="sm"
-                fontWeight="medium"
+              <Menu.Item
+                value="github-link"
+                px={3}
+                py={2}
+                _hover={{
+                  bg: 'bgTertiary',
+                }}
+                _focus={{
+                  bg: 'bgTertiary',
+                }}
               >
-                <LuGithub size={16} />
-                <Text>GitHub</Text>
-                <LuExternalLink size={12} />
-              </Link>
-            </Menu.Item>
-            <HStack px={3} py={2} justifyContent="space-between" borderTop="1px solid" borderColor="borderSecondary" mt={1}>
-              <Text fontSize="xs" color="textTertiary">
-                v
-                {packageJSON.version}
-              </Text>
-              <ColorModeButton />
-            </HStack>
-          </Menu.Content>
-        </Menu.Positioner>
-      </Portal>
-    </Menu.Root>
+                <Link
+                  target="_blank"
+                  href="https://github.com/groot007/flippio"
+                  variant="plain"
+                  outline="none"
+                  color="textPrimary"
+                  display="flex"
+                  alignItems="center"
+                  gap={2}
+                  fontSize="sm"
+                  fontWeight="medium"
+                >
+                  <LuGithub size={16} />
+                  <Text>GitHub</Text>
+                  <LuExternalLink size={12} />
+                </Link>
+              </Menu.Item>
+              <HStack px={3} py={2} justifyContent="space-between" borderTop="1px solid" borderColor="borderSecondary" mt={1}>
+                <Text fontSize="xs" color="textTertiary">
+                  v
+                  {packageJSON.version}
+                </Text>
+                <ColorModeSwitcher />
+              </HStack>
+            </Menu.Content>
+          </Menu.Positioner>
+        </Portal>
+      </Menu.Root>
+
+      <FLModal
+        isOpen={Boolean(availableUpdateModal)}
+        title={availableUpdateModal?.version ? `Update Available: ${availableUpdateModal.version}` : 'Update Available'}
+        body={releaseNotesBody}
+        acceptBtn={isDownloading ? 'Installing...' : 'Install Update'}
+        onAccept={handleInstallUpdate}
+        rejectBtn="Later"
+        onReject={() => {
+          setAvailableUpdateModal(null)
+        }}
+        disabled={isDownloading}
+      />
+
+      <FLModal
+        isOpen={Boolean(installedUpdateModal)}
+        title={installedUpdateModal?.version ? `Updated to ${installedUpdateModal.version}` : 'App Updated'}
+        body={releaseNotesBody}
+        acceptBtn="Close"
+        onAccept={() => {
+          setInstalledUpdateModal(null)
+        }}
+      />
+    </>
   )
 }

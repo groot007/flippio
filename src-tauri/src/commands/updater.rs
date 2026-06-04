@@ -21,6 +21,14 @@ pub struct UpdateResponse {
     pub error: Option<String>,
 }
 
+fn is_missing_update_artifact_error(error: &str) -> bool {
+    let lower = error.to_lowercase();
+    (lower.contains("404") || lower.contains("not found"))
+        && (lower.contains("latest.json")
+            || lower.contains("latest-mac.yml")
+            || lower.contains("release artifacts"))
+}
+
 #[tauri::command]
 pub async fn check_for_updates(app_handle: tauri::AppHandle) -> Result<UpdateResponse, String> {
     #[cfg(not(any(target_os = "android", target_os = "ios")))]
@@ -57,12 +65,30 @@ pub async fn check_for_updates(app_handle: tauri::AppHandle) -> Result<UpdateRes
                         })
                     }
                     Err(e) => {
-                        log::error!("Failed to check for updates: {}", e);
-                        Ok(UpdateResponse {
-                            success: false,
-                            data: None,
-                            error: Some(format!("Failed to check for updates: {}", e)),
-                        })
+                        let error_message = e.to_string();
+                        if is_missing_update_artifact_error(&error_message) {
+                            log::warn!(
+                                "Updater metadata is missing for the current release; treating this as no update available: {}",
+                                error_message
+                            );
+                            Ok(UpdateResponse {
+                                success: true,
+                                data: Some(UpdateInfo {
+                                    available: false,
+                                    version: None,
+                                    notes: None,
+                                    date: None,
+                                }),
+                                error: None,
+                            })
+                        } else {
+                            log::error!("Failed to check for updates: {}", error_message);
+                            Ok(UpdateResponse {
+                                success: false,
+                                data: None,
+                                error: Some(format!("Failed to check for updates: {}", error_message)),
+                            })
+                        }
                     }
                 }
             }

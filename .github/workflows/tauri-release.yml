@@ -38,6 +38,28 @@ jobs:
           echo "${{ secrets.FLIPPIO }}" > .env
           echo "VITE_POSTHOG_API_KEY=${{ secrets.VITE_POSTHOG_API_KEY }}" >> .env
 
+      - name: Prepare release notes from CHANGELOG
+        id: release_notes
+        shell: bash
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          awk -v version="$version" '
+            $0 ~ "^## \\[" version "\\]" { capture=1; next }
+            capture && $0 ~ "^## \\[" { exit }
+            capture { print }
+          ' CHANGELOG.md > release-notes.md
+
+          if [[ ! -s release-notes.md ]]; then
+            echo "Missing CHANGELOG entry for version ${version}"
+            exit 1
+          fi
+
+          {
+            echo "release_body<<EOF"
+            cat release-notes.md
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
       - name: Build and release Tauri app (Universal)
         uses: tauri-apps/tauri-action@v0.5.20
         env:
@@ -54,19 +76,7 @@ jobs:
         with:
           tagName: ${{ github.ref_name }}
           releaseName: Flippio v__VERSION__
-          releaseBody: |
-            ## What's Changed
-
-            This release includes auto-updater support with proper signature verification.
-
-            ## Installation
-
-            Download the universal installer that works on both Intel and Apple Silicon Macs:
-            - **Universal macOS**: `Flippio_*_universal.dmg`
-
-            ## Auto-Updates
-
-            This version supports automatic updates. The app will check for new versions and prompt you to update when available.
+          releaseBody: ${{ steps.release_notes.outputs.release_body }}
           releaseDraft: false
           prerelease: false
           args: --target universal-apple-darwin
