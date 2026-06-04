@@ -1,8 +1,8 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import packageJSON from '../../../../../../package.json' with { type: 'json' }
 import { render } from '../../../test-utils/render'
 import { Settings } from '../Settings'
-import packageJSON from '../../../../../../package.json' with { type: 'json' }
 
 const PENDING_UPDATE_STORAGE_KEY = 'flippio.pending-update-changelog'
 
