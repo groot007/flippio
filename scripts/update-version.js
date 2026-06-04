@@ -3,6 +3,7 @@
 const fs = require('node:fs')
 const path = require('node:path')
 const process = require('node:process')
+const readline = require('node:readline/promises')
 
 /**
  * Update version across all project files
@@ -31,6 +32,7 @@ if (!versionRegex.test(newVersion)) {
 console.log(`🚀 ${isDryRun ? 'Dry run - would update' : 'Updating'} version to ${newVersion}...`)
 
 const rootDir = path.resolve(__dirname, '..')
+const changelogPath = path.join(rootDir, 'CHANGELOG.md')
 
 /**
  * Get current version from a file
@@ -52,71 +54,107 @@ function getCurrentVersion(filePath, updateFunction) {
   return 'unknown'
 }
 
-// Files to update with their respective update functions
-const filesToUpdate = [
-  {
-    path: path.join(rootDir, 'package.json'),
-    update: updatePackageJson,
-    description: 'Root package.json',
-  },
-  {
-    path: path.join(rootDir, 'src-tauri', 'tauri.conf.json'),
-    update: updateTauriConfig,
-    description: 'Tauri configuration',
-  },
-  {
-    path: path.join(rootDir, 'src-tauri', 'Cargo.toml'),
-    update: updateCargoToml,
-    description: 'Cargo.toml',
-  },
-  {
-    path: path.join(rootDir, 'src', 'renderer', 'package.json'),
-    update: updatePackageJson,
-    description: 'Renderer package.json',
-  },
-]
+async function main() {
+  validateChangelogVersionAvailable(newVersion)
 
-let updatedFiles = 0
-const errors = []
+  // Files to update with their respective update functions
+  const filesToUpdate = [
+    {
+      path: path.join(rootDir, 'package.json'),
+      update: updatePackageJson,
+      description: 'Root package.json',
+    },
+    {
+      path: path.join(rootDir, 'src-tauri', 'tauri.conf.json'),
+      update: updateTauriConfig,
+      description: 'Tauri configuration',
+    },
+    {
+      path: path.join(rootDir, 'src-tauri', 'Cargo.toml'),
+      update: updateCargoToml,
+      description: 'Cargo.toml',
+    },
+    {
+      path: path.join(rootDir, 'src', 'renderer', 'package.json'),
+      update: updatePackageJson,
+      description: 'Renderer package.json',
+    },
+  ]
 
-// Update each file
-for (const file of filesToUpdate) {
-  try {
-    if (fs.existsSync(file.path)) {
-      console.log(`📝 ${isDryRun ? 'Would update' : 'Updating'} ${file.description}...`)
-      if (!isDryRun) {
-        file.update(file.path, newVersion)
+  let updatedFiles = 0
+  const errors = []
+
+  // Update each file
+  for (const file of filesToUpdate) {
+    try {
+      if (fs.existsSync(file.path)) {
+        console.log(`📝 ${isDryRun ? 'Would update' : 'Updating'} ${file.description}...`)
+        if (!isDryRun) {
+          file.update(file.path, newVersion)
+        }
+        else {
+          // For dry run, just show what would be updated
+          try {
+            const currentVersion = getCurrentVersion(file.path, file.update)
+            console.log(`   ${currentVersion} → ${newVersion}`)
+          }
+          catch {
+            console.log(`   → ${newVersion}`)
+          }
+        }
+        updatedFiles++
+        console.log(`✅ ${isDryRun ? 'Would update' : 'Updated'} ${file.description}`)
       }
       else {
-        // For dry run, just show what would be updated
-        try {
-          const currentVersion = getCurrentVersion(file.path, file.update)
-          console.log(`   ${currentVersion} → ${newVersion}`)
-        }
-        catch {
-          console.log(`   → ${newVersion}`)
-        }
+        console.log(`⚠️  File not found: ${file.path}`)
       }
-      updatedFiles++
-      console.log(`✅ ${isDryRun ? 'Would update' : 'Updated'} ${file.description}`)
     }
-    else {
-      console.log(`⚠️  File not found: ${file.path}`)
+    catch (error) {
+      const errorMsg = `Failed to update ${file.description}: ${error.message}`
+      console.error(`❌ ${errorMsg}`)
+      errors.push(errorMsg)
     }
   }
-  catch (error) {
-    const errorMsg = `Failed to update ${file.description}: ${error.message}`
-    console.error(`❌ ${errorMsg}`)
-    errors.push(errorMsg)
+
+  if (errors.length === 0) {
+    try {
+      console.log(`📝 ${isDryRun ? 'Would update' : 'Updating'} CHANGELOG.md...`)
+      const changelogEntry = await getChangelogEntry(newVersion, isDryRun)
+      if (!isDryRun) {
+        updateChangelog(changelogPath, newVersion, changelogEntry)
+      }
+      else {
+        console.log(`   Would add CHANGELOG entry for ${newVersion}`)
+      }
+      updatedFiles++
+      console.log(`✅ ${isDryRun ? 'Would update' : 'Updated'} CHANGELOG.md`)
+    }
+    catch (error) {
+      const errorMsg = `Failed to update CHANGELOG.md: ${error.message}`
+      console.error(`❌ ${errorMsg}`)
+      errors.push(errorMsg)
+    }
+  }
+
+  // Summary
+  console.log('\n📊 Update Summary:')
+  console.log(`✅ Successfully updated: ${updatedFiles} files`)
+  if (errors.length > 0) {
+    console.log(`❌ Errors: ${errors.length}`)
+    errors.forEach(error => console.log(`   • ${error}`))
+    process.exitCode = 1
   }
 }
 
-// Summary
-console.log('\n📊 Update Summary:')
-console.log(`✅ Successfully updated: ${updatedFiles} files`)
-if (errors.length > 0) {
-  console.log(`❌ Errors: ${errors.length}`)
-  errors.forEach(error => console.log(`   • ${error}`))
+function validateChangelogVersionAvailable(version) {
+  if (!fs.existsSync(changelogPath)) {
+    throw new Error('CHANGELOG.md not found')
+  }
+
+  const changelogContent = fs.readFileSync(changelogPath, 'utf8')
+  if (hasChangelogSection(changelogContent, version)) {
+    throw new Error(`CHANGELOG.md already contains an entry for version ${version}`)
+  }
 }
 
 /**
@@ -166,3 +204,76 @@ function updateCargoToml(filePath, version) {
   fs.writeFileSync(filePath, content)
   console.log(`   ${oldVersion} → ${version}`)
 }
+
+async function getChangelogEntry(version, dryRun) {
+  console.log('\n🗒️  Enter changelog notes for this version.')
+  console.log('   Use Markdown. Press Enter on an empty line to finish.\n')
+
+  if (dryRun) {
+    console.log('   Dry run mode: changelog entry will not be written.')
+  }
+
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  })
+
+  const lines = []
+
+  try {
+    while (true) {
+      const line = await rl.question(lines.length === 0 ? '> ' : '')
+      if (line.trim() === '') {
+        break
+      }
+      lines.push(line)
+    }
+  }
+  finally {
+    rl.close()
+  }
+
+  if (lines.length === 0) {
+    console.log('   No changelog text entered, using placeholder.\n')
+    return '- No release notes provided.'
+  }
+
+  console.log('')
+  return lines.join('\n')
+}
+
+function updateChangelog(filePath, version, entry) {
+  const content = fs.readFileSync(filePath, 'utf8')
+
+  if (hasChangelogSection(content, version)) {
+    throw new Error(`CHANGELOG.md already contains an entry for version ${version}`)
+  }
+
+  const newSection = `## [${version}]\n\n${entry.trim()}\n\n`
+  const unreleasedHeading = '## [Unreleased]'
+  const unreleasedIndex = content.indexOf(unreleasedHeading)
+
+  if (unreleasedIndex === -1) {
+    throw new Error('CHANGELOG.md is missing the "## [Unreleased]" heading')
+  }
+
+  const insertPosition = content.indexOf('\n', unreleasedIndex)
+  if (insertPosition === -1) {
+    throw new Error('Unable to locate insertion point in CHANGELOG.md')
+  }
+
+  const updatedContent = `${content.slice(0, insertPosition + 1)}\n${newSection}${content.slice(insertPosition + 1)}`
+  fs.writeFileSync(filePath, updatedContent)
+  console.log(`   Added CHANGELOG entry for ${version}`)
+}
+
+function hasChangelogSection(content, version) {
+  const escapedVersion = version.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const headingRegex = new RegExp(`^## \\[${escapedVersion}\\]$`, 'm')
+  return headingRegex.test(content)
+}
+
+main().catch((error) => {
+  console.error(`❌ ${error.message}`)
+  process.exit(1)
+})

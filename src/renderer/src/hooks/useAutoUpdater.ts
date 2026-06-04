@@ -19,10 +19,10 @@ interface UseAutoUpdaterReturn {
       version?: string
       notes?: string
       date?: string
-    }
+      }
     error?: string
   }>
-  downloadAndInstall: () => Promise<void>
+  downloadAndInstall: () => Promise<boolean>
   error: string | null
 }
 
@@ -96,13 +96,19 @@ export function useAutoUpdater(): UseAutoUpdaterReturn {
 
       if (!result.success) {
         console.warn('Update download failed:', result.error)
-        setError(result.error || 'Failed to download and install update')
+        const errorMessage = result.error || 'Failed to download and install update'
+        setError(errorMessage)
+        throw new Error(errorMessage)
       }
+
+      return true
       // If successful, the app will restart automatically
     }
     catch (err) {
       console.warn('Update download error:', err)
-      setError(err instanceof Error ? err.message : 'Failed to download and install update')
+      const errorMessage = err instanceof Error ? err.message : 'Failed to download and install update'
+      setError(errorMessage)
+      throw err instanceof Error ? err : new Error(errorMessage)
     }
     finally {
       setIsDownloading(false)

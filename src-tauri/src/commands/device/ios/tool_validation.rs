@@ -119,8 +119,18 @@ impl IOSToolValidator {
                     }
                 }
 
-                // Test tool execution
-                let version = Self::test_tool_execution(&tool_path, tool_name);
+                // Verify the binary actually launches before accepting it.
+                let version = match Self::test_tool_execution(&tool_path, tool_name) {
+                    Ok(version) => version,
+                    Err(execution_error) => {
+                        warn!(
+                            "    ⚠️ Execution test failed for '{}': {}",
+                            tool_path.display(),
+                            execution_error
+                        );
+                        continue;
+                    }
+                };
                 
                 info!("    ✅ Tool validated successfully!");
                 return Ok(ValidatedTool {
@@ -142,7 +152,21 @@ impl IOSToolValidator {
     /// Create predefined discovery strategies
     fn create_discovery_strategies() -> Vec<ToolDiscoveryStrategy> {
         vec![
-            // Strategy 1: Homebrew (Apple Silicon) - Priority for M1/M2 Macs
+            // Strategy 1: Bundled tools (production) - Most deterministic for packaged apps
+            ToolDiscoveryStrategy {
+                name: "Bundled (Production)".to_string(),
+                paths: Self::get_bundled_production_paths(),
+                validator: Self::validate_bundled_tool,
+            },
+
+            // Strategy 2: Bundled tools (development) - Prefer checked-in tools during dev
+            ToolDiscoveryStrategy {
+                name: "Bundled (Development)".to_string(),
+                paths: Self::get_bundled_dev_paths(),
+                validator: Self::validate_bundled_tool,
+            },
+
+            // Strategy 3: Homebrew (Apple Silicon)
             ToolDiscoveryStrategy {
                 name: "Homebrew (Apple Silicon)".to_string(),
                 paths: vec![
@@ -152,7 +176,7 @@ impl IOSToolValidator {
                 validator: Self::validate_homebrew_tool,
             },
             
-            // Strategy 2: Homebrew (Intel) - For Intel Macs
+            // Strategy 4: Homebrew (Intel)
             ToolDiscoveryStrategy {
                 name: "Homebrew (Intel)".to_string(),
                 paths: vec![
@@ -162,32 +186,18 @@ impl IOSToolValidator {
                 validator: Self::validate_homebrew_tool,
             },
             
-            // Strategy 3: MacPorts
+            // Strategy 5: MacPorts
             ToolDiscoveryStrategy {
                 name: "MacPorts".to_string(),
                 paths: vec![PathBuf::from("/opt/local/bin")],
                 validator: Self::validate_system_tool,
             },
             
-            // Strategy 4: System PATH
+            // Strategy 6: System PATH
             ToolDiscoveryStrategy {
                 name: "System PATH".to_string(),
                 paths: Self::get_system_paths(),
                 validator: Self::validate_system_tool,
-            },
-            
-            // Strategy 5: Bundled tools (production) - Fallback only
-            ToolDiscoveryStrategy {
-                name: "Bundled (Production)".to_string(),
-                paths: Self::get_bundled_production_paths(),
-                validator: Self::validate_bundled_tool,
-            },
-            
-            // Strategy 6: Bundled tools (development) - Last resort
-            ToolDiscoveryStrategy {
-                name: "Bundled (Development)".to_string(),
-                paths: Self::get_bundled_dev_paths(),
-                validator: Self::validate_bundled_tool,
             },
         ]
     }
@@ -317,7 +327,7 @@ impl IOSToolValidator {
     }
 
     /// Test tool execution to verify it's working
-    fn test_tool_execution(path: &Path, tool_name: &str) -> Option<String> {
+    fn test_tool_execution(path: &Path, tool_name: &str) -> Result<Option<String>, String> {
         info!("🧪 Testing tool execution: {}", path.display());
         
         // Different tools have different ways to check version
@@ -344,12 +354,22 @@ impl IOSToolValidator {
                         // Look for version patterns
                         for line in stdout.lines().chain(stderr.lines()) {
                             if line.contains("version") || line.contains("Version") {
-                                return Some(line.trim().to_string());
+                                return Ok(Some(line.trim().to_string()));
                             }
                         }
                         
-                        return Some("Unknown version".to_string());
+                        return Ok(Some("Unknown version".to_string()));
                     }
+
+                    let stdout = String::from_utf8_lossy(&output.stdout);
+                    let stderr = String::from_utf8_lossy(&output.stderr);
+                    warn!(
+                        "⚠️ Tool '{}' exited unsuccessfully with args '{}'. stdout: {} stderr: {}",
+                        path.display(),
+                        args,
+                        stdout.trim(),
+                        stderr.trim()
+                    );
                 }
                 Err(e) => {
                     warn!("⚠️ Tool execution test failed with args '{}': {}", args, e);
@@ -358,7 +378,10 @@ impl IOSToolValidator {
         }
         
         warn!("⚠️ All tool execution tests failed");
-        None
+        Err(format!(
+            "Unable to launch '{}' successfully with validation arguments",
+            path.display()
+        ))
     }
 
     /// Get user-friendly error message with installation instructions
