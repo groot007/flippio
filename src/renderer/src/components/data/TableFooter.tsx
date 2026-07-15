@@ -3,13 +3,17 @@ import {
   Box,
   Button,
   Flex,
+  Menu,
+  Portal,
   Text,
 } from '@chakra-ui/react'
 import FLSelect from '@renderer/components/common/FLSelect'
 import { useRowEditingStore } from '@renderer/store/useRowEditingStore'
+import { useTableData } from '@renderer/store/useTableData'
 import { useColorMode } from '@renderer/ui/color-mode'
+import { toaster } from '@renderer/ui/toaster'
 import { useCallback, useEffect, useState } from 'react'
-import { LuChevronLeft, LuChevronRight, LuTrash2 } from 'react-icons/lu'
+import { LuChevronLeft, LuChevronRight, LuDownload, LuTrash2 } from 'react-icons/lu'
 import { useClearTableMutation } from '@/hooks/useTableMutations'
 import { useCurrentDatabaseSelection } from '@/store/useCurrentDatabaseSelection'
 import { useCurrentDeviceSelection } from '@/store/useCurrentDeviceSelection'
@@ -22,9 +26,41 @@ interface TableFooterProps {
   onPageSizeChange?: (pageSize: number) => void
 }
 
+function formatExportValue(value: unknown) {
+  if (value === null || value === undefined) {
+    return ''
+  }
+
+  if (typeof value === 'object') {
+    return JSON.stringify(value)
+  }
+
+  return String(value)
+}
+
+function escapeCsvValue(value: string) {
+  if (/[",\n]/.test(value)) {
+    return `"${value.replace(/"/g, '""')}"`
+  }
+
+  return value
+}
+
+function buildCsvContent(columns: { name: string }[], rows: Record<string, unknown>[]) {
+  const header = columns.map(column => escapeCsvValue(column.name)).join(',')
+  const body = rows.map(row =>
+    columns
+      .map(column => escapeCsvValue(formatExportValue(row[column.name])))
+      .join(','))
+
+  return [header, ...body].join('\n')
+}
+
 export function TableFooter({ gridRef, totalRows, onPageSizeChange }: TableFooterProps) {
+  const footerActionLabelFontSize = '11px'
   const { colorMode } = useColorMode()
   const { setSelectedRow } = useRowEditingStore()
+  const { tableData } = useTableData()
   const [pageSize, setPageSize] = useState(20)
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
@@ -110,6 +146,58 @@ export function TableFooter({ gridRef, totalRows, onPageSizeChange }: TableFoote
     setIsClearTableDialogOpen(true)
   }, [])
 
+  const exportRowsAsCsv = useCallback(async (exportType: 'full' | 'filtered') => {
+    const tableName = selectedDatabaseTable?.name
+    const columns = tableData?.columns || []
+
+    if (!tableName || columns.length === 0) {
+      toaster.create({
+        title: 'Export unavailable',
+        description: 'Select a table before exporting.',
+        type: 'error',
+        duration: 4000,
+      })
+      return
+    }
+
+    const rows = exportType === 'filtered' && gridRef.current?.api
+      ? (() => {
+          const filteredRows: Record<string, unknown>[] = []
+          gridRef.current.api.forEachNodeAfterFilterAndSort((node) => {
+            if (node.data) {
+              filteredRows.push(node.data)
+            }
+          })
+          return filteredRows
+        })()
+      : (tableData?.rows || [])
+
+    const content = buildCsvContent(columns, rows)
+    const defaultPath = `${tableName}${exportType === 'filtered' ? '_filtered' : ''}.csv`
+
+    const savedFilePath = await window.api.exportTextFile({
+      content,
+      defaultPath,
+      filters: [
+        {
+          name: 'CSV Files',
+          extensions: ['csv'],
+        },
+      ],
+    })
+
+    if (!savedFilePath) {
+      return
+    }
+
+    toaster.create({
+      title: exportType === 'filtered' ? 'Filtered view exported' : 'Full table exported',
+      description: `${tableName} exported to ${savedFilePath}`,
+      type: 'success',
+      duration: 4000,
+    })
+  }, [gridRef, selectedDatabaseTable?.name, tableData?.columns, tableData?.rows])
+
   const getDisplayedRowRange = () => {
     if (totalRows === 0) 
       return '0 to 0 of 0'
@@ -142,11 +230,43 @@ export function TableFooter({ gridRef, totalRows, onPageSizeChange }: TableFoote
           _hover={{ bg: colorMode === 'dark' ? 'gray.700' : 'gray.100' }}
         >
           <LuTrash2 color="flipioAccent.purple" />
+          <Text fontSize={footerActionLabelFontSize}>Clear table</Text>
         </Button>
-      </Flex>
-
-      <Flex alignItems="center" gap={2} marginLeft={6}>
-        <ChangeHistoryIndicator />
+        <ChangeHistoryIndicator label="History" labelFontSize={footerActionLabelFontSize} />
+        <Menu.Root positioning={{ placement: 'top-start' }}>
+          <Menu.Trigger asChild>
+            <Button
+              size="sm"
+              variant="ghost"
+              title="Export table"
+              disabled={!selectedDatabaseTable?.name || !tableData?.columns?.length}
+              _hover={{ bg: colorMode === 'dark' ? 'gray.700' : 'gray.100' }}
+            >
+              <LuDownload />
+              <Text fontSize={footerActionLabelFontSize}>Export table</Text>
+            </Button>
+          </Menu.Trigger>
+          <Portal>
+            <Menu.Positioner>
+              <Menu.Content
+                bg="bgPrimary"
+                border="1px solid"
+                borderColor="borderPrimary"
+                borderRadius="md"
+                boxShadow="lg"
+                py={2}
+                minW="160px"
+              >
+                <Menu.Item value="export-full-table" onClick={() => exportRowsAsCsv('full')}>
+                  Export full table
+                </Menu.Item>
+                <Menu.Item value="export-filtered-view" onClick={() => exportRowsAsCsv('filtered')}>
+                  Export filtered view
+                </Menu.Item>
+              </Menu.Content>
+            </Menu.Positioner>
+          </Portal>
+        </Menu.Root>
       </Flex>
 
       {/* Center pagination controls */}

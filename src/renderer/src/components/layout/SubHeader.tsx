@@ -14,7 +14,7 @@ import { useRowEditingStore } from '@renderer/store/useRowEditingStore'
 import { toaster } from '@renderer/ui/toaster'
 import { groupDatabaseFilesByLocation } from '@renderer/utils/databaseFileGrouping'
 import { ensureActiveDatabaseFile } from '@renderer/utils/databaseFileResolver'
-import { useDatabaseRefresh } from '@renderer/utils/databaseRefresh'
+import { refreshDatabase } from '@renderer/utils/databaseRefresh'
 import { useQueryClient } from '@tanstack/react-query'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { LuDatabase, LuFilter, LuFolderOpen, LuRefreshCcw, LuTable, LuUpload, LuX } from 'react-icons/lu'
@@ -63,6 +63,10 @@ export function SubHeader() {
   const {
     data: databaseFiles = [],
     isLoading,
+    isFirstRoundLoading,
+    isBackgroundScanning,
+    isScanComplete,
+    refetch: refetchDatabaseFiles,
   } = useDatabaseFiles(selectedDevice, selectedApplication)
 
   const { data: tableData, refetch: refetchTable } = useTableDataQuery(selectedDatabaseTable?.name || '')
@@ -78,11 +82,12 @@ export function SubHeader() {
     }
   }, [tableData, selectedDatabaseTable, tableDataStore.tableData?.isCustomQuery])
 
-  const isDBPulling = !!selectedApplication?.bundleId && !!selectedDevice?.id && isLoading
+  const isDBPulling = !!selectedApplication?.bundleId && !!selectedDevice?.id && isFirstRoundLoading
 
   const {
     data: tablesData,
     isError,
+    refetch: refetchDatabaseTables,
   } = useDatabaseTables(selectedDatabaseFile, selectedDevice)
 
   useEffect(() => {
@@ -202,8 +207,6 @@ export function SubHeader() {
     }
   }, [clearTableData, selectedDatabaseFile, setSelectedDatabaseTable, setSelectedRow])
 
-  const { refresh: handleDBRefresh, isLoading: isRefreshing } = useDatabaseRefresh()
-
   const onRefreshClick = useCallback(async () => {
     console.info('CriticalPath: database refresh started', {
       deviceId: selectedDevice?.id ?? null,
@@ -211,14 +214,50 @@ export function SubHeader() {
       databasePath: selectedDatabaseFile?.path ?? null,
       tableName: selectedDatabaseTable?.name ?? null,
     })
-    await handleDBRefresh()
+
+    if (selectedDevice?.deviceType === 'iphone-device') {
+      setSelectedDatabaseTable(null)
+      setSelectedDatabaseFile(null)
+      clearTableData()
+      setSelectedRow(null)
+    }
+
+    await refreshDatabase({
+      refetchDatabaseFiles,
+      refetchDatabaseTables: selectedDevice?.deviceType === 'iphone-device' ? undefined : refetchDatabaseTables,
+      refetchTable: selectedDevice?.deviceType === 'iphone-device' ? undefined : refetchTable,
+    })
     console.info('CriticalPath: database refresh finished', {
       databasePath: selectedDatabaseFile?.path ?? null,
       tableName: selectedDatabaseTable?.name ?? null,
     })
-  }, [handleDBRefresh, selectedApplication?.bundleId, selectedDatabaseFile?.path, selectedDatabaseTable?.name, selectedDevice?.id])
+  }, [
+    clearTableData,
+    refetchDatabaseFiles,
+    refetchDatabaseTables,
+    refetchTable,
+    selectedApplication?.bundleId,
+    selectedDatabaseFile?.path,
+    selectedDatabaseTable?.name,
+    selectedDevice?.deviceType,
+    selectedDevice?.id,
+    setSelectedDatabaseFile,
+    setSelectedDatabaseTable,
+    setSelectedRow,
+  ])
 
-  const isNoDB = !databaseFiles?.length && !isDBPulling && selectedApplication?.bundleId && selectedDevice?.id
+  const isNoDB = !databaseFiles?.length && isScanComplete && selectedApplication?.bundleId && selectedDevice?.id
+
+  const databaseMenuFooter = (isFirstRoundLoading || isBackgroundScanning)
+    ? (
+        <HStack px={3} py={2}>
+          <Text fontSize="xs" color="textSecondary">
+            {isFirstRoundLoading ? 'Scanning Documents...' : 'Scanning more folders...'}
+          </Text>
+          <Spinner size="xs" color="flipioPrimary" />
+        </HStack>
+      )
+    : undefined
 
   const handleOpenDBFile = useCallback(() => {
     window.api.openFile().then((file) => {
@@ -328,15 +367,18 @@ export function SubHeader() {
                 </Text>
               )
             : (
-                <FLSelect
-                  label="Select Database"
-                  options={dbFileOptions}
-                  value={selectedDatabaseFileOption}
-                  icon={<LuDatabase color="var(--chakra-colors-flipioPrimary)" />}
-                  onChange={handleDatabaseFileChange}
-                  isDisabled={!selectedApplication?.bundleId || isDBPulling}
-                  menuListWidth={350}
-                />
+                <Box>
+                  <FLSelect
+                    label="Select Database"
+                    options={dbFileOptions}
+                    value={selectedDatabaseFileOption}
+                    icon={<LuDatabase color="var(--chakra-colors-flipioPrimary)" />}
+                    onChange={handleDatabaseFileChange}
+                    isDisabled={!selectedApplication?.bundleId || isDBPulling}
+                    menuListWidth={300}
+                    menuFooter={databaseMenuFooter}
+                  />
+                </Box>
               )}
 
           <Box>
@@ -352,7 +394,7 @@ export function SubHeader() {
 
           <Button
             data-testid="refresh-db"
-            data-state={isRefreshing || isLoading ? 'open' : 'closed'}
+            data-state={isFirstRoundLoading ? 'open' : 'closed'}
             onClick={onRefreshClick}
             variant="ghost"
             size="sm"
@@ -361,7 +403,7 @@ export function SubHeader() {
               bg: 'bgTertiary',
               color: 'flipioPrimary',
             }}
-            disabled={isLoading || isRefreshing || !selectedDatabaseTable}
+            disabled={isFirstRoundLoading || !selectedDatabaseFile?.path}
             _disabled={{
               opacity: 0.5,
             }}
@@ -374,10 +416,6 @@ export function SubHeader() {
           >
             <LuRefreshCcw size={16} />
           </Button>
-
-          {isDBPulling && (
-            <Spinner size="sm" color="flipioPrimary" />
-          )}
 
           <HStack>
             {/* Show SQL button always */}

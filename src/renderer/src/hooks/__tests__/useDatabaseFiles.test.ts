@@ -35,6 +35,7 @@ beforeAll(() => {
   // Mock window.api
   globalThis.window.api = {
     getIOSDeviceDatabaseFiles: vi.fn(),
+    cancelIOSDeviceDatabaseScan: vi.fn(),
     getIOSSimulatorDatabaseFiles: vi.fn(),
     getAndroidDatabaseFiles: vi.fn(),
   } as any

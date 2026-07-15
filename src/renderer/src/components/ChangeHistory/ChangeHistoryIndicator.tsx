@@ -1,4 +1,4 @@
-import { Badge, IconButton } from '@chakra-ui/react'
+import { Badge, Button, Text } from '@chakra-ui/react'
 import { useChangeHistory } from '@renderer/hooks/useChangeHistory'
 import { formatDistanceToNow } from 'date-fns'
 import { useState } from 'react'
@@ -8,10 +8,14 @@ import { ChangeHistoryPanel } from './ChangeHistoryPanel'
 interface ChangeHistoryIndicatorProps {
   size?: 'sm' | 'md' | 'lg'
   variant?: 'solid' | 'ghost' | 'outline'
+  label?: string
+  labelFontSize?: string
 }
 
 export function ChangeHistoryIndicator({
   size = 'sm',
+  label,
+  labelFontSize = '12px',
 }: ChangeHistoryIndicatorProps) {
   const [isOpen, setIsOpen] = useState(false)
   const { data: changes = [], isLoading, error } = useChangeHistory(10, 0)
@@ -36,7 +40,7 @@ export function ChangeHistoryIndicator({
 
   return (
     <>
-      <IconButton
+      <Button
         aria-label={error ? 'Change history (unavailable)' : `Change history (${changeCount} changes)`}
         title={hoverTitle}
         size={size}
@@ -48,6 +52,7 @@ export function ChangeHistoryIndicator({
         opacity={error ? 0.5 : 1}
       >
         <LuClock />
+        {label && <Text fontSize={labelFontSize}>{label}</Text>}
         {hasChanges && (
           <Badge
             position="absolute"
@@ -66,7 +71,7 @@ export function ChangeHistoryIndicator({
             {changeCount > 99 ? '99+' : changeCount}
           </Badge>
         )}
-      </IconButton>
+      </Button>
       
       <ChangeHistoryPanel
         isOpen={isOpen}

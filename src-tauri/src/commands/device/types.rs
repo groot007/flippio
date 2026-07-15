@@ -33,7 +33,7 @@ pub struct Package {
     pub bundle_id: String,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DatabaseFile {
     pub path: String,
     #[serde(rename = "packageName")]

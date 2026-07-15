@@ -169,6 +169,7 @@ const COMMAND_MAP = {
   'device:checkAppExistence': 'device_check_app_existence',
   'device:pushIOSDbFile': 'device_push_ios_database_file',
   'device:getIOSDeviceDatabaseFiles': 'get_ios_device_database_files',
+  'device:cancelIOSDeviceDatabaseScan': 'cancel_ios_device_database_scan',
   'ios:getDeviceInfo': 'ios_get_device_info',
   'simulator:getIOSSimulatorDatabaseFiles': 'get_ios_simulator_database_files',
   'simulator:uploadSimulatorIOSDbFile': 'upload_simulator_ios_db_file',
@@ -203,6 +204,7 @@ const COMMAND_MAP = {
   // Common commands
   'dialog:selectFile': 'dialog_select_file',
   'dialog:saveFile': 'dialog_save_file',
+  'dialog:saveTextFile': 'export_text_file',
   'common:exportLogs': 'export_logs',
 }
 
@@ -302,7 +304,8 @@ function getParameterNames(command: string): string[] {
     device_push_ios_database_file: ['deviceId', 'localPath', 'packageName', 'remotePath'],
     device_get_ios_packages: ['deviceId'],
     device_get_ios_device_packages: ['deviceId'],
-    get_ios_device_database_files: ['deviceId', 'packageName'],
+    get_ios_device_database_files: ['deviceId', 'packageName', 'scanRequestId'],
+    cancel_ios_device_database_scan: ['scanKey'],
     get_ios_simulator_database_files: ['deviceId', 'packageName'],
     device_check_app_existence: ['deviceId', 'packageName'],
     ios_get_device_info: ['deviceId'],
@@ -448,8 +451,11 @@ export const api = {
   checkAppExistence: (deviceId: string, applicationId: string) =>
     invokeCommandWithResponse('device:checkAppExistence', 'exists', deviceId, applicationId),
 
-  getIOSDeviceDatabaseFiles: (deviceId: string, applicationId: string) =>
-    invokeCommandWithResponse('device:getIOSDeviceDatabaseFiles', 'files', deviceId, applicationId),
+  getIOSDeviceDatabaseFiles: (deviceId: string, applicationId: string, scanRequestId?: string) =>
+    invokeCommandWithResponse('device:getIOSDeviceDatabaseFiles', 'files', deviceId, applicationId, scanRequestId),
+
+  cancelIOSDeviceDatabaseScan: (scanKey: string) =>
+    invokeCommandWithResponse('device:cancelIOSDeviceDatabaseScan', 'result', scanKey),
 
   getIOSDeviceDatabaseFilesNew: (deviceId: string, applicationId: string) =>
     invokeCommandWithResponse('device:getIOSDeviceDatabaseFilesNew', 'files', deviceId, applicationId),
@@ -763,6 +769,48 @@ export const api = {
     }
     catch (error) {
       console.error('Error saving file:', error)
+      return null
+    }
+  },
+
+  exportTextFile: async (options: {
+    content: string
+    defaultPath: string
+    filters: Array<{ name: string, extensions: string[] }>
+  }) => {
+    if (options) {
+      validateInput(options.content, 'content', { required: true, type: 'string' })
+      validateInput(options.defaultPath, 'defaultPath', { required: true, type: 'string', maxLength: 500 })
+
+      if (options.filters && Array.isArray(options.filters)) {
+        for (const filter of options.filters) {
+          validateInput(filter.name, 'filter.name', { type: 'string', maxLength: 100 })
+          if (filter.extensions && !Array.isArray(filter.extensions)) {
+            throw new APIValidationError(
+              'Filter extensions must be an array',
+              'INVALID_FILTER_EXTENSIONS',
+              { filter },
+            )
+          }
+        }
+      }
+    }
+
+    try {
+      const transformedOptions = {
+        content: options.content,
+        default_path: options.defaultPath,
+        filters: options.filters.map(filter => ({
+          name: filter.name,
+          extensions: filter.extensions,
+        })),
+      }
+
+      const response = await invoke<string | null>('export_text_file', { options: transformedOptions })
+      return response
+    }
+    catch (error) {
+      console.error('Error exporting text file:', error)
       return null
     }
   },

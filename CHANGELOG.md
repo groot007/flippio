@@ -7,6 +7,12 @@ For example, tag `v0.4.1` publishes the `## [0.4.1]` section as the GitHub relea
 
 ## [Unreleased]
 
+## [0.4.4]
+
+Expand folder scan for IOS
+- Add table export
+
+
 ## [0.4.2]
 
 fix changelog modal
