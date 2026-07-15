@@ -96,6 +96,14 @@ declare global {
           extensions: string[]
         }>
       }) => Promise<any>
+      exportTextFile: (options: {
+        content: string
+        defaultPath: string
+        filters: Array<{
+          name: string
+          extensions: string[]
+        }>
+      }) => Promise<string | null>
       exportLogs: () => Promise<string | null>
       webUtils: any // Changed from WebUtils to any
 

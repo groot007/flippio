@@ -34,6 +34,7 @@ beforeAll(() => {
     openDatabase: vi.fn().mockResolvedValue(true),
     openFile: vi.fn().mockResolvedValue({ canceled: false, filePaths: ['/path/to/test.db'] }),
     exportFile: vi.fn().mockResolvedValue('/path/to/exported.db'),
+    exportTextFile: vi.fn().mockResolvedValue('/path/to/exported.csv'),
     exportLogs: vi.fn().mockResolvedValue('/path/to/logs.txt'),
     updateTableRow: vi.fn().mockResolvedValue(true),
     insertTableRow: vi.fn().mockResolvedValue(true),

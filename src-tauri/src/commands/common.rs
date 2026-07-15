@@ -21,6 +21,13 @@ pub struct SaveDialogOptions {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+pub struct SaveTextDialogOptions {
+    pub content: String,
+    pub default_path: Option<String>,
+    pub filters: Option<Vec<DialogFilter>>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
 pub struct DialogFilter {
     pub name: String,
     pub extensions: Vec<String>,
@@ -242,6 +249,47 @@ pub async fn dialog_save_file(
 }
 
 #[tauri::command]
+pub async fn export_text_file(
+    app_handle: tauri::AppHandle,
+    options: SaveTextDialogOptions,
+) -> Result<Option<String>, String> {
+    use tokio::sync::oneshot;
+
+    let (tx, rx) = oneshot::channel();
+
+    let mut dialog = app_handle.dialog().file();
+
+    if let Some(default_path) = &options.default_path {
+        dialog = dialog.set_file_name(default_path);
+    }
+
+    if let Some(filters) = &options.filters {
+        for filter in filters {
+            let extensions: Vec<&str> = filter.extensions.iter().map(|s| s.as_str()).collect();
+            dialog = dialog.add_filter(&filter.name, &extensions);
+        }
+    }
+
+    dialog.save_file(move |file_path| {
+        let _ = tx.send(file_path);
+    });
+
+    match rx.await {
+        Ok(Some(path)) => {
+            let save_path = path
+                .into_path()
+                .map_err(|_| "Invalid save path selected".to_string())?;
+
+            std::fs::write(&save_path, options.content)
+                .map_err(|e| format!("Failed to write exported file: {}", e))?;
+
+            Ok(Some(save_path.to_string_lossy().to_string()))
+        },
+        Ok(None) | Err(_) => Ok(None),
+    }
+}
+
+#[tauri::command]
 pub async fn export_logs(
     app_handle: tauri::AppHandle,
 ) -> Result<Option<String>, String> {
@@ -407,6 +455,22 @@ mod tests {
         assert_eq!(filters.len(), 2);
         assert_eq!(filters[0].name, "Database Files");
         assert_eq!(filters[1].name, "All Files");
+    }
+
+    #[test]
+    fn test_save_text_dialog_options_creation() {
+        let options = SaveTextDialogOptions {
+            content: "id,name\n1,Alice".to_string(),
+            default_path: Some("users.csv".to_string()),
+            filters: Some(vec![DialogFilter {
+                name: "CSV Files".to_string(),
+                extensions: vec!["csv".to_string()],
+            }]),
+        };
+
+        assert_eq!(options.content, "id,name\n1,Alice");
+        assert_eq!(options.default_path.as_deref(), Some("users.csv"));
+        assert_eq!(options.filters.as_ref().map(Vec::len), Some(1));
     }
 
     #[test]

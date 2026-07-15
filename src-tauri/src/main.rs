@@ -129,6 +129,7 @@ pub fn run() {
             // Common commands (file dialogs)
             commands::common::dialog_select_file,
             commands::common::dialog_save_file,
+            commands::common::export_text_file,
             commands::common::save_dropped_file,
             commands::common::export_logs,
             // Device helper commands

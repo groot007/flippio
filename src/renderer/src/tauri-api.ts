@@ -204,6 +204,7 @@ const COMMAND_MAP = {
   // Common commands
   'dialog:selectFile': 'dialog_select_file',
   'dialog:saveFile': 'dialog_save_file',
+  'dialog:saveTextFile': 'export_text_file',
   'common:exportLogs': 'export_logs',
 }
 
@@ -768,6 +769,48 @@ export const api = {
     }
     catch (error) {
       console.error('Error saving file:', error)
+      return null
+    }
+  },
+
+  exportTextFile: async (options: {
+    content: string
+    defaultPath: string
+    filters: Array<{ name: string, extensions: string[] }>
+  }) => {
+    if (options) {
+      validateInput(options.content, 'content', { required: true, type: 'string' })
+      validateInput(options.defaultPath, 'defaultPath', { required: true, type: 'string', maxLength: 500 })
+
+      if (options.filters && Array.isArray(options.filters)) {
+        for (const filter of options.filters) {
+          validateInput(filter.name, 'filter.name', { type: 'string', maxLength: 100 })
+          if (filter.extensions && !Array.isArray(filter.extensions)) {
+            throw new APIValidationError(
+              'Filter extensions must be an array',
+              'INVALID_FILTER_EXTENSIONS',
+              { filter },
+            )
+          }
+        }
+      }
+    }
+
+    try {
+      const transformedOptions = {
+        content: options.content,
+        default_path: options.defaultPath,
+        filters: options.filters.map(filter => ({
+          name: filter.name,
+          extensions: filter.extensions,
+        })),
+      }
+
+      const response = await invoke<string | null>('export_text_file', { options: transformedOptions })
+      return response
+    }
+    catch (error) {
+      console.error('Error exporting text file:', error)
       return null
     }
   },

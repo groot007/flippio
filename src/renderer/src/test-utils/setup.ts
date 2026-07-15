@@ -132,6 +132,7 @@ beforeAll(() => {
     clearAllChangeHistory: vi.fn(),
     openFile: vi.fn(),
     exportFile: vi.fn(),
+    exportTextFile: vi.fn(),
     exportLogs: vi.fn(),
     webUtils: vi.fn(),
     getAndroidEmulators: vi.fn(),
