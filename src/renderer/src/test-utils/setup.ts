@@ -102,6 +102,10 @@ beforeAll(() => {
     invoke: vi.fn().mockResolvedValue({ success: true }),
   }
 
+  globalThis.window.__TAURI_EVENT_PLUGIN_INTERNALS__ = {
+    unregisterListener: vi.fn(),
+  }
+
   // Mock window.api for all tests
   globalThis.window.api = {
     getDevices: vi.fn(),
