@@ -1,7 +1,7 @@
 import type { DatabaseFile } from '@renderer/types'
 import { transformToCamelCase } from '@renderer/utils/caseTransformer'
-import { listen } from '@tauri-apps/api/event'
 import { useQuery } from '@tanstack/react-query'
+import { listen } from '@tauri-apps/api/event'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 interface Device {

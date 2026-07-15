@@ -3,6 +3,8 @@ import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { render } from '../../../test-utils/render'
 import { SubHeader } from '../SubHeader'
 
+const mockHandleDBRefresh = vi.hoisted(() => vi.fn())
+
 beforeAll(() => {
   Object.defineProperty(window, 'matchMedia', {
     writable: true,
@@ -64,7 +66,6 @@ beforeAll(() => {
 })
 
 const mockRefetchTable = vi.fn()
-const mockHandleDBRefresh = vi.fn()
 
 vi.mock('@renderer/hooks/useDatabaseFiles', () => ({
   useDatabaseFiles: () => ({
@@ -102,10 +103,7 @@ vi.mock('@renderer/hooks/useTableDataQuery', () => ({
 }))
 
 vi.mock('@renderer/utils/databaseRefresh', () => ({
-  useDatabaseRefresh: () => ({
-    refresh: mockHandleDBRefresh,
-    isLoading: false,
-  }),
+  refreshDatabase: mockHandleDBRefresh,
 }))
 
 vi.mock('@renderer/store', () => ({

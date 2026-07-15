@@ -62,7 +62,6 @@ export function SubHeader() {
 
   const {
     data: databaseFiles = [],
-    isLoading,
     isFirstRoundLoading,
     isBackgroundScanning,
     isScanComplete,

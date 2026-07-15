@@ -62,7 +62,7 @@ describe('useDatabaseFiles hook', () => {
     })
 
     expect(result.current.isLoading).toBe(false)
-    expect(result.current.data).toBeUndefined()
+    expect(result.current.data).toEqual([])
     expect(mockIOSDeviceDatabaseFiles).not.toHaveBeenCalled()
     expect(mockIOSSimulatorDatabaseFiles).not.toHaveBeenCalled()
     expect(mockAndroidDatabaseFiles).not.toHaveBeenCalled()
@@ -76,7 +76,7 @@ describe('useDatabaseFiles hook', () => {
     })
 
     expect(result.current.isLoading).toBe(false)
-    expect(result.current.data).toBeUndefined()
+    expect(result.current.data).toEqual([])
     expect(mockIOSDeviceDatabaseFiles).not.toHaveBeenCalled()
     expect(mockIOSSimulatorDatabaseFiles).not.toHaveBeenCalled()
     expect(mockAndroidDatabaseFiles).not.toHaveBeenCalled()
@@ -109,7 +109,7 @@ describe('useDatabaseFiles hook', () => {
       expect(result.current.isSuccess).toBe(true)
     })
 
-    expect(mockIOSDeviceDatabaseFiles).toHaveBeenCalledWith('device-123', 'com.test.app')
+    expect(mockIOSDeviceDatabaseFiles).toHaveBeenCalledWith('device-123', 'com.test.app', expect.any(String))
     expect(result.current.data).toEqual([
       {
         filename: 'app.db',
@@ -321,7 +321,7 @@ describe('useDatabaseFiles hook', () => {
       expect(result.current.isSuccess).toBe(true)
     })
 
-    expect(mockIOSDeviceDatabaseFiles).toHaveBeenCalledWith('device-2', 'com.app2')
+    expect(mockIOSDeviceDatabaseFiles).toHaveBeenCalledWith('device-2', 'com.app2', expect.any(String))
     expect(result.current.data).toEqual([
       { filename: 'ios.db', path: '/ios.db', deviceType: 'iphone-device', packageName: 'com.app2', remotePath: '/ios.db' },
     ])
