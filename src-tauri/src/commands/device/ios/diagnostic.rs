@@ -2,9 +2,9 @@
 // Helps diagnose common iOS device connection issues
 
 use super::tools::get_tool_command_legacy;
-use log::{error, info, warn};
 use serde::{Deserialize, Serialize};
 use tauri_plugin_shell::ShellExt;
+use log::{info, warn, error};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct IOSDiagnosticResult {
@@ -22,7 +22,7 @@ pub async fn diagnose_ios_device(
     device_id: String,
 ) -> Result<IOSDiagnosticResult, String> {
     info!("🔍 Starting iOS device diagnostic for: {}", device_id);
-
+    
     let shell = app_handle.shell();
     let mut result = IOSDiagnosticResult {
         device_connected: false,
@@ -31,13 +31,12 @@ pub async fn diagnose_ios_device(
         issues: Vec::new(),
         recommendations: Vec::new(),
     };
-
+    
     // Test 1: Basic device connectivity
     info!("📱 Testing basic device connectivity...");
     let ideviceinfo_cmd = get_tool_command_legacy("ideviceinfo");
-
-    match shell
-        .command(&ideviceinfo_cmd)
+    
+    match shell.command(&ideviceinfo_cmd)
         .args(["-u", &device_id, "-k", "DeviceName"])
         .output()
         .await
@@ -50,30 +49,23 @@ pub async fn diagnose_ios_device(
         }
         Ok(output) => {
             let error_msg = String::from_utf8_lossy(&output.stderr);
-            result
-                .issues
-                .push(format!("Device not responding: {}", error_msg));
-            result
-                .recommendations
-                .push("Ensure device is unlocked and trusted".to_string());
+            result.issues.push(format!("Device not responding: {}", error_msg));
+            result.recommendations.push("Ensure device is unlocked and trusted".to_string());
             error!("❌ Device connectivity failed: {}", error_msg);
         }
         Err(e) => {
             result.issues.push(format!("ideviceinfo tool error: {}", e));
-            result
-                .recommendations
-                .push("Check libimobiledevice installation".to_string());
+            result.recommendations.push("Check libimobiledevice installation".to_string());
             error!("❌ Tool execution failed: {}", e);
         }
     }
-
+    
     // Test 2: Installation proxy service
     if result.device_connected {
         info!("🔧 Testing installation proxy service...");
         let ideviceinstaller_cmd = get_tool_command_legacy("ideviceinstaller");
-
-        match shell
-            .command(&ideviceinstaller_cmd)
+        
+        match shell.command(&ideviceinstaller_cmd)
             .args(["-u", &device_id, "-l"])
             .output()
             .await
@@ -85,11 +77,9 @@ pub async fn diagnose_ios_device(
             Ok(output) => {
                 let error_msg = String::from_utf8_lossy(&output.stderr);
                 result.installation_proxy_working = false;
-
+                
                 if error_msg.contains("Could not start com.apple.mobile.installation_proxy") {
-                    result
-                        .issues
-                        .push("Installation proxy service not available".to_string());
+                    result.issues.push("Installation proxy service not available".to_string());
                     result.recommendations.extend(vec![
                         "Ensure device is unlocked".to_string(),
                         "Trust this computer on the device".to_string(),
@@ -98,53 +88,41 @@ pub async fn diagnose_ios_device(
                     ]);
                 } else if error_msg.contains("No device found") {
                     result.issues.push("Device not properly paired".to_string());
-                    result
-                        .recommendations
-                        .push("Re-pair the device with this computer".to_string());
+                    result.recommendations.push("Re-pair the device with this computer".to_string());
                 } else {
-                    result
-                        .issues
-                        .push(format!("Installation proxy error: {}", error_msg));
+                    result.issues.push(format!("Installation proxy error: {}", error_msg));
                 }
-
+                
                 error!("❌ Installation proxy failed: {}", error_msg);
             }
             Err(e) => {
-                result
-                    .issues
-                    .push(format!("ideviceinstaller tool error: {}", e));
+                result.issues.push(format!("ideviceinstaller tool error: {}", e));
                 error!("❌ ideviceinstaller execution failed: {}", e);
             }
         }
     }
-
+    
     // Test 3: Additional connectivity checks
     if result.device_connected {
         info!("🔍 Running additional diagnostics...");
-
+        
         // Check device lock status
-        match shell
-            .command(&ideviceinfo_cmd)
+        match shell.command(&ideviceinfo_cmd)
             .args(["-u", &device_id, "-k", "PasswordProtected"])
             .output()
             .await
         {
             Ok(output) if output.status.success() => {
-                let protected = String::from_utf8_lossy(&output.stdout)
-                    .trim()
-                    .to_lowercase();
+                let protected = String::from_utf8_lossy(&output.stdout).trim().to_lowercase();
                 if protected == "true" {
-                    result
-                        .recommendations
-                        .push("Device may be locked - unlock and try again".to_string());
+                    result.recommendations.push("Device may be locked - unlock and try again".to_string());
                 }
             }
             _ => {}
         }
-
+        
         // Check iOS version for Developer Mode requirement
-        match shell
-            .command(&ideviceinfo_cmd)
+        match shell.command(&ideviceinfo_cmd)
             .args(["-u", &device_id, "-k", "ProductVersion"])
             .output()
             .await
@@ -163,18 +141,15 @@ pub async fn diagnose_ios_device(
             _ => {}
         }
     }
-
+    
     // Generate summary
     if result.device_connected && result.installation_proxy_working {
         info!("🎉 All iOS diagnostics passed!");
     } else {
-        warn!(
-            "⚠️ iOS diagnostic issues found: {} issues, {} recommendations",
-            result.issues.len(),
-            result.recommendations.len()
-        );
+        warn!("⚠️ iOS diagnostic issues found: {} issues, {} recommendations", 
+              result.issues.len(), result.recommendations.len());
     }
-
+    
     Ok(result)
 }
 
@@ -185,7 +160,7 @@ pub async fn check_ios_device_status(
     device_id: String,
 ) -> Result<serde_json::Value, String> {
     let diagnostic = diagnose_ios_device(app_handle, device_id).await?;
-
+    
     Ok(serde_json::json!({
         "connected": diagnostic.device_connected,
         "name": diagnostic.device_name,
@@ -205,24 +180,21 @@ pub fn get_ios_error_help(error_message: &str) -> String {
         • Device is locked - unlock your iPhone/iPad\n\
         • Computer not trusted - tap 'Trust' on your device\n\
         • Developer Mode disabled (iOS 16+) - enable in Settings > Privacy & Security\n\
-        • Device needs reconnection - try unplugging and reconnecting"
-            .to_string()
+        • Device needs reconnection - try unplugging and reconnecting".to_string()
     } else if error_message.contains("No device found") {
         "Device Not Found:\n\
         \n\
         • Check USB cable connection\n\
         • Try a different USB cable\n\
         • Restart both device and computer\n\
-        • Re-pair the device"
-            .to_string()
+        • Re-pair the device".to_string()
     } else if error_message.contains("usbmuxd") {
         "USB Communication Error:\n\
         \n\
         • Restart the device\n\
         • Try a different USB port\n\
-        • On macOS, try: sudo pkill usbmuxd"
-            .to_string()
+        • On macOS, try: sudo pkill usbmuxd".to_string()
     } else {
         format!("iOS Error: {}\n\nTry basic troubleshooting:\n• Unlock device\n• Trust computer\n• Reconnect cable", error_message)
     }
-}
+} 

@@ -1,7 +1,7 @@
 // Database connection management with per-database caching
-use crate::commands::database::helpers::ensure_database_file_permissions;
 use crate::commands::database::types::*;
-use log::{error, info, warn};
+use crate::commands::database::helpers::ensure_database_file_permissions;
+use log::{info, warn, error};
 use sqlx::sqlite::SqlitePool;
 use std::collections::HashMap;
 use std::path::Path;
@@ -38,20 +38,17 @@ impl DatabaseConnectionManager {
     /// Get a database connection, reusing cached connection if available
     pub async fn get_connection(&self, db_path: &str) -> Result<SqlitePool, String> {
         let normalized_path = self.normalize_path(db_path);
-
+        
         // If caching is disabled, always create fresh connections
         if self.config.cache_disabled {
-            info!(
-                "🚫 Cache disabled - creating fresh connection for: {}",
-                normalized_path
-            );
+            info!("🚫 Cache disabled - creating fresh connection for: {}", normalized_path);
             return self.create_new_connection(&normalized_path).await;
         }
-
+        
         // Try to get existing connection from cache
         {
             let mut cache_guard = self.cache.write().await;
-
+            
             if let Some(cached_conn) = cache_guard.get_mut(&normalized_path) {
                 // Check if connection should be removed (time-expired OR pool is closed)
                 if !cached_conn.should_be_removed(self.config.connection_ttl) {
@@ -60,10 +57,7 @@ impl DatabaseConnectionManager {
                     return Ok(cached_conn.pool.clone());
                 } else {
                     if cached_conn.is_pool_closed() {
-                        info!(
-                            "🚫 Cached connection pool is closed, removing from cache: {}",
-                            normalized_path
-                        );
+                        info!("🚫 Cached connection pool is closed, removing from cache: {}", normalized_path);
                     } else {
                         info!("⏰ Cached connection expired for: {}", normalized_path);
                     }
@@ -76,16 +70,16 @@ impl DatabaseConnectionManager {
         // Create new connection
         info!("🔗 Creating new connection for: {}", normalized_path);
         let pool = self.create_new_connection(&normalized_path).await?;
-
+        
         // Add to cache only if caching is enabled
         if !self.config.cache_disabled {
             let mut cache_guard = self.cache.write().await;
-
+            
             // Check cache size limit
             if cache_guard.len() >= self.config.max_connections {
                 self.cleanup_oldest_connection(&mut cache_guard).await;
             }
-
+            
             cache_guard.insert(normalized_path.clone(), CachedConnection::new(pool.clone()));
         }
 
@@ -138,7 +132,7 @@ impl DatabaseConnectionManager {
         tokio::spawn(async move {
             loop {
                 sleep(interval).await;
-
+                
                 let mut cache_guard = cache.write().await;
                 let mut keys_to_remove = Vec::new();
 
@@ -166,7 +160,7 @@ impl DatabaseConnectionManager {
     pub async fn close_connection(&self, db_path: &str) -> Result<(), String> {
         let normalized_path = self.normalize_path(db_path);
         let mut cache_guard = self.cache.write().await;
-
+        
         if let Some(cached_conn) = cache_guard.remove(&normalized_path) {
             cached_conn.pool.close().await;
             info!("🔒 Closed connection for: {}", normalized_path);
@@ -180,12 +174,12 @@ impl DatabaseConnectionManager {
     /// Close all cached connections (for app shutdown)
     pub async fn close_all_connections(&self) {
         let mut cache_guard = self.cache.write().await;
-
+        
         for (path, cached_conn) in cache_guard.drain() {
             cached_conn.pool.close().await;
             info!("🔒 Closed connection for: {}", path);
         }
-
+        
         info!("🧹 All database connections closed");
     }
 
@@ -193,20 +187,11 @@ impl DatabaseConnectionManager {
     pub async fn get_stats(&self) -> HashMap<String, serde_json::Value> {
         let cache_guard = self.cache.read().await;
         let mut stats = HashMap::new();
-
-        stats.insert(
-            "total_connections".to_string(),
-            serde_json::Value::from(cache_guard.len()),
-        );
-        stats.insert(
-            "max_connections".to_string(),
-            serde_json::Value::from(self.config.max_connections),
-        );
-        stats.insert(
-            "ttl_seconds".to_string(),
-            serde_json::Value::from(self.config.connection_ttl.as_secs()),
-        );
-
+        
+        stats.insert("total_connections".to_string(), serde_json::Value::from(cache_guard.len()));
+        stats.insert("max_connections".to_string(), serde_json::Value::from(self.config.max_connections));
+        stats.insert("ttl_seconds".to_string(), serde_json::Value::from(self.config.connection_ttl.as_secs()));
+        
         let connection_details: Vec<serde_json::Value> = cache_guard
             .iter()
             .map(|(path, conn)| {
@@ -217,12 +202,9 @@ impl DatabaseConnectionManager {
                 })
             })
             .collect();
-
-        stats.insert(
-            "connections".to_string(),
-            serde_json::Value::Array(connection_details),
-        );
-
+            
+        stats.insert("connections".to_string(), serde_json::Value::Array(connection_details));
+        
         stats
     }
 
@@ -234,4 +216,4 @@ impl DatabaseConnectionManager {
             Err(_) => db_path.to_string(), // Fallback to original path if canonicalization fails
         }
     }
-}
+} 

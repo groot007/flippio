@@ -1,10 +1,10 @@
 // Database types - enhanced with per-database connection caching
 use serde::{Deserialize, Serialize};
-use sqlx::sqlite::SqlitePool;
 use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 use tokio::sync::RwLock;
+use sqlx::sqlite::SqlitePool;
 
 // Connection cache entry with TTL (Time To Live)
 #[derive(Debug, Clone)]
@@ -31,12 +31,12 @@ impl CachedConnection {
     pub fn is_expired(&self, ttl: Duration) -> bool {
         self.last_used.elapsed() > ttl
     }
-
+    
     /// Check if the pool is actually closed/unusable
     pub fn is_pool_closed(&self) -> bool {
         self.pool.is_closed()
     }
-
+    
     /// Check if this connection should be removed from cache
     /// (either time-expired or pool is closed)
     pub fn should_be_removed(&self, ttl: Duration) -> bool {
@@ -99,10 +99,10 @@ pub struct ConnectionConfig {
 impl Default for ConnectionConfig {
     fn default() -> Self {
         Self {
-            max_connections: 10, // Maximum 10 concurrent database connections
+            max_connections: 10,           // Maximum 10 concurrent database connections
             connection_ttl: Duration::from_secs(300), // 5 minutes TTL
             cleanup_interval: Duration::from_secs(60), // Cleanup every minute
-            cache_disabled: false, // Cache enabled by default
+            cache_disabled: false,         // Cache enabled by default
         }
     }
 }

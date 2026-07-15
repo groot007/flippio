@@ -1,12 +1,8 @@
 import { DatabaseItems } from '@/components/DatabaseItems'
 import ParallaxScrollView from '@/components/ParallaxScrollView'
-import { ThemedText } from '@/components/ThemedText'
-import { getDatabaseTargets } from '@/utils/database'
 import { Image, StyleSheet } from 'react-native'
 
 export default function HomeScreen() {
-  const databaseTargets = getDatabaseTargets()
-
   return (
     <ParallaxScrollView
       headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
@@ -18,21 +14,8 @@ export default function HomeScreen() {
         />
       )}
     >
-      <ThemedText style={styles.introText}>
-        This example app seeds two separate SQLite databases on iOS: one in
-        `Library` and one in `Documents`.
-      </ThemedText>
-
-      {databaseTargets.map(target => (
-        <DatabaseItems
-          key={target.id}
-          databasePath={target.absolutePath}
-          databaseTarget={target.id}
-          description={`${target.directoryLabel} database file: ${target.name}`}
-          style={styles.dbContainer}
-          title={`${target.directoryLabel} Database`}
-        />
-      ))}
+      {/* Database Items Section */}
+      <DatabaseItems style={styles.dbContainer} />
     </ParallaxScrollView>
   )
 }
@@ -57,8 +40,5 @@ const styles = StyleSheet.create({
   },
   dbContainer: {
     marginBottom: 24,
-  },
-  introText: {
-    marginBottom: 16,
   },
 })

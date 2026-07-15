@@ -1,8 +1,8 @@
 // iOS device tests
 // Comprehensive tests for iOS device detection, tool validation, and file operations
 
-use crate::commands::device::ios::diagnostic::*;
 use crate::commands::device::types::*;
+use crate::commands::device::ios::diagnostic::*;
 use tempfile::TempDir;
 
 #[cfg(test)]
@@ -18,7 +18,7 @@ mod tests {
             device_type: "iphone".to_string(),
             description: "Real iOS device".to_string(),
         };
-
+        
         assert_eq!(device.id, "00008030-001234567890000E");
         assert_eq!(device.device_type, "iphone");
         assert!(device.name.contains("iPhone"));
@@ -31,7 +31,7 @@ mod tests {
             name: "Settings".to_string(),
             bundle_id: "com.apple.Preferences".to_string(),
         };
-
+        
         assert_eq!(package.name, "Settings");
         assert_eq!(package.bundle_id, "com.apple.Preferences");
         assert!(package.bundle_id.starts_with("com."));
@@ -40,18 +40,14 @@ mod tests {
     #[test]
     fn test_ios_database_file_creation() {
         let db_file = DatabaseFile {
-            path: "/var/mobile/Containers/Data/Application/ABC123/Documents/database.sqlite"
-                .to_string(),
+            path: "/var/mobile/Containers/Data/Application/ABC123/Documents/database.sqlite".to_string(),
             package_name: "com.example.iosapp".to_string(),
             filename: "database.sqlite".to_string(),
             location: "Documents".to_string(),
-            remote_path: Some(
-                "/var/mobile/Containers/Data/Application/ABC123/Documents/database.sqlite"
-                    .to_string(),
-            ),
+            remote_path: Some("/var/mobile/Containers/Data/Application/ABC123/Documents/database.sqlite".to_string()),
             device_type: "iphone".to_string(),
         };
-
+        
         assert_eq!(db_file.filename, "database.sqlite");
         assert_eq!(db_file.package_name, "com.example.iosapp");
         assert_eq!(db_file.device_type, "iphone");
@@ -68,7 +64,7 @@ mod tests {
             platform: "iOS".to_string(),
             state: Some("Booted".to_string()),
         };
-
+        
         assert!(simulator.id.contains("-"));
         assert!(simulator.name.contains("Simulator"));
         assert_eq!(simulator.platform, "iOS");
@@ -94,13 +90,13 @@ mod tests {
                 description: "iPad device".to_string(),
             },
         ];
-
+        
         let response = DeviceResponse {
             success: true,
             data: Some(devices),
             error: None,
         };
-
+        
         assert!(response.success);
         assert!(response.data.is_some());
         assert_eq!(response.data.unwrap().len(), 2);
@@ -113,7 +109,7 @@ mod tests {
             data: None,
             error: Some("libimobiledevice tools not found".to_string()),
         };
-
+        
         assert!(!response.success);
         assert!(response.data.is_none());
         assert!(response.error.is_some());
@@ -129,18 +125,18 @@ mod tests {
             device_type: "iphone".to_string(),
             description: "Test iOS device".to_string(),
         };
-
+        
         // Test serialization
         let json = serde_json::to_string(&device)?;
         assert!(json.contains("ios_device_123"));
         assert!(json.contains("deviceType"));
         assert!(json.contains("iphone"));
-
+        
         // Test deserialization
         let deserialized: Device = serde_json::from_str(&json)?;
         assert_eq!(deserialized.id, device.id);
         assert_eq!(deserialized.device_type, device.device_type);
-
+        
         Ok(())
     }
 
@@ -150,14 +146,14 @@ mod tests {
             name: "Test iOS App".to_string(),
             bundle_id: "com.example.testapp".to_string(),
         };
-
+        
         let json = serde_json::to_string(&package)?;
         assert!(json.contains("bundleId"));
         assert!(json.contains("com.example.testapp"));
-
+        
         let deserialized: Package = serde_json::from_str(&json)?;
         assert_eq!(deserialized.bundle_id, package.bundle_id);
-
+        
         Ok(())
     }
 
@@ -171,16 +167,16 @@ mod tests {
             remote_path: Some("/var/mobile/test.sqlite".to_string()),
             device_type: "iphone".to_string(),
         };
-
+        
         let json = serde_json::to_string(&db_file)?;
         assert!(json.contains("packageName"));
         assert!(json.contains("remotePath"));
         assert!(json.contains("deviceType"));
         assert!(json.contains("iphone"));
-
+        
         let deserialized: DatabaseFile = serde_json::from_str(&json)?;
         assert_eq!(deserialized.device_type, "iphone");
-
+        
         Ok(())
     }
 
@@ -193,14 +189,14 @@ mod tests {
             platform: "iOS".to_string(),
             state: Some("Shutdown".to_string()),
         };
-
+        
         let json = serde_json::to_string(&simulator)?;
         assert!(json.contains("sim123"));
         assert!(json.contains("iOS"));
-
+        
         let deserialized: VirtualDevice = serde_json::from_str(&json)?;
         assert_eq!(deserialized.platform, "iOS");
-
+        
         Ok(())
     }
 
@@ -208,12 +204,12 @@ mod tests {
     fn test_ios_tool_path_logic() {
         // Test tool name extraction and path logic
         let tool_names = vec!["idevice_id", "ideviceinfo", "ideviceinstaller", "afcclient"];
-
+        
         for tool_name in tool_names {
             // Test that tool names are valid
             assert!(!tool_name.is_empty());
             assert!(tool_name.starts_with("idevice") || tool_name == "afcclient");
-
+            
             // Test path construction logic
             let tool_path = format!("/usr/local/bin/{}", tool_name);
             assert!(tool_path.contains(tool_name));
@@ -229,7 +225,7 @@ mod tests {
             "A1B2C3D4-5678-90AB-CDEF-1234567890AB",
             "12345678-90AB-CDEF-1234-567890ABCDEF",
         ];
-
+        
         for device_id in device_ids {
             // iOS device IDs should contain dashes
             assert!(device_id.contains("-"));
@@ -250,7 +246,7 @@ mod tests {
             "org.company.myapp",
             "net.domain.application",
         ];
-
+        
         for bundle_id in bundle_ids {
             // Should contain dots
             assert!(bundle_id.contains("."));
@@ -272,16 +268,16 @@ mod tests {
             "/var/mobile/Applications/GHI789/Documents/data.sqlite3",
             "/var/mobile/Library/database.db",
         ];
-
+        
         for path in ios_db_paths {
             // Should start with /var/mobile
             assert!(path.starts_with("/var/mobile"));
-
+            
             // Should contain a database file extension
-            assert!(
-                path.ends_with(".sqlite") || path.ends_with(".db") || path.ends_with(".sqlite3")
-            );
-
+            assert!(path.ends_with(".sqlite") || 
+                   path.ends_with(".db") || 
+                   path.ends_with(".sqlite3"));
+            
             // Extract filename
             let filename = std::path::Path::new(path)
                 .file_name()
@@ -295,7 +291,7 @@ mod tests {
     #[test]
     fn test_ios_error_scenarios() {
         // Test various iOS-specific error scenarios
-
+        
         // Device with empty ID
         let empty_device = Device {
             id: "".to_string(),
@@ -305,14 +301,14 @@ mod tests {
             description: "Test".to_string(),
         };
         assert!(empty_device.id.is_empty());
-
+        
         // Package with invalid bundle ID
         let invalid_package = Package {
             name: "Test App".to_string(),
             bundle_id: "invalid_bundle_id".to_string(),
         };
         assert!(!invalid_package.bundle_id.contains("."));
-
+        
         // Database file with missing remote path
         let db_file_no_remote = DatabaseFile {
             path: "/local/path/test.db".to_string(),
@@ -323,7 +319,7 @@ mod tests {
             device_type: "iphone".to_string(),
         };
         assert!(db_file_no_remote.remote_path.is_none());
-
+        
         // Simulator with no state
         let simulator_no_state = VirtualDevice {
             id: "sim123".to_string(),
@@ -345,16 +341,16 @@ mod tests {
             ("ideviceinstaller", vec!["-u", "device456", "-l"]),
             ("afcclient", vec!["-u", "device789", "ls", "/var/mobile"]),
         ];
-
+        
         for (tool_name, args) in tools {
             // Verify tool name is valid
             assert!(!tool_name.is_empty());
-
+            
             // Verify args are valid
             for arg in &args {
                 assert!(!arg.is_empty());
             }
-
+            
             // Test command construction logic
             let full_command = format!("{} {}", tool_name, args.join(" "));
             assert!(full_command.starts_with(tool_name));
@@ -370,7 +366,7 @@ mod tests {
             "/var/mobile/Applications/DEF/Library/data.db",
             "/var/mobile/Documents/app.sqlite3",
         ];
-
+        
         for remote_path in ios_remote_paths {
             // Test filename extraction
             let filename = std::path::Path::new(remote_path)
@@ -378,11 +374,11 @@ mod tests {
                 .unwrap()
                 .to_string_lossy();
             assert!(!filename.is_empty());
-
+            
             // Test local path generation
             let local_path = temp_dir.path().join(&*filename);
             assert!(local_path.to_string_lossy().contains(&*filename));
-
+            
             // Test that path is within temp directory
             assert!(local_path.starts_with(temp_dir.path()));
         }
@@ -392,17 +388,17 @@ mod tests {
     fn test_ios_error_help_message_format() {
         // Test that error help messages follow expected format
         let error_help = get_ios_error_help("Command failed");
-
+        
         // Should contain helpful information
         assert!(!error_help.is_empty());
-
+        
         // Should provide actionable guidance (check for case-insensitive "Try")
         assert!(
-            error_help.to_lowercase().contains("install")
-                || error_help.to_lowercase().contains("check")
-                || error_help.to_lowercase().contains("verify")
-                || error_help.to_lowercase().contains("ensure")
-                || error_help.to_lowercase().contains("try")
+            error_help.to_lowercase().contains("install") ||
+            error_help.to_lowercase().contains("check") ||
+            error_help.to_lowercase().contains("verify") ||
+            error_help.to_lowercase().contains("ensure") ||
+            error_help.to_lowercase().contains("try")
         );
     }
 
@@ -431,17 +427,17 @@ mod tests {
                 description: "Development simulator".to_string(),
             },
         ];
-
+        
         let response = DeviceResponse {
             success: true,
             data: Some(devices),
             error: None,
         };
-
+        
         assert!(response.success);
         let devices = response.data.unwrap();
         assert_eq!(devices.len(), 3);
-
+        
         // Verify different device types
         let device_types: Vec<&str> = devices.iter().map(|d| d.device_type.as_str()).collect();
         assert!(device_types.contains(&"iphone"));
@@ -458,13 +454,12 @@ com.example.testapp
 org.company.myapp
 net.domain.application
         "#;
-
-        let lines: Vec<&str> = package_output
-            .lines()
+        
+        let lines: Vec<&str> = package_output.lines()
             .map(|line| line.trim())
             .filter(|line| !line.is_empty())
             .collect();
-
+        
         for line in lines {
             // Each line should be a valid bundle identifier
             assert!(line.contains("."));
@@ -472,4 +467,4 @@ net.domain.application
             assert!(parts.len() >= 2);
         }
     }
-}
+} 

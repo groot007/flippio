@@ -1,5 +1,5 @@
 import { useColorScheme } from '@/hooks/useColorScheme'
-import { initDatabases } from '@/utils/database'
+import { initDatabase } from '@/utils/database'
 import {
   DarkTheme,
   DefaultTheme,
@@ -27,7 +27,7 @@ export default function RootLayout() {
     async function prepare() {
       try {
         // Initialize database
-        await initDatabases()
+        await initDatabase()
 
         if (loaded) {
           // Hide splash screen after everything is loaded
