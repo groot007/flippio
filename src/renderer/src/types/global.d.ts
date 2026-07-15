@@ -16,7 +16,8 @@ declare global {
       getIOsDevicePackages: (id: string) => Promise<any>
       getAndroidPackages: (id: string) => Promise<any>
       getAndroidDatabaseFiles: (deviceId: string, applicationId: string) => Promise<any>
-      getIOSDeviceDatabaseFiles: (deviceId: string, applicationId: string) => Promise<any>
+      getIOSDeviceDatabaseFiles: (deviceId: string, applicationId: string, scanRequestId?: string) => Promise<any>
+      cancelIOSDeviceDatabaseScan: (scanKey: string) => Promise<any>
       getIOSSimulatorDatabaseFiles: (deviceId: string, applicationId: string) => Promise<any>
       checkAppExistence: (deviceId: string, applicationId: string) => Promise<any>
       uploadIOSDbFile: (deviceId: string, packageName: string, localFilePath: string, remoteLocation: string) => Promise<any>

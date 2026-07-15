@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { Box, Button, HStack, Icon, Text, VStack } from '@chakra-ui/react'
 import { chakraComponents, Select } from 'chakra-react-select'
 import { LuInfo, LuPin } from 'react-icons/lu'
@@ -33,6 +34,7 @@ interface CustomSelectProps {
   variant?: 'small' | 'regular'
   menuListWidth?: string | number
   showPinIcon?: boolean
+  menuFooter?: ReactNode
 }
 
 const FLSelect: React.FC<CustomSelectProps> = ({
@@ -49,6 +51,7 @@ const FLSelect: React.FC<CustomSelectProps> = ({
   noOptionsMessage = 'No options available',
   variant = 'regular',
   showPinIcon = false,
+  menuFooter,
 }) => {
   const controlStyles = {
     small: {
@@ -83,6 +86,29 @@ const FLSelect: React.FC<CustomSelectProps> = ({
         </chakraComponents.Control>
       )
     },
+    Menu: ({ children, ...props }: any) => {
+      return (
+        <chakraComponents.Menu {...props}>
+          <Box display="flex" flexDirection="column" maxH="inherit">
+            <Box flex="1 1 auto" minH={0}>
+              {children}
+            </Box>
+            {menuFooter
+              ? (
+                  <Box
+                    flexShrink={0}
+                    bg="bgPrimary"
+                    borderTop="1px solid"
+                    borderColor="borderPrimary"
+                  >
+                    {menuFooter}
+                  </Box>
+                )
+              : null}
+          </Box>
+        </chakraComponents.Menu>
+      )
+    },
     GroupHeading: ({ children }: any) => {
       return (
         <Box
@@ -91,9 +117,6 @@ const FLSelect: React.FC<CustomSelectProps> = ({
           bg="bgSecondary"
           borderBottom="1px solid"
           borderColor="borderPrimary"
-          position="sticky"
-          top={0}
-          zIndex={1}
         >
           <Text 
             fontSize="xs" 
@@ -188,9 +211,10 @@ const FLSelect: React.FC<CustomSelectProps> = ({
           bg: 'bgPrimary',
           border: 'none',
           borderRadius: 'md',
+          overflow: 'hidden',
           boxShadow: 'lg',
-          width,
-          py: 1,
+          width: menuListWidth === 'auto' ? width : menuListWidth,
+          py: 0,
         }),
         menuList: provided => ({
           ...provided,
@@ -198,6 +222,9 @@ const FLSelect: React.FC<CustomSelectProps> = ({
           borderRadius: 'md',
           boxShadow: 'none',
           width: menuListWidth,
+          paddingTop: 0,
+          paddingBottom: 0,
+          maxHeight: '240px',
         }),
         option: provided => ({
           ...provided,
@@ -290,9 +317,6 @@ const FLSelect: React.FC<CustomSelectProps> = ({
           px: 3,
           borderBottom: '1px solid',
           borderColor: 'borderPrimary',
-          position: 'sticky',
-          top: 0,
-          zIndex: 1,
           margin: 0,
         }),
       }}

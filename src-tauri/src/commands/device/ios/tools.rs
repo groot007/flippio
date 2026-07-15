@@ -40,6 +40,12 @@ pub fn get_validated_tool_path(tool_name: &str) -> Result<String, ToolValidation
 
 /// Get command string for a libimobiledevice tool with enhanced validation
 pub fn get_tool_command(tool_name: &str) -> Result<String, String> {
+    if let Some(bundled_path) = get_libimobiledevice_tool_path(tool_name) {
+        let path_str = bundled_path.to_string_lossy().to_string();
+        info!("🔧 Preferring bundled tool path for '{}': {}", tool_name, path_str);
+        return Ok(path_str);
+    }
+
     match get_validated_tool_path(tool_name) {
         Ok(path) => {
             info!("🔧 Using validated tool path for '{}': {}", tool_name, path);
@@ -47,17 +53,9 @@ pub fn get_tool_command(tool_name: &str) -> Result<String, String> {
         }
         Err(error) => {
             error!("❌ Failed to get validated tool path for '{}': {}", tool_name, error);
-            
-            // Fallback to legacy method as last resort
-            info!("🔄 Attempting legacy fallback for '{}'", tool_name);
-            if let Some(legacy_path) = get_libimobiledevice_tool_path(tool_name) {
-                let path_str = legacy_path.to_string_lossy().to_string();
-                info!("⚠️ Using legacy fallback path: {}", path_str);
-                Ok(path_str)
-            } else {
-                error!("❌ Legacy fallback also failed for '{}'", tool_name);
-                Err(IOSToolValidator::get_installation_instructions(&error))
-            }
+
+            error!("❌ Bundled and validated lookup both failed for '{}'", tool_name);
+            Err(IOSToolValidator::get_installation_instructions(&error))
         }
     }
 }

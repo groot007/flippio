@@ -169,6 +169,7 @@ const COMMAND_MAP = {
   'device:checkAppExistence': 'device_check_app_existence',
   'device:pushIOSDbFile': 'device_push_ios_database_file',
   'device:getIOSDeviceDatabaseFiles': 'get_ios_device_database_files',
+  'device:cancelIOSDeviceDatabaseScan': 'cancel_ios_device_database_scan',
   'ios:getDeviceInfo': 'ios_get_device_info',
   'simulator:getIOSSimulatorDatabaseFiles': 'get_ios_simulator_database_files',
   'simulator:uploadSimulatorIOSDbFile': 'upload_simulator_ios_db_file',
@@ -302,7 +303,8 @@ function getParameterNames(command: string): string[] {
     device_push_ios_database_file: ['deviceId', 'localPath', 'packageName', 'remotePath'],
     device_get_ios_packages: ['deviceId'],
     device_get_ios_device_packages: ['deviceId'],
-    get_ios_device_database_files: ['deviceId', 'packageName'],
+    get_ios_device_database_files: ['deviceId', 'packageName', 'scanRequestId'],
+    cancel_ios_device_database_scan: ['scanKey'],
     get_ios_simulator_database_files: ['deviceId', 'packageName'],
     device_check_app_existence: ['deviceId', 'packageName'],
     ios_get_device_info: ['deviceId'],
@@ -448,8 +450,11 @@ export const api = {
   checkAppExistence: (deviceId: string, applicationId: string) =>
     invokeCommandWithResponse('device:checkAppExistence', 'exists', deviceId, applicationId),
 
-  getIOSDeviceDatabaseFiles: (deviceId: string, applicationId: string) =>
-    invokeCommandWithResponse('device:getIOSDeviceDatabaseFiles', 'files', deviceId, applicationId),
+  getIOSDeviceDatabaseFiles: (deviceId: string, applicationId: string, scanRequestId?: string) =>
+    invokeCommandWithResponse('device:getIOSDeviceDatabaseFiles', 'files', deviceId, applicationId, scanRequestId),
+
+  cancelIOSDeviceDatabaseScan: (scanKey: string) =>
+    invokeCommandWithResponse('device:cancelIOSDeviceDatabaseScan', 'result', scanKey),
 
   getIOSDeviceDatabaseFilesNew: (deviceId: string, applicationId: string) =>
     invokeCommandWithResponse('device:getIOSDeviceDatabaseFilesNew', 'files', deviceId, applicationId),

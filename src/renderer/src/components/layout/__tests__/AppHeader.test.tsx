@@ -24,6 +24,7 @@ beforeAll(() => {
     getAndroidPackages: vi.fn(),
     getAndroidDatabaseFiles: vi.fn(),
     getIOSDeviceDatabaseFiles: vi.fn(),
+    cancelIOSDeviceDatabaseScan: vi.fn(),
     getIOSSimulatorDatabaseFiles: vi.fn(),
   } as any
 })

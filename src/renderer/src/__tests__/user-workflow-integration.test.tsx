@@ -29,6 +29,7 @@ beforeAll(() => {
     // Database operations
     getAndroidDatabaseFiles: vi.fn(),
     getIOSDeviceDatabaseFiles: vi.fn(),
+    cancelIOSDeviceDatabaseScan: vi.fn(),
     getIOSSimulatorDatabaseFiles: vi.fn(),
     getTables: vi.fn(),
     getTableInfo: vi.fn(),

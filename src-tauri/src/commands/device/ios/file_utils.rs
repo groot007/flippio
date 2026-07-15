@@ -12,6 +12,19 @@ use std::fs;
 use chrono;
 use serde_json;
 
+#[derive(Clone, Copy, Debug)]
+pub enum IosAppAccessType {
+    Container,
+}
+
+impl IosAppAccessType {
+    pub(crate) fn afcclient_args<'a>(&self, package_name: &'a str) -> [&'a str; 2] {
+        match self {
+            Self::Container => ["--container", package_name],
+        }
+    }
+}
+
 /// Pull iOS database file to local temp directory
 pub async fn pull_ios_db_file(
     app_handle: &tauri::AppHandle,
@@ -19,6 +32,7 @@ pub async fn pull_ios_db_file(
     package_name: &str,
     remote_path: &str,
     is_device: bool,
+    access_type: IosAppAccessType,
 ) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
     info!("=== PULL iOS DB FILE STARTED ===");
     info!("Device ID: {}", device_id);
@@ -46,8 +60,9 @@ pub async fn pull_ios_db_file(
         
         // Use afcclient to pull file from device
         let local_path_str = local_path.to_string_lossy();
+        let access_args = access_type.afcclient_args(package_name);
         let args = [
-            "--documents", package_name,
+            access_args[0], access_args[1],
             "-u", device_id,
             "get", remote_path, &local_path_str
         ];
