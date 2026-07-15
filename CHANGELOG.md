@@ -7,6 +7,11 @@ For example, tag `v0.4.1` publishes the `## [0.4.1]` section as the GitHub relea
 
 ## [Unreleased]
 
+## [0.4.3]
+
+Library db files detection
+
+
 ## [0.4.2]
 
 fix changelog modal
