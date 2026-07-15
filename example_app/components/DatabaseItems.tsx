@@ -1,4 +1,5 @@
 import { useColorScheme } from '@/hooks/useColorScheme'
+import type { DatabaseTarget } from '@/utils/database'
 import { deleteItem, getItems } from '@/utils/database'
 import { FontAwesome } from '@expo/vector-icons'
 import * as Haptics from 'expo-haptics'
@@ -24,10 +25,20 @@ export interface Item {
 }
 
 interface DatabaseItemsProps {
+  databasePath?: string
+  databaseTarget: DatabaseTarget
+  description?: string
+  title: string
   style?: any
 }
 
-export function DatabaseItems({ style }: DatabaseItemsProps) {
+export function DatabaseItems({
+  databasePath,
+  databaseTarget,
+  description,
+  style,
+  title,
+}: DatabaseItemsProps) {
   const [items, setItems] = useState<Item[]>([])
   const [refreshing, setRefreshing] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -36,7 +47,7 @@ export function DatabaseItems({ style }: DatabaseItemsProps) {
   // Function to fetch items from database
   const fetchItems = useCallback(async () => {
     try {
-      const data = await getItems()
+      const data = await getItems(databaseTarget)
       setItems(data)
     }
     catch (error) {
@@ -46,12 +57,12 @@ export function DatabaseItems({ style }: DatabaseItemsProps) {
     finally {
       setLoading(false)
     }
-  }, [])
+  }, [databaseTarget])
 
   // Function to delete an item
   const handleDelete = async (id: number) => {
     try {
-      await deleteItem(id)
+      await deleteItem(databaseTarget, id)
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
       fetchItems() // Refresh the list after deletion
     }
@@ -382,20 +393,20 @@ export function DatabaseItems({ style }: DatabaseItemsProps) {
   }
 
   // Determine which renderer to use based on the content
-  const renderJsonData = (jsonData: any, title: string) => {
+  const renderJsonData = (jsonData: any) => {
     if (!jsonData)
       return null
 
     if (jsonData.product) {
       return renderSmartHomeData(jsonData)
     }
-    else if (title === 'Summer Recipe' && jsonData.recipe) {
+    else if (jsonData.recipe) {
       return renderRecipeData(jsonData)
     }
-    else if (title === 'Fitness Class' && jsonData.class) {
+    else if (jsonData.class) {
       return renderFitnessData(jsonData)
     }
-    else if (title === 'App Update' && jsonData.update) {
+    else if (jsonData.update) {
       return renderAppUpdateData(jsonData)
     }
 
@@ -420,7 +431,7 @@ export function DatabaseItems({ style }: DatabaseItemsProps) {
       <ThemedText>{item.description}</ThemedText>
 
       {/* Render JSON data based on the item type */}
-      {item.jsonData && renderJsonData(item.jsonData, item.title)}
+      {item.jsonData && renderJsonData(item.jsonData)}
 
       <ThemedText style={styles.timestamp}>
         {new Date(item.created_at).toLocaleString()}
@@ -463,7 +474,19 @@ export function DatabaseItems({ style }: DatabaseItemsProps) {
   return (
     <ThemedView style={[styles.container, style]}>
       <View style={styles.headerContainer}>
-        <ThemedText type="subtitle">Database Items</ThemedText>
+        <View style={styles.headerTextContainer}>
+          <ThemedText type="subtitle">{title}</ThemedText>
+          {description
+            ? (
+                <ThemedText style={styles.descriptionText}>{description}</ThemedText>
+              )
+            : null}
+          {databasePath
+            ? (
+                <ThemedText style={styles.pathText}>{databasePath}</ThemedText>
+              )
+            : null}
+        </View>
         <RefreshButton />
       </View>
 
@@ -509,6 +532,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 12,
   },
+  headerTextContainer: {
+    flex: 1,
+    paddingRight: 12,
+  },
   itemContainer: {
     padding: 16,
     marginBottom: 16,
@@ -524,6 +551,10 @@ const styles = StyleSheet.create({
   noDataText: {
     textAlign: 'center',
     marginTop: 20,
+  },
+  descriptionText: {
+    fontSize: 14,
+    opacity: 0.8,
   },
   timestamp: {
     fontSize: 12,
@@ -544,6 +575,11 @@ const styles = StyleSheet.create({
   loadingText: {
     textAlign: 'center',
     marginTop: 20,
+  },
+  pathText: {
+    fontSize: 12,
+    lineHeight: 18,
+    opacity: 0.7,
   },
   jsonContainer: {
     marginTop: 12,
