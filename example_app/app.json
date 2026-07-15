@@ -10,7 +10,8 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.kolia-stanis.Flippio-RN"
+      "bundleIdentifier": "com.kolia-stanis.Flippio-RN",
+      "appleTeamId": "4SVA48D93U"
     },
     "android": {
       "adaptiveIcon": {

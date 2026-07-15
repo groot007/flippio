@@ -4,3 +4,21 @@
 
 expo-env.d.ts
 # @end expo-cli
+
+node_modules/
+
+.expo/
+
+ios/Pods/
+
+ios/build/
+
+android/.gradle/
+
+android/build/
+
+src-tauri/target/
+
+dist/
+
+build/

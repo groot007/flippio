@@ -9,40 +9,46 @@ import { useFonts } from 'expo-font'
 import { Stack } from 'expo-router'
 import * as SplashScreen from 'expo-splash-screen'
 import { StatusBar } from 'expo-status-bar'
-import { useEffect } from 'react'
-import 'react-native-reanimated'
+import { useEffect, useState } from 'react'
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync()
 
 export default function RootLayout() {
   const colorScheme = useColorScheme()
-  const [loaded] = useFonts({
+  const [loaded, fontError] = useFonts({
 
     // eslint-disable-next-line ts/no-require-imports
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   })
+  const [appReady, setAppReady] = useState(false)
 
   useEffect(() => {
     async function prepare() {
       try {
-        // Initialize database
-        await initDatabase()
-
-        if (loaded) {
-          // Hide splash screen after everything is loaded
-          await SplashScreen.hideAsync()
+        if (!loaded && !fontError) {
+          return
         }
+
+        setAppReady(true)
+        await SplashScreen.hideAsync()
       }
       catch (e) {
-        console.warn('Error initializing app:', e)
+        console.warn('Error initializing app shell:', e)
+        setAppReady(true)
       }
     }
 
     prepare()
-  }, [loaded])
+  }, [loaded, fontError])
 
-  if (!loaded) {
+  useEffect(() => {
+    initDatabase().catch((e) => {
+      console.warn('Error initializing database:', e)
+    })
+  }, [])
+
+  if (!appReady) {
     return null
   }
 
