@@ -1,6 +1,6 @@
-use crate::commands::database::change_history::{FieldChange, OperationType, UserContext};
+use crate::commands::database::change_history::{OperationType, FieldChange, UserContext};
 use serde_json::Value;
-use sqlx::{Column, Row};
+use sqlx::{Row, Column};
 use std::collections::HashMap as StdHashMap;
 
 /// Configuration for recording database changes
@@ -70,17 +70,17 @@ fn create_update_changes(
         .iter()
         .filter_map(|(field_name, new_value)| {
             let old_value = old_values.get(field_name);
-
+            
             let old_val_opt = match old_value {
                 Some(v) if v != &Value::Null => Some(v.clone()),
                 _ => None,
             };
-
+            
             let new_val_opt = match new_value {
                 v if v != &Value::Null => Some(v.clone()),
                 _ => None,
             };
-
+            
             // Only record if there's actually a change
             if old_val_opt != new_val_opt {
                 Some(FieldChange {
@@ -138,7 +138,7 @@ fn get_value_type(value: &Value) -> String {
 /// Extract row values from SQLx row into HashMap
 pub fn extract_row_values(row: &sqlx::sqlite::SqliteRow) -> StdHashMap<String, Value> {
     let mut values = StdHashMap::new();
-
+    
     for (col_index, column) in row.columns().iter().enumerate() {
         let col_name = column.name();
         let value = match row.try_get::<Option<String>, usize>(col_index) {
@@ -162,6 +162,6 @@ pub fn extract_row_values(row: &sqlx::sqlite::SqliteRow) -> StdHashMap<String, V
         };
         values.insert(col_name.to_string(), value);
     }
-
+    
     values
 }

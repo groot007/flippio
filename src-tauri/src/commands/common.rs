@@ -4,7 +4,7 @@
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 use tauri::Manager;
-use tauri_plugin_dialog::DialogExt;
+use tauri_plugin_dialog::{DialogExt};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DialogResult {
@@ -65,8 +65,8 @@ fn collect_merged_logs(log_dir: &Path) -> Result<String, String> {
         return Ok(String::new());
     }
 
-    let read_dir =
-        std::fs::read_dir(log_dir).map_err(|e| format!("Failed to read log directory: {}", e))?;
+    let read_dir = std::fs::read_dir(log_dir)
+        .map_err(|e| format!("Failed to read log directory: {}", e))?;
 
     for entry in read_dir {
         let entry = entry.map_err(|e| format!("Failed to read log entry: {}", e))?;
@@ -120,10 +120,7 @@ async fn prompt_save_path(
     });
 
     match rx.await {
-        Ok(Some(path)) => Ok(Some(
-            path.into_path()
-                .map_err(|_| "Invalid save path selected".to_string())?,
-        )),
+        Ok(Some(path)) => Ok(Some(path.into_path().map_err(|_| "Invalid save path selected".to_string())?)),
         Ok(None) | Err(_) => Ok(None),
     }
 }
@@ -131,22 +128,22 @@ async fn prompt_save_path(
 #[tauri::command]
 pub async fn dialog_select_file(
     app_handle: tauri::AppHandle,
-    _options: Option<serde_json::Value>,
+    _options: Option<serde_json::Value>
 ) -> Result<DialogResult, String> {
     use tokio::sync::oneshot;
-
+    
     let (tx, rx) = oneshot::channel();
-
+    
     let mut dialog = app_handle.dialog().file();
-
+    
     // Add database file filters
     dialog = dialog.add_filter("Database Files", &["db", "sqlite", "sqlite3", "db3"]);
     dialog = dialog.add_filter("All Files", &["*"]);
-
+    
     dialog.pick_file(move |file_path| {
         let _ = tx.send(file_path);
     });
-
+    
     // Wait for the user to select a file or cancel
     match rx.await {
         Ok(Some(path)) => Ok(DialogResult {
@@ -170,17 +167,15 @@ pub async fn save_dropped_file(
 ) -> Result<String, String> {
     use std::fs;
     use std::io::Write;
-
+    
     // Create a temporary directory for dropped files
-    let temp_dir = app_handle
-        .path()
-        .temp_dir()
+    let temp_dir = app_handle.path().temp_dir()
         .map_err(|e| format!("Failed to get temp directory: {}", e))?;
-
+    
     let dropped_files_dir = temp_dir.join("flippio_dropped_files");
     fs::create_dir_all(&dropped_files_dir)
         .map_err(|e| format!("Failed to create temp directory: {}", e))?;
-
+    
     // Create a unique filename to avoid conflicts
     let timestamp = std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
@@ -191,32 +186,32 @@ pub async fn save_dropped_file(
         .as_secs();
     let unique_filename = format!("{}_{}", timestamp, filename);
     let file_path = dropped_files_dir.join(&unique_filename);
-
+    
     // Write the file content
-    let mut file =
-        fs::File::create(&file_path).map_err(|e| format!("Failed to create file: {}", e))?;
+    let mut file = fs::File::create(&file_path)
+        .map_err(|e| format!("Failed to create file: {}", e))?;
     file.write_all(&file_content)
         .map_err(|e| format!("Failed to write file: {}", e))?;
-
+    
     Ok(file_path.to_string_lossy().to_string())
 }
 
 #[tauri::command]
 pub async fn dialog_save_file(
     app_handle: tauri::AppHandle,
-    options: SaveDialogOptions,
+    options: SaveDialogOptions
 ) -> Result<Option<String>, String> {
     use tokio::sync::oneshot;
-
+    
     let (tx, rx) = oneshot::channel();
-
+    
     let mut dialog = app_handle.dialog().file();
-
+    
     // Set default filename from options if provided
     if let Some(default_path) = &options.default_path {
         dialog = dialog.set_file_name(default_path);
     }
-
+    
     // Set filters if provided
     if let Some(filters) = &options.filters {
         for filter in filters {
@@ -224,11 +219,11 @@ pub async fn dialog_save_file(
             dialog = dialog.add_filter(&filter.name, &extensions);
         }
     }
-
+    
     dialog.save_file(move |file_path| {
         let _ = tx.send(file_path);
     });
-
+    
     // Wait for the user to select a save location or cancel
     match rx.await {
         Ok(Some(path)) => {
@@ -236,21 +231,21 @@ pub async fn dialog_save_file(
             let source_path = Path::new(&options.db_file_path);
             let dest_string = path.to_string();
             let dest_path = Path::new(&dest_string);
-
+            
             std::fs::copy(source_path, dest_path)
                 .map_err(|e| format!("Failed to copy file: {}", e))?;
-
+            
             Ok(Some(path.to_string()))
-        }
+        },
         Ok(None) | Err(_) => Ok(None),
     }
 }
 
 #[tauri::command]
-pub async fn export_logs(app_handle: tauri::AppHandle) -> Result<Option<String>, String> {
-    let log_dir = app_handle
-        .path()
-        .app_log_dir()
+pub async fn export_logs(
+    app_handle: tauri::AppHandle,
+) -> Result<Option<String>, String> {
+    let log_dir = app_handle.path().app_log_dir()
         .map_err(|e| format!("Failed to get log directory: {}", e))?;
     let merged_logs = collect_merged_logs(&log_dir)?;
     let timestamp = chrono::Utc::now().format("%Y-%m-%d_%H-%M-%S");
@@ -284,7 +279,7 @@ mod tests {
             file_paths: Some(vec!["path1.db".to_string(), "path2.db".to_string()]),
             file_path: Some("selected.db".to_string()),
         };
-
+        
         assert!(!result.canceled);
         assert_eq!(result.file_paths.as_ref().unwrap().len(), 2);
         assert_eq!(result.file_path.as_ref().unwrap(), "selected.db");
@@ -297,7 +292,7 @@ mod tests {
             file_paths: None,
             file_path: None,
         };
-
+        
         assert!(result.canceled);
         assert!(result.file_paths.is_none());
         assert!(result.file_path.is_none());
@@ -309,13 +304,13 @@ mod tests {
             name: "Database Files".to_string(),
             extensions: vec!["db".to_string(), "sqlite".to_string()],
         };
-
+        
         let options = SaveDialogOptions {
             db_file_path: "/path/to/database.db".to_string(),
             default_path: Some("/default/path".to_string()),
             filters: Some(vec![filter]),
         };
-
+        
         assert_eq!(options.db_file_path, "/path/to/database.db");
         assert!(options.default_path.is_some());
         assert!(options.filters.is_some());
@@ -328,7 +323,7 @@ mod tests {
             name: "All Files".to_string(),
             extensions: vec!["*".to_string()],
         };
-
+        
         assert_eq!(filter.name, "All Files");
         assert_eq!(filter.extensions.len(), 1);
         assert_eq!(filter.extensions[0], "*");
@@ -339,13 +334,13 @@ mod tests {
         let filter = DialogFilter {
             name: "Database Files".to_string(),
             extensions: vec![
-                "db".to_string(),
-                "sqlite".to_string(),
-                "sqlite3".to_string(),
-                "db3".to_string(),
+                "db".to_string(), 
+                "sqlite".to_string(), 
+                "sqlite3".to_string(), 
+                "db3".to_string()
             ],
         };
-
+        
         assert_eq!(filter.name, "Database Files");
         assert_eq!(filter.extensions.len(), 4);
         assert!(filter.extensions.contains(&"db".to_string()));
@@ -361,7 +356,7 @@ mod tests {
             default_path: None,
             filters: None,
         };
-
+        
         assert_eq!(options.db_file_path, "test.db");
         assert!(options.default_path.is_none());
         assert!(options.filters.is_none());
@@ -374,19 +369,19 @@ mod tests {
             file_paths: Some(vec!["test.db".to_string()]),
             file_path: Some("test.db".to_string()),
         };
-
+        
         // Test serialization
         let json = serde_json::to_string(&result)?;
         assert!(json.contains("canceled"));
         assert!(json.contains("file_paths"));
         assert!(json.contains("file_path"));
-
+        
         // Test deserialization
         let deserialized: DialogResult = serde_json::from_str(&json)?;
         assert_eq!(deserialized.canceled, result.canceled);
         assert_eq!(deserialized.file_paths, result.file_paths);
         assert_eq!(deserialized.file_path, result.file_path);
-
+        
         Ok(())
     }
 
@@ -396,18 +391,18 @@ mod tests {
             name: "Database Files".to_string(),
             extensions: vec!["db".to_string(), "sqlite".to_string()],
         };
-
+        
         let filter2 = DialogFilter {
             name: "All Files".to_string(),
             extensions: vec!["*".to_string()],
         };
-
+        
         let options = SaveDialogOptions {
             db_file_path: "test.db".to_string(),
             default_path: None,
             filters: Some(vec![filter1, filter2]),
         };
-
+        
         let filters = options.filters.unwrap();
         assert_eq!(filters.len(), 2);
         assert_eq!(filters[0].name, "Database Files");
@@ -420,7 +415,7 @@ mod tests {
             name: "Test Filter".to_string(),
             extensions: vec![],
         };
-
+        
         assert_eq!(filter.name, "Test Filter");
         assert!(filter.extensions.is_empty());
     }

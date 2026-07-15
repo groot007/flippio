@@ -1,27 +1,24 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use chrono::SecondsFormat;
 use std::sync::Arc;
-use tauri_plugin_log::{RotationStrategy, Target, TargetKind, TimezoneStrategy, WEBVIEW_TARGET};
 use tokio::sync::RwLock;
+use chrono::SecondsFormat;
+use tauri_plugin_log::{RotationStrategy, Target, TargetKind, TimezoneStrategy, WEBVIEW_TARGET};
 
 mod commands;
-use commands::database::{
-    ChangeHistoryManager, ConnectionConfig, DatabaseConnectionManager, DbPool,
-};
+use commands::database::{DbPool, DatabaseConnectionManager, ChangeHistoryManager, ConnectionConfig};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     // Initialize database connection management
     let db_pool: DbPool = Arc::new(RwLock::new(None)); // Legacy pool for compatibility
-    let connection_manager =
-        DatabaseConnectionManager::with_config(ConnectionConfig::with_cache_disabled());
+    let connection_manager = DatabaseConnectionManager::with_config(ConnectionConfig::with_cache_disabled());
     let db_cache = connection_manager.get_cache();
-
+    
     // Initialize change history manager (Phase 1)
     let change_history_manager = ChangeHistoryManager::new();
-
+    
     let mut builder = tauri::Builder::default()
         .plugin(
             tauri_plugin_log::Builder::new()
@@ -63,8 +60,7 @@ pub fn run() {
         .manage(change_history_manager)
         .setup(|_app| {
             // Start background cleanup task after Tauri runtime is initialized
-            let connection_manager =
-                DatabaseConnectionManager::with_config(ConnectionConfig::with_cache_disabled());
+            let connection_manager = DatabaseConnectionManager::with_config(ConnectionConfig::with_cache_disabled());
             tauri::async_runtime::spawn(async move {
                 connection_manager.start_cleanup_task().await;
             });
