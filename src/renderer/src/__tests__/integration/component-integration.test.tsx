@@ -133,19 +133,12 @@ beforeAll(() => {
 
 function resetStores() {
   useCurrentDeviceSelection.setState({
-    devicesList: [],
     selectedDevice: null,
-    applicationsList: [],
     selectedApplication: null,
-    isDBPulling: false,
   })
   useCurrentDatabaseSelection.setState({
     selectedDatabaseFile: null,
     selectedDatabaseTable: null,
-    databaseFiles: [],
-    databaseTables: [],
-    pulledDatabaseFilePath: '',
-    isDBPulling: false,
   })
   useTableData.setState({
     tableData: null,

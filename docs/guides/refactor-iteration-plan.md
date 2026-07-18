@@ -383,19 +383,34 @@ Remove legacy overlap and make the state ownership model obvious.
 
 ### Test Checkpoint
 
-- [ ] Run:
+- [x] Run:
   - `npx eslint <changed files...>`
   - `npm test`
   - `npm run build --prefix src/renderer`
-- [ ] Record results
+- [x] Record results
+
+Recorded results for this Iteration 4 selection-store slice:
+
+- `npx eslint src/renderer/src/store/useCurrentDeviceSelection.ts src/renderer/src/store/useCurrentDatabaseSelection.ts src/renderer/src/store/__tests__/useCurrentDeviceSelection.test.ts src/renderer/src/components/layout/__tests__/AppHeader.test.tsx src/renderer/src/__tests__/integration/component-integration.test.tsx src/renderer/src/__tests__/integration/main-user-flow.test.tsx` — passed
+- `npm test` — passed
+- `npm run build --prefix src/renderer` — passed
+- Existing React `act(...)` warnings still appear in modal-heavy UI tests, but the suite passed and this slice did not add new failing checks
 
 ### Review Checkpoint
 
-- [ ] Clean-context reviewer checks:
+- [x] Clean-context reviewer checks:
   - state ownership is clearer
   - active selection concepts are not duplicated
   - no policy slipped back into the wrong layer
-- [ ] Reviewer verdict recorded
+- [x] Reviewer verdict recorded
+
+Reviewer verdict for this Iteration 4 selection-store slice: `acceptable with follow-ups`
+
+Follow-ups called out by review:
+
+- selection-related type normalization is still incomplete across `useCurrentDeviceSelection`, `selectionSession`, and `useRecentlyUsedApps`
+- there is no focused regression test yet for derived loading/disable behavior after removing store-owned `isDBPulling`
+- `useCurrentDatabaseSelection` still lacks direct store-level coverage for its reduced public contract
 
 ### Approval Gate
 

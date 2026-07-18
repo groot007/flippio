@@ -95,10 +95,6 @@ vi.mock('@renderer/store', () => ({
       setSelectedDevice: mockSetSelectedDevice,
       selectedApplication: mockSelectedApplication,
       setSelectedApplication: mockSetSelectedApplication,
-      devicesList: [],
-      setDevicesList: vi.fn(),
-      applicationsList: [],
-      setApplicationsList: vi.fn(),
     }
     return selector(state)
   },
@@ -108,8 +104,6 @@ vi.mock('@renderer/store', () => ({
       setSelectedDatabaseFile: mockSetSelectedDatabaseFile,
       selectedDatabaseTable: null,
       setSelectedDatabaseTable: mockSetSelectedDatabaseTable,
-      pulledDatabaseFilePath: '',
-      setPulledDatabaseFilePath: vi.fn(),
     }
     return selector(state)
   },
