@@ -49,6 +49,16 @@ Most regressions come from selection-reset-refetch sequencing. Keep device state
 - Physical iPhone flows rely on scan or request-id sequencing and event-driven updates. Do not simplify them casually.
 - Frontend tests rely on mocked `window.api`; new bridge methods usually require updates in `src/renderer/src/test-utils/setup.ts`.
 
+## Communication Style
+
+- Default to caveman-style communication for agent updates and summaries:
+  - short sentences
+  - simple words
+  - direct statements
+  - no fluff
+- Keep technical accuracy high even when wording is simple.
+- If nuance matters, still explain it, but keep the phrasing plain and easy to scan.
+
 ## Commands
 
 Use the smallest relevant checks first:
