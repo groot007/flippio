@@ -1,16 +1,16 @@
 # Review Prompt Template
 
 ```text
-Review this refactor iteration with clean context.
+Review this change with clean context.
 
 Context:
 - Project: <project>
-- Iteration: <iteration name>
-- Goal: <goal>
-- Acceptance criteria:
-  - <criterion 1>
-  - <criterion 2>
-  - <criterion 3>
+- Review target: <iteration gate | commit gate | merge gate>
+- Review mode: <behavior-preserving | behavior-changing>
+- Change goal: <goal>
+- Acceptance criteria or checklist items:
+  - <item 1>
+  - <item 2>
 
 Inputs:
 - Changed files
@@ -37,39 +37,8 @@ Review instructions:
   - not acceptable
 
 Key question:
-Did this iteration reduce risk and improve locality without changing intended behavior?
-```
-
-## Bias Add-Ons By Iteration
-
-### Iteration 1
-
-Add:
-
-```text
-Pay special attention to whether the new tests validate user behavior and contracts rather than implementation details such as hook ordering, internal state shape, or effect timing.
-```
-
-### Iteration 2
-
-Add:
-
-```text
-Pay special attention to whether selection transition policy is now concentrated in one seam, and whether AppHeader is materially simpler in responsibility rather than only smaller.
-```
-
-### Bridge Refactors
-
-Add:
-
-```text
-Pay special attention to contract drift between callers, adapter methods, and backend command expectations.
-```
-
-### Rust Refactors
-
-Add:
-
-```text
-Pay special attention to connection ownership clarity, stale-state risks, and whether the new module shape actually reduces blast radius.
+- If review mode is behavior-preserving:
+  Did this change reduce risk and improve locality without changing intended behavior?
+- If review mode is behavior-changing:
+  Did this change achieve the intended behavior with acceptable risk, scope, and test coverage?
 ```

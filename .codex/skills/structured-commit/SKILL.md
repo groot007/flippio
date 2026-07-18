@@ -7,7 +7,7 @@ description: Prepare a clean, scoped git commit from the current repo changes. U
 
 Use this skill when the user wants a disciplined commit step after an iteration or wants help turning a messy diff into a coherent commit.
 
-When `iteration-implementer` reaches an acceptable review verdict, this skill is the default next handoff before any next-iteration approval gate.
+When `iteration-implementer` reaches an accepted slice, this is the default next handoff.
 
 ## Goal
 
@@ -25,7 +25,6 @@ Turn the current diff into one intentional commit unit with:
 - Do not mix unrelated cleanup with the main slice.
 - If the diff contains unrelated changes, separate them before committing.
 - Keep the message short and specific.
-- If a commit-analysis or commit-execution sub-agent is used, close it immediately after its result is captured.
 - For accepted iteration slices, always prepare the commit handoff even if the user has not yet approved the actual `git commit`.
 
 ## Inputs To Gather
@@ -37,15 +36,15 @@ Turn the current diff into one intentional commit unit with:
 - test results
 - review verdict from the clean-context reviewer
 
-## Commit Analysis Workflow
+## Workflow
 
 1. Identify the intended commit boundary.
-2. List files that belong to the iteration.
-3. List files that should stay out of the commit.
-4. Summarize the behavioral or architectural change in one sentence.
-5. Derive a short commit subject.
-6. Prepare a brief body only if it adds real signal.
-7. Confirm whether the iteration is ready to commit now or whether the user explicitly wants to defer the commit.
+2. List included files.
+3. List intentionally excluded files.
+4. Summarize the change in one sentence.
+5. Propose a short subject.
+6. Add a body only if it adds signal.
+7. Stop for user approval before committing.
 
 ## Commit Message Style
 
@@ -81,15 +80,6 @@ If the user has not approved yet:
 
 - stop after preparing the commit plan and message
 - if this handoff came from an accepted refactor iteration, ask for commit approval before asking to start the next iteration
-
-## Agent Lifecycle Rule
-
-Commit-related sub-agents are disposable.
-
-- use them only for the current commit task
-- once their scope analysis or commit result has been transferred to the main agent, close them
-- do not keep commit agents alive across iterations
-- if the commit needs a second pass, spawn a fresh agent instead of reusing stale commit context
 
 ## Output Shape
 

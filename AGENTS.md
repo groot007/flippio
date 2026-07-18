@@ -61,62 +61,27 @@ Most regressions come from selection-reset-refetch sequencing. Keep device state
 
 ## Agent Workflow
 
-- For implementation, refactor, or iteration work requested by the user, default to the `iteration-implementer` skill workflow.
-- Treat that as the standard path:
-  - implementation by worker sub-agent when available
-  - required checks
-  - clean-context review
-  - plan/checklist patching
-  - structured commit handoff
-- Do not skip that workflow unless the user clearly asks for a one-off answer, a tiny non-iterative change, or sub-agents are unavailable.
+- Use `iteration-implementer` only when there is an explicit plan or checklist to execute in bounded slices.
+- Do not use `iteration-implementer` for ordinary one-off requests, small fixes, or general questions.
+- Keep iteration loops bounded. After one review retry for the same slice, stop and ask whether to continue unless the user asked for a deeper loop.
 - For commit requests, default to the `structured-commit` skill.
 - When the user asks to commit changes, prepare scope and message through `structured-commit` before performing the git commit.
 
 ## Commands
 
-Use the smallest relevant checks first:
-
-```bash
-npx eslint <files...>
-npm run build --prefix src/renderer
-npm test
-cargo test common --manifest-path src-tauri/Cargo.toml
-```
-
-Common full checks:
-
-```bash
-yarn lint
-yarn typecheck
-yarn test
-yarn test:rust
-```
-
-Useful workflows:
-
-```bash
-npm run tauri:dev
-npm run tauri:build
-npm run tauri:build:debug
-npm run version:update -- 0.4.5
-node scripts/generate-test-databases.js
-```
-
-## Release Notes
-
-- macOS release builds are handled by `.github/workflows/tauri-release.yml`.
-- The workflow is tag-driven and reads release notes from `CHANGELOG.md`.
-- Updater signing uses `TAURI_SIGNING_PRIVATE_KEY` and `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`.
-- Apple signing and notarization values come from GitHub Actions secrets, not ad hoc local scripts.
+- Small checks first:
+  - `npx eslint <files...>`
+  - `npm run build --prefix src/renderer`
+  - `npm test`
+  - `cargo test common --manifest-path src-tauri/Cargo.toml`
+- Full checks when needed:
+  - `yarn lint`
+  - `yarn typecheck`
+  - `yarn test`
+  - `yarn test:rust`
 
 ## Known Gotchas
 
 - `eslint` may not be on PATH; use `npx eslint`.
 - Vitest uses mocked Tauri internals.
 - Some integration tests emit React `act(...)` warnings but still pass.
-- If the Expo dev build in `example_app` shows a blank screen, run:
-
-```bash
-cd /Users/mykolastanislavchuk/Home/Flippio/example_app
-npx expo start --no-dev --minify
-```

@@ -5,75 +5,47 @@ description: Run an independent clean-context review for a refactor iteration, r
 
 # Clean Context Review
 
-Run this skill when the user wants an independent review gate before proceeding to the next iteration, before committing, or before merging a risky refactor slice.
+Use this skill for an explicit review gate on a risky slice, iteration slice, or pending commit.
+
+Do not use it for:
+
+- trivial edits
+- broad codebase exploration
+- normal implementation unless a review gate is wanted
 
 ## Goal
 
-Produce a skeptical review from clean context:
-
-- no implementation narrative
-- no prior reasoning dump
-- only the minimum artifacts needed to judge the change
+Produce a skeptical review from clean context with minimal inputs only.
 
 The reviewer should answer one core question:
 
-`Did this slice reduce risk and improve locality without changing intended behavior?`
+- `behavior-preserving` mode: `Did this change reduce risk and improve locality without changing intended behavior?`
+- `behavior-changing` mode: `Did this change achieve the intended behavior with acceptable risk, scope, and test coverage?`
 
 ## Inputs To Prepare
 
-Before invoking the reviewer, gather only:
-
-- iteration name
-- iteration goal
+- iteration name or review target
+- goal
 - acceptance criteria
+- review mode
 - changed files
 - diff
-- test commands run
+- test commands
 - test results
-- review target:
-  - iteration gate
-  - commit gate
-  - merge gate
 
-Do not pass:
-
-- intended answer
-- your explanation of why the code is good
-- suspected fix unless the reviewer explicitly needs it
-- long historical context unless it is required to judge regressions
+Do not pass implementation narrative, intended answer, or long history unless required for regression judgment.
 
 ## Review Mode
 
-Use a sub-agent or separate reviewer context when available. The reviewer must act as if it is seeing the iteration for the first time.
-
-If reviewer sub-agent capability is available, the review must use a fresh reviewer sub-agent. Manual main-agent review is fallback behavior only when sub-agents are unavailable.
-
-If a reviewer sub-agent is used:
-
-- wait for its final review output
-- copy the review result into the main agent response
-- close the reviewer sub-agent immediately after the result is captured
-- do not leave reviewer agents open between iterations or approval gates
-
-If sub-agents are unavailable, emulate the same discipline manually:
-
-- restate only the minimal inputs
-- do not use prior implementation reasoning
-- review from the diff and tests only
+- prefer a fresh reviewer sub-agent when the review matters
+- manual review is acceptable fallback
+- do not reuse reviewer context across review rounds
 
 ## Prompt Template
 
 Use the template in [references/review-prompt.md](references/review-prompt.md).
 
-Adapt only:
-
-- iteration name
-- goal
-- acceptance criteria
-- changed files
-- test results
-
-Keep the rest stable so reviews are comparable across iterations.
+Adapt only the slice-specific fields. Keep the rest stable.
 
 ## What The Reviewer Must Focus On
 
@@ -84,40 +56,17 @@ Keep the rest stable so reviews are comparable across iterations.
 - contract drift
 - slices that are larger than the stated iteration goal
 
-The reviewer should not optimize for tone. It should optimize for signal.
+The reviewer should optimize for signal, not tone.
 
-## Expected Output Shape
+## Output
 
-The review should return:
+Return:
 
-1. Findings first, ordered by severity, with file references where possible
-2. Open questions or assumptions
-3. Final verdict:
+1. findings first, ordered by severity, with file references when possible
+2. open questions or assumptions
+3. verdict:
    - `acceptable`
    - `acceptable with follow-ups`
    - `not acceptable`
 
-If the verdict is `not acceptable`, do not proceed to the next iteration.
-
-## Agent Lifecycle Rule
-
-Reviewer sub-agents are disposable.
-
-- spawn one reviewer per review task
-- reuse is not required
-- once the review has been handed back to the main agent, close that reviewer thread
-- if the review must be rerun, spawn a fresh reviewer so the context stays clean
-
-## Approval Gate
-
-After the review:
-
-- address findings if needed
-- summarize what changed
-- if this was an iteration review and the verdict is `acceptable` or `acceptable with follow-ups`, hand off immediately to the `structured-commit` skill before asking to start another iteration
-- ask the user the next-step question that matches the review mode:
-  - iteration review -> `Do you want to proceed to the next iteration?`
-  - commit review -> `Do you want to proceed with the commit?`
-  - merge review -> `Do you want to proceed with the merge?`
-
-Do not proceed automatically.
+Do not choose the next workflow step. Return the verdict only.
