@@ -21,12 +21,8 @@
     "precommit": "yarn lint && yarn typecheck && yarn test:all",
     "tauri": "tauri",
     "tauri:dev": "tauri dev",
-    "tauri:build": "tauri build && ./scripts/post-bundle.sh",
-    "tauri:build:debug": "export $(cat .env | xargs) && tauri build --debug",
-    "tauri:sign-source": "export $(cat .env | xargs) && node scripts/sign-source-binaries.js \"$APPLE_SIGNING_IDENTITY\"",
-    "tauri:sign-binaries": "export $(cat .env | xargs) && node scripts/sign-bundled-binaries.js",
-    "tauri:build:signed": "export $(cat .env | xargs) && npm run tauri:sign-source && tauri build",
-    "tauri:post-sign": "export $(cat .env | xargs) && node scripts/sign-bundled-binaries.js \"$PWD/src-tauri/target/release/bundle/macos/Flippio.app\" \"$APPLE_SIGNING_IDENTITY\"",
+    "tauri:build": "tauri build",
+    "tauri:build:debug": "tauri build --debug",
     "version:update": "node scripts/update-version.js"
   },
   "dependencies": {
