@@ -1,5 +1,7 @@
 # Refactor Iteration Plan
 
+Temporary working document for the current refactor. Keep during the active iteration loop. Reevaluate or delete after the refactor is complete.
+
 ## Purpose
 
 This document defines the lowest-regression refactor path for Flippio.
@@ -89,11 +91,16 @@ yarn test:rust
 
 - Test behavior, not current structure.
 - Move logic behind a seam before rewriting it.
+- Keep the first seam limited to the core path:
+  - `device -> app -> database -> table`
+- Treat desktop-opened database mode and iPhone scan orchestration as protected deferred flows.
 - Keep `AppHeader.tsx` moving toward view/wiring only.
 - Keep stores focused on state.
 - Keep hooks focused on data access and composition.
+- Extract transition policy before touching fetch orchestration.
 - Keep the Tauri bridge split by domain, not by arbitrary file size.
 - Keep Rust Tauri commands thin and move behavior into focused modules.
+- Stop the implementer-review loop after three failed attempts on the same iteration and return control to the user.
 
 ---
 
@@ -107,6 +114,9 @@ Freeze the first refactor slice and document the invariants that must not regres
 
 - [ ] Confirm first slice scope:
   - `device -> app -> database -> table`
+- [ ] Split known behavior into:
+  - core seam invariants
+  - protected but deferred edge flows
 - [ ] Identify exact files in scope for Iteration 1
 - [ ] Write current selection/reset/refetch invariants
 - [ ] Write a short manual regression checklist for the hot path
@@ -135,6 +145,7 @@ Freeze the first refactor slice and document the invariants that must not regres
   - scope is narrow enough
   - invariants are concrete
   - no hidden second seam is being included accidentally
+  - desktop mode and iPhone scan flow are protected without being pulled into the first seam
 
 ### Approval Gate
 
@@ -147,7 +158,7 @@ Freeze the first refactor slice and document the invariants that must not regres
 
 ### Goal
 
-Create the behavioral and contract safety net before changing architecture.
+Create the behavioral safety net for the core seam before changing architecture.
 
 ### Deliverables
 
@@ -174,16 +185,16 @@ Create the behavioral and contract safety net before changing architecture.
   - `refreshSelectionGraph`
   - `clearTableContext`
 
-#### Bridge contract coverage
+#### Deferred-flow guardrails
 
-- [ ] Add tests for touched command names and parameter shapes
-- [ ] Add tests for response normalization in touched paths
-- [ ] Add tests for error mapping in touched paths
+- [ ] Add regression test for desktop-opened database mode remaining a separate context switch
+- [ ] Add regression test for iPhone scan results from an old context being ignored after device/app change or refresh
 
-#### Rust domain coverage
+#### Non-goals for this iteration
 
-- [ ] Add focused tests for touched selection-related database behavior where needed
-- [ ] Avoid broad Rust refactor in this iteration
+- [ ] Do not broaden this slice into general bridge cleanup
+- [ ] Do not add Rust coverage unless the selected seam directly requires it
+- [ ] Do not couple tests to setter calls, hook ordering, or effect timing
 
 ### Test Checkpoint
 
@@ -201,6 +212,7 @@ Create the behavioral and contract safety net before changing architecture.
   - tests describe user-visible behavior, not internal component structure
   - tests are not coupled to hook/effect ordering
   - coverage is sufficient to support seam extraction in Iteration 2
+  - deferred edge flows are protected without being absorbed into the seam
 - [ ] Reviewer verdict recorded
 
 ### Approval Gate
@@ -218,7 +230,7 @@ After approval:
 - [ ] Include a brief explanation of what was done:
   - added user-flow tests
   - added selection contract coverage
-  - added touched bridge coverage
+  - added deferred-flow guardrail coverage
 
 ---
 
@@ -226,7 +238,7 @@ After approval:
 
 ### Goal
 
-Move selection transition policy out of `AppHeader.tsx` and into one seam.
+Move only core selection transition policy out of `AppHeader.tsx` and `SubHeader.tsx` into one seam.
 
 ### Deliverables
 
@@ -241,12 +253,17 @@ Move selection transition policy out of `AppHeader.tsx` and into one seam.
 - [ ] Move application-selection transition logic
 - [ ] Move database-selection transition logic
 - [ ] Move refresh/reconciliation logic
-- [ ] Reduce `AppHeader.tsx` toward view and event wiring only
+- [ ] Keep existing component handlers and `useEffect` wiring as thin adapters around the new policy seam
+- [ ] Reduce `AppHeader.tsx` and `SubHeader.tsx` toward view and event wiring only
 
 ### Constraints
 
+- `selection-session` owns transition policy only
 - Stores remain state holders
 - Hooks remain data adapters
+- Existing fetching orchestration stays in hooks/query wiring for this iteration
+- Desktop-opened database mode stays out of the seam
+- iPhone scan orchestration stays out of the seam
 - No bridge split yet unless strictly necessary
 
 ### Test Checkpoint
