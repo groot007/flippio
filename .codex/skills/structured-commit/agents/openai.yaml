@@ -1,0 +1,7 @@
+interface:
+  display_name: "Structured Commit"
+  short_description: "Prepare scoped commits from repo changes"
+  default_prompt: "Use $structured-commit to prepare the next commit from the current diff."
+
+policy:
+  allow_implicit_invocation: true
