@@ -1,0 +1,368 @@
+{
+  "projectRoot": "/Users/mykolastanislavchuk/Home/Flippio",
+  "batchFiles": [
+    {
+      "path": "src-tauri/src/commands/device/types.rs",
+      "language": "rust",
+      "sizeLines": 56,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/src/commands/device/virtual_device.rs",
+      "language": "rust",
+      "sizeLines": 231,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/src/commands/mod.rs",
+      "language": "rust",
+      "sizeLines": 5,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/src/commands/updater.rs",
+      "language": "rust",
+      "sizeLines": 190,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/src/lib.rs",
+      "language": "rust",
+      "sizeLines": 33,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/src/main.rs",
+      "language": "rust",
+      "sizeLines": 151,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/tauri-ci.conf.json",
+      "language": "json",
+      "sizeLines": 66,
+      "fileCategory": "config"
+    },
+    {
+      "path": "src-tauri/tauri.conf.json",
+      "language": "json",
+      "sizeLines": 95,
+      "fileCategory": "config"
+    },
+    {
+      "path": "src-tauri/tests/device_integration_tests.rs",
+      "language": "rust",
+      "sizeLines": 406,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/tests/fixtures/databases/test_complex.db",
+      "language": "db",
+      "sizeLines": 23,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/tests/fixtures/databases/test_ecommerce.db",
+      "language": "db",
+      "sizeLines": 69,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/tests/fixtures/databases/test_notes.db",
+      "language": "db",
+      "sizeLines": 39,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/tests/mod.rs",
+      "language": "rust",
+      "sizeLines": 209,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/index.html",
+      "language": "html",
+      "sizeLines": 234,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "src/renderer/package.json",
+      "language": "json",
+      "sizeLines": 11,
+      "fileCategory": "config"
+    },
+    {
+      "path": "src/renderer/src/__tests__/integration/component-integration.test.tsx",
+      "language": "typescript",
+      "sizeLines": 304,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/__tests__/integration/main-user-flow.test.tsx",
+      "language": "typescript",
+      "sizeLines": 297,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/__tests__/tauri-api-basic.test.ts",
+      "language": "typescript",
+      "sizeLines": 32,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/__tests__/tauri-api-comprehensive.test.ts",
+      "language": "typescript",
+      "sizeLines": 879,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/__tests__/user-workflow-integration.test.tsx",
+      "language": "typescript",
+      "sizeLines": 340,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/__tests__/utils-case-transformer.test.ts",
+      "language": "typescript",
+      "sizeLines": 332,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/__tests__/utils-common.test.ts",
+      "language": "typescript",
+      "sizeLines": 282,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/__tests__/utils-database.test.ts",
+      "language": "typescript",
+      "sizeLines": 367,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/__tests__/utils-type-validation.test.ts",
+      "language": "typescript",
+      "sizeLines": 482,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/App.tsx",
+      "language": "typescript",
+      "sizeLines": 49,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/assets/base.css",
+      "language": "css",
+      "sizeLines": 45,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "src/renderer/src/assets/main.css",
+      "language": "css",
+      "sizeLines": 97,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "src/renderer/src/components/__tests__/SidePanel.test.tsx",
+      "language": "typescript",
+      "sizeLines": 184,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/components/ChangeHistory/ChangeHistoryIndicator.tsx",
+      "language": "typescript",
+      "sizeLines": 82,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/components/ChangeHistory/ChangeHistoryPanel.tsx",
+      "language": "typescript",
+      "sizeLines": 328,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/components/ChangeHistory/index.ts",
+      "language": "typescript",
+      "sizeLines": 2,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/components/common/DeviceInfoModal.tsx",
+      "language": "typescript",
+      "sizeLines": 194,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/components/common/FLModal.tsx",
+      "language": "typescript",
+      "sizeLines": 129,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/components/common/FLSelect.tsx",
+      "language": "typescript",
+      "sizeLines": 327,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/components/data/__tests__/DataGrid.test.tsx",
+      "language": "typescript",
+      "sizeLines": 131,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/components/data/animations.ts",
+      "language": "typescript",
+      "sizeLines": 26,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/components/data/CustomQueryModal.tsx",
+      "language": "typescript",
+      "sizeLines": 87,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/components/data/DataGrid.tsx",
+      "language": "typescript",
+      "sizeLines": 345,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/components/data/DragAndDropProvider.tsx",
+      "language": "typescript",
+      "sizeLines": 380,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/components/data/TableFooter.tsx",
+      "language": "typescript",
+      "sizeLines": 342,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "src-tauri/src/commands/device/types.rs": [],
+    "src-tauri/src/commands/device/virtual_device.rs": [],
+    "src-tauri/src/commands/mod.rs": [
+      "src-tauri/src/commands/common.rs",
+      "src-tauri/src/commands/database/mod.rs",
+      "src-tauri/src/commands/device/mod.rs",
+      "src-tauri/src/commands/updater.rs"
+    ],
+    "src-tauri/src/commands/updater.rs": [],
+    "src-tauri/src/lib.rs": [
+      "src-tauri/src/commands/mod.rs"
+    ],
+    "src-tauri/src/main.rs": [
+      "src-tauri/src/commands/mod.rs"
+    ],
+    "src-tauri/tauri-ci.conf.json": [],
+    "src-tauri/tauri.conf.json": [],
+    "src-tauri/tests/device_integration_tests.rs": [],
+    "src-tauri/tests/fixtures/databases/test_complex.db": [],
+    "src-tauri/tests/fixtures/databases/test_ecommerce.db": [],
+    "src-tauri/tests/fixtures/databases/test_notes.db": [],
+    "src-tauri/tests/mod.rs": [],
+    "src/renderer/index.html": [],
+    "src/renderer/package.json": [],
+    "src/renderer/src/__tests__/integration/component-integration.test.tsx": [
+      "src/renderer/src/pages/Main.tsx",
+      "src/renderer/src/store/index.ts",
+      "src/renderer/src/store/useRowEditingStore.ts",
+      "src/renderer/src/test-utils/render.tsx"
+    ],
+    "src/renderer/src/__tests__/integration/main-user-flow.test.tsx": [
+      "src/renderer/src/pages/Main.tsx",
+      "src/renderer/src/store/index.ts",
+      "src/renderer/src/store/useRowEditingStore.ts",
+      "src/renderer/src/test-utils/render.tsx"
+    ],
+    "src/renderer/src/__tests__/tauri-api-basic.test.ts": [],
+    "src/renderer/src/__tests__/tauri-api-comprehensive.test.ts": [],
+    "src/renderer/src/__tests__/user-workflow-integration.test.tsx": [
+      "src/renderer/src/App.tsx",
+      "src/renderer/src/test-utils/render.tsx"
+    ],
+    "src/renderer/src/__tests__/utils-case-transformer.test.ts": [
+      "src/renderer/src/utils/caseTransformer.ts"
+    ],
+    "src/renderer/src/__tests__/utils-common.test.ts": [
+      "src/renderer/src/utils/common.ts"
+    ],
+    "src/renderer/src/__tests__/utils-database.test.ts": [
+      "src/renderer/src/utils/database.ts"
+    ],
+    "src/renderer/src/__tests__/utils-type-validation.test.ts": [
+      "src/renderer/src/utils/typeValidation.ts"
+    ],
+    "src/renderer/src/App.tsx": [
+      "src/renderer/src/pages/Main.tsx",
+      "src/renderer/src/ui/provider.tsx",
+      "src/renderer/src/ui/toaster.tsx"
+    ],
+    "src/renderer/src/assets/base.css": [],
+    "src/renderer/src/assets/main.css": [],
+    "src/renderer/src/components/__tests__/SidePanel.test.tsx": [
+      "src/renderer/src/components/SidePanel/SidePanel.tsx",
+      "src/renderer/src/test-utils/render.tsx"
+    ],
+    "src/renderer/src/components/ChangeHistory/ChangeHistoryIndicator.tsx": [
+      "src/renderer/src/components/ChangeHistory/ChangeHistoryPanel.tsx",
+      "src/renderer/src/hooks/useChangeHistory.ts"
+    ],
+    "src/renderer/src/components/ChangeHistory/ChangeHistoryPanel.tsx": [
+      "src/renderer/src/hooks/useChangeHistory.ts",
+      "src/renderer/src/hooks/useChangeHistoryMutations.ts",
+      "src/renderer/src/store/index.ts",
+      "src/renderer/src/types/changeHistory.ts",
+      "src/renderer/src/ui/color-mode.tsx",
+      "src/renderer/src/utils/operationTypeUtils.ts"
+    ],
+    "src/renderer/src/components/ChangeHistory/index.ts": [],
+    "src/renderer/src/components/common/DeviceInfoModal.tsx": [
+      "src/renderer/src/components/common/FLModal.tsx"
+    ],
+    "src/renderer/src/components/common/FLModal.tsx": [],
+    "src/renderer/src/components/common/FLSelect.tsx": [],
+    "src/renderer/src/components/data/__tests__/DataGrid.test.tsx": [
+      "src/renderer/src/components/data/DataGrid.tsx",
+      "src/renderer/src/test-utils/render.tsx"
+    ],
+    "src/renderer/src/components/data/animations.ts": [],
+    "src/renderer/src/components/data/CustomQueryModal.tsx": [
+      "src/renderer/src/components/common/FLModal.tsx",
+      "src/renderer/src/hooks/useChangeHistory.ts",
+      "src/renderer/src/store/index.ts",
+      "src/renderer/src/ui/toaster.tsx"
+    ],
+    "src/renderer/src/components/data/DataGrid.tsx": [
+      "src/renderer/src/components/data/TableFooter.tsx",
+      "src/renderer/src/hooks/useChangeHistory.ts",
+      "src/renderer/src/hooks/useTableDataQuery.ts",
+      "src/renderer/src/store/index.ts",
+      "src/renderer/src/store/useRowEditingStore.ts",
+      "src/renderer/src/ui/color-mode.tsx",
+      "src/renderer/src/ui/toaster.tsx",
+      "src/renderer/src/utils/contextKey.ts"
+    ],
+    "src/renderer/src/components/data/DragAndDropProvider.tsx": [
+      "src/renderer/src/store/index.ts",
+      "src/renderer/src/ui/color-mode.tsx",
+      "src/renderer/src/ui/toaster.tsx"
+    ],
+    "src/renderer/src/components/data/TableFooter.tsx": [
+      "src/renderer/src/components/ChangeHistory/index.ts",
+      "src/renderer/src/components/common/FLSelect.tsx",
+      "src/renderer/src/components/SidePanel/ClearTableDialog.tsx",
+      "src/renderer/src/hooks/useTableMutations.ts",
+      "src/renderer/src/store/useCurrentDatabaseSelection.ts",
+      "src/renderer/src/store/useCurrentDeviceSelection.ts",
+      "src/renderer/src/store/useRowEditingStore.ts",
+      "src/renderer/src/store/useTableData.ts",
+      "src/renderer/src/ui/color-mode.tsx",
+      "src/renderer/src/ui/toaster.tsx"
+    ]
+  }
+}

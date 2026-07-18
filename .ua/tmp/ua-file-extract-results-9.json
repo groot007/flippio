@@ -1,0 +1,4692 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 40,
+  "filesSkipped": [],
+  "results": [
+    {
+      "path": "src/renderer/src/components/data/VirtualDeviceModal.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 308,
+      "nonEmptyLines": 290,
+      "functions": [
+        {
+          "name": "VirtualDeviceModal",
+          "startLine": 32,
+          "endLine": 308,
+          "params": [
+            "{ isOpen, onClose }"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "VirtualDeviceModal",
+          "line": 32,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "VirtualDeviceModal",
+          "callee": "useState",
+          "lineNumber": 33
+        },
+        {
+          "caller": "VirtualDeviceModal",
+          "callee": "useState",
+          "lineNumber": 34
+        },
+        {
+          "caller": "VirtualDeviceModal",
+          "callee": "useState",
+          "lineNumber": 35
+        },
+        {
+          "caller": "VirtualDeviceModal",
+          "callee": "useState",
+          "lineNumber": 36
+        },
+        {
+          "caller": "isDeviceRunning",
+          "callee": "device.state.toLowerCase",
+          "lineNumber": 43
+        },
+        {
+          "caller": "isDeviceRunning",
+          "callee": "device.state.toLowerCase",
+          "lineNumber": 43
+        },
+        {
+          "caller": "VirtualDeviceModal",
+          "callee": "useEffect",
+          "lineNumber": 47
+        },
+        {
+          "caller": "fetchVirtualDevices",
+          "callee": "setIsLoading",
+          "lineNumber": 50
+        },
+        {
+          "caller": "fetchVirtualDevices",
+          "callee": "window.api.getAndroidEmulators",
+          "lineNumber": 53
+        },
+        {
+          "caller": "fetchVirtualDevices",
+          "callee": "setAndroidDevices",
+          "lineNumber": 55
+        },
+        {
+          "caller": "fetchVirtualDevices",
+          "callee": "window.api.getIOSSimulators",
+          "lineNumber": 59
+        },
+        {
+          "caller": "fetchVirtualDevices",
+          "callee": "setIosSimulators",
+          "lineNumber": 61
+        },
+        {
+          "caller": "fetchVirtualDevices",
+          "callee": "toaster.create",
+          "lineNumber": 65
+        },
+        {
+          "caller": "fetchVirtualDevices",
+          "callee": "console.error",
+          "lineNumber": 71
+        },
+        {
+          "caller": "fetchVirtualDevices",
+          "callee": "setIsLoading",
+          "lineNumber": 74
+        },
+        {
+          "caller": "VirtualDeviceModal",
+          "callee": "fetchVirtualDevices",
+          "lineNumber": 79
+        },
+        {
+          "caller": "VirtualDeviceModal",
+          "callee": "useCallback",
+          "lineNumber": 84
+        },
+        {
+          "caller": "VirtualDeviceModal",
+          "callee": "setIsLaunching",
+          "lineNumber": 86
+        },
+        {
+          "caller": "VirtualDeviceModal",
+          "callee": "window.api.launchAndroidEmulator",
+          "lineNumber": 90
+        },
+        {
+          "caller": "VirtualDeviceModal",
+          "callee": "window.api.launchIOSSimulator",
+          "lineNumber": 96
+        },
+        {
+          "caller": "VirtualDeviceModal",
+          "callee": "toaster.create",
+          "lineNumber": 102
+        },
+        {
+          "caller": "VirtualDeviceModal",
+          "callee": "setTimeout",
+          "lineNumber": 110
+        },
+        {
+          "caller": "VirtualDeviceModal",
+          "callee": "toaster.create",
+          "lineNumber": 113
+        },
+        {
+          "caller": "VirtualDeviceModal",
+          "callee": "console.error",
+          "lineNumber": 119
+        },
+        {
+          "caller": "VirtualDeviceModal",
+          "callee": "setIsLaunching",
+          "lineNumber": 122
+        },
+        {
+          "caller": "VirtualDeviceModal",
+          "callee": "useCallback",
+          "lineNumber": 127
+        },
+        {
+          "caller": "VirtualDeviceModal",
+          "callee": "isDeviceRunning",
+          "lineNumber": 129
+        },
+        {
+          "caller": "VirtualDeviceModal",
+          "callee": "handleLaunchDevice",
+          "lineNumber": 145
+        },
+        {
+          "caller": "sortedDevices",
+          "callee": "devices.sort",
+          "lineNumber": 188
+        },
+        {
+          "caller": "sortedDevices",
+          "callee": "isDeviceRunning",
+          "lineNumber": 189
+        },
+        {
+          "caller": "sortedDevices",
+          "callee": "isDeviceRunning",
+          "lineNumber": 190
+        },
+        {
+          "caller": "VirtualDeviceModal",
+          "callee": "sortedDevices(androidDevices).map",
+          "lineNumber": 230
+        },
+        {
+          "caller": "VirtualDeviceModal",
+          "callee": "sortedDevices",
+          "lineNumber": 230
+        },
+        {
+          "caller": "VirtualDeviceModal",
+          "callee": "renderDeviceItem",
+          "lineNumber": 232
+        },
+        {
+          "caller": "VirtualDeviceModal",
+          "callee": "sortedDevices(iosSimulators).map",
+          "lineNumber": 258
+        },
+        {
+          "caller": "VirtualDeviceModal",
+          "callee": "sortedDevices",
+          "lineNumber": 258
+        },
+        {
+          "caller": "VirtualDeviceModal",
+          "callee": "renderDeviceItem",
+          "lineNumber": 260
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/src/components/layout/__tests__/AppHeader.test.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 267,
+      "nonEmptyLines": 226,
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/src/components/layout/__tests__/Settings.test.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 132,
+      "nonEmptyLines": 104,
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/src/components/layout/__tests__/SubHeader.test.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 264,
+      "nonEmptyLines": 228,
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/src/components/layout/AppHeader.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 528,
+      "nonEmptyLines": 470,
+      "functions": [
+        {
+          "name": "AppHeader",
+          "startLine": 17,
+          "endLine": 526,
+          "params": []
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "AppHeader",
+          "callee": "useState",
+          "lineNumber": 18
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "useCurrentDeviceSelection",
+          "lineNumber": 20
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "useCurrentDeviceSelection",
+          "lineNumber": 21
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "useCurrentDeviceSelection",
+          "lineNumber": 22
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "useCurrentDeviceSelection",
+          "lineNumber": 23
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "useCurrentDatabaseSelection",
+          "lineNumber": 24
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "useCurrentDatabaseSelection",
+          "lineNumber": 25
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "useCurrentDatabaseSelection",
+          "lineNumber": 26
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "useTableData",
+          "lineNumber": 27
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "useRowEditingStore",
+          "lineNumber": 28
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "useRecentlyUsedApps",
+          "lineNumber": 30
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "useQueryClient",
+          "lineNumber": 31
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "useDevices",
+          "lineNumber": 39
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "useApplications",
+          "lineNumber": 46
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "useState",
+          "lineNumber": 48
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "useState",
+          "lineNumber": 49
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "useCallback",
+          "lineNumber": 61
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "setIsPackageSetModalOpen",
+          "lineNumber": 62
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "useCallback",
+          "lineNumber": 65
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "setDeviceInfoModal",
+          "lineNumber": 66
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "useCallback",
+          "lineNumber": 74
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "setDeviceInfoModal",
+          "lineNumber": 75
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "useEffect",
+          "lineNumber": 78
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "setTimeout",
+          "lineNumber": 84
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "setIsPackageSetModalOpen",
+          "lineNumber": 85
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "setIsPackageSetModalOpen",
+          "lineNumber": 89
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "clearTimeout",
+          "lineNumber": 92
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "useEffect",
+          "lineNumber": 97
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "errorMessage.includes",
+          "lineNumber": 101
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "toaster.create",
+          "lineNumber": 102
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "errorMessage.includes",
+          "lineNumber": 112
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "errorMessage.includes",
+          "lineNumber": 112
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "toaster.create",
+          "lineNumber": 113
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "toaster.create",
+          "lineNumber": 125
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "useEffect",
+          "lineNumber": 138
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "devicesList.find",
+          "lineNumber": 143
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "setSelectedApplication",
+          "lineNumber": 146
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "setSelectedDevice",
+          "lineNumber": 147
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "setSelectedDatabaseTable",
+          "lineNumber": 148
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "clearTableData",
+          "lineNumber": 149
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "setSelectedRow",
+          "lineNumber": 150
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "setSelectedDatabaseFile",
+          "lineNumber": 154
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "setSelectedDevice",
+          "lineNumber": 161
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "useEffect",
+          "lineNumber": 165
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "applicationsList.find",
+          "lineNumber": 174
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "setSelectedApplication",
+          "lineNumber": 177
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "setSelectedDatabaseTable",
+          "lineNumber": 178
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "setSelectedDatabaseFile",
+          "lineNumber": 179
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "clearTableData",
+          "lineNumber": 180
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "setSelectedRow",
+          "lineNumber": 181
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "setSelectedApplication",
+          "lineNumber": 186
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "useCallback",
+          "lineNumber": 190
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "console.info",
+          "lineNumber": 192
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "refreshDevices",
+          "lineNumber": 196
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "refreshedDevices.find",
+          "lineNumber": 199
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "setSelectedDevice",
+          "lineNumber": 203
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "setSelectedApplication",
+          "lineNumber": 204
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "setSelectedDatabaseTable",
+          "lineNumber": 205
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "clearTableData",
+          "lineNumber": 206
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "setSelectedRow",
+          "lineNumber": 207
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "setSelectedDatabaseFile",
+          "lineNumber": 209
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "setSelectedDevice",
+          "lineNumber": 214
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "queryClient.fetchQuery",
+          "lineNumber": 216
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "fetchApplicationsForDevice",
+          "lineNumber": 218
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "applications.find",
+          "lineNumber": 223
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "setSelectedApplication",
+          "lineNumber": 226
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "queryClient.fetchQuery",
+          "lineNumber": 229
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "fetchDatabaseFilesForSelection",
+          "lineNumber": 231
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "databaseFiles.find",
+          "lineNumber": 236
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "setSelectedDatabaseFile",
+          "lineNumber": 239
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "setSelectedDatabaseFile",
+          "lineNumber": 242
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "setSelectedDatabaseTable",
+          "lineNumber": 243
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "clearTableData",
+          "lineNumber": 244
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "setSelectedRow",
+          "lineNumber": 245
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "setSelectedApplication",
+          "lineNumber": 251
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "setSelectedDatabaseFile",
+          "lineNumber": 252
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "setSelectedDatabaseTable",
+          "lineNumber": 253
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "clearTableData",
+          "lineNumber": 254
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "setSelectedRow",
+          "lineNumber": 255
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "toaster.create",
+          "lineNumber": 260
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "console.info",
+          "lineNumber": 269
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "console.error",
+          "lineNumber": 275
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "toaster.create",
+          "lineNumber": 276
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "useMemo",
+          "lineNumber": 298
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "devicesList.map",
+          "lineNumber": 299
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "device.deviceType?.includes",
+          "lineNumber": 304
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "useMemo",
+          "lineNumber": 311
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "getRecentAppsForDevice",
+          "lineNumber": 316
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "recentApps.map",
+          "lineNumber": 317
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "applicationsList.map",
+          "lineNumber": 320
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "recentBundleIds.has",
+          "lineNumber": 322
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "recentApps\n      .map((recentApp) => {\n        const foundApp = applicationsList.find(app => app.bundleId === recentApp.bundleId)\n        if (foundApp) {\n          const description = foundApp.bundleId === foundApp.name ? '' : foundApp.bundleId\n          return {\n            label: foundApp.name,\n            value: foundApp.bundleId,\n            description,\n            isRecentlyUsed: true,\n            ...foundApp,\n          }\n        }\n        return null\n      })\n      .filter(Boolean)\n      .slice",
+          "lineNumber": 333
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "recentApps\n      .map((recentApp) => {\n        const foundApp = applicationsList.find(app => app.bundleId === recentApp.bundleId)\n        if (foundApp) {\n          const description = foundApp.bundleId === foundApp.name ? '' : foundApp.bundleId\n          return {\n            label: foundApp.name,\n            value: foundApp.bundleId,\n            description,\n            isRecentlyUsed: true,\n            ...foundApp,\n          }\n        }\n        return null\n      })\n      .filter",
+          "lineNumber": 333
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "recentApps\n      .map",
+          "lineNumber": 333
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "applicationsList.find",
+          "lineNumber": 335
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "allAppOptions.filter",
+          "lineNumber": 352
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "recentBundleIds.has",
+          "lineNumber": 352
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "useMemo",
+          "lineNumber": 358
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "devicesSelectOptions.find",
+          "lineNumber": 363
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "useMemo",
+          "lineNumber": 366
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "applicationSelectOptions.find",
+          "lineNumber": 371
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "useCallback",
+          "lineNumber": 374
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "console.info",
+          "lineNumber": 375
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "setSelectedDevice",
+          "lineNumber": 380
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "setSelectedApplication",
+          "lineNumber": 381
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "setSelectedDatabaseFile",
+          "lineNumber": 382
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "setSelectedDatabaseTable",
+          "lineNumber": 383
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "clearTableData",
+          "lineNumber": 384
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "setSelectedRow",
+          "lineNumber": 385
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "useCallback",
+          "lineNumber": 388
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "console.info",
+          "lineNumber": 389
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "setSelectedDatabaseFile",
+          "lineNumber": 394
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "setSelectedDatabaseTable",
+          "lineNumber": 395
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "setSelectedApplication",
+          "lineNumber": 396
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "clearTableData",
+          "lineNumber": 397
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "setSelectedRow",
+          "lineNumber": 398
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "addRecentApp",
+          "lineNumber": 402
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "useCallback",
+          "lineNumber": 406
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "setIsVirtualDeviceModalOpen",
+          "lineNumber": 407
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "useCallback",
+          "lineNumber": 410
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "setIsVirtualDeviceModalOpen",
+          "lineNumber": 411
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "console.info",
+          "lineNumber": 412
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "setTimeout",
+          "lineNumber": 413
+        },
+        {
+          "caller": "AppHeader",
+          "callee": "refreshDevices",
+          "lineNumber": 414
+        }
+      ],
+      "metrics": {
+        "importCount": 11,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/src/components/layout/PackageSetModal.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 168,
+      "nonEmptyLines": 149,
+      "functions": [
+        {
+          "name": "getRecentBundleIds",
+          "startLine": 27,
+          "endLine": 35,
+          "params": []
+        },
+        {
+          "name": "addRecentBundleId",
+          "startLine": 40,
+          "endLine": 58,
+          "params": [
+            "bundleId"
+          ]
+        },
+        {
+          "name": "PackageSetModal",
+          "startLine": 60,
+          "endLine": 168,
+          "params": [
+            "{ isOpen, isLoading, onClose, onPackageSet }"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "PackageSetModal",
+          "line": 60,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "getRecentBundleIds",
+          "callee": "localStorage.getItem",
+          "lineNumber": 29
+        },
+        {
+          "caller": "getRecentBundleIds",
+          "callee": "JSON.parse",
+          "lineNumber": 30
+        },
+        {
+          "caller": "addRecentBundleId",
+          "callee": "bundleId.trim",
+          "lineNumber": 41
+        },
+        {
+          "caller": "addRecentBundleId",
+          "callee": "getRecentBundleIds",
+          "lineNumber": 45
+        },
+        {
+          "caller": "addRecentBundleId",
+          "callee": "recent.filter",
+          "lineNumber": 48
+        },
+        {
+          "caller": "addRecentBundleId",
+          "callee": "[bundleId, ...filtered].slice",
+          "lineNumber": 51
+        },
+        {
+          "caller": "addRecentBundleId",
+          "callee": "localStorage.setItem",
+          "lineNumber": 53
+        },
+        {
+          "caller": "addRecentBundleId",
+          "callee": "JSON.stringify",
+          "lineNumber": 53
+        },
+        {
+          "caller": "addRecentBundleId",
+          "callee": "console.error",
+          "lineNumber": 56
+        },
+        {
+          "caller": "PackageSetModal",
+          "callee": "useCurrentDeviceSelection",
+          "lineNumber": 61
+        },
+        {
+          "caller": "PackageSetModal",
+          "callee": "useCurrentDeviceSelection",
+          "lineNumber": 62
+        },
+        {
+          "caller": "PackageSetModal",
+          "callee": "useState",
+          "lineNumber": 64
+        },
+        {
+          "caller": "PackageSetModal",
+          "callee": "useState",
+          "lineNumber": 65
+        },
+        {
+          "caller": "PackageSetModal",
+          "callee": "useCallback",
+          "lineNumber": 66
+        },
+        {
+          "caller": "PackageSetModal",
+          "callee": "toaster.create",
+          "lineNumber": 68
+        },
+        {
+          "caller": "PackageSetModal",
+          "callee": "addRecentBundleId",
+          "lineNumber": 76
+        },
+        {
+          "caller": "PackageSetModal",
+          "callee": "setSelectedApplication",
+          "lineNumber": 78
+        },
+        {
+          "caller": "PackageSetModal",
+          "callee": "onPackageSet",
+          "lineNumber": 87
+        },
+        {
+          "caller": "PackageSetModal",
+          "callee": "useEffect",
+          "lineNumber": 90
+        },
+        {
+          "caller": "PackageSetModal",
+          "callee": "setRecentBundleIds",
+          "lineNumber": 91
+        },
+        {
+          "caller": "PackageSetModal",
+          "callee": "getRecentBundleIds",
+          "lineNumber": 91
+        },
+        {
+          "caller": "PackageSetModal",
+          "callee": "useCallback",
+          "lineNumber": 94
+        },
+        {
+          "caller": "PackageSetModal",
+          "callee": "setBundleIdInput",
+          "lineNumber": 95
+        },
+        {
+          "caller": "PackageSetModal",
+          "callee": "setBundleIdInput",
+          "lineNumber": 114
+        },
+        {
+          "caller": "PackageSetModal",
+          "callee": "recentBundleIds.map",
+          "lineNumber": 132
+        },
+        {
+          "caller": "PackageSetModal",
+          "callee": "selectRecentBundleId",
+          "lineNumber": 140
+        },
+        {
+          "caller": "PackageSetModal",
+          "callee": "handleBundleIdChange",
+          "lineNumber": 160
+        },
+        {
+          "caller": "PackageSetModal",
+          "callee": "onClose",
+          "lineNumber": 164
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 1,
+        "functionCount": 3,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/src/components/layout/Settings.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 403,
+      "nonEmptyLines": 367,
+      "functions": [
+        {
+          "name": "sanitizeReleaseNotes",
+          "startLine": 19,
+          "endLine": 21,
+          "params": [
+            "notes"
+          ]
+        },
+        {
+          "name": "getStoredPendingUpdate",
+          "startLine": 23,
+          "endLine": 40,
+          "params": []
+        },
+        {
+          "name": "setStoredPendingUpdate",
+          "startLine": 42,
+          "endLine": 44,
+          "params": [
+            "payload"
+          ]
+        },
+        {
+          "name": "clearStoredPendingUpdate",
+          "startLine": 46,
+          "endLine": 48,
+          "params": []
+        },
+        {
+          "name": "getStoredLastSeenVersion",
+          "startLine": 50,
+          "endLine": 52,
+          "params": []
+        },
+        {
+          "name": "setStoredLastSeenVersion",
+          "startLine": 54,
+          "endLine": 56,
+          "params": [
+            "version"
+          ]
+        },
+        {
+          "name": "getBundledReleaseNotes",
+          "startLine": 58,
+          "endLine": 73,
+          "params": [
+            "version"
+          ]
+        },
+        {
+          "name": "Settings",
+          "startLine": 75,
+          "endLine": 403,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "Settings",
+          "line": 75,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "sanitizeReleaseNotes",
+          "callee": "notes?.trim",
+          "lineNumber": 20
+        },
+        {
+          "caller": "getStoredPendingUpdate",
+          "callee": "window.localStorage.getItem",
+          "lineNumber": 25
+        },
+        {
+          "caller": "getStoredPendingUpdate",
+          "callee": "JSON.parse",
+          "lineNumber": 30
+        },
+        {
+          "caller": "setStoredPendingUpdate",
+          "callee": "window.localStorage.setItem",
+          "lineNumber": 43
+        },
+        {
+          "caller": "setStoredPendingUpdate",
+          "callee": "JSON.stringify",
+          "lineNumber": 43
+        },
+        {
+          "caller": "clearStoredPendingUpdate",
+          "callee": "window.localStorage.removeItem",
+          "lineNumber": 47
+        },
+        {
+          "caller": "getStoredLastSeenVersion",
+          "callee": "window.localStorage.getItem",
+          "lineNumber": 51
+        },
+        {
+          "caller": "setStoredLastSeenVersion",
+          "callee": "window.localStorage.setItem",
+          "lineNumber": 55
+        },
+        {
+          "caller": "getBundledReleaseNotes",
+          "callee": "version.replace",
+          "lineNumber": 59
+        },
+        {
+          "caller": "getBundledReleaseNotes",
+          "callee": "changelogMarkdown.match",
+          "lineNumber": 61
+        },
+        {
+          "caller": "getBundledReleaseNotes",
+          "callee": "changelogMarkdown.slice",
+          "lineNumber": 68
+        },
+        {
+          "caller": "getBundledReleaseNotes",
+          "callee": "remainingMarkdown.match",
+          "lineNumber": 69
+        },
+        {
+          "caller": "getBundledReleaseNotes",
+          "callee": "remainingMarkdown.slice(0, sectionEnd).trim",
+          "lineNumber": 72
+        },
+        {
+          "caller": "getBundledReleaseNotes",
+          "callee": "remainingMarkdown.slice",
+          "lineNumber": 72
+        },
+        {
+          "caller": "Settings",
+          "callee": "useAutoUpdater",
+          "lineNumber": 76
+        },
+        {
+          "caller": "Settings",
+          "callee": "useState",
+          "lineNumber": 77
+        },
+        {
+          "caller": "Settings",
+          "callee": "useState",
+          "lineNumber": 78
+        },
+        {
+          "caller": "Settings",
+          "callee": "useMemo",
+          "lineNumber": 83
+        },
+        {
+          "caller": "Settings",
+          "callee": "sanitizeReleaseNotes",
+          "lineNumber": 85
+        },
+        {
+          "caller": "openAvailableUpdateModal",
+          "callee": "setAvailableUpdateModal",
+          "lineNumber": 116
+        },
+        {
+          "caller": "openAvailableUpdateModal",
+          "callee": "sanitizeReleaseNotes",
+          "lineNumber": 118
+        },
+        {
+          "caller": "handleCheckForUpdates",
+          "callee": "checkForUpdates",
+          "lineNumber": 124
+        },
+        {
+          "caller": "handleCheckForUpdates",
+          "callee": "toaster.create",
+          "lineNumber": 129
+        },
+        {
+          "caller": "handleCheckForUpdates",
+          "callee": "openAvailableUpdateModal",
+          "lineNumber": 137
+        },
+        {
+          "caller": "handleCheckForUpdates",
+          "callee": "toaster.create",
+          "lineNumber": 140
+        },
+        {
+          "caller": "handleCheckForUpdates",
+          "callee": "toaster.create",
+          "lineNumber": 149
+        },
+        {
+          "caller": "handleExportLogs",
+          "callee": "console.info",
+          "lineNumber": 160
+        },
+        {
+          "caller": "handleExportLogs",
+          "callee": "window.api.exportLogs",
+          "lineNumber": 161
+        },
+        {
+          "caller": "handleExportLogs",
+          "callee": "console.info",
+          "lineNumber": 164
+        },
+        {
+          "caller": "handleExportLogs",
+          "callee": "console.info",
+          "lineNumber": 168
+        },
+        {
+          "caller": "handleExportLogs",
+          "callee": "toaster.create",
+          "lineNumber": 171
+        },
+        {
+          "caller": "handleExportLogs",
+          "callee": "console.error",
+          "lineNumber": 179
+        },
+        {
+          "caller": "handleExportLogs",
+          "callee": "toaster.create",
+          "lineNumber": 180
+        },
+        {
+          "caller": "handleInstallUpdate",
+          "callee": "setStoredPendingUpdate",
+          "lineNumber": 195
+        },
+        {
+          "caller": "handleInstallUpdate",
+          "callee": "downloadAndInstall",
+          "lineNumber": 196
+        },
+        {
+          "caller": "handleInstallUpdate",
+          "callee": "clearStoredPendingUpdate",
+          "lineNumber": 199
+        },
+        {
+          "caller": "handleInstallUpdate",
+          "callee": "toaster.create",
+          "lineNumber": 200
+        },
+        {
+          "caller": "Settings",
+          "callee": "useEffect",
+          "lineNumber": 209
+        },
+        {
+          "caller": "Settings",
+          "callee": "getStoredPendingUpdate",
+          "lineNumber": 210
+        },
+        {
+          "caller": "Settings",
+          "callee": "getStoredLastSeenVersion",
+          "lineNumber": 211
+        },
+        {
+          "caller": "Settings",
+          "callee": "setInstalledUpdateModal",
+          "lineNumber": 214
+        },
+        {
+          "caller": "Settings",
+          "callee": "sanitizeReleaseNotes",
+          "lineNumber": 216
+        },
+        {
+          "caller": "Settings",
+          "callee": "clearStoredPendingUpdate",
+          "lineNumber": 218
+        },
+        {
+          "caller": "Settings",
+          "callee": "setStoredLastSeenVersion",
+          "lineNumber": 219
+        },
+        {
+          "caller": "Settings",
+          "callee": "clearStoredPendingUpdate",
+          "lineNumber": 223
+        },
+        {
+          "caller": "Settings",
+          "callee": "setInstalledUpdateModal",
+          "lineNumber": 227
+        },
+        {
+          "caller": "Settings",
+          "callee": "sanitizeReleaseNotes",
+          "lineNumber": 229
+        },
+        {
+          "caller": "Settings",
+          "callee": "getBundledReleaseNotes",
+          "lineNumber": 229
+        },
+        {
+          "caller": "Settings",
+          "callee": "setStoredLastSeenVersion",
+          "lineNumber": 233
+        },
+        {
+          "caller": "Settings",
+          "callee": "setTimeout",
+          "lineNumber": 236
+        },
+        {
+          "caller": "Settings",
+          "callee": "checkForUpdates().then",
+          "lineNumber": 237
+        },
+        {
+          "caller": "Settings",
+          "callee": "checkForUpdates",
+          "lineNumber": 237
+        },
+        {
+          "caller": "Settings",
+          "callee": "openAvailableUpdateModal",
+          "lineNumber": 239
+        },
+        {
+          "caller": "Settings",
+          "callee": "clearTimeout",
+          "lineNumber": 245
+        },
+        {
+          "caller": "Settings",
+          "callee": "Boolean",
+          "lineNumber": 380
+        },
+        {
+          "caller": "Settings",
+          "callee": "setAvailableUpdateModal",
+          "lineNumber": 387
+        },
+        {
+          "caller": "Settings",
+          "callee": "Boolean",
+          "lineNumber": 393
+        },
+        {
+          "caller": "Settings",
+          "callee": "setInstalledUpdateModal",
+          "lineNumber": 398
+        }
+      ],
+      "metrics": {
+        "importCount": 5,
+        "exportCount": 1,
+        "functionCount": 8,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/src/components/layout/SubHeader.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 504,
+      "nonEmptyLines": 461,
+      "functions": [
+        {
+          "name": "SubHeader",
+          "startLine": 24,
+          "endLine": 504,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "SubHeader",
+          "line": 24,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "SubHeader",
+          "callee": "useCurrentDeviceSelection",
+          "lineNumber": 25
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "useCurrentDeviceSelection",
+          "lineNumber": 26
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "useCurrentDeviceSelection",
+          "lineNumber": 27
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "useCurrentDeviceSelection",
+          "lineNumber": 28
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "useTableData",
+          "lineNumber": 32
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "useRowEditingStore",
+          "lineNumber": 33
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "useTableData",
+          "lineNumber": 34
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "useCurrentDatabaseSelection",
+          "lineNumber": 35
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "useCurrentDatabaseSelection",
+          "lineNumber": 36
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "useCurrentDatabaseSelection",
+          "lineNumber": 37
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "useCurrentDatabaseSelection",
+          "lineNumber": 38
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "useState",
+          "lineNumber": 40
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "useState",
+          "lineNumber": 41
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "useQueryClient",
+          "lineNumber": 42
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "useEffect",
+          "lineNumber": 45
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "console.log",
+          "lineNumber": 48
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "setSelectedDevice",
+          "lineNumber": 49
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "setSelectedApplication",
+          "lineNumber": 50
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "setSelectedDatabaseTable",
+          "lineNumber": 51
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "clearTableData",
+          "lineNumber": 52
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "setSelectedRow",
+          "lineNumber": 53
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "setTimeout",
+          "lineNumber": 56
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "setIsSettingCustomFile",
+          "lineNumber": 57
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "console.log",
+          "lineNumber": 58
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "useDatabaseFiles",
+          "lineNumber": 69
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "useTableDataQuery",
+          "lineNumber": 71
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "useEffect",
+          "lineNumber": 73
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "setTableData",
+          "lineNumber": 75
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "useDatabaseTables",
+          "lineNumber": 90
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "useEffect",
+          "lineNumber": 92
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "toaster.create",
+          "lineNumber": 94
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "useCallback",
+          "lineNumber": 105
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "ensureActiveDatabaseFile",
+          "lineNumber": 107
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "console.info",
+          "lineNumber": 116
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "window.api.switchDatabase",
+          "lineNumber": 124
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "console.log",
+          "lineNumber": 125
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "console.warn",
+          "lineNumber": 128
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "setSelectedDatabaseFile",
+          "lineNumber": 132
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "setSelectedDatabaseTable",
+          "lineNumber": 133
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "clearTableData",
+          "lineNumber": 134
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "setSelectedRow",
+          "lineNumber": 135
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "useCallback",
+          "lineNumber": 138
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "console.info",
+          "lineNumber": 139
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "setTableData",
+          "lineNumber": 145
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "setSelectedDatabaseTable",
+          "lineNumber": 153
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "useMemo",
+          "lineNumber": 156
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "groupDatabaseFilesByLocation",
+          "lineNumber": 157
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "useMemo",
+          "lineNumber": 159
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "databaseTables?.map",
+          "lineNumber": 160
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "useMemo",
+          "lineNumber": 166
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "dbFileOptions\n      .flatMap(group => group.options)\n      .find",
+          "lineNumber": 171
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "dbFileOptions\n      .flatMap",
+          "lineNumber": 171
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "useMemo",
+          "lineNumber": 179
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "tableOptions.find",
+          "lineNumber": 184
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "useCallback",
+          "lineNumber": 188
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "refetchTable",
+          "lineNumber": 191
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "tableDataStore.setTableData",
+          "lineNumber": 192
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "useEffect",
+          "lineNumber": 201
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "setSelectedDatabaseTable",
+          "lineNumber": 203
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "clearTableData",
+          "lineNumber": 204
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "setSelectedRow",
+          "lineNumber": 205
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "useCallback",
+          "lineNumber": 209
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "console.info",
+          "lineNumber": 210
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "setSelectedDatabaseTable",
+          "lineNumber": 218
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "setSelectedDatabaseFile",
+          "lineNumber": 219
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "clearTableData",
+          "lineNumber": 220
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "setSelectedRow",
+          "lineNumber": 221
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "refreshDatabase",
+          "lineNumber": 224
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "console.info",
+          "lineNumber": 229
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "useCallback",
+          "lineNumber": 261
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "window.api.openFile().then",
+          "lineNumber": 262
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "window.api.openFile",
+          "lineNumber": 262
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "console.info",
+          "lineNumber": 265
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "setIsSettingCustomFile",
+          "lineNumber": 270
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "console.log",
+          "lineNumber": 271
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "setSelectedDatabaseFile",
+          "lineNumber": 273
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "filePath.split('/').pop",
+          "lineNumber": 275
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "filePath.split",
+          "lineNumber": 275
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "useCallback",
+          "lineNumber": 285
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "console.info",
+          "lineNumber": 290
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "window.api.exportFile({\n      defaultPath: selectedDatabaseFile?.filename,\n      filters: [\n        {\n          name: selectedDatabaseFile?.filename || 'Database',\n          extensions: ['db', 'sqlite'],\n        },\n      ],\n      dbFilePath: selectedDatabaseFile.path,\n    }).then((savedFilePath) => {\n      if (!savedFilePath) {\n        return\n      }\n      console.info('CriticalPath: database export completed', {\n        databasePath: selectedDatabaseFile.path,\n        savedFilePath,\n      })\n      toaster.create({\n        title: 'Success',\n        description: `Database file exported successfully to ${savedFilePath}`,\n        type: 'success',\n      })\n    }).catch",
+          "lineNumber": 295
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "window.api.exportFile({\n      defaultPath: selectedDatabaseFile?.filename,\n      filters: [\n        {\n          name: selectedDatabaseFile?.filename || 'Database',\n          extensions: ['db', 'sqlite'],\n        },\n      ],\n      dbFilePath: selectedDatabaseFile.path,\n    }).then",
+          "lineNumber": 295
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "window.api.exportFile",
+          "lineNumber": 295
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "console.info",
+          "lineNumber": 308
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "toaster.create",
+          "lineNumber": 312
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "console.error",
+          "lineNumber": 318
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "toaster.create",
+          "lineNumber": 319
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "setIsQueryModalOpen",
+          "lineNumber": 422
+        },
+        {
+          "caller": "SubHeader",
+          "callee": "setIsQueryModalOpen",
+          "lineNumber": 499
+        }
+      ],
+      "metrics": {
+        "importCount": 11,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/src/components/SidePanel/__tests__/DeleteRowDialog.test.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 222,
+      "nonEmptyLines": 178,
+      "functions": [
+        {
+          "name": "TestWrapper",
+          "startLine": 6,
+          "endLine": 8,
+          "params": [
+            "{ children }"
+          ]
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/src/components/SidePanel/__tests__/Field.test.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 395,
+      "nonEmptyLines": 325,
+      "functions": [
+        {
+          "name": "TestWrapper",
+          "startLine": 6,
+          "endLine": 8,
+          "params": [
+            "{ children }"
+          ]
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/src/components/SidePanel/__tests__/JsonViewer.test.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 196,
+      "nonEmptyLines": 160,
+      "functions": [
+        {
+          "name": "TestWrapper",
+          "startLine": 6,
+          "endLine": 8,
+          "params": [
+            "{ children }"
+          ]
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/src/components/SidePanel/__tests__/RowEditor.test.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 143,
+      "nonEmptyLines": 130,
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/src/components/SidePanel/ClearTableDialog.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 56,
+      "nonEmptyLines": 52,
+      "functions": [
+        {
+          "name": "ClearTableDialog",
+          "startLine": 16,
+          "endLine": 56,
+          "params": [
+            "{\n  isOpen,\n  onClose,\n  onClear,\n  isLoading,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "ClearTableDialog",
+          "line": 16,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "ClearTableDialog",
+          "callee": "onClear",
+          "lineNumber": 47
+        },
+        {
+          "caller": "ClearTableDialog",
+          "callee": "onClose",
+          "lineNumber": 51
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/src/components/SidePanel/DeleteRowDialog.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 56,
+      "nonEmptyLines": 52,
+      "functions": [
+        {
+          "name": "DeleteRowDialog",
+          "startLine": 16,
+          "endLine": 56,
+          "params": [
+            "{\n  isOpen,\n  onClose,\n  onDelete,\n  isLoading,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "DeleteRowDialog",
+          "line": 16,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "DeleteRowDialog",
+          "callee": "onDelete",
+          "lineNumber": 47
+        },
+        {
+          "caller": "DeleteRowDialog",
+          "callee": "onClose",
+          "lineNumber": 51
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/src/components/SidePanel/Field.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 212,
+      "nonEmptyLines": 199,
+      "functions": [
+        {
+          "name": "FieldItem",
+          "startLine": 17,
+          "endLine": 212,
+          "params": [
+            "{ fieldKey, fieldType, value, isEditing, onChange, isLoading, isDark }"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "FieldItem",
+          "line": 17,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "FieldItem",
+          "callee": "useMemo",
+          "lineNumber": 18
+        },
+        {
+          "caller": "FieldItem",
+          "callee": "isJsonValue",
+          "lineNumber": 18
+        },
+        {
+          "caller": "FieldItem",
+          "callee": "useState",
+          "lineNumber": 19
+        },
+        {
+          "caller": "FieldItem",
+          "callee": "useState",
+          "lineNumber": 20
+        },
+        {
+          "caller": "FieldItem",
+          "callee": "useMemo",
+          "lineNumber": 23
+        },
+        {
+          "caller": "FieldItem",
+          "callee": "useEffect",
+          "lineNumber": 30
+        },
+        {
+          "caller": "FieldItem",
+          "callee": "setUserPreferredTextMode",
+          "lineNumber": 32
+        },
+        {
+          "caller": "FieldItem",
+          "callee": "setShowJsonError",
+          "lineNumber": 33
+        },
+        {
+          "caller": "FieldItem",
+          "callee": "useEffect",
+          "lineNumber": 38
+        },
+        {
+          "caller": "FieldItem",
+          "callee": "setShowJsonError",
+          "lineNumber": 40
+        },
+        {
+          "caller": "handleToggleEditorMode",
+          "callee": "setUserPreferredTextMode",
+          "lineNumber": 48
+        },
+        {
+          "caller": "handleToggleEditorMode",
+          "callee": "setShowJsonError",
+          "lineNumber": 49
+        },
+        {
+          "caller": "handleToggleEditorMode",
+          "callee": "setShowJsonError",
+          "lineNumber": 53
+        },
+        {
+          "caller": "handleToggleEditorMode",
+          "callee": "setTimeout",
+          "lineNumber": 55
+        },
+        {
+          "caller": "handleToggleEditorMode",
+          "callee": "setShowJsonError",
+          "lineNumber": 55
+        },
+        {
+          "caller": "handleToggleEditorMode",
+          "callee": "setUserPreferredTextMode",
+          "lineNumber": 60
+        },
+        {
+          "caller": "handleToggleEditorMode",
+          "callee": "setShowJsonError",
+          "lineNumber": 61
+        },
+        {
+          "caller": "getTypeColor",
+          "callee": "type.toLowerCase",
+          "lineNumber": 66
+        },
+        {
+          "caller": "getTypeColor",
+          "callee": "lowerType.includes",
+          "lineNumber": 67
+        },
+        {
+          "caller": "getTypeColor",
+          "callee": "lowerType.includes",
+          "lineNumber": 67
+        },
+        {
+          "caller": "getTypeColor",
+          "callee": "lowerType.includes",
+          "lineNumber": 67
+        },
+        {
+          "caller": "getTypeColor",
+          "callee": "lowerType.includes",
+          "lineNumber": 70
+        },
+        {
+          "caller": "getTypeColor",
+          "callee": "lowerType.includes",
+          "lineNumber": 70
+        },
+        {
+          "caller": "getTypeColor",
+          "callee": "lowerType.includes",
+          "lineNumber": 70
+        },
+        {
+          "caller": "getTypeColor",
+          "callee": "lowerType.includes",
+          "lineNumber": 73
+        },
+        {
+          "caller": "getTypeColor",
+          "callee": "lowerType.includes",
+          "lineNumber": 76
+        },
+        {
+          "caller": "getTypeColor",
+          "callee": "lowerType.includes",
+          "lineNumber": 76
+        },
+        {
+          "caller": "getDisplayType",
+          "callee": "fieldType.toUpperCase",
+          "lineNumber": 84
+        },
+        {
+          "caller": "getDisplayType",
+          "callee": "fieldType.toUpperCase",
+          "lineNumber": 86
+        },
+        {
+          "caller": "getTypeColorForDisplay",
+          "callee": "getTypeColor",
+          "lineNumber": 93
+        },
+        {
+          "caller": "FieldItem",
+          "callee": "getTypeColorForDisplay",
+          "lineNumber": 111
+        },
+        {
+          "caller": "FieldItem",
+          "callee": "getDisplayType",
+          "lineNumber": 118
+        },
+        {
+          "caller": "FieldItem",
+          "callee": "onChange",
+          "lineNumber": 154
+        },
+        {
+          "caller": "FieldItem",
+          "callee": "onChange",
+          "lineNumber": 162
+        },
+        {
+          "caller": "FieldItem",
+          "callee": "onChange",
+          "lineNumber": 179
+        },
+        {
+          "caller": "FieldItem",
+          "callee": "onChange",
+          "lineNumber": 195
+        },
+        {
+          "caller": "FieldItem",
+          "callee": "String",
+          "lineNumber": 206
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/src/components/SidePanel/index.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 1,
+      "nonEmptyLines": 1,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/src/components/SidePanel/JsonEditor.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 34,
+      "nonEmptyLines": 32,
+      "functions": [
+        {
+          "name": "JsonEditor",
+          "startLine": 5,
+          "endLine": 34,
+          "params": [
+            "{ value, onChange, isDark, isEditing }"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "JsonEditor",
+          "line": 5,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "JsonEditor",
+          "callee": "JSON.parse",
+          "lineNumber": 8
+        },
+        {
+          "caller": "JsonEditor",
+          "callee": "console.error",
+          "lineNumber": 11
+        },
+        {
+          "caller": "JsonEditor",
+          "callee": "useState",
+          "lineNumber": 14
+        },
+        {
+          "caller": "handleChange",
+          "callee": "setEditorData",
+          "lineNumber": 16
+        },
+        {
+          "caller": "handleChange",
+          "callee": "onChange",
+          "lineNumber": 17
+        },
+        {
+          "caller": "handleChange",
+          "callee": "JSON.stringify",
+          "lineNumber": 17
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/src/components/SidePanel/JsonViewer.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 17,
+      "nonEmptyLines": 16,
+      "functions": [
+        {
+          "name": "JsonViewer",
+          "startLine": 6,
+          "endLine": 17,
+          "params": [
+            "{ value, isDark }"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "JsonViewer",
+          "line": 6,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/src/components/SidePanel/RowEditor.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 224,
+      "nonEmptyLines": 204,
+      "functions": [
+        {
+          "name": "RowEditor",
+          "startLine": 21,
+          "endLine": 224,
+          "params": [
+            "{\n  isEditing,\n  setIsEditing,\n  isLoading,\n  setIsLoading,\n  editedData,\n  setEditedData,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "RowEditor",
+          "line": 21,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "RowEditor",
+          "callee": "useRowEditingStore",
+          "lineNumber": 29
+        },
+        {
+          "caller": "RowEditor",
+          "callee": "useTableData",
+          "lineNumber": 30
+        },
+        {
+          "caller": "RowEditor",
+          "callee": "useCurrentDeviceSelection",
+          "lineNumber": 31
+        },
+        {
+          "caller": "RowEditor",
+          "callee": "useCurrentDatabaseSelection",
+          "lineNumber": 32
+        },
+        {
+          "caller": "RowEditor",
+          "callee": "useTableDataQuery",
+          "lineNumber": 33
+        },
+        {
+          "caller": "RowEditor",
+          "callee": "useChangeHistoryRefresh",
+          "lineNumber": 34
+        },
+        {
+          "caller": "RowEditor",
+          "callee": "useCallback",
+          "lineNumber": 36
+        },
+        {
+          "caller": "RowEditor",
+          "callee": "setEditedData",
+          "lineNumber": 38
+        },
+        {
+          "caller": "RowEditor",
+          "callee": "setIsEditing",
+          "lineNumber": 40
+        },
+        {
+          "caller": "RowEditor",
+          "callee": "useCallback",
+          "lineNumber": 43
+        },
+        {
+          "caller": "RowEditor",
+          "callee": "setIsEditing",
+          "lineNumber": 44
+        },
+        {
+          "caller": "RowEditor",
+          "callee": "setEditedData",
+          "lineNumber": 45
+        },
+        {
+          "caller": "RowEditor",
+          "callee": "useCallback",
+          "lineNumber": 48
+        },
+        {
+          "caller": "RowEditor",
+          "callee": "setIsLoading",
+          "lineNumber": 53
+        },
+        {
+          "caller": "RowEditor",
+          "callee": "tableData?.columns?.forEach",
+          "lineNumber": 57
+        },
+        {
+          "caller": "RowEditor",
+          "callee": "validateRowData",
+          "lineNumber": 61
+        },
+        {
+          "caller": "RowEditor",
+          "callee": "Object.entries",
+          "lineNumber": 63
+        },
+        {
+          "caller": "RowEditor",
+          "callee": "toaster.create",
+          "lineNumber": 64
+        },
+        {
+          "caller": "RowEditor",
+          "callee": "setIsLoading",
+          "lineNumber": 75
+        },
+        {
+          "caller": "RowEditor",
+          "callee": "buildUniqueCondition",
+          "lineNumber": 79
+        },
+        {
+          "caller": "RowEditor",
+          "callee": "window.api.updateTableRow",
+          "lineNumber": 85
+        },
+        {
+          "caller": "RowEditor",
+          "callee": "window.api.pushDatabaseFile",
+          "lineNumber": 110
+        },
+        {
+          "caller": "RowEditor",
+          "callee": "console.error",
+          "lineNumber": 121
+        },
+        {
+          "caller": "RowEditor",
+          "callee": "toaster.create",
+          "lineNumber": 123
+        },
+        {
+          "caller": "RowEditor",
+          "callee": "console.log",
+          "lineNumber": 134
+        },
+        {
+          "caller": "RowEditor",
+          "callee": "setSelectedRow",
+          "lineNumber": 138
+        },
+        {
+          "caller": "RowEditor",
+          "callee": "refetchTable",
+          "lineNumber": 143
+        },
+        {
+          "caller": "RowEditor",
+          "callee": "refreshChangeHistory",
+          "lineNumber": 144
+        },
+        {
+          "caller": "RowEditor",
+          "callee": "setIsEditing",
+          "lineNumber": 145
+        },
+        {
+          "caller": "RowEditor",
+          "callee": "toaster.create",
+          "lineNumber": 149
+        },
+        {
+          "caller": "RowEditor",
+          "callee": "console.error",
+          "lineNumber": 158
+        },
+        {
+          "caller": "RowEditor",
+          "callee": "toaster.create",
+          "lineNumber": 159
+        },
+        {
+          "caller": "RowEditor",
+          "callee": "cancelEditing",
+          "lineNumber": 165
+        },
+        {
+          "caller": "RowEditor",
+          "callee": "setIsLoading",
+          "lineNumber": 168
+        }
+      ],
+      "metrics": {
+        "importCount": 7,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/src/components/SidePanel/SidePanel.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 206,
+      "nonEmptyLines": 196,
+      "functions": [
+        {
+          "name": "SidePanel",
+          "startLine": 20,
+          "endLine": 206,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "SidePanel",
+          "line": 20,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "SidePanel",
+          "callee": "useColorMode",
+          "lineNumber": 21
+        },
+        {
+          "caller": "SidePanel",
+          "callee": "useRowEditingStore",
+          "lineNumber": 23
+        },
+        {
+          "caller": "SidePanel",
+          "callee": "useCurrentDeviceSelection",
+          "lineNumber": 25
+        },
+        {
+          "caller": "SidePanel",
+          "callee": "useCurrentDatabaseSelection",
+          "lineNumber": 26
+        },
+        {
+          "caller": "SidePanel",
+          "callee": "useTableData",
+          "lineNumber": 27
+        },
+        {
+          "caller": "SidePanel",
+          "callee": "useState",
+          "lineNumber": 28
+        },
+        {
+          "caller": "SidePanel",
+          "callee": "useState",
+          "lineNumber": 29
+        },
+        {
+          "caller": "SidePanel",
+          "callee": "useState",
+          "lineNumber": 30
+        },
+        {
+          "caller": "SidePanel",
+          "callee": "useState",
+          "lineNumber": 31
+        },
+        {
+          "caller": "SidePanel",
+          "callee": "useState",
+          "lineNumber": 32
+        },
+        {
+          "caller": "SidePanel",
+          "callee": "useCallback",
+          "lineNumber": 34
+        },
+        {
+          "caller": "SidePanel",
+          "callee": "setSelectedRow",
+          "lineNumber": 35
+        },
+        {
+          "caller": "SidePanel",
+          "callee": "setIsEditing",
+          "lineNumber": 36
+        },
+        {
+          "caller": "SidePanel",
+          "callee": "useClearTableMutation",
+          "lineNumber": 39
+        },
+        {
+          "caller": "SidePanel",
+          "callee": "useCallback",
+          "lineNumber": 41
+        },
+        {
+          "caller": "SidePanel",
+          "callee": "setIsLoading",
+          "lineNumber": 45
+        },
+        {
+          "caller": "SidePanel",
+          "callee": "clearTableMutation.mutateAsync",
+          "lineNumber": 47
+        },
+        {
+          "caller": "SidePanel",
+          "callee": "console.error",
+          "lineNumber": 55
+        },
+        {
+          "caller": "SidePanel",
+          "callee": "setIsLoading",
+          "lineNumber": 58
+        },
+        {
+          "caller": "SidePanel",
+          "callee": "setIsClearTableDialogOpen",
+          "lineNumber": 59
+        },
+        {
+          "caller": "SidePanel",
+          "callee": "useDeleteRowMutation",
+          "lineNumber": 69
+        },
+        {
+          "caller": "SidePanel",
+          "callee": "useCallback",
+          "lineNumber": 71
+        },
+        {
+          "caller": "SidePanel",
+          "callee": "setIsLoading",
+          "lineNumber": 75
+        },
+        {
+          "caller": "SidePanel",
+          "callee": "deleteRowMutation.mutateAsync",
+          "lineNumber": 77
+        },
+        {
+          "caller": "SidePanel",
+          "callee": "console.error",
+          "lineNumber": 87
+        },
+        {
+          "caller": "SidePanel",
+          "callee": "setIsLoading",
+          "lineNumber": 90
+        },
+        {
+          "caller": "SidePanel",
+          "callee": "setIsDeleteDialogOpen",
+          "lineNumber": 91
+        },
+        {
+          "caller": "SidePanel",
+          "callee": "closePanel",
+          "lineNumber": 104
+        },
+        {
+          "caller": "SidePanel",
+          "callee": "tableData.columns.map",
+          "lineNumber": 136
+        },
+        {
+          "caller": "SidePanel",
+          "callee": "selectedRow.columnInfo?.find",
+          "lineNumber": 140
+        },
+        {
+          "caller": "SidePanel",
+          "callee": "setEditedData",
+          "lineNumber": 150
+        },
+        {
+          "caller": "SidePanel",
+          "callee": "setIsDeleteDialogOpen",
+          "lineNumber": 163
+        },
+        {
+          "caller": "SidePanel",
+          "callee": "setIsClearTableDialogOpen",
+          "lineNumber": 177
+        },
+        {
+          "caller": "SidePanel",
+          "callee": "setIsDeleteDialogOpen",
+          "lineNumber": 188
+        },
+        {
+          "caller": "SidePanel",
+          "callee": "setIsClearTableDialogOpen",
+          "lineNumber": 194
+        }
+      ],
+      "metrics": {
+        "importCount": 8,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/src/frontend-log.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 68,
+      "nonEmptyLines": 56,
+      "functions": [
+        {
+          "name": "formatConsoleArgs",
+          "startLine": 3,
+          "endLine": 20,
+          "params": [
+            "args"
+          ]
+        },
+        {
+          "name": "attachFrontendLogs",
+          "startLine": 22,
+          "endLine": 66,
+          "params": []
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "formatConsoleArgs",
+          "callee": "args.map((arg) => {\n    if (arg instanceof Error) {\n      return arg.stack || arg.message\n    }\n\n    if (typeof arg === 'string') {\n      return arg\n    }\n\n    try {\n      return JSON.stringify(arg)\n    }\n    catch {\n      return String(arg)\n    }\n  }).join",
+          "lineNumber": 4
+        },
+        {
+          "caller": "formatConsoleArgs",
+          "callee": "args.map",
+          "lineNumber": 4
+        },
+        {
+          "caller": "formatConsoleArgs",
+          "callee": "JSON.stringify",
+          "lineNumber": 14
+        },
+        {
+          "caller": "formatConsoleArgs",
+          "callee": "String",
+          "lineNumber": 17
+        },
+        {
+          "caller": "attachFrontendLogs",
+          "callee": "console.debug.bind",
+          "lineNumber": 28
+        },
+        {
+          "caller": "attachFrontendLogs",
+          "callee": "console.error.bind",
+          "lineNumber": 29
+        },
+        {
+          "caller": "attachFrontendLogs",
+          "callee": "console.info.bind",
+          "lineNumber": 30
+        },
+        {
+          "caller": "attachFrontendLogs",
+          "callee": "console.log.bind",
+          "lineNumber": 31
+        },
+        {
+          "caller": "attachFrontendLogs",
+          "callee": "console.trace.bind",
+          "lineNumber": 32
+        },
+        {
+          "caller": "attachFrontendLogs",
+          "callee": "console.warn.bind",
+          "lineNumber": 33
+        },
+        {
+          "caller": "forward",
+          "callee": "originalConsole[method]",
+          "lineNumber": 40
+        },
+        {
+          "caller": "forward",
+          "callee": "formatConsoleArgs",
+          "lineNumber": 46
+        },
+        {
+          "caller": "forward",
+          "callee": "writer(message)\n        .catch(() => {})\n        .finally",
+          "lineNumber": 52
+        },
+        {
+          "caller": "forward",
+          "callee": "writer(message)\n        .catch",
+          "lineNumber": 52
+        },
+        {
+          "caller": "forward",
+          "callee": "writer",
+          "lineNumber": 52
+        },
+        {
+          "caller": "attachFrontendLogs",
+          "callee": "forward",
+          "lineNumber": 60
+        },
+        {
+          "caller": "attachFrontendLogs",
+          "callee": "forward",
+          "lineNumber": 61
+        },
+        {
+          "caller": "attachFrontendLogs",
+          "callee": "forward",
+          "lineNumber": 62
+        },
+        {
+          "caller": "attachFrontendLogs",
+          "callee": "forward",
+          "lineNumber": 63
+        },
+        {
+          "caller": "attachFrontendLogs",
+          "callee": "forward",
+          "lineNumber": 64
+        },
+        {
+          "caller": "attachFrontendLogs",
+          "callee": "forward",
+          "lineNumber": 65
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/src/hooks/__tests__/useApplications.test.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 347,
+      "nonEmptyLines": 281,
+      "functions": [
+        {
+          "name": "createWrapper",
+          "startLine": 9,
+          "endLine": 23,
+          "params": []
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "createWrapper",
+          "callee": "QueryClientProvider",
+          "lineNumber": 21
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/src/hooks/__tests__/useChangeHistory.test.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 208,
+      "nonEmptyLines": 168,
+      "functions": [
+        {
+          "name": "createWrapper",
+          "startLine": 8,
+          "endLine": 18,
+          "params": []
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "createWrapper",
+          "callee": "React.createElement",
+          "lineNumber": 17
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/src/hooks/__tests__/useDatabaseFiles.test.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 401,
+      "nonEmptyLines": 333,
+      "functions": [
+        {
+          "name": "createWrapper",
+          "startLine": 8,
+          "endLine": 22,
+          "params": []
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "createWrapper",
+          "callee": "QueryClientProvider",
+          "lineNumber": 20
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/src/hooks/__tests__/useTableDataQuery.test.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 79,
+      "nonEmptyLines": 70,
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/src/hooks/useApplications.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 64,
+      "nonEmptyLines": 52,
+      "functions": [
+        {
+          "name": "fetchApplicationsForDevice",
+          "startLine": 22,
+          "endLine": 53,
+          "params": [
+            "selectedDevice"
+          ]
+        },
+        {
+          "name": "useApplications",
+          "startLine": 55,
+          "endLine": 64,
+          "params": [
+            "selectedDevice"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "fetchApplicationsForDevice",
+          "line": 22,
+          "isDefault": false
+        },
+        {
+          "name": "useApplications",
+          "line": 55,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "fetchApplicationsForDevice",
+          "callee": "console.log",
+          "lineNumber": 27
+        },
+        {
+          "caller": "fetchApplicationsForDevice",
+          "callee": "console.log",
+          "lineNumber": 32
+        },
+        {
+          "caller": "fetchApplicationsForDevice",
+          "callee": "console.log",
+          "lineNumber": 36
+        },
+        {
+          "caller": "fetchApplicationsForDevice",
+          "callee": "console.log",
+          "lineNumber": 40
+        },
+        {
+          "caller": "fetchApplicationsForDevice",
+          "callee": "fetchFunction",
+          "lineNumber": 44
+        },
+        {
+          "caller": "fetchApplicationsForDevice",
+          "callee": "console.log",
+          "lineNumber": 46
+        },
+        {
+          "caller": "fetchApplicationsForDevice",
+          "callee": "transformToCamelCase",
+          "lineNumber": 52
+        },
+        {
+          "caller": "useApplications",
+          "callee": "useQuery",
+          "lineNumber": 56
+        },
+        {
+          "caller": "useApplications",
+          "callee": "fetchApplicationsForDevice",
+          "lineNumber": 58
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 2,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/src/hooks/useAutoUpdater.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 126,
+      "nonEmptyLines": 115,
+      "functions": [
+        {
+          "name": "useAutoUpdater",
+          "startLine": 29,
+          "endLine": 126,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "useAutoUpdater",
+          "line": 29,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "useAutoUpdater",
+          "callee": "useState",
+          "lineNumber": 30
+        },
+        {
+          "caller": "useAutoUpdater",
+          "callee": "useState",
+          "lineNumber": 31
+        },
+        {
+          "caller": "useAutoUpdater",
+          "callee": "useState",
+          "lineNumber": 32
+        },
+        {
+          "caller": "useAutoUpdater",
+          "callee": "useState",
+          "lineNumber": 33
+        },
+        {
+          "caller": "useAutoUpdater",
+          "callee": "useCallback",
+          "lineNumber": 35
+        },
+        {
+          "caller": "useAutoUpdater",
+          "callee": "setIsChecking",
+          "lineNumber": 36
+        },
+        {
+          "caller": "useAutoUpdater",
+          "callee": "setError",
+          "lineNumber": 37
+        },
+        {
+          "caller": "useAutoUpdater",
+          "callee": "await invoke",
+          "lineNumber": 41
+        },
+        {
+          "caller": "useAutoUpdater",
+          "callee": "setUpdateInfo",
+          "lineNumber": 59
+        },
+        {
+          "caller": "useAutoUpdater",
+          "callee": "console.warn",
+          "lineNumber": 63
+        },
+        {
+          "caller": "useAutoUpdater",
+          "callee": "result.error?.includes",
+          "lineNumber": 64
+        },
+        {
+          "caller": "useAutoUpdater",
+          "callee": "result.error?.includes",
+          "lineNumber": 64
+        },
+        {
+          "caller": "useAutoUpdater",
+          "callee": "setError",
+          "lineNumber": 67
+        },
+        {
+          "caller": "useAutoUpdater",
+          "callee": "console.warn",
+          "lineNumber": 72
+        },
+        {
+          "caller": "useAutoUpdater",
+          "callee": "err.message.includes",
+          "lineNumber": 74
+        },
+        {
+          "caller": "useAutoUpdater",
+          "callee": "err.message.includes",
+          "lineNumber": 74
+        },
+        {
+          "caller": "useAutoUpdater",
+          "callee": "setError",
+          "lineNumber": 78
+        },
+        {
+          "caller": "useAutoUpdater",
+          "callee": "setIsChecking",
+          "lineNumber": 82
+        },
+        {
+          "caller": "useAutoUpdater",
+          "callee": "useCallback",
+          "lineNumber": 86
+        },
+        {
+          "caller": "useAutoUpdater",
+          "callee": "setIsDownloading",
+          "lineNumber": 87
+        },
+        {
+          "caller": "useAutoUpdater",
+          "callee": "setError",
+          "lineNumber": 88
+        },
+        {
+          "caller": "useAutoUpdater",
+          "callee": "await invoke",
+          "lineNumber": 92
+        },
+        {
+          "caller": "useAutoUpdater",
+          "callee": "console.warn",
+          "lineNumber": 98
+        },
+        {
+          "caller": "useAutoUpdater",
+          "callee": "setError",
+          "lineNumber": 100
+        },
+        {
+          "caller": "useAutoUpdater",
+          "callee": "console.warn",
+          "lineNumber": 108
+        },
+        {
+          "caller": "useAutoUpdater",
+          "callee": "setError",
+          "lineNumber": 110
+        },
+        {
+          "caller": "useAutoUpdater",
+          "callee": "setIsDownloading",
+          "lineNumber": 114
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/src/hooks/useBaseDatabaseMutation.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 158,
+      "nonEmptyLines": 142,
+      "functions": [
+        {
+          "name": "useBaseDatabaseMutation",
+          "startLine": 21,
+          "endLine": 85,
+          "params": [
+            "config"
+          ]
+        },
+        {
+          "name": "pushDatabaseToDevice",
+          "startLine": 90,
+          "endLine": 158,
+          "params": [
+            "{\n  selectedDatabaseFile,\n  selectedDevice,\n  queryClient,\n  selectedApplication,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "useBaseDatabaseMutation",
+          "line": 21,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "useBaseDatabaseMutation",
+          "callee": "useQueryClient",
+          "lineNumber": 24
+        },
+        {
+          "caller": "useBaseDatabaseMutation",
+          "callee": "useRowEditingStore",
+          "lineNumber": 25
+        },
+        {
+          "caller": "useBaseDatabaseMutation",
+          "callee": "useDatabaseRefresh",
+          "lineNumber": 26
+        },
+        {
+          "caller": "useBaseDatabaseMutation",
+          "callee": "useChangeHistoryRefresh",
+          "lineNumber": 30
+        },
+        {
+          "caller": "useBaseDatabaseMutation",
+          "callee": "useMutation",
+          "lineNumber": 32
+        },
+        {
+          "caller": "useBaseDatabaseMutation",
+          "callee": "validateDatabaseContext",
+          "lineNumber": 34
+        },
+        {
+          "caller": "useBaseDatabaseMutation",
+          "callee": "config.mutationFn",
+          "lineNumber": 38
+        },
+        {
+          "caller": "useBaseDatabaseMutation",
+          "callee": "config.onSuccessCallback",
+          "lineNumber": 46
+        },
+        {
+          "caller": "useBaseDatabaseMutation",
+          "callee": "pushDatabaseToDevice",
+          "lineNumber": 50
+        },
+        {
+          "caller": "useBaseDatabaseMutation",
+          "callee": "toaster.create",
+          "lineNumber": 58
+        },
+        {
+          "caller": "useBaseDatabaseMutation",
+          "callee": "setSelectedRow",
+          "lineNumber": 67
+        },
+        {
+          "caller": "useBaseDatabaseMutation",
+          "callee": "refreshDatabase",
+          "lineNumber": 71
+        },
+        {
+          "caller": "useBaseDatabaseMutation",
+          "callee": "refreshChangeHistory",
+          "lineNumber": 72
+        },
+        {
+          "caller": "useBaseDatabaseMutation",
+          "callee": "console.error",
+          "lineNumber": 76
+        },
+        {
+          "caller": "useBaseDatabaseMutation",
+          "callee": "toaster.create",
+          "lineNumber": 77
+        },
+        {
+          "caller": "pushDatabaseToDevice",
+          "callee": "console.log",
+          "lineNumber": 109
+        },
+        {
+          "caller": "pushDatabaseToDevice",
+          "callee": "window.api.pushDatabaseFile",
+          "lineNumber": 117
+        },
+        {
+          "caller": "pushDatabaseToDevice",
+          "callee": "console.error",
+          "lineNumber": 126
+        },
+        {
+          "caller": "pushDatabaseToDevice",
+          "callee": "toaster.create",
+          "lineNumber": 127
+        },
+        {
+          "caller": "pushDatabaseToDevice",
+          "callee": "console.log",
+          "lineNumber": 139
+        },
+        {
+          "caller": "pushDatabaseToDevice",
+          "callee": "queryClient.invalidateQueries",
+          "lineNumber": 144
+        },
+        {
+          "caller": "pushDatabaseToDevice",
+          "callee": "console.log",
+          "lineNumber": 149
+        }
+      ],
+      "metrics": {
+        "importCount": 6,
+        "exportCount": 1,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/src/hooks/useChangeHistory.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 157,
+      "nonEmptyLines": 138,
+      "functions": [
+        {
+          "name": "useChangeHistory",
+          "startLine": 10,
+          "endLine": 53,
+          "params": [
+            "limit",
+            "offset"
+          ]
+        },
+        {
+          "name": "useContextSummaries",
+          "startLine": 58,
+          "endLine": 73,
+          "params": []
+        },
+        {
+          "name": "useChangeHistoryDiagnostics",
+          "startLine": 78,
+          "endLine": 93,
+          "params": []
+        },
+        {
+          "name": "useChangeHistoryRefresh",
+          "startLine": 98,
+          "endLine": 157,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "useChangeHistory",
+          "line": 10,
+          "isDefault": false
+        },
+        {
+          "name": "useContextSummaries",
+          "line": 58,
+          "isDefault": false
+        },
+        {
+          "name": "useChangeHistoryDiagnostics",
+          "line": 78,
+          "isDefault": false
+        },
+        {
+          "name": "useChangeHistoryRefresh",
+          "line": 98,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "useChangeHistory",
+          "callee": "useCurrentDeviceSelection",
+          "lineNumber": 11
+        },
+        {
+          "caller": "useChangeHistory",
+          "callee": "useCurrentDatabaseSelection",
+          "lineNumber": 12
+        },
+        {
+          "caller": "useChangeHistory",
+          "callee": "useQuery",
+          "lineNumber": 21
+        },
+        {
+          "caller": "useChangeHistory",
+          "callee": "console.error",
+          "lineNumber": 25
+        },
+        {
+          "caller": "useChangeHistory",
+          "callee": "generateContextKey",
+          "lineNumber": 29
+        },
+        {
+          "caller": "useChangeHistory",
+          "callee": "window.api.getChangeHistory",
+          "lineNumber": 31
+        },
+        {
+          "caller": "useChangeHistory",
+          "callee": "console.log",
+          "lineNumber": 40
+        },
+        {
+          "caller": "useChangeHistory",
+          "callee": "changes.slice",
+          "lineNumber": 45
+        },
+        {
+          "caller": "useContextSummaries",
+          "callee": "useQuery",
+          "lineNumber": 59
+        },
+        {
+          "caller": "useContextSummaries",
+          "callee": "window.api.getContextSummaries",
+          "lineNumber": 62
+        },
+        {
+          "caller": "useChangeHistoryDiagnostics",
+          "callee": "useQuery",
+          "lineNumber": 79
+        },
+        {
+          "caller": "useChangeHistoryDiagnostics",
+          "callee": "window.api.getChangeHistoryDiagnostics",
+          "lineNumber": 82
+        },
+        {
+          "caller": "useChangeHistoryRefresh",
+          "callee": "useQueryClient",
+          "lineNumber": 99
+        },
+        {
+          "caller": "useChangeHistoryRefresh",
+          "callee": "console.log",
+          "lineNumber": 103
+        },
+        {
+          "caller": "useChangeHistoryRefresh",
+          "callee": "queryClient.invalidateQueries",
+          "lineNumber": 105
+        },
+        {
+          "caller": "useChangeHistoryRefresh",
+          "callee": "console.log",
+          "lineNumber": 108
+        },
+        {
+          "caller": "useChangeHistoryRefresh",
+          "callee": "console.error",
+          "lineNumber": 111
+        },
+        {
+          "caller": "useChangeHistoryRefresh",
+          "callee": "console.log",
+          "lineNumber": 115
+        },
+        {
+          "caller": "useChangeHistoryRefresh",
+          "callee": "queryClient.invalidateQueries",
+          "lineNumber": 117
+        },
+        {
+          "caller": "useChangeHistoryRefresh",
+          "callee": "console.log",
+          "lineNumber": 120
+        },
+        {
+          "caller": "useChangeHistoryRefresh",
+          "callee": "console.error",
+          "lineNumber": 123
+        },
+        {
+          "caller": "useChangeHistoryRefresh",
+          "callee": "console.log",
+          "lineNumber": 127
+        },
+        {
+          "caller": "useChangeHistoryRefresh",
+          "callee": "queryClient.invalidateQueries",
+          "lineNumber": 129
+        },
+        {
+          "caller": "useChangeHistoryRefresh",
+          "callee": "console.log",
+          "lineNumber": 132
+        },
+        {
+          "caller": "useChangeHistoryRefresh",
+          "callee": "console.error",
+          "lineNumber": 135
+        },
+        {
+          "caller": "useChangeHistoryRefresh",
+          "callee": "console.log",
+          "lineNumber": 139
+        },
+        {
+          "caller": "useChangeHistoryRefresh",
+          "callee": "queryClient.invalidateQueries",
+          "lineNumber": 141
+        },
+        {
+          "caller": "useChangeHistoryRefresh",
+          "callee": "queryClient.invalidateQueries",
+          "lineNumber": 144
+        },
+        {
+          "caller": "useChangeHistoryRefresh",
+          "callee": "queryClient.invalidateQueries",
+          "lineNumber": 147
+        },
+        {
+          "caller": "useChangeHistoryRefresh",
+          "callee": "console.log",
+          "lineNumber": 150
+        },
+        {
+          "caller": "useChangeHistoryRefresh",
+          "callee": "console.error",
+          "lineNumber": 153
+        }
+      ],
+      "metrics": {
+        "importCount": 4,
+        "exportCount": 4,
+        "functionCount": 4,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/src/hooks/useChangeHistoryMutations.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 189,
+      "nonEmptyLines": 163,
+      "functions": [
+        {
+          "name": "useClearChangeHistoryMutation",
+          "startLine": 10,
+          "endLine": 89,
+          "params": []
+        },
+        {
+          "name": "useClearAllChangeHistoryMutation",
+          "startLine": 94,
+          "endLine": 150,
+          "params": []
+        },
+        {
+          "name": "useEnhancedTableMutations",
+          "startLine": 155,
+          "endLine": 189,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "useClearChangeHistoryMutation",
+          "line": 10,
+          "isDefault": false
+        },
+        {
+          "name": "useClearAllChangeHistoryMutation",
+          "line": 94,
+          "isDefault": false
+        },
+        {
+          "name": "useEnhancedTableMutations",
+          "line": 155,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "useClearChangeHistoryMutation",
+          "callee": "useQueryClient",
+          "lineNumber": 11
+        },
+        {
+          "caller": "useClearChangeHistoryMutation",
+          "callee": "useCurrentDeviceSelection",
+          "lineNumber": 12
+        },
+        {
+          "caller": "useClearChangeHistoryMutation",
+          "callee": "useCurrentDatabaseSelection",
+          "lineNumber": 13
+        },
+        {
+          "caller": "useClearChangeHistoryMutation",
+          "callee": "useMutation",
+          "lineNumber": 15
+        },
+        {
+          "caller": "useClearChangeHistoryMutation",
+          "callee": "console.log",
+          "lineNumber": 17
+        },
+        {
+          "caller": "useClearChangeHistoryMutation",
+          "callee": "console.log",
+          "lineNumber": 23
+        },
+        {
+          "caller": "useClearChangeHistoryMutation",
+          "callee": "console.error",
+          "lineNumber": 26
+        },
+        {
+          "caller": "useClearChangeHistoryMutation",
+          "callee": "generateContextKeySync",
+          "lineNumber": 30
+        },
+        {
+          "caller": "useClearChangeHistoryMutation",
+          "callee": "console.log",
+          "lineNumber": 31
+        },
+        {
+          "caller": "useClearChangeHistoryMutation",
+          "callee": "console.log",
+          "lineNumber": 33
+        },
+        {
+          "caller": "useClearChangeHistoryMutation",
+          "callee": "window.api.clearContextChanges",
+          "lineNumber": 34
+        },
+        {
+          "caller": "useClearChangeHistoryMutation",
+          "callee": "console.log",
+          "lineNumber": 35
+        },
+        {
+          "caller": "useClearChangeHistoryMutation",
+          "callee": "console.error",
+          "lineNumber": 38
+        },
+        {
+          "caller": "useClearChangeHistoryMutation",
+          "callee": "console.log",
+          "lineNumber": 42
+        },
+        {
+          "caller": "useClearChangeHistoryMutation",
+          "callee": "console.log",
+          "lineNumber": 46
+        },
+        {
+          "caller": "useClearChangeHistoryMutation",
+          "callee": "queryClient.removeQueries",
+          "lineNumber": 49
+        },
+        {
+          "caller": "useClearChangeHistoryMutation",
+          "callee": "queryClient.removeQueries",
+          "lineNumber": 52
+        },
+        {
+          "caller": "useClearChangeHistoryMutation",
+          "callee": "queryClient.removeQueries",
+          "lineNumber": 55
+        },
+        {
+          "caller": "useClearChangeHistoryMutation",
+          "callee": "queryClient.invalidateQueries",
+          "lineNumber": 60
+        },
+        {
+          "caller": "useClearChangeHistoryMutation",
+          "callee": "queryClient.invalidateQueries",
+          "lineNumber": 63
+        },
+        {
+          "caller": "useClearChangeHistoryMutation",
+          "callee": "queryClient.invalidateQueries",
+          "lineNumber": 66
+        },
+        {
+          "caller": "useClearChangeHistoryMutation",
+          "callee": "toaster.create",
+          "lineNumber": 70
+        },
+        {
+          "caller": "useClearChangeHistoryMutation",
+          "callee": "console.error",
+          "lineNumber": 79
+        },
+        {
+          "caller": "useClearChangeHistoryMutation",
+          "callee": "toaster.create",
+          "lineNumber": 80
+        },
+        {
+          "caller": "useClearAllChangeHistoryMutation",
+          "callee": "useQueryClient",
+          "lineNumber": 95
+        },
+        {
+          "caller": "useClearAllChangeHistoryMutation",
+          "callee": "useMutation",
+          "lineNumber": 97
+        },
+        {
+          "caller": "useClearAllChangeHistoryMutation",
+          "callee": "console.log",
+          "lineNumber": 99
+        },
+        {
+          "caller": "useClearAllChangeHistoryMutation",
+          "callee": "console.log",
+          "lineNumber": 101
+        },
+        {
+          "caller": "useClearAllChangeHistoryMutation",
+          "callee": "window.api.clearAllChangeHistory",
+          "lineNumber": 102
+        },
+        {
+          "caller": "useClearAllChangeHistoryMutation",
+          "callee": "console.log",
+          "lineNumber": 103
+        },
+        {
+          "caller": "useClearAllChangeHistoryMutation",
+          "callee": "console.error",
+          "lineNumber": 106
+        },
+        {
+          "caller": "useClearAllChangeHistoryMutation",
+          "callee": "console.log",
+          "lineNumber": 110
+        },
+        {
+          "caller": "useClearAllChangeHistoryMutation",
+          "callee": "console.log",
+          "lineNumber": 114
+        },
+        {
+          "caller": "useClearAllChangeHistoryMutation",
+          "callee": "queryClient.removeQueries",
+          "lineNumber": 117
+        },
+        {
+          "caller": "useClearAllChangeHistoryMutation",
+          "callee": "queryClient.removeQueries",
+          "lineNumber": 120
+        },
+        {
+          "caller": "useClearAllChangeHistoryMutation",
+          "callee": "queryClient.removeQueries",
+          "lineNumber": 123
+        },
+        {
+          "caller": "useClearAllChangeHistoryMutation",
+          "callee": "queryClient.setQueryData",
+          "lineNumber": 128
+        },
+        {
+          "caller": "useClearAllChangeHistoryMutation",
+          "callee": "queryClient.setQueryData",
+          "lineNumber": 129
+        },
+        {
+          "caller": "useClearAllChangeHistoryMutation",
+          "callee": "toaster.create",
+          "lineNumber": 131
+        },
+        {
+          "caller": "useClearAllChangeHistoryMutation",
+          "callee": "console.error",
+          "lineNumber": 140
+        },
+        {
+          "caller": "useClearAllChangeHistoryMutation",
+          "callee": "toaster.create",
+          "lineNumber": 141
+        },
+        {
+          "caller": "useEnhancedTableMutations",
+          "callee": "useQueryClient",
+          "lineNumber": 156
+        },
+        {
+          "caller": "refreshChangeHistory",
+          "callee": "queryClient.invalidateQueries",
+          "lineNumber": 159
+        },
+        {
+          "caller": "refreshChangeHistory",
+          "callee": "queryClient.invalidateQueries",
+          "lineNumber": 162
+        },
+        {
+          "caller": "useEnhancedTableMutations",
+          "callee": "mutation",
+          "lineNumber": 173
+        },
+        {
+          "caller": "useEnhancedTableMutations",
+          "callee": "result.then",
+          "lineNumber": 177
+        },
+        {
+          "caller": "useEnhancedTableMutations",
+          "callee": "refreshChangeHistory",
+          "lineNumber": 178
+        },
+        {
+          "caller": "useEnhancedTableMutations",
+          "callee": "refreshChangeHistory",
+          "lineNumber": 184
+        }
+      ],
+      "metrics": {
+        "importCount": 4,
+        "exportCount": 3,
+        "functionCount": 3,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/src/hooks/useDatabaseFiles.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 258,
+      "nonEmptyLines": 213,
+      "functions": [
+        {
+          "name": "mergeDatabaseFiles",
+          "startLine": 35,
+          "endLine": 53,
+          "params": [
+            "existing",
+            "incoming"
+          ]
+        },
+        {
+          "name": "fetchDatabaseFilesForSelection",
+          "startLine": 55,
+          "endLine": 87,
+          "params": [
+            "selectedDevice",
+            "selectedApplication",
+            "scanRequestId"
+          ]
+        },
+        {
+          "name": "useDatabaseFiles",
+          "startLine": 89,
+          "endLine": 258,
+          "params": [
+            "selectedDevice",
+            "selectedApplication"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "fetchDatabaseFilesForSelection",
+          "line": 55,
+          "isDefault": false
+        },
+        {
+          "name": "useDatabaseFiles",
+          "line": 89,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "mergeDatabaseFiles",
+          "callee": "merged.findIndex",
+          "lineNumber": 39
+        },
+        {
+          "caller": "mergeDatabaseFiles",
+          "callee": "merged.push",
+          "lineNumber": 48
+        },
+        {
+          "caller": "fetchDatabaseFilesForSelection",
+          "callee": "console.log",
+          "lineNumber": 60
+        },
+        {
+          "caller": "fetchDatabaseFilesForSelection",
+          "callee": "console.log",
+          "lineNumber": 65
+        },
+        {
+          "caller": "fetchDatabaseFilesForSelection",
+          "callee": "window.api.getIOSDeviceDatabaseFiles",
+          "lineNumber": 70
+        },
+        {
+          "caller": "fetchDatabaseFilesForSelection",
+          "callee": "selectedDevice.deviceType.includes",
+          "lineNumber": 72
+        },
+        {
+          "caller": "fetchDatabaseFilesForSelection",
+          "callee": "console.log",
+          "lineNumber": 73
+        },
+        {
+          "caller": "fetchDatabaseFilesForSelection",
+          "callee": "fetchFunction",
+          "lineNumber": 80
+        },
+        {
+          "caller": "fetchDatabaseFilesForSelection",
+          "callee": "transformToCamelCase",
+          "lineNumber": 86
+        },
+        {
+          "caller": "useDatabaseFiles",
+          "callee": "useState",
+          "lineNumber": 93
+        },
+        {
+          "caller": "useDatabaseFiles",
+          "callee": "useState",
+          "lineNumber": 94
+        },
+        {
+          "caller": "useDatabaseFiles",
+          "callee": "useState",
+          "lineNumber": 95
+        },
+        {
+          "caller": "useDatabaseFiles",
+          "callee": "useRef",
+          "lineNumber": 98
+        },
+        {
+          "caller": "useDatabaseFiles",
+          "callee": "useRef",
+          "lineNumber": 99
+        },
+        {
+          "caller": "useDatabaseFiles",
+          "callee": "useCallback",
+          "lineNumber": 101
+        },
+        {
+          "caller": "useDatabaseFiles",
+          "callee": "Date.now",
+          "lineNumber": 102
+        },
+        {
+          "caller": "useDatabaseFiles",
+          "callee": "Math.random().toString(36).slice",
+          "lineNumber": 102
+        },
+        {
+          "caller": "useDatabaseFiles",
+          "callee": "Math.random().toString",
+          "lineNumber": 102
+        },
+        {
+          "caller": "useDatabaseFiles",
+          "callee": "Math.random",
+          "lineNumber": 102
+        },
+        {
+          "caller": "useDatabaseFiles",
+          "callee": "useEffect",
+          "lineNumber": 105
+        },
+        {
+          "caller": "useDatabaseFiles",
+          "callee": "setStreamedFiles",
+          "lineNumber": 106
+        },
+        {
+          "caller": "useDatabaseFiles",
+          "callee": "setScanState",
+          "lineNumber": 107
+        },
+        {
+          "caller": "useDatabaseFiles",
+          "callee": "useMemo",
+          "lineNumber": 112
+        },
+        {
+          "caller": "useDatabaseFiles",
+          "callee": "useEffect",
+          "lineNumber": 120
+        },
+        {
+          "caller": "useDatabaseFiles",
+          "callee": "window.api.cancelIOSDeviceDatabaseScan(previousScanKey).catch",
+          "lineNumber": 128
+        },
+        {
+          "caller": "useDatabaseFiles",
+          "callee": "window.api.cancelIOSDeviceDatabaseScan",
+          "lineNumber": 128
+        },
+        {
+          "caller": "useDatabaseFiles",
+          "callee": "console.warn",
+          "lineNumber": 129
+        },
+        {
+          "caller": "useDatabaseFiles",
+          "callee": "setActiveScanRequestId",
+          "lineNumber": 137
+        },
+        {
+          "caller": "useDatabaseFiles",
+          "callee": "createScanRequestId",
+          "lineNumber": 141
+        },
+        {
+          "caller": "useDatabaseFiles",
+          "callee": "setActiveScanRequestId",
+          "lineNumber": 143
+        },
+        {
+          "caller": "useDatabaseFiles",
+          "callee": "useEffect",
+          "lineNumber": 146
+        },
+        {
+          "caller": "useDatabaseFiles",
+          "callee": "listen",
+          "lineNumber": 154
+        },
+        {
+          "caller": "useDatabaseFiles",
+          "callee": "transformToCamelCase",
+          "lineNumber": 163
+        },
+        {
+          "caller": "useDatabaseFiles",
+          "callee": "setScanState",
+          "lineNumber": 166
+        },
+        {
+          "caller": "useDatabaseFiles",
+          "callee": "setStreamedFiles",
+          "lineNumber": 171
+        },
+        {
+          "caller": "useDatabaseFiles",
+          "callee": "mergeDatabaseFiles",
+          "lineNumber": 176
+        },
+        {
+          "caller": "useDatabaseFiles",
+          "callee": "unlistenPromise.then",
+          "lineNumber": 183
+        },
+        {
+          "caller": "useDatabaseFiles",
+          "callee": "unlisten",
+          "lineNumber": 183
+        },
+        {
+          "caller": "useDatabaseFiles",
+          "callee": "useQuery",
+          "lineNumber": 188
+        },
+        {
+          "caller": "useDatabaseFiles",
+          "callee": "fetchDatabaseFilesForSelection",
+          "lineNumber": 190
+        },
+        {
+          "caller": "useDatabaseFiles",
+          "callee": "useCallback",
+          "lineNumber": 201
+        },
+        {
+          "caller": "useDatabaseFiles",
+          "callee": "window.api.cancelIOSDeviceDatabaseScan(scanKey).catch",
+          "lineNumber": 204
+        },
+        {
+          "caller": "useDatabaseFiles",
+          "callee": "window.api.cancelIOSDeviceDatabaseScan",
+          "lineNumber": 204
+        },
+        {
+          "caller": "useDatabaseFiles",
+          "callee": "console.warn",
+          "lineNumber": 205
+        },
+        {
+          "caller": "useDatabaseFiles",
+          "callee": "createScanRequestId",
+          "lineNumber": 209
+        },
+        {
+          "caller": "useDatabaseFiles",
+          "callee": "setActiveScanRequestId",
+          "lineNumber": 211
+        },
+        {
+          "caller": "useDatabaseFiles",
+          "callee": "setStreamedFiles",
+          "lineNumber": 212
+        },
+        {
+          "caller": "useDatabaseFiles",
+          "callee": "setScanState",
+          "lineNumber": 213
+        },
+        {
+          "caller": "useDatabaseFiles",
+          "callee": "query.refetch",
+          "lineNumber": 218
+        },
+        {
+          "caller": "useDatabaseFiles",
+          "callee": "useMemo",
+          "lineNumber": 224
+        },
+        {
+          "caller": "useDatabaseFiles",
+          "callee": "mergeDatabaseFiles",
+          "lineNumber": 230
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 2,
+        "functionCount": 3,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/src/hooks/useDatabaseTables.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 48,
+      "nonEmptyLines": 40,
+      "functions": [
+        {
+          "name": "useDatabaseTables",
+          "startLine": 9,
+          "endLine": 48,
+          "params": [
+            "selectedDatabaseFile",
+            "selectedDevice"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "useDatabaseTables",
+          "line": 9,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "useDatabaseTables",
+          "callee": "useQuery",
+          "lineNumber": 13
+        },
+        {
+          "caller": "useDatabaseTables",
+          "callee": "window.api.openDatabase",
+          "lineNumber": 27
+        },
+        {
+          "caller": "useDatabaseTables",
+          "callee": "window.api.getTables",
+          "lineNumber": 30
+        },
+        {
+          "caller": "useDatabaseTables",
+          "callee": "console.log",
+          "lineNumber": 32
+        },
+        {
+          "caller": "useDatabaseTables",
+          "callee": "transformToCamelCase",
+          "lineNumber": 39
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/src/hooks/useDevices.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 20,
+      "nonEmptyLines": 17,
+      "functions": [
+        {
+          "name": "fetchDevices",
+          "startLine": 4,
+          "endLine": 11,
+          "params": []
+        },
+        {
+          "name": "useDevices",
+          "startLine": 13,
+          "endLine": 20,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "fetchDevices",
+          "line": 4,
+          "isDefault": false
+        },
+        {
+          "name": "useDevices",
+          "line": 13,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "fetchDevices",
+          "callee": "window.api.getDevices",
+          "lineNumber": 5
+        },
+        {
+          "caller": "fetchDevices",
+          "callee": "transformToCamelCase",
+          "lineNumber": 10
+        },
+        {
+          "caller": "useDevices",
+          "callee": "useQuery",
+          "lineNumber": 14
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 2,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/src/hooks/useTableDataQuery.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 95,
+      "nonEmptyLines": 80,
+      "functions": [
+        {
+          "name": "useTableDataQuery",
+          "startLine": 12,
+          "endLine": 95,
+          "params": [
+            "tableName"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "useTableDataQuery",
+          "line": 12,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "useTableDataQuery",
+          "callee": "useCurrentDatabaseSelection",
+          "lineNumber": 13
+        },
+        {
+          "caller": "useTableDataQuery",
+          "callee": "useCurrentDatabaseSelection",
+          "lineNumber": 14
+        },
+        {
+          "caller": "useTableDataQuery",
+          "callee": "useCurrentDeviceSelection",
+          "lineNumber": 15
+        },
+        {
+          "caller": "useTableDataQuery",
+          "callee": "useCurrentDeviceSelection",
+          "lineNumber": 16
+        },
+        {
+          "caller": "useTableDataQuery",
+          "callee": "useQuery",
+          "lineNumber": 18
+        },
+        {
+          "caller": "useTableDataQuery",
+          "callee": "console.info",
+          "lineNumber": 29
+        },
+        {
+          "caller": "useTableDataQuery",
+          "callee": "ensureActiveDatabaseFile",
+          "lineNumber": 34
+        },
+        {
+          "caller": "useTableDataQuery",
+          "callee": "console.log",
+          "lineNumber": 41
+        },
+        {
+          "caller": "useTableDataQuery",
+          "callee": "setTimeout",
+          "lineNumber": 44
+        },
+        {
+          "caller": "useTableDataQuery",
+          "callee": "console.log",
+          "lineNumber": 46
+        },
+        {
+          "caller": "useTableDataQuery",
+          "callee": "window.api.getTableInfo",
+          "lineNumber": 47
+        },
+        {
+          "caller": "useTableDataQuery",
+          "callee": "response.error?.includes",
+          "lineNumber": 49
+        },
+        {
+          "caller": "useTableDataQuery",
+          "callee": "ensureActiveDatabaseFile",
+          "lineNumber": 50
+        },
+        {
+          "caller": "useTableDataQuery",
+          "callee": "window.api.getTableInfo",
+          "lineNumber": 57
+        },
+        {
+          "caller": "useTableDataQuery",
+          "callee": "console.log",
+          "lineNumber": 60
+        },
+        {
+          "caller": "useTableDataQuery",
+          "callee": "console.info",
+          "lineNumber": 70
+        },
+        {
+          "caller": "useTableDataQuery",
+          "callee": "error.message.includes",
+          "lineNumber": 87
+        },
+        {
+          "caller": "useTableDataQuery",
+          "callee": "console.log",
+          "lineNumber": 88
+        },
+        {
+          "caller": "useTableDataQuery",
+          "callee": "Math.min",
+          "lineNumber": 93
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/src/hooks/useTableMutations.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 85,
+      "nonEmptyLines": 72,
+      "functions": [
+        {
+          "name": "useDeleteRowMutation",
+          "startLine": 16,
+          "endLine": 51,
+          "params": []
+        },
+        {
+          "name": "useClearTableMutation",
+          "startLine": 56,
+          "endLine": 85,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "useDeleteRowMutation",
+          "line": 16,
+          "isDefault": false
+        },
+        {
+          "name": "useClearTableMutation",
+          "line": 56,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "useDeleteRowMutation",
+          "callee": "useBaseDatabaseMutation",
+          "lineNumber": 17
+        },
+        {
+          "caller": "useDeleteRowMutation",
+          "callee": "buildUniqueCondition",
+          "lineNumber": 23
+        },
+        {
+          "caller": "useDeleteRowMutation",
+          "callee": "extractContextParams",
+          "lineNumber": 28
+        },
+        {
+          "caller": "useDeleteRowMutation",
+          "callee": "window.api.deleteTableRow",
+          "lineNumber": 30
+        },
+        {
+          "caller": "useClearTableMutation",
+          "callee": "useBaseDatabaseMutation",
+          "lineNumber": 57
+        },
+        {
+          "caller": "useClearTableMutation",
+          "callee": "extractContextParams",
+          "lineNumber": 63
+        },
+        {
+          "caller": "useClearTableMutation",
+          "callee": "window.api.clearTable",
+          "lineNumber": 65
+        }
+      ],
+      "metrics": {
+        "importCount": 4,
+        "exportCount": 2,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/src/main.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 35,
+      "nonEmptyLines": 32,
+      "metrics": {
+        "importCount": 4,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/src/pages/Main.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 27,
+      "nonEmptyLines": 25,
+      "functions": [
+        {
+          "name": "Main",
+          "startLine": 8,
+          "endLine": 25,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "Main",
+          "line": 8,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 5,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/src/store/__tests__/appStore.test.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 282,
+      "nonEmptyLines": 223,
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/src/store/__tests__/useCurrentDeviceSelection.test.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 279,
+      "nonEmptyLines": 220,
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/src/store/__tests__/useThemeStore.test.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 162,
+      "nonEmptyLines": 123,
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    }
+  ]
+}

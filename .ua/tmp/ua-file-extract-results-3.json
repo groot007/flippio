@@ -1,0 +1,1372 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 40,
+  "filesSkipped": [],
+  "results": [
+    {
+      "path": "example_app/hooks/useColorScheme.web.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 21,
+      "nonEmptyLines": 16,
+      "functions": [
+        {
+          "name": "useColorScheme",
+          "startLine": 7,
+          "endLine": 21,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "useColorScheme",
+          "line": 7,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "useColorScheme",
+          "callee": "useState",
+          "lineNumber": 8
+        },
+        {
+          "caller": "useColorScheme",
+          "callee": "useEffect",
+          "lineNumber": 10
+        },
+        {
+          "caller": "useColorScheme",
+          "callee": "setHasHydrated",
+          "lineNumber": 11
+        },
+        {
+          "caller": "useColorScheme",
+          "callee": "useRNColorScheme",
+          "lineNumber": 14
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "example_app/hooks/useThemeColor.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 22,
+      "nonEmptyLines": 19,
+      "functions": [
+        {
+          "name": "useThemeColor",
+          "startLine": 9,
+          "endLine": 22,
+          "params": [
+            "props",
+            "colorName"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "useThemeColor",
+          "line": 9,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "useThemeColor",
+          "callee": "useColorScheme",
+          "lineNumber": 13
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "example_app/ios/.xcode.env",
+      "language": "config",
+      "fileCategory": "config",
+      "totalLines": 11,
+      "nonEmptyLines": 10,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "definitionCount": 0
+      }
+    },
+    {
+      "path": "example_app/ios/FlippioRN.xcodeproj/project.pbxproj",
+      "language": "pbxproj",
+      "fileCategory": "code",
+      "totalLines": 555,
+      "nonEmptyLines": 544,
+      "metrics": {}
+    },
+    {
+      "path": "example_app/ios/FlippioRN.xcodeproj/xcshareddata/xcschemes/FlippioRN.xcscheme",
+      "language": "xcscheme",
+      "fileCategory": "code",
+      "totalLines": 88,
+      "nonEmptyLines": 88,
+      "metrics": {}
+    },
+    {
+      "path": "example_app/ios/FlippioRN.xcworkspace/contents.xcworkspacedata",
+      "language": "xcworkspacedata",
+      "fileCategory": "code",
+      "totalLines": 10,
+      "nonEmptyLines": 10,
+      "metrics": {}
+    },
+    {
+      "path": "example_app/ios/FlippioRN/AppDelegate.h",
+      "language": "c",
+      "fileCategory": "code",
+      "totalLines": 7,
+      "nonEmptyLines": 5,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "example_app/ios/FlippioRN/AppDelegate.mm",
+      "language": "mm",
+      "fileCategory": "code",
+      "totalLines": 62,
+      "nonEmptyLines": 49,
+      "metrics": {}
+    },
+    {
+      "path": "example_app/ios/FlippioRN/FlippioRN-Bridging-Header.h",
+      "language": "c",
+      "fileCategory": "code",
+      "totalLines": 3,
+      "nonEmptyLines": 3,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "example_app/ios/FlippioRN/FlippioRN.entitlements",
+      "language": "entitlements",
+      "fileCategory": "code",
+      "totalLines": 5,
+      "nonEmptyLines": 5,
+      "metrics": {}
+    },
+    {
+      "path": "example_app/ios/FlippioRN/Images.xcassets/AppIcon.appiconset/Contents.json",
+      "language": "json",
+      "fileCategory": "config",
+      "totalLines": 14,
+      "nonEmptyLines": 14,
+      "sections": [
+        {
+          "heading": "images",
+          "level": 1,
+          "line": 2
+        },
+        {
+          "heading": "info",
+          "level": 1,
+          "line": 10
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 2
+      }
+    },
+    {
+      "path": "example_app/ios/FlippioRN/Images.xcassets/Contents.json",
+      "language": "json",
+      "fileCategory": "config",
+      "totalLines": 6,
+      "nonEmptyLines": 6,
+      "sections": [
+        {
+          "heading": "info",
+          "level": 1,
+          "line": 2
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 1
+      }
+    },
+    {
+      "path": "example_app/ios/FlippioRN/Images.xcassets/SplashScreenBackground.colorset/Contents.json",
+      "language": "json",
+      "fileCategory": "config",
+      "totalLines": 20,
+      "nonEmptyLines": 20,
+      "sections": [
+        {
+          "heading": "colors",
+          "level": 1,
+          "line": 2
+        },
+        {
+          "heading": "info",
+          "level": 1,
+          "line": 16
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 2
+      }
+    },
+    {
+      "path": "example_app/ios/FlippioRN/Images.xcassets/SplashScreenLogo.imageset/Contents.json",
+      "language": "json",
+      "fileCategory": "config",
+      "totalLines": 23,
+      "nonEmptyLines": 23,
+      "sections": [
+        {
+          "heading": "images",
+          "level": 1,
+          "line": 2
+        },
+        {
+          "heading": "info",
+          "level": 1,
+          "line": 19
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 2
+      }
+    },
+    {
+      "path": "example_app/ios/FlippioRN/Info.plist",
+      "language": "xml",
+      "fileCategory": "config",
+      "totalLines": 81,
+      "nonEmptyLines": 81,
+      "metrics": {}
+    },
+    {
+      "path": "example_app/ios/FlippioRN/main.m",
+      "language": "m",
+      "fileCategory": "code",
+      "totalLines": 10,
+      "nonEmptyLines": 7,
+      "metrics": {}
+    },
+    {
+      "path": "example_app/ios/FlippioRN/noop-file.swift",
+      "language": "swift",
+      "fileCategory": "code",
+      "totalLines": 4,
+      "nonEmptyLines": 4,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "example_app/ios/FlippioRN/PrivacyInfo.xcprivacy",
+      "language": "xcprivacy",
+      "fileCategory": "code",
+      "totalLines": 48,
+      "nonEmptyLines": 48,
+      "metrics": {}
+    },
+    {
+      "path": "example_app/ios/FlippioRN/SplashScreen.storyboard",
+      "language": "storyboard",
+      "fileCategory": "code",
+      "totalLines": 42,
+      "nonEmptyLines": 42,
+      "metrics": {}
+    },
+    {
+      "path": "example_app/ios/FlippioRN/Supporting/Expo.plist",
+      "language": "xml",
+      "fileCategory": "config",
+      "totalLines": 12,
+      "nonEmptyLines": 12,
+      "metrics": {}
+    },
+    {
+      "path": "example_app/ios/Podfile",
+      "language": "unknown",
+      "fileCategory": "code",
+      "totalLines": 87,
+      "nonEmptyLines": 71,
+      "metrics": {}
+    },
+    {
+      "path": "example_app/ios/Podfile.properties.json",
+      "language": "json",
+      "fileCategory": "config",
+      "totalLines": 5,
+      "nonEmptyLines": 5,
+      "sections": [
+        {
+          "heading": "expo.jsEngine",
+          "level": 1,
+          "line": 2
+        },
+        {
+          "heading": "EX_DEV_CLIENT_NETWORK_INSPECTOR",
+          "level": 1,
+          "line": 3
+        },
+        {
+          "heading": "newArchEnabled",
+          "level": 1,
+          "line": 4
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 3
+      }
+    },
+    {
+      "path": "example_app/package.json",
+      "language": "json",
+      "fileCategory": "config",
+      "totalLines": 55,
+      "nonEmptyLines": 55,
+      "sections": [
+        {
+          "heading": "name",
+          "level": 1,
+          "line": 2
+        },
+        {
+          "heading": "version",
+          "level": 1,
+          "line": 3
+        },
+        {
+          "heading": "private",
+          "level": 1,
+          "line": 4
+        },
+        {
+          "heading": "main",
+          "level": 1,
+          "line": 5
+        },
+        {
+          "heading": "scripts",
+          "level": 1,
+          "line": 6
+        },
+        {
+          "heading": "jest",
+          "level": 1,
+          "line": 15
+        },
+        {
+          "heading": "dependencies",
+          "level": 1,
+          "line": 18
+        },
+        {
+          "heading": "devDependencies",
+          "level": 1,
+          "line": 45
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 8
+      }
+    },
+    {
+      "path": "example_app/README.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 50,
+      "nonEmptyLines": 31,
+      "sections": [
+        {
+          "heading": "Welcome to your Expo app 👋",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Get started",
+          "level": 2,
+          "line": 5
+        },
+        {
+          "heading": "Get a fresh project",
+          "level": 2,
+          "line": 28
+        },
+        {
+          "heading": "Learn more",
+          "level": 2,
+          "line": 38
+        },
+        {
+          "heading": "Join the community",
+          "level": 2,
+          "line": 45
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 5
+      }
+    },
+    {
+      "path": "example_app/scripts/reset-project.js",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 118,
+      "nonEmptyLines": 102,
+      "functions": [
+        {
+          "name": "moveDirectories",
+          "startLine": 50,
+          "endLine": 104,
+          "params": [
+            "userInput"
+          ]
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "moveDirectories",
+          "callee": "fs.promises.mkdir",
+          "lineNumber": 54
+        },
+        {
+          "caller": "moveDirectories",
+          "callee": "console.log",
+          "lineNumber": 55
+        },
+        {
+          "caller": "moveDirectories",
+          "callee": "path.join",
+          "lineNumber": 60
+        },
+        {
+          "caller": "moveDirectories",
+          "callee": "fs.existsSync",
+          "lineNumber": 61
+        },
+        {
+          "caller": "moveDirectories",
+          "callee": "path.join",
+          "lineNumber": 63
+        },
+        {
+          "caller": "moveDirectories",
+          "callee": "fs.promises.rename",
+          "lineNumber": 64
+        },
+        {
+          "caller": "moveDirectories",
+          "callee": "console.log",
+          "lineNumber": 65
+        },
+        {
+          "caller": "moveDirectories",
+          "callee": "fs.promises.rm",
+          "lineNumber": 68
+        },
+        {
+          "caller": "moveDirectories",
+          "callee": "console.log",
+          "lineNumber": 69
+        },
+        {
+          "caller": "moveDirectories",
+          "callee": "console.log",
+          "lineNumber": 73
+        },
+        {
+          "caller": "moveDirectories",
+          "callee": "path.join",
+          "lineNumber": 78
+        },
+        {
+          "caller": "moveDirectories",
+          "callee": "fs.promises.mkdir",
+          "lineNumber": 79
+        },
+        {
+          "caller": "moveDirectories",
+          "callee": "console.log",
+          "lineNumber": 80
+        },
+        {
+          "caller": "moveDirectories",
+          "callee": "path.join",
+          "lineNumber": 83
+        },
+        {
+          "caller": "moveDirectories",
+          "callee": "fs.promises.writeFile",
+          "lineNumber": 84
+        },
+        {
+          "caller": "moveDirectories",
+          "callee": "console.log",
+          "lineNumber": 85
+        },
+        {
+          "caller": "moveDirectories",
+          "callee": "path.join",
+          "lineNumber": 88
+        },
+        {
+          "caller": "moveDirectories",
+          "callee": "fs.promises.writeFile",
+          "lineNumber": 89
+        },
+        {
+          "caller": "moveDirectories",
+          "callee": "console.log",
+          "lineNumber": 90
+        },
+        {
+          "caller": "moveDirectories",
+          "callee": "console.log",
+          "lineNumber": 92
+        },
+        {
+          "caller": "moveDirectories",
+          "callee": "console.log",
+          "lineNumber": 93
+        },
+        {
+          "caller": "moveDirectories",
+          "callee": "console.error",
+          "lineNumber": 102
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "example_app/tsconfig.json",
+      "language": "json",
+      "fileCategory": "config",
+      "totalLines": 17,
+      "nonEmptyLines": 17,
+      "sections": [
+        {
+          "heading": "extends",
+          "level": 1,
+          "line": 2
+        },
+        {
+          "heading": "compilerOptions",
+          "level": 1,
+          "line": 3
+        },
+        {
+          "heading": "include",
+          "level": 1,
+          "line": 11
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 3
+      }
+    },
+    {
+      "path": "example_app/utils/database.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 248,
+      "nonEmptyLines": 214,
+      "functions": [
+        {
+          "name": "openDatabase",
+          "startLine": 18,
+          "endLine": 39,
+          "params": [
+            "databaseName",
+            "directory"
+          ]
+        },
+        {
+          "name": "ensureSchema",
+          "startLine": 41,
+          "endLine": 51,
+          "params": [
+            "db"
+          ]
+        },
+        {
+          "name": "seedIfEmpty",
+          "startLine": 53,
+          "endLine": 87,
+          "params": [
+            "db"
+          ]
+        },
+        {
+          "name": "seedFixtureDatabase",
+          "startLine": 89,
+          "endLine": 112,
+          "params": [
+            "db",
+            "description"
+          ]
+        },
+        {
+          "name": "getIosFixtureDirectories",
+          "startLine": 114,
+          "endLine": 156,
+          "params": []
+        },
+        {
+          "name": "initIosFixtureDatabases",
+          "startLine": 158,
+          "endLine": 176,
+          "params": []
+        },
+        {
+          "name": "initDatabase",
+          "startLine": 179,
+          "endLine": 189,
+          "params": []
+        },
+        {
+          "name": "getItems",
+          "startLine": 192,
+          "endLine": 216,
+          "params": []
+        },
+        {
+          "name": "addItem",
+          "startLine": 219,
+          "endLine": 235,
+          "params": [
+            "title",
+            "description",
+            "jsonData"
+          ]
+        },
+        {
+          "name": "deleteItem",
+          "startLine": 238,
+          "endLine": 248,
+          "params": [
+            "id"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "openDatabase",
+          "line": 18,
+          "isDefault": false
+        },
+        {
+          "name": "initDatabase",
+          "line": 179,
+          "isDefault": false
+        },
+        {
+          "name": "getItems",
+          "line": 192,
+          "isDefault": false
+        },
+        {
+          "name": "addItem",
+          "line": 219,
+          "isDefault": false
+        },
+        {
+          "name": "deleteItem",
+          "line": 238,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "openDatabase",
+          "callee": "Promise.resolve",
+          "lineNumber": 30
+        },
+        {
+          "caller": "openDatabase",
+          "callee": "Promise.resolve",
+          "lineNumber": 31
+        },
+        {
+          "caller": "openDatabase",
+          "callee": "Promise.resolve",
+          "lineNumber": 32
+        },
+        {
+          "caller": "openDatabase",
+          "callee": "Promise.resolve",
+          "lineNumber": 33
+        },
+        {
+          "caller": "openDatabase",
+          "callee": "SQLite.openDatabaseAsync",
+          "lineNumber": 38
+        },
+        {
+          "caller": "ensureSchema",
+          "callee": "db.execAsync",
+          "lineNumber": 42
+        },
+        {
+          "caller": "seedIfEmpty",
+          "callee": "ensureSchema",
+          "lineNumber": 54
+        },
+        {
+          "caller": "seedIfEmpty",
+          "callee": "db.getFirstAsync",
+          "lineNumber": 56
+        },
+        {
+          "caller": "seedIfEmpty",
+          "callee": "console.warn",
+          "lineNumber": 64
+        },
+        {
+          "caller": "seedIfEmpty",
+          "callee": "Date.now",
+          "lineNumber": 66
+        },
+        {
+          "caller": "seedIfEmpty",
+          "callee": "db.runAsync",
+          "lineNumber": 68
+        },
+        {
+          "caller": "seedIfEmpty",
+          "callee": "db.runAsync",
+          "lineNumber": 73
+        },
+        {
+          "caller": "seedIfEmpty",
+          "callee": "db.runAsync",
+          "lineNumber": 78
+        },
+        {
+          "caller": "seedIfEmpty",
+          "callee": "db.runAsync",
+          "lineNumber": 83
+        },
+        {
+          "caller": "seedFixtureDatabase",
+          "callee": "ensureSchema",
+          "lineNumber": 90
+        },
+        {
+          "caller": "seedFixtureDatabase",
+          "callee": "db.getFirstAsync",
+          "lineNumber": 92
+        },
+        {
+          "caller": "seedFixtureDatabase",
+          "callee": "db.runAsync",
+          "lineNumber": 100
+        },
+        {
+          "caller": "seedFixtureDatabase",
+          "callee": "Date.now",
+          "lineNumber": 105
+        },
+        {
+          "caller": "seedFixtureDatabase",
+          "callee": "JSON.stringify",
+          "lineNumber": 106
+        },
+        {
+          "caller": "getIosFixtureDirectories",
+          "callee": "documentDirectory.replace",
+          "lineNumber": 121
+        },
+        {
+          "caller": "getIosFixtureDirectories",
+          "callee": "fixtures.push",
+          "lineNumber": 148
+        },
+        {
+          "caller": "initIosFixtureDatabases",
+          "callee": "getIosFixtureDirectories",
+          "lineNumber": 169
+        },
+        {
+          "caller": "initIosFixtureDatabases",
+          "callee": "openDatabase",
+          "lineNumber": 173
+        },
+        {
+          "caller": "initIosFixtureDatabases",
+          "callee": "seedFixtureDatabase",
+          "lineNumber": 174
+        },
+        {
+          "caller": "initDatabase",
+          "callee": "openDatabase",
+          "lineNumber": 181
+        },
+        {
+          "caller": "initDatabase",
+          "callee": "seedIfEmpty",
+          "lineNumber": 182
+        },
+        {
+          "caller": "initDatabase",
+          "callee": "initIosFixtureDatabases",
+          "lineNumber": 183
+        },
+        {
+          "caller": "initDatabase",
+          "callee": "console.error",
+          "lineNumber": 186
+        },
+        {
+          "caller": "getItems",
+          "callee": "openDatabase",
+          "lineNumber": 194
+        },
+        {
+          "caller": "getItems",
+          "callee": "ensureSchema",
+          "lineNumber": 195
+        },
+        {
+          "caller": "getItems",
+          "callee": "await db.getAllAsync",
+          "lineNumber": 197
+        },
+        {
+          "caller": "getItems",
+          "callee": "items?.map",
+          "lineNumber": 207
+        },
+        {
+          "caller": "getItems",
+          "callee": "JSON.parse",
+          "lineNumber": 209
+        },
+        {
+          "caller": "getItems",
+          "callee": "console.error",
+          "lineNumber": 213
+        },
+        {
+          "caller": "addItem",
+          "callee": "openDatabase",
+          "lineNumber": 221
+        },
+        {
+          "caller": "addItem",
+          "callee": "ensureSchema",
+          "lineNumber": 222
+        },
+        {
+          "caller": "addItem",
+          "callee": "JSON.stringify",
+          "lineNumber": 223
+        },
+        {
+          "caller": "addItem",
+          "callee": "db.runAsync",
+          "lineNumber": 225
+        },
+        {
+          "caller": "addItem",
+          "callee": "Date.now",
+          "lineNumber": 227
+        },
+        {
+          "caller": "addItem",
+          "callee": "console.error",
+          "lineNumber": 232
+        },
+        {
+          "caller": "deleteItem",
+          "callee": "openDatabase",
+          "lineNumber": 240
+        },
+        {
+          "caller": "deleteItem",
+          "callee": "ensureSchema",
+          "lineNumber": 241
+        },
+        {
+          "caller": "deleteItem",
+          "callee": "db.runAsync",
+          "lineNumber": 242
+        },
+        {
+          "caller": "deleteItem",
+          "callee": "console.error",
+          "lineNumber": 245
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 5,
+        "functionCount": 10,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "Makefile",
+      "language": "makefile",
+      "fileCategory": "infra",
+      "totalLines": 210,
+      "nonEmptyLines": 181,
+      "steps": [
+        {
+          "name": "test-rust",
+          "startLine": 6,
+          "endLine": 9
+        },
+        {
+          "name": "test-frontend",
+          "startLine": 10,
+          "endLine": 13
+        },
+        {
+          "name": "generate-test-dbs",
+          "startLine": 15,
+          "endLine": 18
+        },
+        {
+          "name": "test-database",
+          "startLine": 20,
+          "endLine": 25
+        },
+        {
+          "name": "test-real-commands",
+          "startLine": 27,
+          "endLine": 30
+        },
+        {
+          "name": "test-ios",
+          "startLine": 32,
+          "endLine": 35
+        },
+        {
+          "name": "test-android",
+          "startLine": 36,
+          "endLine": 39
+        },
+        {
+          "name": "test-cross-platform",
+          "startLine": 40,
+          "endLine": 43
+        },
+        {
+          "name": "test-platforms",
+          "startLine": 44,
+          "endLine": 46
+        },
+        {
+          "name": "test-all",
+          "startLine": 48,
+          "endLine": 52
+        },
+        {
+          "name": "verify-test-dbs",
+          "startLine": 54,
+          "endLine": 77
+        },
+        {
+          "name": "test-performance",
+          "startLine": 79,
+          "endLine": 82
+        },
+        {
+          "name": "clean-test",
+          "startLine": 84,
+          "endLine": 90
+        },
+        {
+          "name": "dev-test",
+          "startLine": 92,
+          "endLine": 94
+        },
+        {
+          "name": "quick-test-platforms",
+          "startLine": 96,
+          "endLine": 100
+        },
+        {
+          "name": "coverage",
+          "startLine": 102,
+          "endLine": 104
+        },
+        {
+          "name": "coverage-html",
+          "startLine": 105,
+          "endLine": 110
+        },
+        {
+          "name": "coverage-text",
+          "startLine": 111,
+          "endLine": 114
+        },
+        {
+          "name": "coverage-lcov",
+          "startLine": 115,
+          "endLine": 119
+        },
+        {
+          "name": "coverage-json",
+          "startLine": 120,
+          "endLine": 124
+        },
+        {
+          "name": "coverage-progress",
+          "startLine": 125,
+          "endLine": 136
+        },
+        {
+          "name": "coverage-workflow",
+          "startLine": 138,
+          "endLine": 141
+        },
+        {
+          "name": "clean-coverage",
+          "startLine": 142,
+          "endLine": 146
+        },
+        {
+          "name": "lint",
+          "startLine": 148,
+          "endLine": 151
+        },
+        {
+          "name": "typecheck",
+          "startLine": 152,
+          "endLine": 155
+        },
+        {
+          "name": "precommit",
+          "startLine": 157,
+          "endLine": 158
+        },
+        {
+          "name": "dev",
+          "startLine": 160,
+          "endLine": 163
+        },
+        {
+          "name": "build",
+          "startLine": 165,
+          "endLine": 168
+        },
+        {
+          "name": "help",
+          "startLine": 170,
+          "endLine": 211
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "stepCount": 29
+      }
+    },
+    {
+      "path": "package.json",
+      "language": "json",
+      "fileCategory": "config",
+      "totalLines": 73,
+      "nonEmptyLines": 73,
+      "sections": [
+        {
+          "heading": "name",
+          "level": 1,
+          "line": 2
+        },
+        {
+          "heading": "version",
+          "level": 1,
+          "line": 3
+        },
+        {
+          "heading": "description",
+          "level": 1,
+          "line": 4
+        },
+        {
+          "heading": "author",
+          "level": 1,
+          "line": 5
+        },
+        {
+          "heading": "homepage",
+          "level": 1,
+          "line": 6
+        },
+        {
+          "heading": "sideEffects",
+          "level": 1,
+          "line": 7
+        },
+        {
+          "heading": "main",
+          "level": 1,
+          "line": 8
+        },
+        {
+          "heading": "scripts",
+          "level": 1,
+          "line": 9
+        },
+        {
+          "heading": "dependencies",
+          "level": 1,
+          "line": 28
+        },
+        {
+          "heading": "devDependencies",
+          "level": 1,
+          "line": 45
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 10
+      }
+    },
+    {
+      "path": "README.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 98,
+      "nonEmptyLines": 69,
+      "sections": [
+        {
+          "heading": "Overview",
+          "level": 2,
+          "line": 8
+        },
+        {
+          "heading": "Features",
+          "level": 2,
+          "line": 12
+        },
+        {
+          "heading": "Installation",
+          "level": 2,
+          "line": 21
+        },
+        {
+          "heading": "Download",
+          "level": 3,
+          "line": 23
+        },
+        {
+          "heading": "Building from Source",
+          "level": 3,
+          "line": 27
+        },
+        {
+          "heading": "Requirements",
+          "level": 2,
+          "line": 44
+        },
+        {
+          "heading": "For iOS Development",
+          "level": 3,
+          "line": 46
+        },
+        {
+          "heading": "For Android Development",
+          "level": 3,
+          "line": 51
+        },
+        {
+          "heading": "Usage",
+          "level": 2,
+          "line": 56
+        },
+        {
+          "heading": "Troubleshooting",
+          "level": 2,
+          "line": 64
+        },
+        {
+          "heading": "Android Device Not Detected",
+          "level": 3,
+          "line": 66
+        },
+        {
+          "heading": "iOS Simulator Not Detected",
+          "level": 3,
+          "line": 71
+        },
+        {
+          "heading": "Database Changes Not Saving",
+          "level": 3,
+          "line": 75
+        },
+        {
+          "heading": "Contributing",
+          "level": 2,
+          "line": 79
+        },
+        {
+          "heading": "License",
+          "level": 2,
+          "line": 89
+        },
+        {
+          "heading": "Acknowledgments",
+          "level": 2,
+          "line": 93
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 16
+      }
+    },
+    {
+      "path": "resources/flippio.icns",
+      "language": "icns",
+      "fileCategory": "code",
+      "totalLines": 1267,
+      "nonEmptyLines": 1258,
+      "metrics": {}
+    },
+    {
+      "path": "resources/libimobiledevice/libs/libcrypto.3.dylib",
+      "language": "dylib",
+      "fileCategory": "code",
+      "totalLines": 18093,
+      "nonEmptyLines": 17998,
+      "metrics": {}
+    },
+    {
+      "path": "resources/libimobiledevice/libs/libimobiledevice-1.0.6.dylib",
+      "language": "dylib",
+      "fileCategory": "code",
+      "totalLines": 323,
+      "nonEmptyLines": 323,
+      "metrics": {}
+    },
+    {
+      "path": "resources/libimobiledevice/libs/libimobiledevice-glue-1.0.0.dylib",
+      "language": "dylib",
+      "fileCategory": "code",
+      "totalLines": 217,
+      "nonEmptyLines": 216,
+      "metrics": {}
+    },
+    {
+      "path": "resources/libimobiledevice/libs/liblzma.5.dylib",
+      "language": "dylib",
+      "fileCategory": "code",
+      "totalLines": 981,
+      "nonEmptyLines": 940,
+      "metrics": {}
+    },
+    {
+      "path": "resources/libimobiledevice/libs/libplist-2.0.4.dylib",
+      "language": "dylib",
+      "fileCategory": "code",
+      "totalLines": 350,
+      "nonEmptyLines": 347,
+      "metrics": {}
+    },
+    {
+      "path": "resources/libimobiledevice/libs/libssl.3.dylib",
+      "language": "dylib",
+      "fileCategory": "code",
+      "totalLines": 3014,
+      "nonEmptyLines": 2998,
+      "metrics": {}
+    },
+    {
+      "path": "resources/libimobiledevice/libs/libusbmuxd-2.0.7.dylib",
+      "language": "dylib",
+      "fileCategory": "code",
+      "totalLines": 110,
+      "nonEmptyLines": 110,
+      "metrics": {}
+    },
+    {
+      "path": "resources/libimobiledevice/libs/libzip.5.5.dylib",
+      "language": "dylib",
+      "fileCategory": "code",
+      "totalLines": 341,
+      "nonEmptyLines": 338,
+      "metrics": {}
+    },
+    {
+      "path": "resources/libimobiledevice/libs/libzstd.1.5.7.dylib",
+      "language": "dylib",
+      "fileCategory": "code",
+      "totalLines": 4744,
+      "nonEmptyLines": 4720,
+      "metrics": {}
+    }
+  ]
+}

@@ -1,0 +1,287 @@
+{
+  "projectRoot": "/Users/mykolastanislavchuk/Home/Flippio",
+  "batchFiles": [
+    {
+      "path": "resources/libimobiledevice/tools_backup/.deps/afcclient-afcclient.Po",
+      "language": "po",
+      "sizeLines": 344,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/.deps/idevice_id-idevice_id.Po",
+      "language": "po",
+      "sizeLines": 292,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/.deps/idevicebackup-idevicebackup.Po",
+      "language": "po",
+      "sizeLines": 346,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/.deps/idevicebackup2-idevicebackup2.Po",
+      "language": "po",
+      "sizeLines": 352,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/.deps/idevicebtlogger-idevicebtlogger.Po",
+      "language": "po",
+      "sizeLines": 340,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/.deps/idevicecrashreport-idevicecrashreport.Po",
+      "language": "po",
+      "sizeLines": 308,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/.deps/idevicedate-idevicedate.Po",
+      "language": "po",
+      "sizeLines": 298,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/.deps/idevicedebug-idevicedebug.Po",
+      "language": "po",
+      "sizeLines": 305,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/.deps/idevicedebugserverproxy-idevicedebugserverproxy.Po",
+      "language": "po",
+      "sizeLines": 361,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/.deps/idevicedevmodectl-idevicedevmodectl.Po",
+      "language": "po",
+      "sizeLines": 334,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/.deps/idevicediagnostics-idevicediagnostics.Po",
+      "language": "po",
+      "sizeLines": 304,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/.deps/ideviceenterrecovery-ideviceenterrecovery.Po",
+      "language": "po",
+      "sizeLines": 299,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/.deps/ideviceimagemounter-ideviceimagemounter.Po",
+      "language": "po",
+      "sizeLines": 359,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/.deps/ideviceinfo-ideviceinfo.Po",
+      "language": "po",
+      "sizeLines": 298,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/.deps/idevicename-idevicename.Po",
+      "language": "po",
+      "sizeLines": 294,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/.deps/idevicenotificationproxy-idevicenotificationproxy.Po",
+      "language": "po",
+      "sizeLines": 301,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/.deps/idevicepair-idevicepair.Po",
+      "language": "po",
+      "sizeLines": 314,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/.deps/ideviceprovision-ideviceprovision.Po",
+      "language": "po",
+      "sizeLines": 328,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/.deps/idevicescreenshot-idevicescreenshot.Po",
+      "language": "po",
+      "sizeLines": 304,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/.deps/idevicesetlocation-idevicesetlocation.Po",
+      "language": "po",
+      "sizeLines": 299,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/.deps/idevicesyslog-idevicesyslog.Po",
+      "language": "po",
+      "sizeLines": 304,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/afcclient",
+      "language": "unknown",
+      "sizeLines": 242,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/afcclient-afcclient.o",
+      "language": "o",
+      "sizeLines": 437,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/afcclient.c",
+      "language": "c",
+      "sizeLines": 1665,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevice_id",
+      "language": "unknown",
+      "sizeLines": 177,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevice_id-idevice_id.o",
+      "language": "o",
+      "sizeLines": 43,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevice_id.c",
+      "language": "c",
+      "sizeLines": 174,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicebackup",
+      "language": "unknown",
+      "sizeLines": 233,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicebackup-idevicebackup.o",
+      "language": "o",
+      "sizeLines": 345,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicebackup.c",
+      "language": "c",
+      "sizeLines": 1571,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicebackup2",
+      "language": "unknown",
+      "sizeLines": 318,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicebackup2-idevicebackup2.o",
+      "language": "o",
+      "sizeLines": 453,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicebackup2.c",
+      "language": "c",
+      "sizeLines": 2701,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicebtlogger",
+      "language": "unknown",
+      "sizeLines": 205,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicebtlogger-idevicebtlogger.o",
+      "language": "o",
+      "sizeLines": 164,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicebtlogger.c",
+      "language": "c",
+      "sizeLines": 458,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicecrashreport",
+      "language": "unknown",
+      "sizeLines": 175,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicecrashreport-idevicecrashreport.o",
+      "language": "o",
+      "sizeLines": 165,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicecrashreport.c",
+      "language": "c",
+      "sizeLines": 548,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicedate",
+      "language": "unknown",
+      "sizeLines": 179,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "resources/libimobiledevice/tools_backup/.deps/afcclient-afcclient.Po": [],
+    "resources/libimobiledevice/tools_backup/.deps/idevice_id-idevice_id.Po": [],
+    "resources/libimobiledevice/tools_backup/.deps/idevicebackup-idevicebackup.Po": [],
+    "resources/libimobiledevice/tools_backup/.deps/idevicebackup2-idevicebackup2.Po": [],
+    "resources/libimobiledevice/tools_backup/.deps/idevicebtlogger-idevicebtlogger.Po": [],
+    "resources/libimobiledevice/tools_backup/.deps/idevicecrashreport-idevicecrashreport.Po": [],
+    "resources/libimobiledevice/tools_backup/.deps/idevicedate-idevicedate.Po": [],
+    "resources/libimobiledevice/tools_backup/.deps/idevicedebug-idevicedebug.Po": [],
+    "resources/libimobiledevice/tools_backup/.deps/idevicedebugserverproxy-idevicedebugserverproxy.Po": [],
+    "resources/libimobiledevice/tools_backup/.deps/idevicedevmodectl-idevicedevmodectl.Po": [],
+    "resources/libimobiledevice/tools_backup/.deps/idevicediagnostics-idevicediagnostics.Po": [],
+    "resources/libimobiledevice/tools_backup/.deps/ideviceenterrecovery-ideviceenterrecovery.Po": [],
+    "resources/libimobiledevice/tools_backup/.deps/ideviceimagemounter-ideviceimagemounter.Po": [],
+    "resources/libimobiledevice/tools_backup/.deps/ideviceinfo-ideviceinfo.Po": [],
+    "resources/libimobiledevice/tools_backup/.deps/idevicename-idevicename.Po": [],
+    "resources/libimobiledevice/tools_backup/.deps/idevicenotificationproxy-idevicenotificationproxy.Po": [],
+    "resources/libimobiledevice/tools_backup/.deps/idevicepair-idevicepair.Po": [],
+    "resources/libimobiledevice/tools_backup/.deps/ideviceprovision-ideviceprovision.Po": [],
+    "resources/libimobiledevice/tools_backup/.deps/idevicescreenshot-idevicescreenshot.Po": [],
+    "resources/libimobiledevice/tools_backup/.deps/idevicesetlocation-idevicesetlocation.Po": [],
+    "resources/libimobiledevice/tools_backup/.deps/idevicesyslog-idevicesyslog.Po": [],
+    "resources/libimobiledevice/tools_backup/afcclient": [],
+    "resources/libimobiledevice/tools_backup/afcclient-afcclient.o": [],
+    "resources/libimobiledevice/tools_backup/afcclient.c": [],
+    "resources/libimobiledevice/tools_backup/idevice_id": [],
+    "resources/libimobiledevice/tools_backup/idevice_id-idevice_id.o": [],
+    "resources/libimobiledevice/tools_backup/idevice_id.c": [],
+    "resources/libimobiledevice/tools_backup/idevicebackup": [],
+    "resources/libimobiledevice/tools_backup/idevicebackup-idevicebackup.o": [],
+    "resources/libimobiledevice/tools_backup/idevicebackup.c": [],
+    "resources/libimobiledevice/tools_backup/idevicebackup2": [],
+    "resources/libimobiledevice/tools_backup/idevicebackup2-idevicebackup2.o": [],
+    "resources/libimobiledevice/tools_backup/idevicebackup2.c": [],
+    "resources/libimobiledevice/tools_backup/idevicebtlogger": [],
+    "resources/libimobiledevice/tools_backup/idevicebtlogger-idevicebtlogger.o": [],
+    "resources/libimobiledevice/tools_backup/idevicebtlogger.c": [],
+    "resources/libimobiledevice/tools_backup/idevicecrashreport": [],
+    "resources/libimobiledevice/tools_backup/idevicecrashreport-idevicecrashreport.o": [],
+    "resources/libimobiledevice/tools_backup/idevicecrashreport.c": [],
+    "resources/libimobiledevice/tools_backup/idevicedate": []
+  }
+}

@@ -1,0 +1,325 @@
+{
+  "projectRoot": "/Users/mykolastanislavchuk/Home/Flippio",
+  "batchFiles": [
+    {
+      "path": "example_app/android/app/src/main/res/mipmap-xxhdpi/ic_launcher_foreground.webp",
+      "language": "webp",
+      "sizeLines": 74,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/android/app/src/main/res/mipmap-xxhdpi/ic_launcher_round.webp",
+      "language": "webp",
+      "sizeLines": 33,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/android/app/src/main/res/mipmap-xxhdpi/ic_launcher.webp",
+      "language": "webp",
+      "sizeLines": 16,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_foreground.webp",
+      "language": "webp",
+      "sizeLines": 121,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.webp",
+      "language": "webp",
+      "sizeLines": 50,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.webp",
+      "language": "webp",
+      "sizeLines": 55,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/android/app/src/main/res/values-night/colors.xml",
+      "language": "xml",
+      "sizeLines": 0,
+      "fileCategory": "config"
+    },
+    {
+      "path": "example_app/android/app/src/main/res/values/colors.xml",
+      "language": "xml",
+      "sizeLines": 5,
+      "fileCategory": "config"
+    },
+    {
+      "path": "example_app/android/app/src/main/res/values/strings.xml",
+      "language": "xml",
+      "sizeLines": 5,
+      "fileCategory": "config"
+    },
+    {
+      "path": "example_app/android/app/src/main/res/values/styles.xml",
+      "language": "xml",
+      "sizeLines": 18,
+      "fileCategory": "config"
+    },
+    {
+      "path": "example_app/android/build.gradle",
+      "language": "gradle",
+      "sizeLines": 41,
+      "fileCategory": "config"
+    },
+    {
+      "path": "example_app/android/gradle.properties",
+      "language": "properties",
+      "sizeLines": 56,
+      "fileCategory": "config"
+    },
+    {
+      "path": "example_app/android/gradle/wrapper/gradle-wrapper.jar",
+      "language": "jar",
+      "sizeLines": 151,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/android/gradle/wrapper/gradle-wrapper.properties",
+      "language": "properties",
+      "sizeLines": 7,
+      "fileCategory": "config"
+    },
+    {
+      "path": "example_app/android/gradlew",
+      "language": "unknown",
+      "sizeLines": 252,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/android/gradlew.bat",
+      "language": "batch",
+      "sizeLines": 94,
+      "fileCategory": "script"
+    },
+    {
+      "path": "example_app/android/settings.gradle",
+      "language": "gradle",
+      "sizeLines": 38,
+      "fileCategory": "config"
+    },
+    {
+      "path": "example_app/app.json",
+      "language": "json",
+      "sizeLines": 45,
+      "fileCategory": "config"
+    },
+    {
+      "path": "example_app/app/_layout.tsx",
+      "language": "typescript",
+      "sizeLines": 64,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/app/(tabs)/_layout.tsx",
+      "language": "typescript",
+      "sizeLines": 46,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/app/(tabs)/index.tsx",
+      "language": "typescript",
+      "sizeLines": 44,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/app/+not-found.tsx",
+      "language": "typescript",
+      "sizeLines": 32,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/components/__tests__/__snapshots__/ThemedText-test.tsx.snap",
+      "language": "snap",
+      "sizeLines": 24,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/components/__tests__/ThemedText-test.tsx",
+      "language": "typescript",
+      "sizeLines": 10,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/components/Collapsible.tsx",
+      "language": "typescript",
+      "sizeLines": 47,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/components/DatabaseItems.tsx",
+      "language": "typescript",
+      "sizeLines": 575,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/components/ExternalLink.tsx",
+      "language": "typescript",
+      "sizeLines": 24,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/components/HapticTab.tsx",
+      "language": "typescript",
+      "sizeLines": 19,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/components/HelloWave.tsx",
+      "language": "typescript",
+      "sizeLines": 40,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/components/ParallaxScrollView.tsx",
+      "language": "typescript",
+      "sizeLines": 84,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/components/ThemedText.tsx",
+      "language": "typescript",
+      "sizeLines": 61,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/components/ThemedView.tsx",
+      "language": "typescript",
+      "sizeLines": 15,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/components/ui/IconSymbol.ios.tsx",
+      "language": "typescript",
+      "sizeLines": 33,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/components/ui/IconSymbol.tsx",
+      "language": "typescript",
+      "sizeLines": 43,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/components/ui/TabBarBackground.ios.tsx",
+      "language": "typescript",
+      "sizeLines": 22,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/components/ui/TabBarBackground.tsx",
+      "language": "typescript",
+      "sizeLines": 6,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/constants/Colors.ts",
+      "language": "typescript",
+      "sizeLines": 26,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/databases/ecommerce_sample.db",
+      "language": "db",
+      "sizeLines": 69,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/databases/notes_sample.db",
+      "language": "db",
+      "sizeLines": 39,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/hooks/useColorScheme.ts",
+      "language": "typescript",
+      "sizeLines": 1,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "example_app/android/app/src/main/res/mipmap-xxhdpi/ic_launcher_foreground.webp": [],
+    "example_app/android/app/src/main/res/mipmap-xxhdpi/ic_launcher_round.webp": [],
+    "example_app/android/app/src/main/res/mipmap-xxhdpi/ic_launcher.webp": [],
+    "example_app/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_foreground.webp": [],
+    "example_app/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.webp": [],
+    "example_app/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.webp": [],
+    "example_app/android/app/src/main/res/values-night/colors.xml": [],
+    "example_app/android/app/src/main/res/values/colors.xml": [],
+    "example_app/android/app/src/main/res/values/strings.xml": [],
+    "example_app/android/app/src/main/res/values/styles.xml": [],
+    "example_app/android/build.gradle": [],
+    "example_app/android/gradle.properties": [],
+    "example_app/android/gradle/wrapper/gradle-wrapper.jar": [],
+    "example_app/android/gradle/wrapper/gradle-wrapper.properties": [],
+    "example_app/android/gradlew": [],
+    "example_app/android/gradlew.bat": [],
+    "example_app/android/settings.gradle": [],
+    "example_app/app.json": [],
+    "example_app/app/_layout.tsx": [
+      "example_app/hooks/useColorScheme.ts",
+      "example_app/utils/database.ts"
+    ],
+    "example_app/app/(tabs)/_layout.tsx": [
+      "example_app/components/HapticTab.tsx",
+      "example_app/components/ui/IconSymbol.tsx",
+      "example_app/components/ui/TabBarBackground.tsx",
+      "example_app/constants/Colors.ts",
+      "example_app/hooks/useColorScheme.ts"
+    ],
+    "example_app/app/(tabs)/index.tsx": [
+      "example_app/components/DatabaseItems.tsx",
+      "example_app/components/ParallaxScrollView.tsx"
+    ],
+    "example_app/app/+not-found.tsx": [
+      "example_app/components/ThemedText.tsx",
+      "example_app/components/ThemedView.tsx"
+    ],
+    "example_app/components/__tests__/__snapshots__/ThemedText-test.tsx.snap": [],
+    "example_app/components/__tests__/ThemedText-test.tsx": [
+      "example_app/components/ThemedText.tsx"
+    ],
+    "example_app/components/Collapsible.tsx": [
+      "example_app/components/ThemedText.tsx",
+      "example_app/components/ThemedView.tsx",
+      "example_app/components/ui/IconSymbol.tsx",
+      "example_app/constants/Colors.ts",
+      "example_app/hooks/useColorScheme.ts"
+    ],
+    "example_app/components/DatabaseItems.tsx": [
+      "example_app/components/ThemedText.tsx",
+      "example_app/components/ThemedView.tsx",
+      "example_app/hooks/useColorScheme.ts",
+      "example_app/utils/database.ts"
+    ],
+    "example_app/components/ExternalLink.tsx": [],
+    "example_app/components/HapticTab.tsx": [],
+    "example_app/components/HelloWave.tsx": [
+      "example_app/components/ThemedText.tsx"
+    ],
+    "example_app/components/ParallaxScrollView.tsx": [
+      "example_app/components/ThemedView.tsx",
+      "example_app/components/ui/TabBarBackground.tsx",
+      "example_app/hooks/useColorScheme.ts"
+    ],
+    "example_app/components/ThemedText.tsx": [
+      "example_app/hooks/useThemeColor.ts"
+    ],
+    "example_app/components/ThemedView.tsx": [
+      "example_app/hooks/useThemeColor.ts"
+    ],
+    "example_app/components/ui/IconSymbol.ios.tsx": [],
+    "example_app/components/ui/IconSymbol.tsx": [],
+    "example_app/components/ui/TabBarBackground.ios.tsx": [],
+    "example_app/components/ui/TabBarBackground.tsx": [],
+    "example_app/constants/Colors.ts": [],
+    "example_app/databases/ecommerce_sample.db": [],
+    "example_app/databases/notes_sample.db": [],
+    "example_app/hooks/useColorScheme.ts": []
+  }
+}

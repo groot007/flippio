@@ -1,0 +1,429 @@
+{
+  "projectRoot": "/Users/mykolastanislavchuk/Home/Flippio",
+  "batchFiles": [
+    {
+      "path": "src/renderer/src/components/data/VirtualDeviceModal.tsx",
+      "language": "typescript",
+      "sizeLines": 308,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/components/layout/__tests__/AppHeader.test.tsx",
+      "language": "typescript",
+      "sizeLines": 267,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/components/layout/__tests__/Settings.test.tsx",
+      "language": "typescript",
+      "sizeLines": 132,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/components/layout/__tests__/SubHeader.test.tsx",
+      "language": "typescript",
+      "sizeLines": 264,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/components/layout/AppHeader.tsx",
+      "language": "typescript",
+      "sizeLines": 528,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/components/layout/PackageSetModal.tsx",
+      "language": "typescript",
+      "sizeLines": 168,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/components/layout/Settings.tsx",
+      "language": "typescript",
+      "sizeLines": 403,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/components/layout/SubHeader.tsx",
+      "language": "typescript",
+      "sizeLines": 504,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/components/SidePanel/__tests__/DeleteRowDialog.test.tsx",
+      "language": "typescript",
+      "sizeLines": 222,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/components/SidePanel/__tests__/Field.test.tsx",
+      "language": "typescript",
+      "sizeLines": 395,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/components/SidePanel/__tests__/JsonViewer.test.tsx",
+      "language": "typescript",
+      "sizeLines": 196,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/components/SidePanel/__tests__/RowEditor.test.tsx",
+      "language": "typescript",
+      "sizeLines": 143,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/components/SidePanel/ClearTableDialog.tsx",
+      "language": "typescript",
+      "sizeLines": 56,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/components/SidePanel/DeleteRowDialog.tsx",
+      "language": "typescript",
+      "sizeLines": 56,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/components/SidePanel/Field.tsx",
+      "language": "typescript",
+      "sizeLines": 212,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/components/SidePanel/index.ts",
+      "language": "typescript",
+      "sizeLines": 1,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/components/SidePanel/JsonEditor.tsx",
+      "language": "typescript",
+      "sizeLines": 34,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/components/SidePanel/JsonViewer.tsx",
+      "language": "typescript",
+      "sizeLines": 17,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/components/SidePanel/RowEditor.tsx",
+      "language": "typescript",
+      "sizeLines": 224,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/components/SidePanel/SidePanel.tsx",
+      "language": "typescript",
+      "sizeLines": 206,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/frontend-log.ts",
+      "language": "typescript",
+      "sizeLines": 68,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/hooks/__tests__/useApplications.test.ts",
+      "language": "typescript",
+      "sizeLines": 347,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/hooks/__tests__/useChangeHistory.test.ts",
+      "language": "typescript",
+      "sizeLines": 208,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/hooks/__tests__/useDatabaseFiles.test.ts",
+      "language": "typescript",
+      "sizeLines": 401,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/hooks/__tests__/useTableDataQuery.test.tsx",
+      "language": "typescript",
+      "sizeLines": 79,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/hooks/useApplications.ts",
+      "language": "typescript",
+      "sizeLines": 64,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/hooks/useAutoUpdater.ts",
+      "language": "typescript",
+      "sizeLines": 126,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/hooks/useBaseDatabaseMutation.ts",
+      "language": "typescript",
+      "sizeLines": 158,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/hooks/useChangeHistory.ts",
+      "language": "typescript",
+      "sizeLines": 157,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/hooks/useChangeHistoryMutations.ts",
+      "language": "typescript",
+      "sizeLines": 189,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/hooks/useDatabaseFiles.ts",
+      "language": "typescript",
+      "sizeLines": 258,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/hooks/useDatabaseTables.ts",
+      "language": "typescript",
+      "sizeLines": 48,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/hooks/useDevices.ts",
+      "language": "typescript",
+      "sizeLines": 20,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/hooks/useTableDataQuery.ts",
+      "language": "typescript",
+      "sizeLines": 95,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/hooks/useTableMutations.ts",
+      "language": "typescript",
+      "sizeLines": 85,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/main.tsx",
+      "language": "typescript",
+      "sizeLines": 35,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/pages/Main.tsx",
+      "language": "typescript",
+      "sizeLines": 27,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/store/__tests__/appStore.test.ts",
+      "language": "typescript",
+      "sizeLines": 282,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/store/__tests__/useCurrentDeviceSelection.test.ts",
+      "language": "typescript",
+      "sizeLines": 279,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/store/__tests__/useThemeStore.test.ts",
+      "language": "typescript",
+      "sizeLines": 162,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "src/renderer/src/components/data/VirtualDeviceModal.tsx": [
+      "src/renderer/src/ui/toaster.tsx"
+    ],
+    "src/renderer/src/components/layout/__tests__/AppHeader.test.tsx": [
+      "src/renderer/src/components/layout/AppHeader.tsx",
+      "src/renderer/src/test-utils/render.tsx"
+    ],
+    "src/renderer/src/components/layout/__tests__/Settings.test.tsx": [
+      "package.json",
+      "src/renderer/src/components/layout/Settings.tsx",
+      "src/renderer/src/test-utils/render.tsx"
+    ],
+    "src/renderer/src/components/layout/__tests__/SubHeader.test.tsx": [
+      "src/renderer/src/components/layout/SubHeader.tsx",
+      "src/renderer/src/test-utils/render.tsx"
+    ],
+    "src/renderer/src/components/layout/AppHeader.tsx": [
+      "src/renderer/src/components/common/DeviceInfoModal.tsx",
+      "src/renderer/src/components/common/FLSelect.tsx",
+      "src/renderer/src/components/data/VirtualDeviceModal.tsx",
+      "src/renderer/src/components/layout/PackageSetModal.tsx",
+      "src/renderer/src/components/layout/Settings.tsx",
+      "src/renderer/src/hooks/useApplications.ts",
+      "src/renderer/src/hooks/useDatabaseFiles.ts",
+      "src/renderer/src/hooks/useDevices.ts",
+      "src/renderer/src/store/index.ts",
+      "src/renderer/src/store/useRowEditingStore.ts",
+      "src/renderer/src/ui/toaster.tsx"
+    ],
+    "src/renderer/src/components/layout/PackageSetModal.tsx": [
+      "src/renderer/src/components/common/FLModal.tsx",
+      "src/renderer/src/store/index.ts",
+      "src/renderer/src/ui/toaster.tsx"
+    ],
+    "src/renderer/src/components/layout/Settings.tsx": [
+      "package.json",
+      "src/renderer/src/components/common/FLModal.tsx",
+      "src/renderer/src/hooks/useAutoUpdater.ts",
+      "src/renderer/src/ui/color-mode.tsx",
+      "src/renderer/src/ui/toaster.tsx"
+    ],
+    "src/renderer/src/components/layout/SubHeader.tsx": [
+      "src/renderer/src/components/common/FLSelect.tsx",
+      "src/renderer/src/components/data/CustomQueryModal.tsx",
+      "src/renderer/src/hooks/useDatabaseFiles.ts",
+      "src/renderer/src/hooks/useDatabaseTables.ts",
+      "src/renderer/src/hooks/useTableDataQuery.ts",
+      "src/renderer/src/store/index.ts",
+      "src/renderer/src/store/useRowEditingStore.ts",
+      "src/renderer/src/ui/toaster.tsx",
+      "src/renderer/src/utils/databaseFileGrouping.ts",
+      "src/renderer/src/utils/databaseFileResolver.ts",
+      "src/renderer/src/utils/databaseRefresh.ts"
+    ],
+    "src/renderer/src/components/SidePanel/__tests__/DeleteRowDialog.test.tsx": [
+      "src/renderer/src/components/SidePanel/DeleteRowDialog.tsx",
+      "src/renderer/src/ui/provider.tsx"
+    ],
+    "src/renderer/src/components/SidePanel/__tests__/Field.test.tsx": [
+      "src/renderer/src/components/SidePanel/Field.tsx",
+      "src/renderer/src/ui/provider.tsx"
+    ],
+    "src/renderer/src/components/SidePanel/__tests__/JsonViewer.test.tsx": [
+      "src/renderer/src/components/SidePanel/JsonViewer.tsx",
+      "src/renderer/src/ui/provider.tsx"
+    ],
+    "src/renderer/src/components/SidePanel/__tests__/RowEditor.test.tsx": [
+      "src/renderer/src/components/SidePanel/RowEditor.tsx",
+      "src/renderer/src/test-utils/render.tsx"
+    ],
+    "src/renderer/src/components/SidePanel/ClearTableDialog.tsx": [
+      "src/renderer/src/components/common/FLModal.tsx"
+    ],
+    "src/renderer/src/components/SidePanel/DeleteRowDialog.tsx": [
+      "src/renderer/src/components/common/FLModal.tsx"
+    ],
+    "src/renderer/src/components/SidePanel/Field.tsx": [
+      "src/renderer/src/components/SidePanel/JsonEditor.tsx",
+      "src/renderer/src/utils/index.ts"
+    ],
+    "src/renderer/src/components/SidePanel/index.ts": [],
+    "src/renderer/src/components/SidePanel/JsonEditor.tsx": [],
+    "src/renderer/src/components/SidePanel/JsonViewer.tsx": [],
+    "src/renderer/src/components/SidePanel/RowEditor.tsx": [
+      "src/renderer/src/hooks/useChangeHistory.ts",
+      "src/renderer/src/hooks/useTableDataQuery.ts",
+      "src/renderer/src/store/index.ts",
+      "src/renderer/src/store/useRowEditingStore.ts",
+      "src/renderer/src/ui/toaster.tsx",
+      "src/renderer/src/utils/index.ts",
+      "src/renderer/src/utils/typeValidation.ts"
+    ],
+    "src/renderer/src/components/SidePanel/SidePanel.tsx": [
+      "src/renderer/src/components/SidePanel/ClearTableDialog.tsx",
+      "src/renderer/src/components/SidePanel/DeleteRowDialog.tsx",
+      "src/renderer/src/components/SidePanel/Field.tsx",
+      "src/renderer/src/components/SidePanel/RowEditor.tsx",
+      "src/renderer/src/hooks/useTableMutations.ts",
+      "src/renderer/src/store/index.ts",
+      "src/renderer/src/store/useRowEditingStore.ts",
+      "src/renderer/src/ui/color-mode.tsx"
+    ],
+    "src/renderer/src/frontend-log.ts": [],
+    "src/renderer/src/hooks/__tests__/useApplications.test.ts": [
+      "src/renderer/src/hooks/useApplications.ts"
+    ],
+    "src/renderer/src/hooks/__tests__/useChangeHistory.test.ts": [
+      "src/renderer/src/hooks/useChangeHistory.ts"
+    ],
+    "src/renderer/src/hooks/__tests__/useDatabaseFiles.test.ts": [
+      "src/renderer/src/hooks/useDatabaseFiles.ts"
+    ],
+    "src/renderer/src/hooks/__tests__/useTableDataQuery.test.tsx": [
+      "src/renderer/src/hooks/useTableDataQuery.ts"
+    ],
+    "src/renderer/src/hooks/useApplications.ts": [
+      "src/renderer/src/utils/caseTransformer.ts"
+    ],
+    "src/renderer/src/hooks/useAutoUpdater.ts": [],
+    "src/renderer/src/hooks/useBaseDatabaseMutation.ts": [
+      "src/renderer/src/hooks/useChangeHistory.ts",
+      "src/renderer/src/store/useRowEditingStore.ts",
+      "src/renderer/src/types/changeHistory.ts",
+      "src/renderer/src/ui/toaster.tsx",
+      "src/renderer/src/utils/contextBuilder.ts",
+      "src/renderer/src/utils/databaseRefresh.ts"
+    ],
+    "src/renderer/src/hooks/useChangeHistory.ts": [
+      "src/renderer/src/store/useCurrentDatabaseSelection.ts",
+      "src/renderer/src/store/useCurrentDeviceSelection.ts",
+      "src/renderer/src/types/changeHistory.ts",
+      "src/renderer/src/utils/contextKey.ts"
+    ],
+    "src/renderer/src/hooks/useChangeHistoryMutations.ts": [
+      "src/renderer/src/store/useCurrentDatabaseSelection.ts",
+      "src/renderer/src/store/useCurrentDeviceSelection.ts",
+      "src/renderer/src/ui/toaster.tsx",
+      "src/renderer/src/utils/contextKey.ts"
+    ],
+    "src/renderer/src/hooks/useDatabaseFiles.ts": [
+      "src/renderer/src/types/index.ts",
+      "src/renderer/src/utils/caseTransformer.ts"
+    ],
+    "src/renderer/src/hooks/useDatabaseTables.ts": [
+      "src/renderer/src/types/index.ts",
+      "src/renderer/src/utils/caseTransformer.ts"
+    ],
+    "src/renderer/src/hooks/useDevices.ts": [
+      "src/renderer/src/utils/caseTransformer.ts"
+    ],
+    "src/renderer/src/hooks/useTableDataQuery.ts": [
+      "src/renderer/src/store/index.ts",
+      "src/renderer/src/utils/databaseFileResolver.ts"
+    ],
+    "src/renderer/src/hooks/useTableMutations.ts": [
+      "src/renderer/src/hooks/useBaseDatabaseMutation.ts",
+      "src/renderer/src/types/changeHistory.ts",
+      "src/renderer/src/utils/contextBuilder.ts",
+      "src/renderer/src/utils/index.ts"
+    ],
+    "src/renderer/src/main.tsx": [
+      "src/renderer/src/App.tsx",
+      "src/renderer/src/assets/main.css",
+      "src/renderer/src/frontend-log.ts",
+      "src/renderer/src/tauri-api.ts"
+    ],
+    "src/renderer/src/pages/Main.tsx": [
+      "src/renderer/src/components/data/DataGrid.tsx",
+      "src/renderer/src/components/data/DragAndDropProvider.tsx",
+      "src/renderer/src/components/layout/AppHeader.tsx",
+      "src/renderer/src/components/layout/SubHeader.tsx",
+      "src/renderer/src/components/SidePanel/index.ts"
+    ],
+    "src/renderer/src/store/__tests__/appStore.test.ts": [
+      "src/renderer/src/store/appStore.ts"
+    ],
+    "src/renderer/src/store/__tests__/useCurrentDeviceSelection.test.ts": [
+      "src/renderer/src/store/useCurrentDeviceSelection.ts"
+    ],
+    "src/renderer/src/store/__tests__/useThemeStore.test.ts": [
+      "src/renderer/src/store/useThemeStore.ts"
+    ]
+  }
+}
