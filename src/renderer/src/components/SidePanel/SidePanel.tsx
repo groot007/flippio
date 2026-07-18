@@ -158,6 +158,7 @@ export function SidePanel() {
                     )
                   })}
                   <Button
+                    data-testid="remove-row-button"
                     colorScheme="red"
                     variant="outline"
                     onClick={() => {
@@ -173,6 +174,7 @@ export function SidePanel() {
                     Remove Row
                   </Button>
                   <Button
+                    data-testid="clear-table-button"
                     colorScheme="orange"
                     variant="outline"
                     onClick={() => {

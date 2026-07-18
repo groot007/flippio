@@ -3,24 +3,24 @@ import { Box, Button, HStack, Icon, Text, VStack } from '@chakra-ui/react'
 import { chakraComponents, Select } from 'chakra-react-select'
 import { LuInfo, LuPin } from 'react-icons/lu'
 
+interface SelectOption {
+  label: string
+  value?: string
+  id?: string
+  name?: string
+  bundleId?: string
+  path?: string
+  description?: string
+  isRecentlyUsed?: boolean
+  showInfoIcon?: boolean
+  onInfoClick?: (option: any) => void
+  options?: SelectOption[]
+  [key: string]: any
+}
+
 interface CustomSelectProps {
   label: string
-  options: {
-    label: string
-    value?: string
-    options?: {
-      label: string
-      value: string
-      description?: string
-      isRecentlyUsed?: boolean
-      showInfoIcon?: boolean
-      onInfoClick?: (option: any) => void
-    }[]
-    description?: string
-    isRecentlyUsed?: boolean
-    showInfoIcon?: boolean
-    onInfoClick?: (option: any) => void
-  }[]
+  options: SelectOption[]
   value: any
   onChange: (value: any) => void
   helperText?: string
@@ -35,6 +35,13 @@ interface CustomSelectProps {
   menuListWidth?: string | number
   showPinIcon?: boolean
   menuFooter?: ReactNode
+  testId?: string
+}
+
+function sanitizeOptionValue(value: unknown) {
+  return String(value ?? 'option')
+    .trim()
+    .replace(/[^\w-]+/g, '-')
 }
 
 const FLSelect: React.FC<CustomSelectProps> = ({
@@ -52,6 +59,7 @@ const FLSelect: React.FC<CustomSelectProps> = ({
   variant = 'regular',
   showPinIcon = false,
   menuFooter,
+  testId,
 }) => {
   const controlStyles = {
     small: {
@@ -131,8 +139,23 @@ const FLSelect: React.FC<CustomSelectProps> = ({
       )
     },
     Option: ({ children, ...props }: any) => {
+      const optionValue = sanitizeOptionValue(
+        props.data.value
+        ?? props.data.id
+        ?? props.data.bundleId
+        ?? props.data.path
+        ?? props.data.name
+        ?? props.data.label,
+      )
+
       return (
-        <chakraComponents.Option {...props}>
+        <chakraComponents.Option
+          {...props}
+          innerProps={{
+            ...props.innerProps,
+            'data-testid': testId ? `${testId}-option-${optionValue}` : undefined,
+          }}
+        >
           <Box
             position="relative" 
             width="100%" 
@@ -192,135 +215,142 @@ const FLSelect: React.FC<CustomSelectProps> = ({
   }
 
   return (
-    <Select
-      options={options}
-      value={value}
-      onChange={(selected) => {
-        onChange(selected)
-      }}
-      noOptionsMessage={() => noOptionsMessage}
-      placeholder={placeholder || label}
-      isSearchable={searchable}
-      isDisabled={isDisabled}
-      components={customComponents}
-      size="md"
-      chakraStyles={{
-        menu: provided => ({
-          ...provided,
-          zIndex: 100,
-          bg: 'bgPrimary',
-          border: 'none',
-          borderRadius: 'md',
-          overflow: 'hidden',
-          boxShadow: 'lg',
-          width: menuListWidth === 'auto' ? width : menuListWidth,
-          py: 0,
-        }),
-        menuList: provided => ({
-          ...provided,
-          border: 'none',
-          borderRadius: 'md',
-          boxShadow: 'none',
-          width: menuListWidth,
-          paddingTop: 0,
-          paddingBottom: 0,
-          maxHeight: '240px',
-        }),
-        option: provided => ({
-          ...provided,
-          bg: 'transparent',
-          py: 2,
-          px: 3,
-          _selected: {
-            bg: 'flipioPrimary',
-            color: 'white',
-          },
-          _hover: {
-            bg: 'bgTertiary',
-            cursor: 'pointer',
-          },
-          _focus: {
-            bg: 'bgTertiary',
-          },
-        }),
-        container: provided => ({
-          ...provided,
-          width,
-        }),
-        dropdownIndicator: provided => ({
-          ...provided,
-          color: 'textSecondary',
-          _hover: {
-            color: 'flipioPrimary',
-          },
-        }),
-        indicatorSeparator: provided => ({
-          ...provided,
-          display: 'none',
-        }),
-        control: provided => ({
-          ...provided,
-          bg: 'bgPrimary',
-          borderColor: 'borderPrimary',
-          
-          borderRadius: 'sm',
-     
-          fontSize: 'sm',
-          fontWeight: 'medium',
-          transition: 'all 0.2s',
-          _hover: {
-            borderColor: 'flipioPrimary',
-            boxShadow: '0 0 0 1px var(--chakra-colors-flipioPrimary)',
-          },
-          _focus: {
-            borderColor: 'flipioPrimary',
-            outline: 'none',
-            boxShadow: '0 0 0 2px var(--chakra-colors-flipioPrimary)',
-          },
-          _disabled: {
-            bg: 'bgTertiary',
-            borderColor: 'borderSecondary',
-            opacity: 0.6,
-            cursor: 'not-allowed',
-          },
-          ...styles.control,
-        }),
-        placeholder: provided => ({
-          ...provided,
-          color: 'textTertiary',
-          fontSize: 'sm',
-        }),
-        singleValue: provided => ({
-          ...provided,
-          color: 'textPrimary',
-          fontSize: 'sm',
-          fontWeight: 'medium',
-        }),
-        input: provided => ({
-          ...provided,
-          color: 'textPrimary',
-        }),
-        group: provided => ({
-          ...provided,
-          paddingTop: 0,
-          paddingBottom: 0,
-        }),
-        groupHeading: provided => ({
-          ...provided,
-          bg: 'bgSecondary',
-          color: 'textSecondary',
-          fontSize: 'xs',
-          fontWeight: 'bold',
-          textTransform: 'uppercase',
-          letterSpacing: '0.05em',
-          py: 2,
-          px: 3,
-          borderBottom: '1px solid',
-          borderColor: 'borderPrimary',
-          margin: 0,
-        }),
-      }}
-    />
+    <Box
+      data-testid={testId}
+      data-e2e-disabled={isDisabled ? 'true' : 'false'}
+      width={width}
+    >
+      <Select
+        options={options}
+        value={value}
+        onChange={(selected) => {
+          onChange(selected)
+        }}
+        noOptionsMessage={() => noOptionsMessage}
+        placeholder={placeholder || label}
+        isSearchable={searchable}
+        isDisabled={isDisabled}
+        components={customComponents}
+        size="md"
+        inputId={testId}
+        instanceId={testId}
+        menuPortalTarget={typeof document !== 'undefined' ? document.body : undefined}
+        chakraStyles={{
+          menu: provided => ({
+            ...provided,
+            zIndex: 100,
+            bg: 'bgPrimary',
+            border: 'none',
+            borderRadius: 'md',
+            overflow: 'hidden',
+            boxShadow: 'lg',
+            width: menuListWidth === 'auto' ? width : menuListWidth,
+            py: 0,
+          }),
+          menuList: provided => ({
+            ...provided,
+            border: 'none',
+            borderRadius: 'md',
+            boxShadow: 'none',
+            width: menuListWidth,
+            paddingTop: 0,
+            paddingBottom: 0,
+            maxHeight: '240px',
+          }),
+          option: provided => ({
+            ...provided,
+            bg: 'transparent',
+            py: 2,
+            px: 3,
+            _selected: {
+              bg: 'flipioPrimary',
+              color: 'white',
+            },
+            _hover: {
+              bg: 'bgTertiary',
+              cursor: 'pointer',
+            },
+            _focus: {
+              bg: 'bgTertiary',
+            },
+          }),
+          container: provided => ({
+            ...provided,
+            width,
+          }),
+          dropdownIndicator: provided => ({
+            ...provided,
+            color: 'textSecondary',
+            _hover: {
+              color: 'flipioPrimary',
+            },
+          }),
+          indicatorSeparator: provided => ({
+            ...provided,
+            display: 'none',
+          }),
+          control: provided => ({
+            ...provided,
+            bg: 'bgPrimary',
+            borderColor: 'borderPrimary',
+            borderRadius: 'sm',
+            fontSize: 'sm',
+            fontWeight: 'medium',
+            transition: 'all 0.2s',
+            _hover: {
+              borderColor: 'flipioPrimary',
+              boxShadow: '0 0 0 1px var(--chakra-colors-flipioPrimary)',
+            },
+            _focus: {
+              borderColor: 'flipioPrimary',
+              outline: 'none',
+              boxShadow: '0 0 0 2px var(--chakra-colors-flipioPrimary)',
+            },
+            _disabled: {
+              bg: 'bgTertiary',
+              borderColor: 'borderSecondary',
+              opacity: 0.6,
+              cursor: 'not-allowed',
+            },
+            ...styles.control,
+          }),
+          placeholder: provided => ({
+            ...provided,
+            color: 'textTertiary',
+            fontSize: 'sm',
+          }),
+          singleValue: provided => ({
+            ...provided,
+            color: 'textPrimary',
+            fontSize: 'sm',
+            fontWeight: 'medium',
+          }),
+          input: provided => ({
+            ...provided,
+            color: 'textPrimary',
+          }),
+          group: provided => ({
+            ...provided,
+            paddingTop: 0,
+            paddingBottom: 0,
+          }),
+          groupHeading: provided => ({
+            ...provided,
+            bg: 'bgSecondary',
+            color: 'textSecondary',
+            fontSize: 'xs',
+            fontWeight: 'bold',
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em',
+            py: 2,
+            px: 3,
+            borderBottom: '1px solid',
+            borderColor: 'borderPrimary',
+            margin: 0,
+          }),
+        }}
+      />
+    </Box>
   )
 }
 

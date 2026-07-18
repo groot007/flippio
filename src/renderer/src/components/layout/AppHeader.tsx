@@ -426,6 +426,7 @@ function AppHeader() {
           {/* Device and App Selection */}
           <HStack gap={4} alignItems="center" flex={1}>
             <FLSelect
+              testId="device-select"
               options={devicesSelectOptions}
               label="Select Device"
               value={selectedDeviceOption}
@@ -435,6 +436,7 @@ function AppHeader() {
               noOptionsMessage="No devices found. Connect a device or launch an emulator/simulator"
             />
             <FLSelect
+              testId="app-select"
               options={applicationSelectOptions}
               label="Select App"
               menuListWidth={300}

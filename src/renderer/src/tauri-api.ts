@@ -3,6 +3,12 @@
 
 import { createDatabaseApi } from '@renderer/api/databases'
 import { createDeviceApi } from '@renderer/api/devices'
+import {
+  getUnhandledCommandSentinel,
+  installE2EController,
+  isE2EModeEnabled,
+  maybeHandleE2ECommand,
+} from '@renderer/e2e/mockRuntime'
 import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 
@@ -21,6 +27,7 @@ async function initializeEventSystem() {
 
 // Initialize events immediately
 initializeEventSystem()
+installE2EController()
 
 // Types to match the Electron API
 interface DeviceResponse<T> {
@@ -211,6 +218,17 @@ const COMMAND_MAP = {
   'common:exportLogs': 'export_logs',
 }
 
+async function invokeTauriCommand<T>(tauriCommand: string, parameters?: Record<string, unknown>): Promise<T> {
+  if (isE2EModeEnabled()) {
+    const mockedResult = await maybeHandleE2ECommand(tauriCommand, parameters ?? {})
+    if (mockedResult !== getUnhandledCommandSentinel()) {
+      return mockedResult as T
+    }
+  }
+
+  return invoke<T>(tauriCommand, parameters)
+}
+
 // Helper function for commands that need to preserve Electron-style response structure
 async function invokeCommandWithResponse<T>(electronCommand: string, dataFieldName: string, ...args: any[]): Promise<{ success: boolean, [key: string]: any }> {
   console.log('🔍 [invokeCommandWithResponse] Called with:', { electronCommand, dataFieldName, args })
@@ -261,7 +279,7 @@ async function invokeCommandWithResponse<T>(electronCommand: string, dataFieldNa
       }
 
       console.log(`🔍 [invokeCommandWithResponse] Invoking ${tauriCommand} with parameters:`, parameters)
-      const response = await invoke<DeviceResponse<T>>(tauriCommand, parameters)
+      const response = await invokeTauriCommand<DeviceResponse<T>>(tauriCommand, parameters)
       console.log(`🔍 [invokeCommandWithResponse] Raw response from ${tauriCommand}:`, response)
 
       // Validate the response structure
@@ -413,7 +431,7 @@ export const api = {
 
   ...createDatabaseApi({
     invokeCommandWithResponse,
-    invokeRaw: invoke,
+    invokeRaw: invokeTauriCommand,
     validateDeviceResponse,
     validateInput,
   }),
@@ -544,7 +562,7 @@ export const api = {
         })),
       }
 
-      const response = await invoke<string | null>('export_text_file', { options: transformedOptions })
+      const response = await invokeTauriCommand<string | null>('export_text_file', { options: transformedOptions })
       return response
     }
     catch (error) {
@@ -555,7 +573,7 @@ export const api = {
 
   exportLogs: async () => {
     try {
-      const response = await invoke<string | null>('export_logs')
+      const response = await invokeTauriCommand<string | null>('export_logs')
       return response
     }
     catch (error) {
@@ -578,7 +596,7 @@ export const api = {
   // Auto-updater methods
   checkForUpdates: async () => {
     try {
-      const response = await invoke<any>('check_for_updates')
+      const response = await invokeTauriCommand<any>('check_for_updates')
       return {
         success: response.success,
         updateAvailable: response.data?.available || false,
@@ -596,7 +614,7 @@ export const api = {
 
   downloadAndInstallUpdate: async () => {
     try {
-      const response = await invoke<any>('download_and_install_update')
+      const response = await invokeTauriCommand<any>('download_and_install_update')
       return {
         success: response.success,
         error: response.error,
@@ -648,7 +666,7 @@ export const api = {
         const uint8Array = new Uint8Array(arrayBuffer)
 
         // Call our Tauri command to save the dropped file content
-        const filePath = await invoke<string>('save_dropped_file', {
+        const filePath = await invokeTauriCommand<string>('save_dropped_file', {
           fileContent: Array.from(uint8Array),
           filename: file.name,
         })

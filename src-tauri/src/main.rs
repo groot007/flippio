@@ -11,6 +11,7 @@ use commands::database::{DbPool, DatabaseConnectionManager, ChangeHistoryManager
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    let is_embedded_wdio = std::env::var("TAURI_WEBDRIVER_PORT").is_ok();
     // Initialize database connection management
     let db_pool: DbPool = Arc::new(RwLock::new(None)); // Legacy pool for compatibility
     let connection_manager = DatabaseConnectionManager::with_config(ConnectionConfig::with_cache_disabled());
@@ -19,42 +20,45 @@ pub fn run() {
     // Initialize change history manager (Phase 1)
     let change_history_manager = ChangeHistoryManager::new();
     
-    let mut builder = tauri::Builder::default()
-        .plugin(
-            tauri_plugin_log::Builder::new()
-                .clear_targets()
-                .format(|out, message, record| {
-                    let timestamp = chrono::Utc::now().to_rfc3339_opts(SecondsFormat::Millis, true);
-                    let source = if record.target().starts_with(WEBVIEW_TARGET) {
-                        "🖥 frontend"
-                    } else {
-                        "⚙ backend"
-                    };
-                    out.finish(format_args!(
-                        "{} [{}] [{}] {}",
-                        timestamp,
-                        record.level(),
-                        source,
-                        message
-                    ))
+    let mut log_plugin = tauri_plugin_log::Builder::new()
+        .clear_targets()
+        .format(|out, message, record| {
+            let timestamp = chrono::Utc::now().to_rfc3339_opts(SecondsFormat::Millis, true);
+            let source = if record.target().starts_with(WEBVIEW_TARGET) {
+                "🖥 frontend"
+            } else {
+                "⚙ backend"
+            };
+            out.finish(format_args!(
+                "{} [{}] [{}] {}",
+                timestamp,
+                record.level(),
+                source,
+                message
+            ))
+        })
+        .timezone_strategy(TimezoneStrategy::UseUtc)
+        .rotation_strategy(RotationStrategy::KeepSome(10))
+        .target(Target::new(TargetKind::Stdout));
+
+    if !is_embedded_wdio {
+        log_plugin = log_plugin
+            .target(
+                Target::new(TargetKind::LogDir {
+                    file_name: Some("frontend".into()),
                 })
-                .timezone_strategy(TimezoneStrategy::UseUtc)
-                .rotation_strategy(RotationStrategy::KeepSome(10))
-                .target(Target::new(TargetKind::Stdout))
-                .target(
-                    Target::new(TargetKind::LogDir {
-                        file_name: Some("frontend".into()),
-                    })
-                    .filter(|metadata| metadata.target().starts_with(WEBVIEW_TARGET)),
-                )
-                .target(
-                    Target::new(TargetKind::LogDir {
-                        file_name: Some("backend".into()),
-                    })
-                    .filter(|metadata| !metadata.target().starts_with(WEBVIEW_TARGET)),
-                )
-                .build(),
-        )
+                .filter(|metadata| metadata.target().starts_with(WEBVIEW_TARGET)),
+            )
+            .target(
+                Target::new(TargetKind::LogDir {
+                    file_name: Some("backend".into()),
+                })
+                .filter(|metadata| !metadata.target().starts_with(WEBVIEW_TARGET)),
+            );
+    }
+
+    let mut builder = tauri::Builder::default()
+        .plugin(log_plugin.build())
         .manage(db_pool)
         .manage(db_cache)
         .manage(change_history_manager)
@@ -68,6 +72,8 @@ pub fn run() {
         })
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
+        .plugin(tauri_plugin_wdio::init())
+        .plugin(tauri_plugin_wdio_webdriver::init())
         .plugin(tauri_plugin_shell::init());
 
     // Add updater plugin only for desktop platforms

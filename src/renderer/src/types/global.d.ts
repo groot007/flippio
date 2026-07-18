@@ -11,6 +11,19 @@ declare global {
 
   interface Window {
     env: any
+    __FLIPPIO_E2E__?: {
+      enabled: boolean
+      getCommandHistory: () => Array<{
+        command: string
+        handled: boolean
+        params: Record<string, unknown>
+        timestamp: string
+      }>
+      getScenarioState: () => unknown
+      loadScenario: (scenario: unknown) => void
+      prepareScenario: (scenario: unknown) => Promise<void>
+      resetScenario: () => void
+    }
     // electron: Electron // Not used in Tauri
     api: DeviceApi & DatabaseApi & {
       // Device operations

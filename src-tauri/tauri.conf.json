@@ -9,6 +9,7 @@
     "frontendDist": "../src/renderer/dist"
   },
   "app": {
+    "withGlobalTauri": true,
     "security": {
       "csp": null,
       "capabilities": [
@@ -30,6 +31,7 @@
             "fs:default",
             "dialog:default",
             "log:default",
+            "wdio:default",
             "updater:default"
           ]
         }

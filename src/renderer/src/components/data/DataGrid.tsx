@@ -272,6 +272,7 @@ export function DataGrid() {
   if (isLoadingTableData && !hasRows) {
     return (
       <Flex
+        data-testid="data-grid-loading"
         justifyContent="center"
         alignItems="center"
         height="calc(100vh - 140px)"
@@ -283,7 +284,7 @@ export function DataGrid() {
 
   if (error) {
     return (
-      <Center height="calc(100vh - 140px)" flexDirection="column">
+      <Center data-testid="data-grid-error" height="calc(100vh - 140px)" flexDirection="column">
         <Text fontSize="xl" mb={4} color="red.500">Error loading data</Text>
         <Text color="gray.500">{String(error)}</Text>
       </Center>
@@ -292,7 +293,7 @@ export function DataGrid() {
 
   if (emptyStateMessage) {
     return (
-      <Center height="calc(100vh - 140px)" flexDirection="column">
+      <Center data-testid="data-grid-empty-state" height="calc(100vh - 140px)" flexDirection="column">
         <Text fontSize="lg" fontWeight="medium" color="textPrimary">{emptyStateMessage}</Text>
         <Text color="textSecondary">Current grid cleared until new context is ready.</Text>
       </Center>
@@ -300,7 +301,7 @@ export function DataGrid() {
   }
 
   return (
-    <Box flex={1} height="full" width="full" position="relative">
+    <Box data-testid="data-grid-shell" flex={1} height="full" width="full" position="relative">
       {isRefreshingTableData && (
         <Flex
           position="absolute"
@@ -368,6 +369,7 @@ export function DataGrid() {
 
       {selectedDatabaseTable && (
         <Button
+          data-testid="add-row-button"
           aria-label="Add new row"
           size="lg"
           position="absolute"

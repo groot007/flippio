@@ -178,6 +178,7 @@ export const RowEditor: React.FC<RowEditorProps> = ({
         {!isEditing
           ? (
               <Button
+                data-testid="edit-row-button"
                 size="sm"
                 onClick={startEditing}
                 disabled={isBusy}
@@ -191,6 +192,7 @@ export const RowEditor: React.FC<RowEditorProps> = ({
           : (
               <>
                 <Button
+                  data-testid="save-row-button"
                   colorScheme="green"
                   size="sm"
                   onClick={handleSave}

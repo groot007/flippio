@@ -486,6 +486,7 @@ export function SubHeader() {
             : (
                 <Box>
                   <FLSelect
+                    testId="database-file-select"
                     label="Select Database"
                     options={dbFileOptions}
                     value={selectedDatabaseFileOption}
@@ -500,6 +501,7 @@ export function SubHeader() {
 
           <Box>
             <FLSelect
+              testId="table-select"
               label="Select Table"
               options={tableOptions}
               value={selectedDatabaseTableOption}
