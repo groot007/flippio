@@ -376,10 +376,16 @@ Remove legacy overlap and make the state ownership model obvious.
 
 ### Deliverables
 
-- [ ] Remove or archive legacy `appStore` if still overlapping active flow
+- [x] Remove or archive legacy `appStore` if still overlapping active flow
 - [x] Normalize selection-related types across stores/hooks/adapters
 - [x] Remove overlapping “current selection” concepts where possible
 - [ ] Verify stores contain state, not policy
+
+`appStore` overlap check on July 18, 2026:
+
+- repo text search for `appStore`, `appstore`, `app_store`, and `app store` found no active code references
+- filename scan found no matching store/module files
+- result: no live legacy `appStore` overlap remained to remove or archive in the active flow
 
 ### Test Checkpoint
 
@@ -417,6 +423,13 @@ Recorded results for the Iteration 4 iPhone loading-state regression follow-up o
 - `npm run build --prefix src/renderer` — passed
 - Existing React `act(...)` warnings still appear in modal-heavy UI tests, but the suite passed and this follow-up did not add new failing checks
 
+Recorded results for the Iteration 4 `appStore` overlap verification follow-up on July 18, 2026:
+
+- `npx eslint docs/guides/refactor-iteration-plan.md` — no lint errors; file was ignored by current ESLint ignore settings
+- `npm test` — passed
+- `npm run build --prefix src/renderer` — passed
+- Existing React `act(...)` warnings still appear in modal-heavy UI tests, but the suite passed and this follow-up did not add new failing checks
+
 ### Review Checkpoint
 
 - [x] Clean-context reviewer checks:
@@ -434,6 +447,8 @@ Manual clean-context fallback review for the Iteration 4 selection-contract norm
 Manual clean-context fallback review for the Iteration 4 database-selection store coverage follow-up on July 18, 2026: `acceptable`
 
 Manual clean-context fallback review for the Iteration 4 iPhone loading-state regression follow-up on July 18, 2026: `acceptable`
+
+Manual clean-context fallback review for the Iteration 4 `appStore` overlap verification follow-up on July 18, 2026: `acceptable`
 
 ### Approval Gate
 
