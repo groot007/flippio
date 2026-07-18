@@ -7,6 +7,7 @@ Context:
 - Project: <project>
 - Iteration: <iteration name>
 - Goal: <goal>
+- Active plan file: <plan path>
 - Acceptance criteria:
   - <criterion 1>
   - <criterion 2>
@@ -22,6 +23,7 @@ Execution rules:
 - This is one iteration only. Do not widen the scope.
 - You are not alone in the codebase. Do not revert unrelated changes.
 - Prefer the smallest change that satisfies the acceptance criteria.
+- Treat the active plan checklist as the scope contract for this iteration.
 - Run the required checks for the slice.
 - If review feedback is included, treat only the blocking findings as required fixes.
 
@@ -30,5 +32,7 @@ Return exactly:
 2. Files changed
 3. Tests/checks run
 4. Results
-5. Remaining risks or open questions
+5. Checklist items now complete
+6. Checklist items still incomplete or unproven
+7. Remaining risks or open questions
 ```

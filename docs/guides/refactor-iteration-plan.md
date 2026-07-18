@@ -112,14 +112,14 @@ Freeze the first refactor slice and document the invariants that must not regres
 
 ### Deliverables
 
-- [ ] Confirm first slice scope:
+- [x] Confirm first slice scope:
   - `device -> app -> database -> table`
-- [ ] Split known behavior into:
+- [x] Split known behavior into:
   - core seam invariants
   - protected but deferred edge flows
-- [ ] Identify exact files in scope for Iteration 1
-- [ ] Write current selection/reset/refetch invariants
-- [ ] Write a short manual regression checklist for the hot path
+- [x] Identify exact files in scope for Iteration 1
+- [x] Write current selection/reset/refetch invariants
+- [x] Write a short manual regression checklist for the hot path
 
 ### Files Likely In Scope
 
@@ -135,8 +135,8 @@ Freeze the first refactor slice and document the invariants that must not regres
 
 ### Test Checkpoint
 
-- [ ] Run only the existing relevant tests for current baseline
-- [ ] Record baseline pass/fail status
+- [x] Run only the existing relevant tests for current baseline
+- [x] Record baseline pass/fail status
 - [ ] Record any known flaky/pre-existing failures
 
 ### Review Checkpoint
@@ -164,10 +164,10 @@ Create the behavioral safety net for the core seam before changing architecture.
 
 #### Renderer user-flow coverage
 
-- [ ] Add test: selecting device updates downstream selection correctly
-- [ ] Add test: selecting application resets dependent database/table state correctly
-- [ ] Add test: selecting database resets table/row context correctly
-- [ ] Add test: refresh/reconciliation handles missing device/app/database correctly
+- [x] Add test: selecting device updates downstream selection correctly
+- [x] Add test: selecting application resets dependent database/table state correctly
+- [x] Add test: selecting database resets table/row context correctly
+- [x] Add test: refresh/reconciliation handles missing device/app/database correctly
 - [ ] Add test: fast switching does not leave stale visible state
 
 #### Selection contract coverage
@@ -178,7 +178,7 @@ Create the behavioral safety net for the core seam before changing architecture.
   - next state
   - invalidations
   - cleanup
-- [ ] Add tests for:
+- [x] Add tests for:
   - `selectDevice`
   - `selectApplication`
   - `selectDatabase`
@@ -242,18 +242,18 @@ Move only core selection transition policy out of `AppHeader.tsx` and `SubHeader
 
 ### Deliverables
 
-- [ ] Introduce `selection-session` module or hook
-- [ ] Define public commands:
+- [x] Introduce `selection-session` module or hook
+- [x] Define public commands:
   - `selectDevice`
   - `selectApplication`
   - `selectDatabase`
   - `refreshSelectionGraph`
   - `clearTableContext`
-- [ ] Move device-selection transition logic
-- [ ] Move application-selection transition logic
-- [ ] Move database-selection transition logic
-- [ ] Move refresh/reconciliation logic
-- [ ] Keep existing component handlers and `useEffect` wiring as thin adapters around the new policy seam
+- [x] Move device-selection transition logic
+- [x] Move application-selection transition logic
+- [x] Move database-selection transition logic
+- [x] Move refresh/reconciliation logic
+- [x] Keep existing component handlers and `useEffect` wiring as thin adapters around the new policy seam
 - [ ] Reduce `AppHeader.tsx` and `SubHeader.tsx` toward view and event wiring only
 
 ### Constraints
@@ -272,7 +272,7 @@ Move only core selection transition policy out of `AppHeader.tsx` and `SubHeader
   - `npx eslint <changed files...>`
   - `npm test`
   - `npm run build --prefix src/renderer`
-- [ ] Add targeted tests if new selection-session public APIs were introduced
+- [x] Add targeted tests if new selection-session public APIs were introduced
 - [ ] Record results
 
 ### Review Checkpoint

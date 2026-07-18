@@ -26,10 +26,19 @@ Before spawning the implementer, gather only:
 - iteration name
 - iteration goal
 - explicit acceptance criteria
+- plan file path for the active iteration checklist
 - allowed files or modules
 - files that are out of scope
 - required test commands
 - current review constraints from the plan
+
+Treat the active plan document as a required control artifact, not background reading.
+
+Before implementation starts:
+
+- identify the exact checklist items for the current iteration
+- use those items to define completion scope
+- avoid inferring completion from intent alone
 
 Do not pass broad historical context unless it is required for the slice.
 
@@ -44,8 +53,10 @@ The worker brief should say:
 - this is one scoped iteration only
 - do not widen scope
 - do not revert unrelated user changes
+- use the active plan checklist as the implementation contract
 - run the required checks for the slice
 - report changed files, tests run, results, and known risks
+- report which checklist items are now fully complete, which remain incomplete, and why
 
 Use the template in [references/implementer-prompt.md](references/implementer-prompt.md).
 
@@ -62,11 +73,28 @@ After the worker returns:
 - collect the changed files
 - collect the diff
 - collect test commands and results
+- collect the worker's mapping from completed work to plan checklist items
 - invoke the `clean-context-review` skill
 
 The main agent must keep the review isolated from implementation backstory.
 
-## 4. Loop Rule
+## 4. Plan Update Gate
+
+After implementation and before the final approval question:
+
+- re-read the active plan file
+- compare the worker result, changed code, and test evidence against the checklist
+- patch only the checklist items that are clearly complete
+- leave review, approval, commit, and test-result recording items unchecked unless that evidence is explicitly present
+- do not mark an item done just because related code changed; require direct evidence in the repo or command results
+
+If the iteration produced only a partial slice:
+
+- update the plan conservatively
+- keep incomplete or unproven items unchecked
+- mention the remaining unchecked items in the summary
+
+## 5. Loop Rule
 
 If the reviewer verdict is:
 
@@ -85,7 +113,7 @@ If the reviewer verdict is:
   - keep the same iteration boundary
   - run the loop again
 
-## 5. Stop Rule
+## 6. Stop Rule
 
 If the worker-review loop reaches more than three implementation attempts for the same iteration:
 
@@ -109,6 +137,7 @@ Do not continue automatically after the third failed review loop.
 - Worker and reviewer agents are short-lived and must be closed as soon as their output is integrated into the orchestrator flow.
 - The main agent remains responsible for:
   - plan tracking
+  - patching the active plan checklist after each completed slice
   - approval gates
   - commit handoff
   - deciding whether review findings are blocking or informational
@@ -120,6 +149,7 @@ If sub-agents are unavailable:
 - implement the same workflow manually
 - keep the same iteration brief
 - emulate the worker/reviewer separation as closely as possible
+- still re-read and patch the active plan checklist after each completed slice
 - still enforce the three-attempt stop rule
 
 ## Agent Lifecycle Rule
