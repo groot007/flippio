@@ -12,7 +12,7 @@ interface TableDataState {
   tableName?: string
 }
 
-interface SelectionSessionActions {
+export interface SelectionSessionActions {
   clearTableData: () => void
   setSelectedApplication: (application: ApplicationInfo | null) => void
   setSelectedDatabaseFile: (databaseFile: DatabaseFile | null) => void

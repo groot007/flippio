@@ -5,11 +5,11 @@ import {
   selectApplication,
   selectDevice,
 } from '@renderer/features/layout/selectionSession'
+import { useSelectionSessionActions } from '@renderer/features/layout/useSelectionSessionActions'
 import { fetchApplicationsForDevice, useApplications } from '@renderer/hooks/useApplications'
 import { fetchDatabaseFilesForSelection } from '@renderer/hooks/useDatabaseFiles'
 import { useDevices } from '@renderer/hooks/useDevices'
-import { useCurrentDatabaseSelection, useCurrentDeviceSelection, useRecentlyUsedApps, useTableData } from '@renderer/store'
-import { useRowEditingStore } from '@renderer/store/useRowEditingStore'
+import { useCurrentDatabaseSelection, useCurrentDeviceSelection, useRecentlyUsedApps } from '@renderer/store'
 import { toaster } from '@renderer/ui/toaster'
 import { useQueryClient } from '@tanstack/react-query'
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -23,14 +23,9 @@ function AppHeader() {
   const [isVirtualDeviceModalOpen, setIsVirtualDeviceModalOpen] = useState(false)
 
   const selectedDevice = useCurrentDeviceSelection(state => state.selectedDevice)
-  const setSelectedDevice = useCurrentDeviceSelection(state => state.setSelectedDevice)
   const selectedApplication = useCurrentDeviceSelection(state => state.selectedApplication)
-  const setSelectedApplication = useCurrentDeviceSelection(state => state.setSelectedApplication)
   const selectedDatabaseFile = useCurrentDatabaseSelection(state => state.selectedDatabaseFile)
-  const setSelectedDatabaseFile = useCurrentDatabaseSelection(state => state.setSelectedDatabaseFile)
-  const setSelectedDatabaseTable = useCurrentDatabaseSelection(state => state.setSelectedDatabaseTable)
-  const clearTableData = useTableData(state => state.clearTableData)
-  const setSelectedRow = useRowEditingStore(state => state.setSelectedRow)
+  const selectionActions = useSelectionSessionActions()
   
   const { addRecentApp, getRecentAppsForDevice } = useRecentlyUsedApps()
   const queryClient = useQueryClient()
@@ -152,16 +147,9 @@ function AppHeader() {
         matchedDevice,
         preserveDatabaseFile: selectedDatabaseFile?.deviceType === 'desktop',
       },
-      {
-        setSelectedDevice,
-        setSelectedApplication,
-        setSelectedDatabaseFile,
-        setSelectedDatabaseTable,
-        clearTableData,
-        setSelectedRow,
-      },
+      selectionActions,
     )
-  }, [clearTableData, devicesList, selectedDatabaseFile, selectedDevice, setSelectedApplication, setSelectedDatabaseFile, setSelectedDatabaseTable, setSelectedDevice, setSelectedRow])
+  }, [devicesList, selectedDatabaseFile, selectedDevice, selectionActions])
 
   useEffect(() => {
     if (!selectedApplication) {
@@ -178,16 +166,9 @@ function AppHeader() {
         selectedApplication,
         matchedApplication,
       },
-      {
-        setSelectedDevice,
-        setSelectedApplication,
-        setSelectedDatabaseFile,
-        setSelectedDatabaseTable,
-        clearTableData,
-        setSelectedRow,
-      },
+      selectionActions,
     )
-  }, [applicationsList, clearTableData, isLoading, selectedApplication, setSelectedApplication, setSelectedDatabaseFile, setSelectedDatabaseTable, setSelectedDevice, setSelectedRow])
+  }, [applicationsList, isLoading, selectedApplication, selectionActions])
 
   const handleRefreshDevices = useCallback(async () => {
     try {
@@ -207,14 +188,7 @@ function AppHeader() {
           matchedDevice,
           preserveDatabaseFile: selectedDatabaseFile?.deviceType === 'desktop',
         },
-        {
-          setSelectedDevice,
-          setSelectedApplication,
-          setSelectedDatabaseFile,
-          setSelectedDatabaseTable,
-          clearTableData,
-          setSelectedRow,
-        },
+        selectionActions,
       )
 
       if (selectedDevice && !matchedDevice) {
@@ -249,14 +223,7 @@ function AppHeader() {
               selectedApplication,
               matchedApplication,
             },
-            {
-              setSelectedDevice,
-              setSelectedApplication,
-              setSelectedDatabaseFile,
-              setSelectedDatabaseTable,
-              clearTableData,
-              setSelectedRow,
-            },
+            selectionActions,
           )
 
           if (matchedApplication && selectedDatabaseFile?.deviceType !== 'desktop' && selectedDatabaseFile) {
@@ -273,14 +240,7 @@ function AppHeader() {
                 selectedDatabaseFile,
                 matchedDatabaseFile,
               },
-              {
-                setSelectedDevice,
-                setSelectedApplication,
-                setSelectedDatabaseFile,
-                setSelectedDatabaseTable,
-                clearTableData,
-                setSelectedRow,
-              },
+              selectionActions,
             )
           }
         }
@@ -318,10 +278,7 @@ function AppHeader() {
     selectedApplication,
     selectedDatabaseFile,
     selectedDevice,
-    setSelectedApplication,
-    setSelectedDatabaseFile,
-    setSelectedDatabaseTable,
-    setSelectedDevice,
+    selectionActions,
   ])
 
   const devicesSelectOptions = useMemo(() =>
@@ -408,16 +365,9 @@ function AppHeader() {
     })
     selectDevice({
       device: value,
-      actions: {
-        setSelectedDevice,
-        setSelectedApplication,
-        setSelectedDatabaseFile,
-        setSelectedDatabaseTable,
-        clearTableData,
-        setSelectedRow,
-      },
+      actions: selectionActions,
     })
-  }, [clearTableData, setSelectedApplication, setSelectedDatabaseFile, setSelectedDatabaseTable, setSelectedDevice, setSelectedRow])
+  }, [selectionActions])
 
   const handlePackageChange = useCallback((value) => {
     console.info('CriticalPath: app selected', {
@@ -429,16 +379,9 @@ function AppHeader() {
       application: value,
       currentDevice: selectedDevice,
       addRecentApp,
-      actions: {
-        setSelectedDevice,
-        setSelectedApplication,
-        setSelectedDatabaseFile,
-        setSelectedDatabaseTable,
-        clearTableData,
-        setSelectedRow,
-      },
+      actions: selectionActions,
     })
-  }, [addRecentApp, clearTableData, selectedDevice, setSelectedApplication, setSelectedDatabaseFile, setSelectedDatabaseTable, setSelectedRow])
+  }, [addRecentApp, selectedDevice, selectionActions])
 
   const handleOpenVirtualDeviceModal = useCallback(() => {
     setIsVirtualDeviceModalOpen(true)

@@ -1,8 +1,25 @@
 import type { ReactNode } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { renderHook, waitFor } from '@testing-library/react'
+import { act, renderHook, waitFor } from '@testing-library/react'
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { useDatabaseFiles } from '../useDatabaseFiles'
+
+const { listenHandlers, mockListen } = vi.hoisted(() => {
+  const handlers = new Map<string, (event: { payload: any }) => void>()
+  return {
+    listenHandlers: handlers,
+    mockListen: vi.fn(async (eventName: string, handler: (event: { payload: any }) => void) => {
+      handlers.set(eventName, handler)
+      return vi.fn(() => {
+        handlers.delete(eventName)
+      })
+    }),
+  }
+})
+
+vi.mock('@tauri-apps/api/event', () => ({
+  listen: mockListen,
+}))
 
 // Create a test wrapper for React Query
 function createWrapper() {
@@ -31,6 +48,17 @@ interface Application {
   name: string
 }
 
+function emitScanProgress(payload: Record<string, any>) {
+  const handler = listenHandlers.get('ios-db-scan-progress')
+  if (!handler) {
+    throw new Error('ios-db-scan-progress listener was not registered')
+  }
+
+  act(() => {
+    handler({ payload })
+  })
+}
+
 beforeAll(() => {
   // Mock window.api
   globalThis.window.api = {
@@ -48,10 +76,12 @@ describe('useDatabaseFiles hook', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    listenHandlers.clear()
     
     mockIOSDeviceDatabaseFiles = vi.mocked(globalThis.window.api.getIOSDeviceDatabaseFiles)
     mockIOSSimulatorDatabaseFiles = vi.mocked(globalThis.window.api.getIOSSimulatorDatabaseFiles)
     mockAndroidDatabaseFiles = vi.mocked(globalThis.window.api.getAndroidDatabaseFiles)
+    vi.mocked(globalThis.window.api.cancelIOSDeviceDatabaseScan).mockResolvedValue({ success: true })
   })
 
   it('should not make API call when no device is selected', () => {
@@ -398,4 +428,120 @@ describe('useDatabaseFiles hook', () => {
       },
     ])
   })
-}) 
+
+  it('clears stale visible iPhone scan state when switching to a new app context', async () => {
+    const device: Device = { id: 'iphone-1', deviceType: 'iphone-device' }
+    const app1: Application = { bundleId: 'com.test.first', name: 'First App' }
+    const app2: Application = { bundleId: 'com.test.second', name: 'Second App' }
+
+    mockIOSDeviceDatabaseFiles
+      .mockResolvedValueOnce({ success: true, files: [] })
+      .mockResolvedValueOnce({ success: true, files: [] })
+
+    const { result, rerender } = renderHook(
+      ({ application }) => useDatabaseFiles(device, application),
+      {
+        wrapper: createWrapper(),
+        initialProps: { application: app1 },
+      },
+    )
+
+    await waitFor(() => {
+      expect(result.current.isSuccess).toBe(true)
+    })
+
+    const firstRequestId = mockIOSDeviceDatabaseFiles.mock.calls[0][2]
+    expect(firstRequestId).toEqual(expect.any(String))
+
+    emitScanProgress({
+      scanKey: 'iphone-1:com.test.first',
+      scanRequestId: firstRequestId,
+      mode: 'replace',
+      phase: 'documents-root',
+      files: [
+        {
+          filename: 'stale.db',
+          path: '/stale.db',
+          device_type: 'iphone-device',
+          package_name: 'com.test.first',
+          remote_path: '/stale.db',
+        },
+      ],
+    })
+
+    expect(result.current.data).toEqual([
+      {
+        filename: 'stale.db',
+        path: '/stale.db',
+        deviceType: 'iphone-device',
+        packageName: 'com.test.first',
+        remotePath: '/stale.db',
+      },
+    ])
+
+    rerender({ application: app2 })
+
+    await waitFor(() => {
+      expect(mockIOSDeviceDatabaseFiles).toHaveBeenCalledTimes(2)
+    })
+
+    const secondRequestId = mockIOSDeviceDatabaseFiles.mock.calls[1][2]
+    expect(secondRequestId).toEqual(expect.any(String))
+    expect(secondRequestId).not.toBe(firstRequestId)
+    expect(globalThis.window.api.cancelIOSDeviceDatabaseScan).toHaveBeenCalledWith('iphone-1:com.test.first')
+    await waitFor(() => {
+      expect(result.current.data).toEqual([])
+    })
+  })
+
+  it('ignores stale iPhone scan events after refresh restarts the same scan key', async () => {
+    const device: Device = { id: 'iphone-1', deviceType: 'iphone-device' }
+    const application: Application = { bundleId: 'com.test.app', name: 'Test App' }
+
+    mockIOSDeviceDatabaseFiles
+      .mockResolvedValueOnce({ success: true, files: [] })
+      .mockResolvedValueOnce({ success: true, files: [] })
+
+    const { result } = renderHook(() => useDatabaseFiles(device, application), {
+      wrapper: createWrapper(),
+    })
+
+    await waitFor(() => {
+      expect(result.current.isSuccess).toBe(true)
+    })
+
+    const firstRequestId = mockIOSDeviceDatabaseFiles.mock.calls[0][2]
+    expect(firstRequestId).toEqual(expect.any(String))
+
+    await act(async () => {
+      await result.current.refetch()
+    })
+
+    await waitFor(() => {
+      expect(mockIOSDeviceDatabaseFiles).toHaveBeenCalledTimes(2)
+    })
+
+    const secondRequestId = mockIOSDeviceDatabaseFiles.mock.calls[1][2]
+    expect(secondRequestId).toEqual(expect.any(String))
+    expect(secondRequestId).not.toBe(firstRequestId)
+    expect(globalThis.window.api.cancelIOSDeviceDatabaseScan).toHaveBeenCalledWith('iphone-1:com.test.app')
+
+    emitScanProgress({
+      scanKey: 'iphone-1:com.test.app',
+      scanRequestId: firstRequestId,
+      mode: 'replace',
+      phase: 'documents-root',
+      files: [
+        {
+          filename: 'stale.db',
+          path: '/stale.db',
+          device_type: 'iphone-device',
+          package_name: 'com.test.app',
+          remote_path: '/stale.db',
+        },
+      ],
+    })
+
+    expect(result.current.data).toEqual([])
+  })
+})

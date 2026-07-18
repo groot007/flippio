@@ -300,6 +300,30 @@ describe('subHeader component', () => {
     })
   })
 
+  it('keeps a desktop-opened database as a separate context switch', async () => {
+    const view = render(<SubHeader />)
+
+    fireEvent.click(screen.getByText('Open'))
+
+    await waitFor(() => {
+      expect(globalThis.window.api.openFile).toHaveBeenCalledTimes(1)
+    })
+
+    await waitFor(() => {
+      expect(mockSelectedDevice).toBeNull()
+      expect(mockSelectedApplication).toBeNull()
+      expect(mockSelectedDatabaseTable).toBeNull()
+      expect(mockSelectedDatabaseFile).toMatchObject({
+        path: '/path/to/test.db',
+        filename: 'test.db',
+        deviceType: 'desktop',
+      })
+    })
+
+    view.rerender(<SubHeader />)
+    expect(screen.getByText('/path/to/test.db')).toBeInTheDocument()
+  })
+
   it('calls exportFile when export button is clicked', async () => {
     render(<SubHeader />)
 

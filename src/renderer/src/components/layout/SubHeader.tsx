@@ -11,11 +11,11 @@ import {
   selectDatabase,
   selectTable,
 } from '@renderer/features/layout/selectionSession'
+import { useSelectionSessionActions } from '@renderer/features/layout/useSelectionSessionActions'
 import { useDatabaseFiles } from '@renderer/hooks/useDatabaseFiles'
 import { useDatabaseTables } from '@renderer/hooks/useDatabaseTables'
 import { useTableDataQuery } from '@renderer/hooks/useTableDataQuery'
 import { useCurrentDatabaseSelection, useCurrentDeviceSelection, useTableData } from '@renderer/store'
-import { useRowEditingStore } from '@renderer/store/useRowEditingStore'
 import { toaster } from '@renderer/ui/toaster'
 import { groupDatabaseFilesByLocation } from '@renderer/utils/databaseFileGrouping'
 import { ensureActiveDatabaseFile } from '@renderer/utils/databaseFileResolver'
@@ -35,12 +35,12 @@ export function SubHeader() {
     setTableData,
     clearTableData,
   } = useTableData()
-  const setSelectedRow = useRowEditingStore(state => state.setSelectedRow)
   const tableDataStore = useTableData()
   const selectedDatabaseFile = useCurrentDatabaseSelection(state => state.selectedDatabaseFile)
   const setSelectedDatabaseFile = useCurrentDatabaseSelection(state => state.setSelectedDatabaseFile)
   const selectedDatabaseTable = useCurrentDatabaseSelection(state => state.selectedDatabaseTable)
   const setSelectedDatabaseTable = useCurrentDatabaseSelection(state => state.setSelectedDatabaseTable)
+  const selectionActions = useSelectionSessionActions()
 
   const [isQueryModalOpen, setIsQueryModalOpen] = useState(false)
   const [isSettingCustomFile, setIsSettingCustomFile] = useState(false)
@@ -55,7 +55,7 @@ export function SubHeader() {
       setSelectedApplication(null)
       setSelectedDatabaseTable(null)
       clearTableData()
-      setSelectedRow(null)
+      selectionActions.setSelectedRow(null)
       
       // Step 2: Mark custom file setting as complete
       setTimeout(() => {
@@ -63,7 +63,7 @@ export function SubHeader() {
         console.log('🔧 [SubHeader] Custom file setup complete')
       }, 100)
     }
-  }, [clearTableData, isSettingCustomFile, selectedDatabaseFile, setSelectedApplication, setSelectedDatabaseTable, setSelectedDevice, setSelectedRow])
+  }, [clearTableData, isSettingCustomFile, selectedDatabaseFile, selectionActions, setSelectedApplication, setSelectedDatabaseTable, setSelectedDevice])
 
   const {
     data: databaseFiles = [],
@@ -136,16 +136,9 @@ export function SubHeader() {
     
     selectDatabase({
       databaseFile: resolvedFile,
-      actions: {
-        setSelectedDevice,
-        setSelectedApplication,
-        setSelectedDatabaseFile,
-        setSelectedDatabaseTable,
-        clearTableData,
-        setSelectedRow,
-      },
+      actions: selectionActions,
     })
-  }, [clearTableData, queryClient, selectedApplication, selectedDevice, setSelectedDatabaseFile, setSelectedDatabaseTable, setSelectedRow])
+  }, [queryClient, selectedApplication, selectedDevice, selectionActions])
 
   const handleTableChange = useCallback((table) => {    
     console.info('CriticalPath: table selected', {
@@ -154,17 +147,9 @@ export function SubHeader() {
     })
     selectTable({
       table,
-      actions: {
-        setSelectedDevice,
-        setSelectedApplication,
-        setSelectedDatabaseFile,
-        setSelectedDatabaseTable,
-        clearTableData,
-        setSelectedRow,
-        setTableData,
-      },
+      actions: selectionActions,
     })
-  }, [selectedDatabaseFile?.path, setSelectedDatabaseTable, setTableData])
+  }, [selectedDatabaseFile?.path, selectionActions])
 
   const dbFileOptions = useMemo(() => 
     groupDatabaseFilesByLocation(databaseFiles), [databaseFiles])
@@ -214,15 +199,11 @@ export function SubHeader() {
   useEffect(() => {
     if (!selectedDatabaseFile?.filename) {
       clearTableContext({
-        setSelectedDevice,
-        setSelectedApplication,
-        setSelectedDatabaseFile,
-        setSelectedDatabaseTable,
-        clearTableData,
-        setSelectedRow,
+        ...selectionActions,
+        setTableData: undefined,
       })
     }
-  }, [clearTableData, selectedDatabaseFile, setSelectedApplication, setSelectedDatabaseFile, setSelectedDatabaseTable, setSelectedDevice, setSelectedRow])
+  }, [selectedDatabaseFile, selectionActions])
 
   const onRefreshClick = useCallback(async () => {
     console.info('CriticalPath: database refresh started', {
@@ -235,14 +216,7 @@ export function SubHeader() {
     if (selectedDevice?.deviceType === 'iphone-device') {
       selectDatabase({
         databaseFile: null,
-        actions: {
-          setSelectedDevice,
-          setSelectedApplication,
-          setSelectedDatabaseFile,
-          setSelectedDatabaseTable,
-          clearTableData,
-          setSelectedRow,
-        },
+        actions: selectionActions,
       })
     }
 
@@ -256,18 +230,15 @@ export function SubHeader() {
       tableName: selectedDatabaseTable?.name ?? null,
     })
   }, [
-    clearTableData,
     refetchDatabaseFiles,
     refetchDatabaseTables,
     refetchTable,
+    selectionActions,
     selectedApplication?.bundleId,
     selectedDatabaseFile?.path,
     selectedDatabaseTable?.name,
     selectedDevice?.deviceType,
     selectedDevice?.id,
-    setSelectedDatabaseFile,
-    setSelectedDatabaseTable,
-    setSelectedRow,
   ])
 
   const isNoDB = !databaseFiles?.length && isScanComplete && selectedApplication?.bundleId && selectedDevice?.id

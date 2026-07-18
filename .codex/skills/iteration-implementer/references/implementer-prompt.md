@@ -25,6 +25,7 @@ Execution rules:
 - Prefer the smallest change that satisfies the acceptance criteria.
 - Treat the active plan checklist as the scope contract for this iteration.
 - Run the required checks for the slice.
+- Do not leave required checks for the orchestrator unless a command is blocked or unavailable.
 - If review feedback is included, treat only the blocking findings as required fixes.
 
 Return exactly:
@@ -35,4 +36,5 @@ Return exactly:
 5. Checklist items now complete
 6. Checklist items still incomplete or unproven
 7. Remaining risks or open questions
+8. Whether the slice is ready for clean-context review
 ```

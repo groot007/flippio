@@ -7,6 +7,8 @@ description: Prepare a clean, scoped git commit from the current repo changes. U
 
 Use this skill when the user wants a disciplined commit step after an iteration or wants help turning a messy diff into a coherent commit.
 
+When `iteration-implementer` reaches an acceptable review verdict, this skill is the default next handoff before any next-iteration approval gate.
+
 ## Goal
 
 Turn the current diff into one intentional commit unit with:
@@ -24,6 +26,7 @@ Turn the current diff into one intentional commit unit with:
 - If the diff contains unrelated changes, separate them before committing.
 - Keep the message short and specific.
 - If a commit-analysis or commit-execution sub-agent is used, close it immediately after its result is captured.
+- For accepted iteration slices, always prepare the commit handoff even if the user has not yet approved the actual `git commit`.
 
 ## Inputs To Gather
 
@@ -42,6 +45,7 @@ Turn the current diff into one intentional commit unit with:
 4. Summarize the behavioral or architectural change in one sentence.
 5. Derive a short commit subject.
 6. Prepare a brief body only if it adds real signal.
+7. Confirm whether the iteration is ready to commit now or whether the user explicitly wants to defer the commit.
 
 ## Commit Message Style
 
@@ -76,6 +80,7 @@ If the user explicitly approves the commit:
 If the user has not approved yet:
 
 - stop after preparing the commit plan and message
+- if this handoff came from an accepted refactor iteration, ask for commit approval before asking to start the next iteration
 
 ## Agent Lifecycle Rule
 

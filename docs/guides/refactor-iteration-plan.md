@@ -168,7 +168,7 @@ Create the behavioral safety net for the core seam before changing architecture.
 - [x] Add test: selecting application resets dependent database/table state correctly
 - [x] Add test: selecting database resets table/row context correctly
 - [x] Add test: refresh/reconciliation handles missing device/app/database correctly
-- [ ] Add test: fast switching does not leave stale visible state
+- [x] Add test: fast switching does not leave stale visible state
 
 #### Selection contract coverage
 
@@ -187,8 +187,8 @@ Create the behavioral safety net for the core seam before changing architecture.
 
 #### Deferred-flow guardrails
 
-- [ ] Add regression test for desktop-opened database mode remaining a separate context switch
-- [ ] Add regression test for iPhone scan results from an old context being ignored after device/app change or refresh
+- [x] Add regression test for desktop-opened database mode remaining a separate context switch
+- [x] Add regression test for iPhone scan results from an old context being ignored after device/app change or refresh
 
 #### Non-goals for this iteration
 
@@ -254,7 +254,7 @@ Move only core selection transition policy out of `AppHeader.tsx` and `SubHeader
 - [x] Move database-selection transition logic
 - [x] Move refresh/reconciliation logic
 - [x] Keep existing component handlers and `useEffect` wiring as thin adapters around the new policy seam
-- [ ] Reduce `AppHeader.tsx` and `SubHeader.tsx` toward view and event wiring only
+- [x] Reduce `AppHeader.tsx` and `SubHeader.tsx` toward view and event wiring only
 
 ### Constraints
 
@@ -268,21 +268,34 @@ Move only core selection transition policy out of `AppHeader.tsx` and `SubHeader
 
 ### Test Checkpoint
 
-- [ ] Run:
+- [x] Run:
   - `npx eslint <changed files...>`
   - `npm test`
   - `npm run build --prefix src/renderer`
 - [x] Add targeted tests if new selection-session public APIs were introduced
-- [ ] Record results
+- [x] Record results
+
+Recorded results for this Iteration 2 slice:
+
+- `npx eslint src/renderer/src/components/layout/AppHeader.tsx src/renderer/src/components/layout/SubHeader.tsx src/renderer/src/features/layout/selectionSession.ts src/renderer/src/features/layout/useSelectionSessionActions.ts` — passed
+- `npx vitest run src/renderer/src/components/layout/__tests__/AppHeader.test.tsx src/renderer/src/components/layout/__tests__/SubHeader.test.tsx` — passed
+- `npm run build --prefix src/renderer` — passed
+- `npm test` — passed
+- Existing React `act(...)` warnings still appear in modal-heavy UI tests but did not fail the run
 
 ### Review Checkpoint
 
-- [ ] Clean-context reviewer checks:
+- [x] Clean-context reviewer checks:
   - one module now owns transition policy
   - `AppHeader.tsx` got smaller in responsibility, not just line movement
   - reset/refetch logic is more local and easier to reason about
   - no new duplication was introduced between session module and stores
-- [ ] Reviewer verdict recorded
+- [x] Reviewer verdict recorded
+
+Reviewer verdict for this Iteration 2 slice:
+
+- `acceptable`
+- Manual clean-context review completed from the diff and recorded test results
 
 ### Approval Gate
 

@@ -30,6 +30,10 @@ Before invoking the reviewer, gather only:
 - diff
 - test commands run
 - test results
+- review target:
+  - iteration gate
+  - commit gate
+  - merge gate
 
 Do not pass:
 
@@ -41,6 +45,8 @@ Do not pass:
 ## Review Mode
 
 Use a sub-agent or separate reviewer context when available. The reviewer must act as if it is seeing the iteration for the first time.
+
+If reviewer sub-agent capability is available, the review must use a fresh reviewer sub-agent. Manual main-agent review is fallback behavior only when sub-agents are unavailable.
 
 If a reviewer sub-agent is used:
 
@@ -108,6 +114,7 @@ After the review:
 
 - address findings if needed
 - summarize what changed
+- if this was an iteration review and the verdict is `acceptable` or `acceptable with follow-ups`, hand off immediately to the `structured-commit` skill before asking to start another iteration
 - ask the user the next-step question that matches the review mode:
   - iteration review -> `Do you want to proceed to the next iteration?`
   - commit review -> `Do you want to proceed with the commit?`
