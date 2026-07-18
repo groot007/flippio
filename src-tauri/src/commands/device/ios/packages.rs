@@ -304,7 +304,6 @@ fn parse_ios_apps_xml(xml_content: &str) -> Result<Vec<Package>, String> {
                         if let Some(display_name) = extract_next_string_value(&lines, j) {
                             app_name = display_name;
                             info!("  🏷️  Found display name: {}", app_name);
-                            break;
                         }
                     } else if search_line == "<key>CFBundleName</key>" && app_name == bundle_id {
                         // Only use CFBundleName if we haven't found CFBundleDisplayName
@@ -541,4 +540,77 @@ fn extract_next_string_value(lines: &[&str], start_index: usize) -> Option<Strin
     }
     
     None
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_parse_ios_apps_text_filters_system_apps_and_formats_name() {
+        let input = r#"
+com.apple.Preferences, "1.0", "Settings"
+com.example.todo, "42", "ToDo"
+invalid-entry-without-dots, "2.0", "Broken"
+com.example.weather, "7.1", "Weather Now"
+"#;
+
+        let packages = parse_ios_apps_text(input).expect("text parser should succeed");
+
+        assert_eq!(packages.len(), 2);
+        assert_eq!(packages[0].bundle_id, "com.example.todo");
+        assert_eq!(packages[0].name, "ToDo (42)");
+        assert_eq!(packages[1].bundle_id, "com.example.weather");
+        assert_eq!(packages[1].name, "Weather Now (7.1)");
+    }
+
+    #[test]
+    fn test_parse_ios_apps_xml_prefers_display_name_and_skips_apple_apps() {
+        let input = r#"
+<?xml version="1.0" encoding="UTF-8"?>
+<plist version="1.0">
+<array>
+  <dict>
+    <key>CFBundleIdentifier</key>
+    <string>com.apple.mobilesafari</string>
+    <key>CFBundleDisplayName</key>
+    <string>Safari</string>
+  </dict>
+  <dict>
+    <key>CFBundleIdentifier</key>
+    <string>com.example.notes</string>
+    <key>CFBundleName</key>
+    <string>Notes Internal</string>
+    <key>CFBundleDisplayName</key>
+    <string>Notes</string>
+    <key>CFBundleVersion</key>
+    <string>15</string>
+  </dict>
+  <dict>
+    <key>CFBundleIdentifier</key>
+    <string>com.example.timer</string>
+    <key>CFBundleName</key>
+    <string>Timer</string>
+  </dict>
+</array>
+</plist>
+"#;
+
+        let packages = parse_ios_apps_xml(input).expect("xml parser should succeed");
+
+        assert_eq!(packages.len(), 2);
+        assert_eq!(packages[0].bundle_id, "com.example.notes");
+        assert_eq!(packages[0].name, "Notes (15)");
+        assert_eq!(packages[1].bundle_id, "com.example.timer");
+        assert_eq!(packages[1].name, "Timer");
+    }
+
+    #[test]
+    fn test_parse_app_line_supports_space_separated_format() {
+        let parsed = parse_app_line(r#"com.example.reader "3.4" "Reader""#)
+            .expect("space-separated format should parse");
+
+        assert_eq!(parsed.0, "com.example.reader");
+        assert_eq!(parsed.1, "Reader (3.4)");
+    }
 }

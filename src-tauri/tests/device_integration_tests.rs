@@ -55,42 +55,6 @@ mod ios_integration_tests {
     }
 
     #[tokio::test]
-    async fn test_ios_package_discovery_workflow() {
-        // Simulate iOS package discovery
-        let packages = vec![
-            Package {
-                name: "Settings".to_string(),
-                bundle_id: "com.apple.Preferences".to_string(),
-            },
-            Package {
-                name: "Safari".to_string(),
-                bundle_id: "com.apple.mobilesafari".to_string(),
-            },
-            Package {
-                name: "Test App".to_string(),
-                bundle_id: "com.example.testapp".to_string(),
-            },
-        ];
-
-        let package_response = DeviceResponse {
-            success: true,
-            data: Some(packages),
-            error: None,
-        };
-
-        assert!(package_response.success);
-        let packages = package_response.data.unwrap();
-        assert_eq!(packages.len(), 3);
-
-        // Verify bundle ID formats
-        for package in &packages {
-            assert!(package.bundle_id.contains("."));
-            let parts: Vec<&str> = package.bundle_id.split('.').collect();
-            assert!(parts.len() >= 2);
-        }
-    }
-
-    #[tokio::test]
     async fn test_ios_database_file_workflow() {
         // Simulate iOS database file discovery
         let db_files = vec![
@@ -128,23 +92,6 @@ mod ios_integration_tests {
             assert!(db_file.path.starts_with("/var/mobile"));
             assert!(db_file.filename.contains("."));
             assert!(db_file.remote_path.is_some());
-        }
-    }
-
-    #[test]
-    fn test_ios_tool_path_discovery() {
-        // Test iOS tool path discovery logic
-        let tool_names = vec!["idevice_id", "ideviceinfo", "ideviceinstaller", "afcclient"];
-        
-        for tool_name in tool_names {
-            let tool_path = get_libimobiledevice_tool_path(tool_name);
-            
-            // Tool path discovery should work (may return None if tools not installed)
-            assert!(tool_path.is_some() || tool_path.is_none());
-            
-            if let Some(path) = tool_path {
-                assert!(path.to_string_lossy().contains(tool_name));
-            }
         }
     }
 
@@ -189,85 +136,6 @@ mod android_integration_tests {
     use super::*;
     use flippio::commands::device::types::*;
     use flippio::commands::device::helpers::*;
-
-    #[tokio::test]
-    async fn test_android_device_workflow_simulation() {
-        // Simulate Android device detection workflow
-        let device_response = DeviceResponse {
-            success: true,
-            data: Some(vec![
-                Device {
-                    id: "emulator-5554".to_string(),
-                    name: "Android Emulator".to_string(),
-                    model: "Android SDK built for x86".to_string(),
-                    device_type: "emulator".to_string(),
-                    description: "Android emulator device".to_string(),
-                },
-                Device {
-                    id: "ABCD1234".to_string(),
-                    name: "Samsung Galaxy".to_string(),
-                    model: "SM-G998B".to_string(),
-                    device_type: "android".to_string(),
-                    description: "Real Android device".to_string(),
-                },
-            ]),
-            error: None,
-        };
-
-        // Verify device response structure
-        assert!(device_response.success);
-        assert!(device_response.data.is_some());
-        
-        let devices = device_response.data.unwrap();
-        assert_eq!(devices.len(), 2);
-
-        // Verify device types
-        assert!(devices.iter().any(|d| d.device_type == "emulator"));
-        assert!(devices.iter().any(|d| d.device_type == "android"));
-
-        // Verify device IDs
-        for device in &devices {
-            assert!(!device.id.is_empty());
-            if device.device_type == "emulator" {
-                assert!(device.id.starts_with("emulator-"));
-            }
-        }
-    }
-
-    #[tokio::test]
-    async fn test_android_package_discovery_workflow() {
-        // Simulate Android package discovery
-        let packages = vec![
-            Package {
-                name: "Chrome".to_string(),
-                bundle_id: "com.android.chrome".to_string(),
-            },
-            Package {
-                name: "Gmail".to_string(),
-                bundle_id: "com.google.android.gm".to_string(),
-            },
-            Package {
-                name: "Test App".to_string(),
-                bundle_id: "com.example.testapp".to_string(),
-            },
-        ];
-
-        let package_response = DeviceResponse {
-            success: true,
-            data: Some(packages),
-            error: None,
-        };
-
-        assert!(package_response.success);
-        let packages = package_response.data.unwrap();
-        assert_eq!(packages.len(), 3);
-
-        // Verify package formats
-        for package in &packages {
-            assert!(package.bundle_id.contains("."));
-            assert!(!package.name.is_empty());
-        }
-    }
 
     #[tokio::test]
     async fn test_android_database_file_workflow() {
@@ -381,28 +249,6 @@ mod android_integration_tests {
         Ok(())
     }
 
-    #[test]
-    fn test_android_device_parsing() {
-        // Test Android device output parsing
-        let device_output = "List of devices attached\nemulator-5554\tdevice\nABCD1234\tdevice\noffline-device\toffline\n";
-        
-        let lines: Vec<&str> = device_output.lines()
-            .filter(|line| !line.starts_with("List of devices") && !line.trim().is_empty())
-            .collect();
-        
-        assert_eq!(lines.len(), 3);
-        
-        for line in lines {
-            let parts: Vec<&str> = line.split('\t').collect();
-            assert_eq!(parts.len(), 2);
-            
-            let device_id = parts[0];
-            let status = parts[1];
-            
-            assert!(!device_id.is_empty());
-            assert!(status == "device" || status == "offline" || status == "unauthorized");
-        }
-    }
 }
 
 /// Test cross-platform device functionality
