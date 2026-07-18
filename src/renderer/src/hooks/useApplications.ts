@@ -1,21 +1,12 @@
+import type { ApplicationSelection, DeviceInfo } from '@renderer/types'
 import { transformToCamelCase } from '@renderer/utils/caseTransformer'
 import { useQuery } from '@tanstack/react-query'
 
-export interface Device {
-  id: string
-  model: string
-  deviceType: 'iphone' | 'android' | 'desktop' | 'iphone-device' | 'emulator' | 'simulator'
-  platform?: string
-}
-
-interface Application {
-  name: string
-  bundleId: string
-}
+export type Device = Pick<DeviceInfo, 'deviceType' | 'id' | 'model' | 'platform'>
 
 interface ApplicationsResponse {
   success: boolean
-  packages: Application[]
+  packages: ApplicationSelection[]
   error?: string
 }
 

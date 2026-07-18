@@ -1,10 +1,6 @@
+import type { ApplicationSelection } from '@renderer/types'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-
-interface ApplicationInfo {
-  name: string
-  bundleId: string
-}
 
 interface RecentlyUsedApp {
   bundleId: string
@@ -17,7 +13,7 @@ interface RecentlyUsedApp {
 
 interface RecentlyUsedAppsStore {
   recentApps: RecentlyUsedApp[]
-  addRecentApp: (app: ApplicationInfo, deviceId: string, deviceName: string) => void
+  addRecentApp: (app: ApplicationSelection, deviceId: string, deviceName: string) => void
   getRecentAppsForDevice: (deviceId: string) => RecentlyUsedApp[]
   clearRecentApps: () => void
   removeAppFromRecents: (bundleId: string, deviceId: string) => void
@@ -28,7 +24,7 @@ export const useRecentlyUsedApps = create<RecentlyUsedAppsStore>()(
     (set, get) => ({
       recentApps: [],
 
-      addRecentApp: (app: ApplicationInfo, deviceId: string, deviceName: string) => {
+      addRecentApp: (app: ApplicationSelection, deviceId: string, deviceName: string) => {
         const { recentApps } = get()
         const now = Date.now()
         

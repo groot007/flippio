@@ -1,18 +1,10 @@
-import type { DatabaseFile } from '@renderer/types'
+import type { ApplicationSelection, DatabaseFile, DeviceInfo } from '@renderer/types'
 import { transformToCamelCase } from '@renderer/utils/caseTransformer'
 import { useQuery } from '@tanstack/react-query'
 import { listen } from '@tauri-apps/api/event'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-interface Device {
-  id: string
-  deviceType: 'iphone' | 'android' | 'desktop' | 'iphone-device' | 'emulator' | 'simulator'
-}
-
-interface Application {
-  bundleId: string
-  name: string
-}
+type Device = Pick<DeviceInfo, 'deviceType' | 'id'>
 
 interface DatabaseFilesResponse {
   success: boolean
@@ -54,7 +46,7 @@ function mergeDatabaseFiles(existing: DatabaseFile[], incoming: DatabaseFile[]) 
 
 export async function fetchDatabaseFilesForSelection(
   selectedDevice: Device,
-  selectedApplication: Application,
+  selectedApplication: ApplicationSelection,
   scanRequestId?: string,
 ) {
   console.log('Fetching database files for device:', selectedDevice, 'and application:', selectedApplication)
@@ -88,7 +80,7 @@ export async function fetchDatabaseFilesForSelection(
 
 export function useDatabaseFiles(
   selectedDevice: Device | null,
-  selectedApplication: Application | null,
+  selectedApplication: ApplicationSelection | null,
 ) {
   const [streamedFiles, setStreamedFiles] = useState<DatabaseFile[]>([])
   const [activeScanRequestId, setActiveScanRequestId] = useState<string | null>(null)
@@ -189,7 +181,7 @@ export function useDatabaseFiles(
     queryKey: ['databaseFiles', selectedDevice?.id, selectedApplication?.bundleId],
     queryFn: () => fetchDatabaseFilesForSelection(
       selectedDevice as Device,
-      selectedApplication as Application,
+      selectedApplication as ApplicationSelection,
       activeScanRequestIdRef.current ?? undefined,
     ),
     enabled: !!selectedDevice?.id && !!selectedApplication?.bundleId && (!scanKey || !!activeScanRequestId),

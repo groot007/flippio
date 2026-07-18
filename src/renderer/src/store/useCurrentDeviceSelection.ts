@@ -1,16 +1,11 @@
-import type { DeviceInfo } from '@renderer/types'
+import type { ApplicationSelection, DeviceInfo } from '@renderer/types'
 import { create } from 'zustand'
-
-interface ApplicationInfo {
-  name: string
-  bundleId: string
-}
 
 interface DeviceStore {
   selectedDevice: DeviceInfo | null
   setSelectedDevice: (device: DeviceInfo | null) => void
-  selectedApplication: ApplicationInfo | null
-  setSelectedApplication: (app: ApplicationInfo | null) => void
+  selectedApplication: ApplicationSelection | null
+  setSelectedApplication: (app: ApplicationSelection | null) => void
 }
 
 export const useCurrentDeviceSelection = create<DeviceStore>((set, _get) => ({

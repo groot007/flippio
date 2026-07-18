@@ -377,8 +377,8 @@ Remove legacy overlap and make the state ownership model obvious.
 ### Deliverables
 
 - [ ] Remove or archive legacy `appStore` if still overlapping active flow
-- [ ] Normalize selection-related types across stores/hooks/adapters
-- [ ] Remove overlapping “current selection” concepts where possible
+- [x] Normalize selection-related types across stores/hooks/adapters
+- [x] Remove overlapping “current selection” concepts where possible
 - [ ] Verify stores contain state, not policy
 
 ### Test Checkpoint
@@ -396,6 +396,13 @@ Recorded results for this Iteration 4 selection-store slice:
 - `npm run build --prefix src/renderer` — passed
 - Existing React `act(...)` warnings still appear in modal-heavy UI tests, but the suite passed and this slice did not add new failing checks
 
+Recorded results for the Iteration 4 selection-contract normalization follow-up on July 18, 2026:
+
+- `npx eslint src/renderer/src/types/devices.ts src/renderer/src/store/useCurrentDeviceSelection.ts src/renderer/src/store/useRecentlyUsedApps.ts src/renderer/src/features/layout/selectionSession.ts src/renderer/src/hooks/useApplications.ts src/renderer/src/hooks/useDatabaseFiles.ts` — passed
+- `npm test` — passed
+- `npm run build --prefix src/renderer` — passed
+- Existing React `act(...)` warnings still appear in modal-heavy UI tests, but the suite passed and this follow-up did not add new failing checks
+
 ### Review Checkpoint
 
 - [x] Clean-context reviewer checks:
@@ -408,7 +415,13 @@ Reviewer verdict for this Iteration 4 selection-store slice: `acceptable with fo
 
 Follow-ups called out by review:
 
-- selection-related type normalization is still incomplete across `useCurrentDeviceSelection`, `selectionSession`, and `useRecentlyUsedApps`
+- there is no focused regression test yet for derived loading/disable behavior after removing store-owned `isDBPulling`
+- `useCurrentDatabaseSelection` still lacks direct store-level coverage for its reduced public contract
+
+Manual clean-context fallback review for the Iteration 4 selection-contract normalization follow-up on July 18, 2026: `acceptable with follow-ups`
+
+Follow-ups still open after that review:
+
 - there is no focused regression test yet for derived loading/disable behavior after removing store-owned `isDBPulling`
 - `useCurrentDatabaseSelection` still lacks direct store-level coverage for its reduced public contract
 

@@ -1,9 +1,4 @@
-import type { DatabaseFile, DatabaseTable, DeviceInfo } from '@renderer/types'
-
-interface ApplicationInfo {
-  bundleId: string
-  name: string
-}
+import type { ApplicationSelection, DatabaseFile, DatabaseTable, DeviceInfo } from '@renderer/types'
 
 interface TableDataState {
   columns: any[]
@@ -14,7 +9,7 @@ interface TableDataState {
 
 export interface SelectionSessionActions {
   clearTableData: () => void
-  setSelectedApplication: (application: ApplicationInfo | null) => void
+  setSelectedApplication: (application: ApplicationSelection | null) => void
   setSelectedDatabaseFile: (databaseFile: DatabaseFile | null) => void
   setSelectedDatabaseTable: (table: DatabaseTable | null) => void
   setSelectedDevice: (device: DeviceInfo | null) => void
@@ -24,17 +19,17 @@ export interface SelectionSessionActions {
 
 interface SelectApplicationInput {
   actions: SelectionSessionActions
-  addRecentApp?: (application: ApplicationInfo, deviceId: string, deviceName: string) => void
-  application: ApplicationInfo | null
+  addRecentApp?: (application: ApplicationSelection, deviceId: string, deviceName: string) => void
+  application: ApplicationSelection | null
   currentDevice: DeviceInfo | null
 }
 
 interface RefreshSelectionGraphInput {
-  matchedApplication?: ApplicationInfo | null
+  matchedApplication?: ApplicationSelection | null
   matchedDatabaseFile?: DatabaseFile | null
   matchedDevice?: DeviceInfo | null
   preserveDatabaseFile?: boolean
-  selectedApplication?: ApplicationInfo | null
+  selectedApplication?: ApplicationSelection | null
   selectedDatabaseFile?: DatabaseFile | null
   selectedDevice?: DeviceInfo | null
 }

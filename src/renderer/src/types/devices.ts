@@ -9,6 +9,11 @@ export interface DeviceInfo {
   platform?: string
 }
 
+export interface ApplicationSelection {
+  bundleId: string
+  name: string
+}
+
 export interface DatabaseFile {
   path: string
   filename: string
