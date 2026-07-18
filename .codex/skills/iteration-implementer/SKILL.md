@@ -49,6 +49,12 @@ The worker brief should say:
 
 Use the template in [references/implementer-prompt.md](references/implementer-prompt.md).
 
+After the worker returns its final result for the current attempt:
+
+- capture the changed files, test commands, test results, and risks in the main agent
+- close the worker sub-agent before starting review
+- if another implementation attempt is needed later, spawn a fresh worker rather than reusing the old one
+
 ## 3. Review Handoff
 
 After the worker returns:
@@ -67,13 +73,15 @@ If the reviewer verdict is:
 - `acceptable`
   - summarize the result
   - present the separate subagent review
+  - ensure both worker and reviewer sub-agents are closed
   - stop and ask the user whether to proceed
 - `acceptable with follow-ups`
   - summarize the result
   - present the separate subagent review
+  - ensure both worker and reviewer sub-agents are closed
   - stop and ask the user whether to proceed
 - `not acceptable`
-  - send only the blocking findings back to the worker
+  - send only the blocking findings back into a new worker attempt
   - keep the same iteration boundary
   - run the loop again
 
@@ -98,6 +106,7 @@ Do not continue automatically after the third failed review loop.
 - One iteration per worker run.
 - Prefer narrow slices over broad completion.
 - The worker may edit code directly, but only within the declared iteration boundary.
+- Worker and reviewer agents are short-lived and must be closed as soon as their output is integrated into the orchestrator flow.
 - The main agent remains responsible for:
   - plan tracking
   - approval gates
@@ -112,6 +121,17 @@ If sub-agents are unavailable:
 - keep the same iteration brief
 - emulate the worker/reviewer separation as closely as possible
 - still enforce the three-attempt stop rule
+
+## Agent Lifecycle Rule
+
+Sub-agents in this workflow are disposable per attempt.
+
+- one worker per implementation attempt
+- one reviewer per review task
+- close each agent immediately after its result is captured
+- do not keep agents open while waiting for user approval
+- do not keep agents alive across iterations
+- if the loop continues, spawn fresh agents so each attempt starts from cleaner context
 
 ## Output Shape
 

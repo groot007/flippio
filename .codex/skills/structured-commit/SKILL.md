@@ -23,6 +23,7 @@ Turn the current diff into one intentional commit unit with:
 - Do not mix unrelated cleanup with the main slice.
 - If the diff contains unrelated changes, separate them before committing.
 - Keep the message short and specific.
+- If a commit-analysis or commit-execution sub-agent is used, close it immediately after its result is captured.
 
 ## Inputs To Gather
 
@@ -70,10 +71,20 @@ If the user explicitly approves the commit:
 - verify staged diff matches the intended slice
 - create the commit with the prepared message
 - report the final subject and the committed scope
+- close any commit sub-agent after the commit result or commit plan has been handed back to the main agent
 
 If the user has not approved yet:
 
 - stop after preparing the commit plan and message
+
+## Agent Lifecycle Rule
+
+Commit-related sub-agents are disposable.
+
+- use them only for the current commit task
+- once their scope analysis or commit result has been transferred to the main agent, close them
+- do not keep commit agents alive across iterations
+- if the commit needs a second pass, spawn a fresh agent instead of reusing stale commit context
 
 ## Output Shape
 

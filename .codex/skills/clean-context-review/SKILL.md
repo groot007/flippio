@@ -42,6 +42,13 @@ Do not pass:
 
 Use a sub-agent or separate reviewer context when available. The reviewer must act as if it is seeing the iteration for the first time.
 
+If a reviewer sub-agent is used:
+
+- wait for its final review output
+- copy the review result into the main agent response
+- close the reviewer sub-agent immediately after the result is captured
+- do not leave reviewer agents open between iterations or approval gates
+
 If sub-agents are unavailable, emulate the same discipline manually:
 
 - restate only the minimal inputs
@@ -85,6 +92,15 @@ The review should return:
    - `not acceptable`
 
 If the verdict is `not acceptable`, do not proceed to the next iteration.
+
+## Agent Lifecycle Rule
+
+Reviewer sub-agents are disposable.
+
+- spawn one reviewer per review task
+- reuse is not required
+- once the review has been handed back to the main agent, close that reviewer thread
+- if the review must be rerun, spawn a fresh reviewer so the context stays clean
 
 ## Approval Gate
 
