@@ -1,3 +1,6 @@
+import type { DatabaseApi, ExportFileOptions, OpenFileResult } from '@renderer/api/databases'
+import type { DeviceApi } from '@renderer/api/devices'
+
 // import type { WebUtils } from 'electron' // Not used in Tauri
 
 export {}
@@ -9,24 +12,14 @@ declare global {
   interface Window {
     env: any
     // electron: Electron // Not used in Tauri
-    api: {
+    api: DeviceApi & DatabaseApi & {
       // Device operations
       getDevices: () => Promise<any>
-      getIOSPackages: (id: string) => Promise<any>
-      getIOsDevicePackages: (id: string) => Promise<any>
-      getAndroidPackages: (id: string) => Promise<any>
-      getAndroidDatabaseFiles: (deviceId: string, applicationId: string) => Promise<any>
-      getIOSDeviceDatabaseFiles: (deviceId: string, applicationId: string, scanRequestId?: string) => Promise<any>
       cancelIOSDeviceDatabaseScan: (scanKey: string) => Promise<any>
-      getIOSSimulatorDatabaseFiles: (deviceId: string, applicationId: string) => Promise<any>
-      checkAppExistence: (deviceId: string, applicationId: string) => Promise<any>
       uploadIOSDbFile: (deviceId: string, packageName: string, localFilePath: string, remoteLocation: string) => Promise<any>
       pushDatabaseFile: (deviceId: string, localPath: string, packageName: string, remotePath: string, deviceType?: string) => Promise<any>
 
       // Database methods
-      getTables: (dbPath?: string) => Promise<any>
-      openDatabase: (filePath: string) => Promise<any>
-      getTableInfo: (tableName: string, dbPath?: string) => Promise<any>
       updateTableRow: (
         tableName: string, 
         row: any, 
@@ -77,7 +70,6 @@ declare global {
         packageName?: string,
         appName?: string
       ) => Promise<any>
-      switchDatabase: (filePath: string) => Promise<any>
 
       // Change history methods
       getChangeHistory: (contextKey: string, tableName?: string) => Promise<any>
@@ -87,15 +79,8 @@ declare global {
       clearAllChangeHistory: () => Promise<any>
 
       // File dialog methods
-      openFile: () => Promise<any>
-      exportFile: (options: {
-        dbFilePath: string
-        defaultPath: string
-        filters: Array<{
-          name: string
-          extensions: string[]
-        }>
-      }) => Promise<any>
+      openFile: () => Promise<OpenFileResult>
+      exportFile: (options: ExportFileOptions) => Promise<string | null>
       exportTextFile: (options: {
         content: string
         defaultPath: string

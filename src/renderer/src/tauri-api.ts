@@ -1,6 +1,8 @@
 // Tauri API wrapper - provides the same interface as Electron preload API
 // This allows the frontend to work unchanged between Electron and Tauri
 
+import { createDatabaseApi } from '@renderer/api/databases'
+import { createDeviceApi } from '@renderer/api/devices'
 import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 
@@ -434,34 +436,15 @@ export const api = {
     }
   },
 
-  getIOSPackages: (deviceId: string) => {
-    console.log('getIOSPackages called with deviceId:', deviceId)
-    return invokeCommandWithResponse('device:getIosPackages', 'packages', deviceId)
-  },
-
-  getAndroidPackages: (deviceId: string) =>
-    invokeCommandWithResponse('adb:getPackages', 'packages', deviceId),
-
-  getIOsDevicePackages: (deviceId: string) =>
-    invokeCommandWithResponse('device:getIosDevicePackages', 'packages', deviceId),
-
-  getAndroidDatabaseFiles: (deviceId: string, applicationId: string) =>
-    invokeCommandWithResponse('adb:getAndroidDatabaseFiles', 'files', deviceId, applicationId),
-
-  checkAppExistence: (deviceId: string, applicationId: string) =>
-    invokeCommandWithResponse('device:checkAppExistence', 'exists', deviceId, applicationId),
-
-  getIOSDeviceDatabaseFiles: (deviceId: string, applicationId: string, scanRequestId?: string) =>
-    invokeCommandWithResponse('device:getIOSDeviceDatabaseFiles', 'files', deviceId, applicationId, scanRequestId),
+  ...createDeviceApi({
+    invokeCommandWithResponse,
+  }),
 
   cancelIOSDeviceDatabaseScan: (scanKey: string) =>
     invokeCommandWithResponse('device:cancelIOSDeviceDatabaseScan', 'result', scanKey),
 
   getIOSDeviceDatabaseFilesNew: (deviceId: string, applicationId: string) =>
     invokeCommandWithResponse('device:getIOSDeviceDatabaseFilesNew', 'files', deviceId, applicationId),
-
-  getIOSSimulatorDatabaseFiles: (deviceId: string, applicationId: string) =>
-    invokeCommandWithResponse('simulator:getIOSSimulatorDatabaseFiles', 'files', deviceId, applicationId),
 
   pushDatabaseFile: async (deviceId: string, localPath: string, packageName: string, remotePath: string, deviceType?: string) => {
     // Validate required parameters
@@ -514,110 +497,12 @@ export const api = {
     }
   },
 
-  // Database methods
-  getTables: async (dbPath?: string) => {
-    if (dbPath) {
-      validateInput(dbPath, 'dbPath', { type: 'string', maxLength: 500 })
-    }
-
-    try {
-      const response = await invoke<any>('db_get_tables', {
-        currentDbPath: dbPath,
-      })
-
-      const validatedResponse = validateDeviceResponse(response)
-
-      if (validatedResponse.success && validatedResponse.data) {
-        return {
-          success: true,
-          tables: validatedResponse.data,
-        }
-      }
-      else {
-        return { success: false, error: validatedResponse.error || 'Failed to get tables' }
-      }
-    }
-    catch (error) {
-      if (error instanceof APIValidationError) {
-        throw error
-      }
-      return { success: false, error: (error as Error).message }
-    }
-  },
-
-  openDatabase: async (filePath: string) => {
-    validateInput(filePath, 'filePath', { required: true, type: 'string', maxLength: 500 })
-
-    // Additional file path validation
-    if (!filePath.match(/\.(db|sqlite|sqlite3)$/i)) {
-      throw new APIValidationError(
-        'Invalid database file extension. Expected .db, .sqlite, or .sqlite3',
-        'INVALID_FILE_EXTENSION',
-        { filePath },
-      )
-    }
-
-    try {
-      const response = await invoke<any>('db_open', { filePath })
-      const validatedResponse = validateDeviceResponse(response)
-
-      return {
-        success: validatedResponse.success,
-        path: validatedResponse.data,
-        error: validatedResponse.error,
-      }
-    }
-    catch (error) {
-      if (error instanceof APIValidationError) {
-        throw error
-      }
-      return { success: false, error: (error as Error).message }
-    }
-  },
-
-  getTableInfo: async (tableName: string, dbPath?: string) => {
-    validateInput(tableName, 'tableName', { required: true, type: 'string', maxLength: 100 })
-    if (dbPath) {
-      validateInput(dbPath, 'dbPath', { type: 'string', maxLength: 500 })
-    }
-
-    // Validate table name for SQL injection
-    if (!/^[a-z_]\w*$/i.test(tableName)) {
-      throw new APIValidationError(
-        'Invalid table name. Must start with letter or underscore and contain only alphanumeric characters and underscores',
-        'INVALID_TABLE_NAME',
-        { tableName },
-      )
-    }
-
-    try {
-      const response = await invoke<DeviceResponse<any>>('db_get_table_data', {
-        tableName,
-        currentDbPath: dbPath,
-      })
-
-      const validatedResponse = validateDeviceResponse(response)
-
-      if (validatedResponse.success && validatedResponse.data) {
-        const tableData = validatedResponse.data as { columns: any[], rows: any[] }
-        // Transform to match Electron API structure
-        return {
-          success: true,
-          columns: tableData.columns,
-          rows: tableData.rows,
-        }
-      }
-      else {
-        return { success: false, error: validatedResponse.error || 'Failed to get table info' }
-      }
-    }
-    catch (error) {
-      if (error instanceof APIValidationError) {
-        throw error
-      }
-      return { success: false, error: (error as Error).message }
-    }
-  },
+  ...createDatabaseApi({
+    invokeCommandWithResponse,
+    invokeRaw: invoke,
+    validateDeviceResponse,
+    validateInput,
+  }),
 
   updateTableRow: (
     tableName: string,
@@ -681,9 +566,6 @@ export const api = {
   ) =>
     invokeCommandWithResponse('db:clearTable', 'result', tableName, dbPath, deviceId, deviceName, deviceType, packageName, appName),
 
-  switchDatabase: (filePath: string) =>
-    invokeCommandWithResponse('db:switchDatabase', 'result', filePath),
-
   // Change history methods
   getChangeHistory: async (contextKey: string, tableName?: string) => {
     console.log('🔍 [API] getChangeHistory called with:', { contextKey, tableName })
@@ -714,64 +596,6 @@ export const api = {
 
   generateCustomFileContextKey: (databasePath: string) =>
     invokeCommandWithResponse('db:generateCustomFileContextKey', 'data', databasePath),
-
-  // File dialog methods
-  openFile: async () => {
-    try {
-      const response = await invoke<any>('dialog_select_file')
-      // dialog_select_file returns DialogResult directly, not wrapped in DeviceResponse
-      const dialogResult = response as { canceled?: boolean, file_paths?: string[], file_path?: string }
-
-      return {
-        canceled: dialogResult?.canceled || false,
-        filePaths: dialogResult?.file_paths || (dialogResult?.file_path ? [dialogResult.file_path] : []),
-      }
-    }
-    catch (error) {
-      console.error('Error opening file:', error)
-      return { canceled: true, filePaths: [] }
-    }
-  },
-
-  exportFile: async (options: any) => {
-    // Validate export options
-    if (options) {
-      validateInput(options.dbFilePath, 'dbFilePath', { type: 'string', maxLength: 500 })
-      validateInput(options.defaultPath, 'defaultPath', { type: 'string', maxLength: 500 })
-
-      if (options.filters && Array.isArray(options.filters)) {
-        for (const filter of options.filters) {
-          validateInput(filter.name, 'filter.name', { type: 'string', maxLength: 100 })
-          if (filter.extensions && !Array.isArray(filter.extensions)) {
-            throw new APIValidationError(
-              'Filter extensions must be an array',
-              'INVALID_FILTER_EXTENSIONS',
-              { filter },
-            )
-          }
-        }
-      }
-    }
-
-    try {
-      // Transform camelCase to snake_case for Rust
-      const transformedOptions = {
-        db_file_path: options?.dbFilePath,
-        default_path: options?.defaultPath,
-        filters: options?.filters?.map((filter: any) => ({
-          name: filter.name,
-          extensions: filter.extensions,
-        })),
-      }
-
-      const response = await invoke<string | null>('dialog_save_file', { options: transformedOptions })
-      return response
-    }
-    catch (error) {
-      console.error('Error saving file:', error)
-      return null
-    }
-  },
 
   exportTextFile: async (options: {
     content: string
