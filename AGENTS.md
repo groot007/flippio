@@ -59,6 +59,19 @@ Most regressions come from selection-reset-refetch sequencing. Keep device state
 - Keep technical accuracy high even when wording is simple.
 - If nuance matters, still explain it, but keep the phrasing plain and easy to scan.
 
+## Agent Workflow
+
+- For implementation, refactor, or iteration work requested by the user, default to the `iteration-implementer` skill workflow.
+- Treat that as the standard path:
+  - implementation by worker sub-agent when available
+  - required checks
+  - clean-context review
+  - plan/checklist patching
+  - structured commit handoff
+- Do not skip that workflow unless the user clearly asks for a one-off answer, a tiny non-iterative change, or sub-agents are unavailable.
+- For commit requests, default to the `structured-commit` skill.
+- When the user asks to commit changes, prepare scope and message through `structured-commit` before performing the git commit.
+
 ## Commands
 
 Use the smallest relevant checks first:
