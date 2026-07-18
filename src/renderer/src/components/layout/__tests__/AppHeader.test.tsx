@@ -305,6 +305,37 @@ describe('appHeader component', () => {
     expect(screen.getByTestId('snapshot-db')).toHaveTextContent('None')
   })
 
+  it('keeps a selected iPhone device during passive list flicker', () => {
+    mockSelectedDevice = {
+      id: 'iphone-device-1',
+      name: 'My iPhone',
+      deviceType: 'iphone-device',
+      label: 'My iPhone',
+    }
+    mockDevicesHook = {
+      ...mockDevicesHook,
+      data: [],
+    }
+
+    const view = render(
+      <>
+        <AppHeader />
+        <SelectionSnapshot />
+      </>,
+    )
+
+    view.rerender(
+      <>
+        <AppHeader />
+        <SelectionSnapshot />
+      </>,
+    )
+
+    expect(screen.getByTestId('value-Select Device')).toHaveTextContent('My iPhone')
+    expect(screen.getByTestId('snapshot-device')).toHaveTextContent('My iPhone')
+    expect(mockSetSelectedDevice).not.toHaveBeenCalledWith(null)
+  })
+
   it('clears DB selection when refreshed DB file is missing', async () => {
     mockSelectedDevice = { id: 'device1', name: 'Old Device', deviceType: 'android', label: 'Old Device' }
     mockSelectedApplication = { name: 'Old App', bundleId: 'com.test.app1' }

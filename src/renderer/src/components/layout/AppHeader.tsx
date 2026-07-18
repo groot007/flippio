@@ -141,6 +141,14 @@ function AppHeader() {
     }
 
     const matchedDevice = devicesList.find(device => device.id === selectedDevice.id)
+
+    // Physical iPhones can briefly disappear from tool output while package
+    // commands are in flight. Keep the current selection until an explicit
+    // manual refresh confirms it is gone.
+    if (!matchedDevice && selectedDevice.deviceType === 'iphone-device') {
+      return
+    }
+
     refreshSelectionGraph(
       {
         selectedDevice,
@@ -160,6 +168,10 @@ function AppHeader() {
       return
     }
 
+    if (isApplicationsError) {
+      return
+    }
+
     const matchedApplication = applicationsList.find(app => app.bundleId === selectedApplication.bundleId)
     refreshSelectionGraph(
       {
@@ -168,7 +180,7 @@ function AppHeader() {
       },
       selectionActions,
     )
-  }, [applicationsList, isLoading, selectedApplication, selectionActions])
+  }, [applicationsList, isApplicationsError, isLoading, selectedApplication, selectionActions])
 
   const handleRefreshDevices = useCallback(async () => {
     try {
@@ -346,7 +358,10 @@ function AppHeader() {
       return null
     }
 
-    return devicesSelectOptions.find(device => device.id === selectedDevice.id) ?? null
+    return devicesSelectOptions.find(device => device.id === selectedDevice.id) ?? {
+      ...selectedDevice,
+      label: selectedDevice.label || selectedDevice.name || selectedDevice.id,
+    }
   }, [devicesSelectOptions, selectedDevice])
 
   const selectedApplicationOption = useMemo(() => {

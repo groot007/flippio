@@ -29,6 +29,7 @@ export interface DeviceApi {
   getDevices: () => Promise<GetDevicesResult>
   getIOsDevicePackages: (deviceId: string) => Promise<any>
   getIOSDeviceDatabaseFiles: (deviceId: string, applicationId: string, scanRequestId?: string) => Promise<any>
+  refreshIOSDeviceDatabaseFile: (deviceId: string, applicationId: string, remotePath: string) => Promise<any>
   getIOSPackages: (deviceId: string) => Promise<any>
   getIOSSimulatorDatabaseFiles: (deviceId: string, applicationId: string) => Promise<any>
 }
@@ -131,6 +132,9 @@ export function createDeviceApi({ invokeCommandWithResponse }: DeviceApiDependen
 
     getIOSDeviceDatabaseFiles: (deviceId: string, applicationId: string, scanRequestId?: string) =>
       invokeCommandWithResponse('device:getIOSDeviceDatabaseFiles', 'files', deviceId, applicationId, scanRequestId),
+
+    refreshIOSDeviceDatabaseFile: (deviceId: string, applicationId: string, remotePath: string) =>
+      invokeCommandWithResponse('device:refreshIOSDeviceDatabaseFile', 'file', deviceId, applicationId, remotePath),
 
     getIOSSimulatorDatabaseFiles: (deviceId: string, applicationId: string) =>
       invokeCommandWithResponse('simulator:getIOSSimulatorDatabaseFiles', 'files', deviceId, applicationId),

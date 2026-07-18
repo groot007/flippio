@@ -10,6 +10,7 @@ const mockSetSelectedDatabaseFile = vi.hoisted(() => vi.fn())
 const mockSetSelectedDatabaseTable = vi.hoisted(() => vi.fn())
 const mockSetTableData = vi.hoisted(() => vi.fn())
 const mockClearTableData = vi.hoisted(() => vi.fn())
+const mockSetIsRefreshingTableData = vi.hoisted(() => vi.fn())
 const mockSetSelectedRow = vi.hoisted(() => vi.fn())
 let mockSelectedDevice: any
 let mockSelectedApplication: any
@@ -18,6 +19,7 @@ let mockSelectedDatabaseTable: any
 let mockTableDataState: any
 let mockIsFirstRoundLoading: boolean
 let mockIsBackgroundScanning: boolean
+let mockIsRefreshingTableData: boolean
 
 vi.mock('../../common/FLSelect', () => ({
   default: ({ label, options = [], value, onChange, isDisabled }: any) => (
@@ -65,6 +67,16 @@ beforeAll(() => {
     getAndroidPackages: vi.fn().mockResolvedValue([]),
     getAndroidDatabaseFiles: vi.fn().mockResolvedValue([]),
     getIOSDeviceDatabaseFiles: vi.fn().mockResolvedValue([]),
+    refreshIOSDeviceDatabaseFile: vi.fn().mockResolvedValue({
+      success: true,
+      file: {
+        filename: 'test2.db',
+        path: '/path/to/test2.db',
+        deviceType: 'iphone-device',
+        packageName: 'com.test.app',
+        remotePath: '/remote/test2.db',
+      },
+    }),
     cancelIOSDeviceDatabaseScan: vi.fn().mockResolvedValue({ success: true }),
     getIOSSimulatorDatabaseFiles: vi.fn().mockResolvedValue([]),
     getTables: vi.fn().mockResolvedValue([]),
@@ -114,6 +126,12 @@ vi.mock('@renderer/hooks/useDatabaseFiles', () => ({
     isFirstRoundLoading: mockIsFirstRoundLoading,
     isBackgroundScanning: mockIsBackgroundScanning,
     error: null,
+    refetch: vi.fn().mockResolvedValue({
+      data: [
+        { filename: 'test.db', path: '/path/to/test.db', deviceType: 'android' },
+        { filename: 'test2.db', path: '/path/to/test2.db', deviceType: 'iphone' },
+      ],
+    }),
   }),
 }))
 
@@ -127,6 +145,7 @@ vi.mock('@renderer/hooks/useDatabaseTables', () => ({
     },
     isError: false,
     error: null,
+    refetch: vi.fn().mockResolvedValue(undefined),
   }),
 }))
 
@@ -169,6 +188,8 @@ vi.mock('@renderer/store', () => ({
       tableData: mockTableDataState,
       setTableData: mockSetTableData,
       clearTableData: mockClearTableData,
+      isRefreshingTableData: mockIsRefreshingTableData,
+      setIsRefreshingTableData: mockSetIsRefreshingTableData,
     }
     return selector ? selector(state) : state
   },
@@ -205,6 +226,7 @@ describe('subHeader component', () => {
     }
     mockIsFirstRoundLoading = false
     mockIsBackgroundScanning = false
+    mockIsRefreshingTableData = false
 
     mockSetSelectedDevice.mockImplementation((value) => {
       mockSelectedDevice = value
@@ -223,6 +245,9 @@ describe('subHeader component', () => {
     })
     mockClearTableData.mockImplementation(() => {
       mockTableDataState = null
+    })
+    mockSetIsRefreshingTableData.mockImplementation((value) => {
+      mockIsRefreshingTableData = value
     })
   })
 
@@ -359,9 +384,15 @@ describe('subHeader component', () => {
     expect(screen.getByTestId('value-Select Table')).toHaveTextContent('None')
   })
 
-  it('clears the selected database and table before an iPhone refresh restarts scanning', async () => {
+  it('keeps the selected database and table visible while an iPhone refresh restarts scanning', async () => {
     mockSelectedDevice = { id: 'iphone-1', name: 'iPhone', deviceType: 'iphone-device' }
-    mockSelectedDatabaseFile = { filename: 'test2.db', path: '/path/to/test2.db', deviceType: 'iphone-device' }
+    mockSelectedDatabaseFile = {
+      filename: 'test2.db',
+      path: '/path/to/test2.db',
+      deviceType: 'iphone-device',
+      packageName: 'com.test.app',
+      remotePath: '/remote/test2.db',
+    }
     const view = render(<SubHeader />)
 
     expect(screen.getByTestId('value-Select Database')).toHaveTextContent('test2.db')
@@ -370,20 +401,29 @@ describe('subHeader component', () => {
     fireEvent.click(screen.getByTestId('refresh-db'))
 
     await waitFor(() => {
-      expect(mockHandleDBRefresh).toHaveBeenCalledTimes(1)
+      expect(globalThis.window.api.refreshIOSDeviceDatabaseFile).toHaveBeenCalledWith(
+        'iphone-1',
+        'com.test.app',
+        '/remote/test2.db',
+      )
     })
 
     view.rerender(<SubHeader />)
 
-    expect(screen.getByTestId('value-Select Database')).toHaveTextContent('None')
-    expect(screen.getByTestId('value-Select Table')).toHaveTextContent('None')
-    expect(screen.getByTestId('refresh-db')).toBeDisabled()
+    expect(screen.getByTestId('value-Select Database')).toHaveTextContent('test2.db')
+    expect(screen.getByTestId('value-Select Table')).toHaveTextContent('users')
   })
 
   it('keeps database and table selection disabled during iPhone first-round scan loading', () => {
     mockSelectedDevice = { id: 'iphone-1', name: 'iPhone', deviceType: 'iphone-device' }
     mockSelectedApplication = { bundleId: 'com.test.app', name: 'Test App' }
-    mockSelectedDatabaseFile = { filename: 'test2.db', path: '/path/to/test2.db', deviceType: 'iphone-device' }
+    mockSelectedDatabaseFile = {
+      filename: 'test2.db',
+      path: '/path/to/test2.db',
+      deviceType: 'iphone-device',
+      packageName: 'com.test.app',
+      remotePath: '/remote/test2.db',
+    }
     mockSelectedDatabaseTable = null
     mockIsFirstRoundLoading = true
 

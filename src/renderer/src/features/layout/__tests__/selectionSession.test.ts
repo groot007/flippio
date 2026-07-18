@@ -90,6 +90,7 @@ describe('selectionSession', () => {
       isCustomQuery: false,
       tableName: 'users',
     })
+    expect(actions.setSelectedRow).toHaveBeenCalledWith(null)
     expect(actions.setSelectedDatabaseTable).toHaveBeenCalledWith(table)
   })
 

@@ -89,6 +89,7 @@ pub fn run() {
             commands::device::device_get_ios_packages,
             commands::device::device_get_ios_device_packages,
             commands::device::get_ios_device_database_files,
+            commands::device::refresh_ios_device_database_file,
             commands::device::cancel_ios_device_database_scan,
             commands::device::device_check_app_existence,
             commands::device::device_push_ios_database_file,

@@ -26,6 +26,14 @@ import { LuDatabase, LuFilter, LuFolderOpen, LuRefreshCcw, LuTable, LuUpload, Lu
 import { CustomQueryModal } from '../data/CustomQueryModal'
 import FLSelect from './../common/FLSelect'
 
+function findMatchingDatabaseFile(currentFile, refreshedFiles) {
+  return refreshedFiles.find(file =>
+    (currentFile.remotePath && file.remotePath === currentFile.remotePath)
+    || file.path === currentFile.path
+    || file.filename === currentFile.filename,
+  ) ?? null
+}
+
 export function SubHeader() {
   const selectedDevice = useCurrentDeviceSelection(state => state.selectedDevice)
   const selectedApplication = useCurrentDeviceSelection(state => state.selectedApplication)
@@ -34,6 +42,7 @@ export function SubHeader() {
   const {
     setTableData,
     clearTableData,
+    setIsRefreshingTableData,
   } = useTableData()
   const tableDataStore = useTableData()
   const selectedDatabaseFile = useCurrentDatabaseSelection(state => state.selectedDatabaseFile)
@@ -206,6 +215,12 @@ export function SubHeader() {
   }, [selectedDatabaseFile, selectionActions])
 
   const onRefreshClick = useCallback(async () => {
+    const shouldRefreshCurrentTable = !!selectedDatabaseFile?.path && !!selectedDatabaseTable?.name
+    const shouldPrioritizeSelectedIosDb = selectedDevice?.deviceType === 'iphone-device'
+      && !!selectedDevice?.id
+      && !!selectedApplication?.bundleId
+      && !!selectedDatabaseFile?.remotePath
+
     console.info('CriticalPath: database refresh started', {
       deviceId: selectedDevice?.id ?? null,
       bundleId: selectedApplication?.bundleId ?? null,
@@ -213,32 +228,139 @@ export function SubHeader() {
       tableName: selectedDatabaseTable?.name ?? null,
     })
 
-    if (selectedDevice?.deviceType === 'iphone-device') {
-      selectDatabase({
-        databaseFile: null,
-        actions: selectionActions,
-      })
+    if (shouldRefreshCurrentTable) {
+      setIsRefreshingTableData(true)
     }
 
-    await refreshDatabase({
-      refetchDatabaseFiles,
-      refetchDatabaseTables: selectedDevice?.deviceType === 'iphone-device' ? undefined : refetchDatabaseTables,
-      refetchTable: selectedDevice?.deviceType === 'iphone-device' ? undefined : refetchTable,
-    })
-    console.info('CriticalPath: database refresh finished', {
-      databasePath: selectedDatabaseFile?.path ?? null,
-      tableName: selectedDatabaseTable?.name ?? null,
-    })
+    try {
+      if (shouldPrioritizeSelectedIosDb) {
+        const refreshResult = await window.api.refreshIOSDeviceDatabaseFile(
+          selectedDevice.id,
+          selectedApplication.bundleId,
+          selectedDatabaseFile.remotePath!,
+        )
+
+        if (!refreshResult.success || !refreshResult.file) {
+          throw new Error(refreshResult.error || 'Failed to refresh selected database file')
+        }
+
+        const refreshedSelectedDatabaseFile = refreshResult.file
+        setSelectedDatabaseFile(refreshedSelectedDatabaseFile)
+
+        await ensureActiveDatabaseFile({
+          databaseFile: refreshedSelectedDatabaseFile,
+          selectedDevice,
+          selectedApplication,
+          queryClient,
+          setSelectedDatabaseFile,
+        })
+
+        if (refetchDatabaseTables) {
+          await refetchDatabaseTables()
+        }
+
+        if (selectedDatabaseTable?.name && refetchTable) {
+          await refetchTable()
+        }
+
+        toaster.create({
+          title: 'Success',
+          description: 'Current database refreshed',
+          type: 'success',
+          duration: 3000,
+        })
+
+        void refetchDatabaseFiles().catch((error) => {
+          console.error('Error refreshing background database list:', error)
+        })
+
+        console.info('CriticalPath: database refresh finished', {
+          databasePath: refreshedSelectedDatabaseFile.path ?? null,
+          tableName: selectedDatabaseTable?.name ?? null,
+        })
+
+        return
+      }
+
+      const refreshedDatabaseFilesResult = await refreshDatabase({
+        refetchDatabaseFiles,
+        refetchDatabaseTables: selectedDevice?.deviceType === 'iphone-device' ? undefined : refetchDatabaseTables,
+        refetchTable: selectedDevice?.deviceType === 'iphone-device' ? undefined : refetchTable,
+        showSuccessToast: !shouldRefreshCurrentTable && selectedDevice?.deviceType !== 'iphone-device',
+      })
+
+      if (
+        selectedDevice?.deviceType === 'iphone-device'
+        && selectedDatabaseFile
+        && selectedApplication?.bundleId
+      ) {
+        const refreshedFiles = refreshedDatabaseFilesResult?.data ?? []
+        const matchedDatabaseFile = findMatchingDatabaseFile(selectedDatabaseFile, refreshedFiles)
+        const activeDatabaseFile = matchedDatabaseFile ?? selectedDatabaseFile
+
+        if (matchedDatabaseFile && matchedDatabaseFile !== selectedDatabaseFile) {
+          setSelectedDatabaseFile(matchedDatabaseFile)
+        }
+
+        await ensureActiveDatabaseFile({
+          databaseFile: activeDatabaseFile,
+          selectedDevice,
+          selectedApplication,
+          queryClient,
+          setSelectedDatabaseFile,
+        })
+
+        if (refetchDatabaseTables) {
+          await refetchDatabaseTables()
+        }
+
+        if (selectedDatabaseTable?.name && refetchTable) {
+          await refetchTable()
+        }
+      }
+
+      if (shouldRefreshCurrentTable) {
+        toaster.create({
+          title: 'Success',
+          description: 'Database refreshed',
+          type: 'success',
+          duration: 3000,
+        })
+      }
+
+      console.info('CriticalPath: database refresh finished', {
+        databasePath: selectedDatabaseFile?.path ?? null,
+        tableName: selectedDatabaseTable?.name ?? null,
+      })
+    }
+    catch (error) {
+      if (shouldRefreshCurrentTable) {
+        setIsRefreshingTableData(false)
+      }
+
+      console.error('CriticalPath: database refresh failed', error)
+      toaster.create({
+        title: 'Error refreshing database',
+        description: error instanceof Error ? error.message : 'Failed to refresh database',
+        type: 'error',
+        duration: 4000,
+      })
+    }
   }, [
     refetchDatabaseFiles,
     refetchDatabaseTables,
     refetchTable,
+    queryClient,
     selectionActions,
     selectedApplication?.bundleId,
     selectedDatabaseFile?.path,
+    selectedDatabaseFile?.remotePath,
+    selectedDatabaseFile,
     selectedDatabaseTable?.name,
     selectedDevice?.deviceType,
     selectedDevice?.id,
+    setIsRefreshingTableData,
+    setSelectedDatabaseFile,
   ])
 
   const isNoDB = !databaseFiles?.length && isScanComplete && selectedApplication?.bundleId && selectedDevice?.id

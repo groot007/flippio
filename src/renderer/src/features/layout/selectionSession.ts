@@ -92,6 +92,7 @@ export function selectTable({ actions, table }: SelectTableInput) {
     })
   }
 
+  actions.setSelectedRow(null)
   actions.setSelectedDatabaseTable(table)
 }
 

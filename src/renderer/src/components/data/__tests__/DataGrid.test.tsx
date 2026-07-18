@@ -1,8 +1,15 @@
 import { screen } from '@testing-library/react'
 import React from 'react'
-import { beforeAll, describe, expect, it, vi } from 'vitest'
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { render } from '../../../test-utils/render'
 import { DataGrid } from '../DataGrid'
+
+const mockSetSelectedRow = vi.hoisted(() => vi.fn())
+const mockSetTableData = vi.hoisted(() => vi.fn())
+const mockSetIsLoadingTableData = vi.hoisted(() => vi.fn())
+const mockSetIsRefreshingTableData = vi.hoisted(() => vi.fn())
+let mockIsRefreshingTableData = false
+let mockQueryData: any = null
 
 beforeAll(() => {
   Object.defineProperty(window, 'matchMedia', {
@@ -30,21 +37,14 @@ beforeAll(() => {
 // Mock the hooks with simple implementations
 vi.mock('@renderer/hooks/useTableDataQuery', () => ({
   useTableDataQuery: () => ({
-    data: {
-      rows: [{ id: 1, name: 'John Doe', email: 'john@example.com' }],
-      columns: [
-        { name: 'id', type: 'INTEGER' },
-        { name: 'name', type: 'TEXT' },
-        { name: 'email', type: 'TEXT' },
-      ],
-    },
+    data: mockQueryData,
     error: null,
     refetch: vi.fn(),
   }),
 }))
 
 vi.mock('@renderer/store/useRowEditingStore', () => ({
-  useRowEditingStore: () => ({ setSelectedRow: vi.fn() }),
+  useRowEditingStore: () => ({ setSelectedRow: mockSetSelectedRow }),
 }))
 
 vi.mock('@renderer/store', () => ({
@@ -61,21 +61,33 @@ vi.mock('@renderer/store', () => ({
     },
     selectedDatabaseTable: { name: 'users', columns: 3 },
   }),
-  useTableData: () => ({
-    isLoadingTableData: false,
-    setIsLoadingTableData: vi.fn(),
-    tableData: {
-      rows: [{ id: 1, name: 'John Doe', email: 'john@example.com' }],
-      columns: [
-        { name: 'id', type: 'INTEGER' },
-        { name: 'name', type: 'TEXT' },
-        { name: 'email', type: 'TEXT' },
-      ],
-      isCustomQuery: false,
-      tableName: 'users',
+  useTableData: Object.assign(
+    (selector?: any) => {
+      const state = {
+        isLoadingTableData: false,
+        isRefreshingTableData: mockIsRefreshingTableData,
+        setIsLoadingTableData: mockSetIsLoadingTableData,
+        setIsRefreshingTableData: mockSetIsRefreshingTableData,
+        tableData: {
+          rows: [{ id: 1, name: 'John Doe', email: 'john@example.com' }],
+          columns: [
+            { name: 'id', type: 'INTEGER' },
+            { name: 'name', type: 'TEXT' },
+            { name: 'email', type: 'TEXT' },
+          ],
+          isCustomQuery: false,
+          tableName: 'users',
+        },
+        setTableData: mockSetTableData,
+      }
+      return selector ? selector(state) : state
     },
-    setTableData: vi.fn(),
-  }),
+    {
+      getState: () => ({
+        setIsRefreshingTableData: mockSetIsRefreshingTableData,
+      }),
+    },
+  ),
 }))
 
 vi.mock('@renderer/ui/color-mode', () => ({
@@ -105,6 +117,19 @@ vi.mock('../TableFooter', () => ({
 }))
 
 describe('dataGrid', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockIsRefreshingTableData = false
+    mockQueryData = {
+      rows: [{ id: 1, name: 'John Doe', email: 'john@example.com' }],
+      columns: [
+        { name: 'id', type: 'INTEGER' },
+        { name: 'name', type: 'TEXT' },
+        { name: 'email', type: 'TEXT' },
+      ],
+    }
+  })
+
   it('renders the DataGrid component', () => {
     render(<DataGrid />)
 
@@ -127,5 +152,32 @@ describe('dataGrid', () => {
     render(<DataGrid />)
 
     expect(screen.getByLabelText('Add new row')).toBeInTheDocument()
+  })
+
+  it('shows a bottom-right refresh status chip while table data is refreshing', () => {
+    mockIsRefreshingTableData = true
+
+    render(<DataGrid />)
+
+    expect(screen.getByText('Syncing fresh rows')).toBeInTheDocument()
+    expect(screen.getByText('Read only')).toBeInTheDocument()
+  })
+
+  it('clears the refreshing state after fresh rows are written into the grid store', () => {
+    mockIsRefreshingTableData = true
+
+    render(<DataGrid />)
+
+    expect(mockSetIsRefreshingTableData).toHaveBeenCalledWith(false)
+    expect(mockSetTableData).toHaveBeenCalledWith({
+      rows: [{ id: 1, name: 'John Doe', email: 'john@example.com' }],
+      columns: [
+        { name: 'id', type: 'INTEGER' },
+        { name: 'name', type: 'TEXT' },
+        { name: 'email', type: 'TEXT' },
+      ],
+      isCustomQuery: false,
+      tableName: 'users',
+    })
   })
 })

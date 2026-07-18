@@ -2,7 +2,7 @@ import { Box } from '@chakra-ui/react'
 import { githubDarkTheme, JsonEditor as JsonEditorPackage } from 'json-edit-react'
 import { useState } from 'react'
 
-export function JsonEditor({ value, onChange, isDark, isEditing }) {
+export function JsonEditor({ value, onChange, isDark, isEditing, isLoading = false }) {
   if (typeof value === 'string') {
     try {
       value = JSON.parse(value)
@@ -23,7 +23,7 @@ export function JsonEditor({ value, onChange, isDark, isEditing }) {
         data={editorData}
         setData={handleChange}
         rootFontSize={12}
-        viewOnly={!isEditing}
+        viewOnly={!isEditing || isLoading}
         theme={[githubDarkTheme, {
           input: ['#fff', { fontSize: '90%' }],
           inputHighlight: ['#555', { fontSize: '90%' }],

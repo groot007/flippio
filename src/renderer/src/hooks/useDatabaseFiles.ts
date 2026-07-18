@@ -215,6 +215,10 @@ export function useDatabaseFiles(
 
   const data = useMemo(() => {
     if (isIosDeviceScan && isScanFetching) {
+      if (query.data) {
+        return mergeDatabaseFiles(query.data, streamedFiles)
+      }
+
       return streamedFiles
     }
 

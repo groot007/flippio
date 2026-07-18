@@ -1,26 +1,29 @@
-import { useColorScheme } from '@/hooks/useColorScheme'
-import { deleteItem, getItems } from '@/utils/database'
+import type { DatabaseFixture, Item } from '@/utils/database'
 import { FontAwesome } from '@expo/vector-icons'
 import * as Haptics from 'expo-haptics'
 import React, { useCallback, useEffect, useState } from 'react'
 import {
-  FlatList,
+  ActivityIndicator,
   Pressable,
   RefreshControl,
+  ScrollView,
   StyleSheet,
   View,
 } from 'react-native'
+import { useColorScheme } from '@/hooks/useColorScheme'
+import {
+  addItem,
+  buildRandomItemPayload,
+  deleteItem,
+  getDatabaseFixtures,
+  getItems,
+} from '@/utils/database'
 import { ThemedText } from './ThemedText'
 import { ThemedView } from './ThemedView'
 
-// Define item type
-export interface Item {
-  id: number
-  title: string
-  description: string
-  created_at: number
-  json_data?: string
-  jsonData?: any
+interface DatabaseSection {
+  fixture: DatabaseFixture
+  items: Item[]
 }
 
 interface DatabaseItemsProps {
@@ -28,53 +31,105 @@ interface DatabaseItemsProps {
 }
 
 export function DatabaseItems({ style }: DatabaseItemsProps) {
-  const [items, setItems] = useState<Item[]>([])
+  const [databaseSections, setDatabaseSections] = useState<DatabaseSection[]>([])
+  const [addingPath, setAddingPath] = useState<string | null>(null)
   const [refreshing, setRefreshing] = useState(false)
   const [loading, setLoading] = useState(true)
   const colorScheme = useColorScheme()
+  const isDark = colorScheme === 'dark'
+  const palette = isDark
+    ? {
+        screen: '#0D141A',
+        card: '#13212B',
+        cardSoft: '#1A2D39',
+        cardBorder: '#29404E',
+        accent: '#8CE0B8',
+        accentSoft: '#163A30',
+        path: '#9BB2C1',
+        button: '#9AE6B4',
+        buttonText: '#092014',
+        buttonMuted: '#527266',
+        danger: '#FF8A8A',
+      }
+    : {
+        screen: '#F4F7F2',
+        card: '#FFFFFF',
+        cardSoft: '#EEF5F0',
+        cardBorder: '#D7E4DB',
+        accent: '#1F7A57',
+        accentSoft: '#D8F1E1',
+        path: '#5E7165',
+        button: '#1F7A57',
+        buttonText: '#F7FFFB',
+        buttonMuted: '#7AA38F',
+        danger: '#C94F4F',
+      }
 
-  // Function to fetch items from database
-  const fetchItems = useCallback(async () => {
+  const fetchDatabaseSections = useCallback(async () => {
     try {
-      const data = await getItems()
-      setItems(data)
+      const fixtures = getDatabaseFixtures()
+      const sections = await Promise.all(
+        fixtures.map(async fixture => ({
+          fixture,
+          items: await getItems(fixture.databaseName, fixture.directory),
+        })),
+      )
+
+      setDatabaseSections(sections)
     }
     catch (error) {
       console.error('Error fetching items:', error)
-      setItems([])
+      setDatabaseSections([])
     }
     finally {
       setLoading(false)
     }
   }, [])
 
-  // Function to delete an item
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: number, fixture: DatabaseFixture) => {
     try {
-      await deleteItem(id)
+      await deleteItem(id, fixture.databaseName, fixture.directory)
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
-      fetchItems() // Refresh the list after deletion
+      await fetchDatabaseSections()
     }
     catch (error) {
       console.error('Error deleting item:', error)
     }
   }
 
-  // Refresh function with loading indicator
+  const handleAddRandomRow = async (fixture: DatabaseFixture) => {
+    try {
+      setAddingPath(fixture.path)
+      const payload = buildRandomItemPayload()
+      await addItem(
+        payload.title,
+        payload.description,
+        payload.jsonData,
+        fixture.databaseName,
+        fixture.directory,
+      )
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
+      await fetchDatabaseSections()
+    }
+    catch (error) {
+      console.error('Error adding random item:', error)
+    }
+    finally {
+      setAddingPath(null)
+    }
+  }
+
   const onRefresh = useCallback(async () => {
     setRefreshing(true)
-    await fetchItems()
+    await fetchDatabaseSections()
     setRefreshing(false)
-    // Provide haptic feedback when refresh completes
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
-  }, [fetchItems])
+  }, [fetchDatabaseSections])
 
-  // Load data on component mount
   useEffect(() => {
-    fetchItems()
-  }, [fetchItems])
+    fetchDatabaseSections()
+  }, [fetchDatabaseSections])
 
-  // Function to render arrays in a readable format
   const renderArray = (array: any[], label: string) => {
     if (!array || array.length === 0)
       return null
@@ -91,7 +146,6 @@ export function DatabaseItems({ style }: DatabaseItemsProps) {
     )
   }
 
-  // Function to render simple object with key-value pairs
   const renderSimpleObject = (obj: any, label: string) => {
     if (!obj)
       return null
@@ -112,7 +166,6 @@ export function DatabaseItems({ style }: DatabaseItemsProps) {
     )
   }
 
-  // Function to render a list of objects
   const renderObjectList = (
     list: any[],
     label: string,
@@ -143,7 +196,6 @@ export function DatabaseItems({ style }: DatabaseItemsProps) {
     )
   }
 
-  // Smart Home Product renderer
   const renderSmartHomeData = (jsonData: any) => {
     return (
       <ThemedView style={styles.jsonContainer}>
@@ -205,7 +257,6 @@ export function DatabaseItems({ style }: DatabaseItemsProps) {
     )
   }
 
-  // Recipe renderer
   const renderRecipeData = (jsonData: any) => {
     return (
       <ThemedView style={styles.jsonContainer}>
@@ -249,7 +300,6 @@ export function DatabaseItems({ style }: DatabaseItemsProps) {
     )
   }
 
-  // Fitness Class renderer
   const renderFitnessData = (jsonData: any) => {
     return (
       <ThemedView style={styles.jsonContainer}>
@@ -313,7 +363,6 @@ export function DatabaseItems({ style }: DatabaseItemsProps) {
     )
   }
 
-  // App Update renderer
   const renderAppUpdateData = (jsonData: any) => {
     return (
       <ThemedView style={styles.jsonContainer}>
@@ -381,7 +430,6 @@ export function DatabaseItems({ style }: DatabaseItemsProps) {
     )
   }
 
-  // Determine which renderer to use based on the content
   const renderJsonData = (jsonData: any, title: string) => {
     if (!jsonData)
       return null
@@ -399,91 +447,131 @@ export function DatabaseItems({ style }: DatabaseItemsProps) {
       return renderAppUpdateData(jsonData)
     }
 
-    // Fallback renderer for unknown data
     return (
-      <ThemedView style={styles.jsonContainer}>
+      <ThemedView style={[styles.jsonContainer, { borderColor: palette.cardBorder, backgroundColor: palette.cardSoft }]}>
         <ThemedText type="defaultSemiBold" style={styles.jsonTitle}>
           JSON Data
         </ThemedText>
-        <ThemedText>Complex data available (refresh to view)</ThemedText>
+        <ThemedText>Structured data attached to this row.</ThemedText>
       </ThemedView>
     )
   }
 
-  // Render item component
   const renderItem = (
-    { item }: { item: Item },
-    onDelete: (id: number) => void,
+    item: Item,
+    fixture: DatabaseFixture,
   ) => (
-    <ThemedView style={styles.itemContainer}>
-      <ThemedText type="defaultSemiBold">{item.title}</ThemedText>
-      <ThemedText>{item.description}</ThemedText>
-
-      {/* Render JSON data based on the item type */}
-      {item.jsonData && renderJsonData(item.jsonData, item.title)}
-
+    <ThemedView
+      style={[
+        styles.itemContainer,
+        {
+          backgroundColor: palette.cardSoft,
+          borderColor: palette.cardBorder,
+        },
+      ]}
+    >
+      <View style={styles.itemHeaderRow}>
+        <ThemedText type="defaultSemiBold" style={styles.itemTitle}>{item.title}</ThemedText>
+        <Pressable
+          style={({ pressed }) => [
+            styles.deleteButton,
+            {
+              opacity: pressed ? 0.72 : 1,
+              borderColor: palette.danger,
+            },
+          ]}
+          onPress={() => handleDelete(item.id, fixture)}
+        >
+          <FontAwesome name="trash" size={16} color={palette.danger} />
+        </Pressable>
+      </View>
+      <ThemedText style={styles.itemDescription}>{item.description}</ThemedText>
+      {Boolean(item.jsonData) && renderJsonData(item.jsonData, item.title)}
       <ThemedText style={styles.timestamp}>
         {new Date(item.created_at).toLocaleString()}
       </ThemedText>
-
-      {/* Delete button */}
-      <Pressable
-        style={({ pressed }) => [
-          styles.deleteButton,
-          { opacity: pressed ? 0.7 : 1 },
-        ]}
-        onPress={() => onDelete(item.id)}
-      >
-        <FontAwesome name="trash" size={20} color="red" />
-      </Pressable>
     </ThemedView>
   )
 
-  // Refresh button component
   const RefreshButton = () => (
     <Pressable
       style={({ pressed }) => [
         styles.refreshButton,
-        { opacity: pressed ? 0.7 : 1 },
-        { backgroundColor: colorScheme === 'dark' ? '#2E4F5F' : '#A1CEDC' },
+        {
+          opacity: pressed || refreshing ? 0.86 : 1,
+          backgroundColor: refreshing ? palette.buttonMuted : palette.button,
+        },
       ]}
       onPress={() => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
         onRefresh()
       }}
+      disabled={refreshing}
     >
-      <FontAwesome
-        name="refresh"
-        size={20}
-        color={colorScheme === 'dark' ? '#FFFFFF' : '#000000'}
-      />
+      <View style={styles.refreshContent}>
+        {refreshing
+          ? <ActivityIndicator color={palette.buttonText} />
+          : <FontAwesome name="refresh" size={18} color={palette.buttonText} />}
+        <ThemedText style={[styles.refreshLabel, { color: palette.buttonText }]}>
+          Refresh all databases
+        </ThemedText>
+      </View>
     </Pressable>
   )
 
-  return (
-    <ThemedView style={[styles.container, style]}>
-      <View style={styles.headerContainer}>
-        <ThemedText type="subtitle">Database Items</ThemedText>
-        <RefreshButton />
-      </View>
+  const AddRandomRowButton = ({ fixture }: { fixture: DatabaseFixture }) => {
+    const isAdding = addingPath === fixture.path
 
+    return (
+      <Pressable
+        style={({ pressed }) => [
+          styles.addButton,
+          {
+            opacity: pressed || isAdding ? 0.86 : 1,
+            backgroundColor: isAdding ? palette.buttonMuted : palette.button,
+          },
+        ]}
+        onPress={() => {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+          handleAddRandomRow(fixture)
+        }}
+        disabled={isAdding}
+      >
+        <View style={styles.addButtonContent}>
+          {isAdding
+            ? <ActivityIndicator size="small" color={palette.buttonText} />
+            : <FontAwesome name="plus" size={16} color={palette.buttonText} />}
+          <ThemedText style={[styles.addButtonLabel, { color: palette.buttonText }]}>
+            Add random row
+          </ThemedText>
+        </View>
+      </Pressable>
+    )
+  }
+
+  return (
+    <ThemedView style={[styles.container, style, { backgroundColor: palette.screen }]}>
       {loading
         ? (
-            <ThemedText style={styles.loadingText}>
-              Loading database items...
-            </ThemedText>
-          )
-        : items.length === 0
-          ? (
-              <ThemedText style={styles.noDataText}>
-                No items found. Pull to refresh or tap the refresh button.
+            <View style={styles.loadingWrap}>
+              <ActivityIndicator size="large" color={palette.accent} />
+              <ThemedText style={styles.loadingText}>
+                Loading databases...
               </ThemedText>
+            </View>
+          )
+        : databaseSections.length === 0
+          ? (
+              <View style={styles.emptyWrap}>
+                <ThemedText type="subtitle">No databases found</ThemedText>
+                <ThemedText style={styles.emptyText}>
+                  Pull to refresh or use the button below.
+                </ThemedText>
+              </View>
             )
           : (
-              <FlatList
-                data={items}
-                renderItem={({ item }) => renderItem({ item }, handleDelete)}
-                keyExtractor={item => item.id.toString()}
+              <ScrollView
+                contentContainerStyle={styles.scrollContent}
                 refreshControl={(
                   <RefreshControl
                     refreshing={refreshing}
@@ -492,8 +580,66 @@ export function DatabaseItems({ style }: DatabaseItemsProps) {
                   />
                 )}
                 style={styles.list}
-              />
+              >
+                {databaseSections.map(({ fixture, items }) => (
+                  <ThemedView
+                    key={fixture.path}
+                    style={[
+                      styles.sectionCard,
+                      {
+                        backgroundColor: palette.card,
+                        borderColor: palette.cardBorder,
+                      },
+                    ]}
+                  >
+                    <View style={styles.sectionTopRow}>
+                      <View style={styles.sectionTitleWrap}>
+                        <ThemedText type="subtitle">{fixture.databaseName}</ThemedText>
+                        <ThemedText style={[styles.sectionDescription, { color: palette.path }]}>
+                          {fixture.description}
+                        </ThemedText>
+                      </View>
+                      <View style={[styles.countBadge, { backgroundColor: palette.accentSoft }]}>
+                        <ThemedText style={[styles.countBadgeText, { color: palette.accent }]}>
+                          {items.length}
+                          {' '}
+                          {items.length === 1 ? 'row' : 'rows'}
+                        </ThemedText>
+                      </View>
+                    </View>
+
+                    <View style={[styles.pathCard, { backgroundColor: palette.cardSoft }]}>
+                      <ThemedText style={styles.pathLabel}>Database path</ThemedText>
+                      <ThemedText style={[styles.pathText, { color: palette.path }]}>
+                        {fixture.path}
+                      </ThemedText>
+                    </View>
+
+                    <View style={styles.sectionActions}>
+                      <AddRandomRowButton fixture={fixture} />
+                    </View>
+
+                    {items.length === 0
+                      ? (
+                          <View style={[styles.emptyDatabaseCard, { backgroundColor: palette.cardSoft }]}>
+                            <ThemedText style={styles.emptyDatabaseText}>
+                              No rows in this database.
+                            </ThemedText>
+                          </View>
+                        )
+                      : items.map(item => (
+                          <View key={`${fixture.path}-${item.id}`}>
+                            {renderItem(item, fixture)}
+                          </View>
+                        ))}
+                  </ThemedView>
+                ))}
+              </ScrollView>
             )}
+
+      <View style={styles.refreshButtonWrap}>
+        <RefreshButton />
+      </View>
     </ThemedView>
   )
 }
@@ -501,57 +647,141 @@ export function DatabaseItems({ style }: DatabaseItemsProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: 16,
-  },
-  headerContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
   },
   itemContainer: {
     padding: 16,
-    marginBottom: 16,
-    borderRadius: 8,
+    marginBottom: 14,
+    borderRadius: 20,
+    borderWidth: 1,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
     elevation: 2,
   },
+  itemHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    gap: 12,
+  },
+  itemTitle: {
+    flex: 1,
+  },
+  itemDescription: {
+    marginTop: 6,
+  },
   list: {
     flex: 1,
   },
-  noDataText: {
-    textAlign: 'center',
-    marginTop: 20,
+  scrollContent: {
+    paddingHorizontal: 20,
+    paddingTop: 10,
+    paddingBottom: 110,
+  },
+  sectionCard: {
+    marginBottom: 18,
+    padding: 18,
+    borderRadius: 24,
+    borderWidth: 1,
+  },
+  sectionTopRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    gap: 12,
+    marginBottom: 14,
+  },
+  sectionTitleWrap: {
+    flex: 1,
+  },
+  sectionDescription: {
+    marginTop: 4,
+    opacity: 0.92,
+  },
+  countBadge: {
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+  },
+  countBadgeText: {
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  pathCard: {
+    borderRadius: 16,
+    padding: 14,
+    marginBottom: 14,
+  },
+  pathLabel: {
+    fontSize: 12,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
+    opacity: 0.6,
+    marginBottom: 6,
+  },
+  pathText: {
+    fontSize: 12,
+    lineHeight: 18,
+  },
+  sectionActions: {
+    marginBottom: 14,
+  },
+  addButton: {
+    minHeight: 44,
+    borderRadius: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  addButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  addButtonLabel: {
+    fontSize: 14,
+    fontWeight: '700',
   },
   timestamp: {
     fontSize: 12,
     marginTop: 8,
     opacity: 0.6,
   },
+  refreshButtonWrap: {
+    position: 'absolute',
+    left: 20,
+    right: 20,
+    bottom: 20,
+  },
   refreshButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    minHeight: 58,
+    borderRadius: 18,
     justifyContent: 'center',
     alignItems: 'center',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  refreshContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  refreshLabel: {
+    fontSize: 16,
+    fontWeight: '700',
   },
   loadingText: {
     textAlign: 'center',
-    marginTop: 20,
+    marginTop: 14,
   },
   jsonContainer: {
     marginTop: 12,
     marginBottom: 8,
     padding: 12,
-    borderRadius: 8,
+    borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#ccc',
   },
   jsonTitle: {
     marginBottom: 8,
@@ -569,7 +799,35 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   deleteButton: {
+    width: 34,
+    height: 34,
+    borderRadius: 999,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  loadingWrap: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 24,
+  },
+  emptyWrap: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 24,
+  },
+  emptyText: {
     marginTop: 8,
-    alignSelf: 'flex-end',
+    textAlign: 'center',
+    opacity: 0.7,
+  },
+  emptyDatabaseCard: {
+    padding: 16,
+    borderRadius: 16,
+  },
+  emptyDatabaseText: {
+    opacity: 0.7,
   },
 })

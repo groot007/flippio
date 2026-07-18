@@ -14,6 +14,8 @@ interface TableDataHook {
   clearTableData: () => void
   isLoadingTableData: boolean
   setIsLoadingTableData: (loading: boolean) => void
+  isRefreshingTableData: boolean
+  setIsRefreshingTableData: (refreshing: boolean) => void
 }
 
 export const useTableData = create<TableDataHook>((set, _get) => ({
@@ -22,4 +24,6 @@ export const useTableData = create<TableDataHook>((set, _get) => ({
   clearTableData: () => set({ tableData: null }),
   isLoadingTableData: false,
   setIsLoadingTableData: loading => set({ isLoadingTableData: loading }),
+  isRefreshingTableData: false,
+  setIsRefreshingTableData: refreshing => set({ isRefreshingTableData: refreshing }),
 }))
