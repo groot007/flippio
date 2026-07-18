@@ -379,7 +379,7 @@ Remove legacy overlap and make the state ownership model obvious.
 - [x] Remove or archive legacy `appStore` if still overlapping active flow
 - [x] Normalize selection-related types across stores/hooks/adapters
 - [x] Remove overlapping “current selection” concepts where possible
-- [ ] Verify stores contain state, not policy
+- [x] Verify stores contain state, not policy
 
 `appStore` overlap check on July 18, 2026:
 
@@ -430,6 +430,13 @@ Recorded results for the Iteration 4 `appStore` overlap verification follow-up o
 - `npm run build --prefix src/renderer` — passed
 - Existing React `act(...)` warnings still appear in modal-heavy UI tests, but the suite passed and this follow-up did not add new failing checks
 
+Recorded results for the Iteration 4 store-policy extraction follow-up on July 18, 2026:
+
+- `npx eslint src/renderer/src/store/useRecentlyUsedApps.ts src/renderer/src/utils/recentApps.ts src/renderer/src/utils/__tests__/recentApps.test.ts src/renderer/src/utils/index.ts` — passed
+- `npm test` — passed
+- `npm run build --prefix src/renderer` — passed
+- Existing React `act(...)` warnings still appear in modal-heavy UI tests, but the suite passed and this follow-up did not add new failing checks
+
 ### Review Checkpoint
 
 - [x] Clean-context reviewer checks:
@@ -449,6 +456,14 @@ Manual clean-context fallback review for the Iteration 4 database-selection stor
 Manual clean-context fallback review for the Iteration 4 iPhone loading-state regression follow-up on July 18, 2026: `acceptable`
 
 Manual clean-context fallback review for the Iteration 4 `appStore` overlap verification follow-up on July 18, 2026: `acceptable`
+
+Manual clean-context fallback review for the Iteration 4 store-policy extraction follow-up on July 18, 2026: `acceptable`
+
+State-policy note for the Iteration 4 store-policy extraction follow-up on July 18, 2026:
+
+- `useCurrentDeviceSelection` and `useCurrentDatabaseSelection` remain state-only selection stores
+- recent-app retention, sorting, pruning, and display policy moved from `useRecentlyUsedApps` into pure `recentApps` utilities
+- `useRecentlyUsedApps` now acts as a persistence-backed state wrapper around those utilities
 
 ### Approval Gate
 
