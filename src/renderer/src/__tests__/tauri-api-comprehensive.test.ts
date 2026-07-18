@@ -299,6 +299,20 @@ describe('tauri API - critical infrastructure tests', () => {
         expect(simulatorDevices).toHaveLength(2) // Only booted simulators
         expect(simulatorDevices.map((d: any) => d.id)).toEqual(['sim1', 'sim3'])
       })
+
+      it('should route scan cancellation through the device bridge adapter', async () => {
+        mockInvoke.mockResolvedValue({ success: true, data: 'cancelled' })
+
+        const result = await tauriApi.api.cancelIOSDeviceDatabaseScan('device-1:com.test.app')
+
+        expect(mockInvoke).toHaveBeenCalledWith('cancel_ios_device_database_scan', {
+          scanKey: 'device-1:com.test.app',
+        })
+        expect(result).toEqual({
+          success: true,
+          result: 'cancelled',
+        })
+      })
     })
 
     describe('pushDatabaseFile - Device Type Detection', () => {

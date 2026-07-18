@@ -317,9 +317,9 @@ Reduce `tauri-api.ts` as a catch-all adapter and create narrower domain seams.
   - `api/databases.ts`
   - `api/changeHistory.ts` if needed
 - [ ] Introduce or normalize shared `invokeTyped`
-- [ ] Move touched selection-related bridge methods into domain adapters
-- [ ] Update `global.d.ts` and types for touched commands
-- [ ] Replace touched `any` paths with explicit types
+- [x] Move touched selection-related bridge methods into domain adapters
+- [x] Update `global.d.ts` and types for touched commands
+- [x] Replace touched `any` paths with explicit types
 
 ### Constraints
 
@@ -329,21 +329,37 @@ Reduce `tauri-api.ts` as a catch-all adapter and create narrower domain seams.
 
 ### Test Checkpoint
 
-- [ ] Run:
+- [x] Run:
   - `npx eslint <changed files...>`
   - `npm test`
   - `npm run build --prefix src/renderer`
-- [ ] Run any touched bridge-specific tests
-- [ ] Record results
+- [x] Run any touched bridge-specific tests
+- [x] Record results
+
+Recorded results for this Iteration 3 selection-bridge slice:
+
+- `npx eslint src/renderer/src/tauri-api.ts src/renderer/src/api/devices.ts src/renderer/src/types/global.d.ts src/renderer/src/__tests__/tauri-api-comprehensive.test.ts src/renderer/src/__tests__/user-workflow-integration.test.tsx` — passed
+- `npx vitest run src/renderer/src/__tests__/tauri-api-comprehensive.test.ts src/renderer/src/hooks/__tests__/useDatabaseFiles.test.ts` — passed
+- `npm run build --prefix src/renderer` — passed
+- `npm test` — passed
+- A parallel one-file `vitest` rerun hit a coverage temp-dir `ENOENT` while `npm test` was already generating coverage; the required full `npm test` gate still passed cleanly
 
 ### Review Checkpoint
 
-- [ ] Clean-context reviewer checks:
+- [x] Clean-context reviewer checks:
   - domain boundaries are clearer
   - contract drift risk is reduced
   - selection flow callers became simpler
   - bridge split improved architecture rather than just file count
-- [ ] Reviewer verdict recorded
+- [x] Reviewer verdict recorded
+
+Reviewer verdict for this Iteration 3 selection-bridge slice:
+
+- `acceptable with follow-ups`
+- Clean-context reviewer findings:
+  - refresh-path integration test became weaker and should prove refetch behavior more directly
+  - `cancelIOSDeviceDatabaseScan` type is narrower than `any` but still not strongly modeled
+  - review gate status should be recorded only after the reviewer verdict is received
 
 ### Approval Gate
 

@@ -1,5 +1,5 @@
 import type { DatabaseApi, ExportFileOptions, OpenFileResult } from '@renderer/api/databases'
-import type { DeviceApi } from '@renderer/api/devices'
+import type { CancelIOSDeviceDatabaseScanResult, DeviceApi, GetDevicesResult } from '@renderer/api/devices'
 
 // import type { WebUtils } from 'electron' // Not used in Tauri
 
@@ -14,8 +14,8 @@ declare global {
     // electron: Electron // Not used in Tauri
     api: DeviceApi & DatabaseApi & {
       // Device operations
-      getDevices: () => Promise<any>
-      cancelIOSDeviceDatabaseScan: (scanKey: string) => Promise<any>
+      getDevices: () => Promise<GetDevicesResult>
+      cancelIOSDeviceDatabaseScan: (scanKey: string) => Promise<CancelIOSDeviceDatabaseScanResult>
       uploadIOSDbFile: (deviceId: string, packageName: string, localFilePath: string, remoteLocation: string) => Promise<any>
       pushDatabaseFile: (deviceId: string, localPath: string, packageName: string, remotePath: string, deviceType?: string) => Promise<any>
 

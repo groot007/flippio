@@ -351,97 +351,9 @@ function getParameterNames(command: string): string[] {
 
 // API object that matches the Electron preload API exactly
 export const api = {
-  // Device methods
-  // Returns all devices: Android, iOS simulators, iPhone devices, and running emulators
-  getDevices: async () => {
-    try {
-      // Fetch physical Android devices
-      const androidResp = await invokeCommandWithResponse('adb:getDevices', 'devices')
-      // Fetch physical iOS devices (simulators and physical)
-      const iosResp = await invokeCommandWithResponse('device:getIOsDevices', 'devices')
-      
-      /**
-       * Fetch iOS simulators
-       * Sometimes for some reason this command hangs and blocks the JS thread
-       * hence we use abortController to cancel it after 5 seconds 
-       */
-      let iosSimulatorsResp: { success: boolean, simulators: any[] } = { success: false, simulators: [] }
-      const abortController = new AbortController()
-      const timeoutId = setTimeout(() => abortController.abort(), 5000)
-      
-      try {
-        const result = await Promise.race([
-          invokeCommandWithResponse('getIOSSimulators', 'simulators'),
-          new Promise<{ success: boolean, simulators: any[] }>((_, reject) => {
-            abortController.signal.addEventListener('abort', () => {
-              reject(new Error('iOS Simulators fetch timed out'))
-            })
-          }),
-        ])
-        iosSimulatorsResp = { success: result.success, simulators: result.simulators || [] }
-        clearTimeout(timeoutId)
-      }
-      catch (error) {
-        clearTimeout(timeoutId)
-        console.warn('Failed to fetch iOS simulators, continuing without them:', error)
-        iosSimulatorsResp = { success: false, simulators: [] }
-      }
-
-      const allDevices = []
-
-      // Add physical Android devices with labels
-      if (androidResp.success && androidResp.devices) {
-        androidResp.devices.forEach((device: any) => {
-          allDevices.push({
-            ...device,
-            label: `${device.name || device.id}`,
-            description: device.description || 'Android',
-          })
-        })
-      }
-
-      // Add physical iOS devices with labels
-      if (iosResp.success && iosResp.devices) {
-        iosResp.devices.forEach((device: any) => {
-          allDevices.push({
-            ...device,
-            label: `${device.name || device.id}`,
-            description: 'iPhone Device',
-          })
-        })
-      }
-
-      // Add iOS simulators (only booted ones)
-      if (iosSimulatorsResp.success && iosSimulatorsResp.simulators) {
-        iosSimulatorsResp.simulators
-          .filter((simulator: any) => simulator.state === 'Booted')
-          .forEach((simulator: any) => {
-            allDevices.push({
-              id: simulator.id,
-              name: simulator.name,
-              model: simulator.name, // Add model field for Device interface compatibility
-              label: `${simulator.model}`,
-              description: 'iPhone Simulator',
-              platform: 'ios',
-              deviceType: 'simulator',
-            })
-          })
-      }
-
-      return { success: true, devices: allDevices }
-    }
-    catch (error) {
-      console.error('Error getting devices:', error)
-      return { success: false, error: (error as Error).message }
-    }
-  },
-
   ...createDeviceApi({
     invokeCommandWithResponse,
   }),
-
-  cancelIOSDeviceDatabaseScan: (scanKey: string) =>
-    invokeCommandWithResponse('device:cancelIOSDeviceDatabaseScan', 'result', scanKey),
 
   getIOSDeviceDatabaseFilesNew: (deviceId: string, applicationId: string) =>
     invokeCommandWithResponse('device:getIOSDeviceDatabaseFilesNew', 'files', deviceId, applicationId),
