@@ -6,6 +6,11 @@ import {
   Spinner,
   Text,
 } from '@chakra-ui/react'
+import {
+  clearTableContext,
+  selectDatabase,
+  selectTable,
+} from '@renderer/features/layout/selectionSession'
 import { useDatabaseFiles } from '@renderer/hooks/useDatabaseFiles'
 import { useDatabaseTables } from '@renderer/hooks/useDatabaseTables'
 import { useTableDataQuery } from '@renderer/hooks/useTableDataQuery'
@@ -129,10 +134,17 @@ export function SubHeader() {
       }
     }
     
-    setSelectedDatabaseFile(resolvedFile)
-    setSelectedDatabaseTable(null)
-    clearTableData()
-    setSelectedRow(null)
+    selectDatabase({
+      databaseFile: resolvedFile,
+      actions: {
+        setSelectedDevice,
+        setSelectedApplication,
+        setSelectedDatabaseFile,
+        setSelectedDatabaseTable,
+        clearTableData,
+        setSelectedRow,
+      },
+    })
   }, [clearTableData, queryClient, selectedApplication, selectedDevice, setSelectedDatabaseFile, setSelectedDatabaseTable, setSelectedRow])
 
   const handleTableChange = useCallback((table) => {    
@@ -140,17 +152,18 @@ export function SubHeader() {
       tableName: table?.name ?? null,
       databasePath: selectedDatabaseFile?.path ?? null,
     })
-    // Clear any existing table data immediately to show loading state
-    if (table) {
-      setTableData({
-        rows: [],
-        columns: [],
-        isCustomQuery: false,
-        tableName: table.name,
-      })
-    }
-    
-    setSelectedDatabaseTable(table)
+    selectTable({
+      table,
+      actions: {
+        setSelectedDevice,
+        setSelectedApplication,
+        setSelectedDatabaseFile,
+        setSelectedDatabaseTable,
+        clearTableData,
+        setSelectedRow,
+        setTableData,
+      },
+    })
   }, [selectedDatabaseFile?.path, setSelectedDatabaseTable, setTableData])
 
   const dbFileOptions = useMemo(() => 
@@ -200,11 +213,16 @@ export function SubHeader() {
 
   useEffect(() => {
     if (!selectedDatabaseFile?.filename) {
-      setSelectedDatabaseTable(null)
-      clearTableData()
-      setSelectedRow(null)
+      clearTableContext({
+        setSelectedDevice,
+        setSelectedApplication,
+        setSelectedDatabaseFile,
+        setSelectedDatabaseTable,
+        clearTableData,
+        setSelectedRow,
+      })
     }
-  }, [clearTableData, selectedDatabaseFile, setSelectedDatabaseTable, setSelectedRow])
+  }, [clearTableData, selectedDatabaseFile, setSelectedApplication, setSelectedDatabaseFile, setSelectedDatabaseTable, setSelectedDevice, setSelectedRow])
 
   const onRefreshClick = useCallback(async () => {
     console.info('CriticalPath: database refresh started', {
@@ -215,10 +233,17 @@ export function SubHeader() {
     })
 
     if (selectedDevice?.deviceType === 'iphone-device') {
-      setSelectedDatabaseTable(null)
-      setSelectedDatabaseFile(null)
-      clearTableData()
-      setSelectedRow(null)
+      selectDatabase({
+        databaseFile: null,
+        actions: {
+          setSelectedDevice,
+          setSelectedApplication,
+          setSelectedDatabaseFile,
+          setSelectedDatabaseTable,
+          clearTableData,
+          setSelectedRow,
+        },
+      })
     }
 
     await refreshDatabase({
