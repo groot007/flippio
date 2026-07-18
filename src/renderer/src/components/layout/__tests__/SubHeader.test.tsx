@@ -16,6 +16,8 @@ let mockSelectedApplication: any
 let mockSelectedDatabaseFile: any
 let mockSelectedDatabaseTable: any
 let mockTableDataState: any
+let mockIsFirstRoundLoading: boolean
+let mockIsBackgroundScanning: boolean
 
 vi.mock('../../common/FLSelect', () => ({
   default: ({ label, options = [], value, onChange, isDisabled }: any) => (
@@ -108,7 +110,9 @@ vi.mock('@renderer/hooks/useDatabaseFiles', () => ({
       { filename: 'test.db', path: '/path/to/test.db', deviceType: 'android' },
       { filename: 'test2.db', path: '/path/to/test2.db', deviceType: 'iphone' },
     ],
-    isLoading: false,
+    isLoading: mockIsFirstRoundLoading,
+    isFirstRoundLoading: mockIsFirstRoundLoading,
+    isBackgroundScanning: mockIsBackgroundScanning,
     error: null,
   }),
 }))
@@ -199,6 +203,8 @@ describe('subHeader component', () => {
       isCustomQuery: false,
       tableName: 'users',
     }
+    mockIsFirstRoundLoading = false
+    mockIsBackgroundScanning = false
 
     mockSetSelectedDevice.mockImplementation((value) => {
       mockSelectedDevice = value
@@ -372,6 +378,21 @@ describe('subHeader component', () => {
     expect(screen.getByTestId('value-Select Database')).toHaveTextContent('None')
     expect(screen.getByTestId('value-Select Table')).toHaveTextContent('None')
     expect(screen.getByTestId('refresh-db')).toBeDisabled()
+  })
+
+  it('keeps database and table selection disabled during iPhone first-round scan loading', () => {
+    mockSelectedDevice = { id: 'iphone-1', name: 'iPhone', deviceType: 'iphone-device' }
+    mockSelectedApplication = { bundleId: 'com.test.app', name: 'Test App' }
+    mockSelectedDatabaseFile = { filename: 'test2.db', path: '/path/to/test2.db', deviceType: 'iphone-device' }
+    mockSelectedDatabaseTable = null
+    mockIsFirstRoundLoading = true
+
+    render(<SubHeader />)
+
+    expect(screen.getByTestId('select-Select Database')).toHaveAttribute('data-disabled', 'true')
+    expect(screen.getByTestId('select-Select Table')).toHaveAttribute('data-disabled', 'true')
+    expect(screen.getByTestId('refresh-db')).toBeDisabled()
+    expect(screen.getByTestId('refresh-db')).toHaveAttribute('data-state', 'open')
   })
 
   it('opens SQL modal when SQL button is clicked', () => {
