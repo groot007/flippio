@@ -403,6 +403,13 @@ Recorded results for the Iteration 4 selection-contract normalization follow-up 
 - `npm run build --prefix src/renderer` — passed
 - Existing React `act(...)` warnings still appear in modal-heavy UI tests, but the suite passed and this follow-up did not add new failing checks
 
+Recorded results for the Iteration 4 database-selection store coverage follow-up on July 18, 2026:
+
+- `npx eslint src/renderer/src/store/useCurrentDatabaseSelection.ts src/renderer/src/store/__tests__/useCurrentDatabaseSelection.test.ts` — passed
+- `npm test` — passed
+- `npm run build --prefix src/renderer` — passed
+- Existing React `act(...)` warnings still appear in modal-heavy UI tests, but the suite passed and this follow-up did not add new failing checks
+
 ### Review Checkpoint
 
 - [x] Clean-context reviewer checks:
@@ -416,14 +423,14 @@ Reviewer verdict for this Iteration 4 selection-store slice: `acceptable with fo
 Follow-ups called out by review:
 
 - there is no focused regression test yet for derived loading/disable behavior after removing store-owned `isDBPulling`
-- `useCurrentDatabaseSelection` still lacks direct store-level coverage for its reduced public contract
 
 Manual clean-context fallback review for the Iteration 4 selection-contract normalization follow-up on July 18, 2026: `acceptable with follow-ups`
 
 Follow-ups still open after that review:
 
 - there is no focused regression test yet for derived loading/disable behavior after removing store-owned `isDBPulling`
-- `useCurrentDatabaseSelection` still lacks direct store-level coverage for its reduced public contract
+
+Manual clean-context fallback review for the Iteration 4 database-selection store coverage follow-up on July 18, 2026: `acceptable`
 
 ### Approval Gate
 
