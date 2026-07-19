@@ -6,6 +6,7 @@ exports.config = {
     './e2e/specs/**/*.e2e.js',
   ],
   maxInstances: 1,
+  maxInstancesPerCapability: 1,
   logLevel,
   logLevels: {
     '@wdio/cli': logLevel,
@@ -21,6 +22,7 @@ exports.config = {
   },
   capabilities: [{
     'browserName': 'tauri',
+    'maxInstances': 1,
     'tauri:options': {
       application: './src-tauri/target/debug/Flippio',
     },

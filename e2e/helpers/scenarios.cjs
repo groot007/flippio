@@ -45,6 +45,61 @@ const DELETED_ROWS = [
 ]
 
 const CLEARED_ROWS = []
+const IPHONE_DEVICE_A = {
+  id: 'iphone-1',
+  name: 'QA iPhone A',
+  model: 'iPhone 15 Pro',
+  deviceType: 'iphone-device',
+  description: 'iPhone Device',
+}
+
+const IPHONE_DEVICE_B = {
+  id: 'iphone-2',
+  name: 'QA iPhone B',
+  model: 'iPhone 14',
+  deviceType: 'iphone-device',
+  description: 'iPhone Device',
+}
+
+const IOS_APP_A = {
+  bundleId: 'com.test.first',
+  name: 'First App',
+}
+
+const IOS_APP_B = {
+  bundleId: 'com.test.second',
+  name: 'Second App',
+}
+
+const IOS_DB_A = {
+  path: '/tmp/ios/first.db',
+  filename: 'first.db',
+  packageName: 'com.test.first',
+  location: '/var/mobile/Containers/Data/Application/First',
+  remotePath: '/var/mobile/Containers/Data/Application/First/first.db',
+  deviceType: 'iphone-device',
+}
+
+const IOS_DB_B = {
+  path: '/tmp/ios/second.db',
+  filename: 'second.db',
+  packageName: 'com.test.second',
+  location: '/var/mobile/Containers/Data/Application/Second',
+  remotePath: '/var/mobile/Containers/Data/Application/Second/second.db',
+  deviceType: 'iphone-device',
+}
+
+const DENSE_ROWS_100 = Array.from({ length: 100 }, (_, index) => ({
+  id: index + 1,
+  name: `User ${index + 1}`,
+  email: `user${index + 1}@flippio.dev`,
+}))
+
+const DENSE_ROWS_110 = Array.from({ length: 110 }, (_, index) => ({
+  id: index + 1,
+  name: `User ${index + 1}`,
+  email: `user${index + 1}@flippio.dev`,
+}))
 
 function response(result) {
   return { result }
@@ -145,6 +200,59 @@ function createAndroidBaseCommands(overrides = {}) {
   }
 }
 
+function createIOSBaseCommands(overrides = {}) {
+  return {
+    adb_get_devices: {
+      default: successData([]),
+    },
+    device_get_ios_devices: {
+      default: successData([IPHONE_DEVICE_A]),
+    },
+    get_ios_simulators: {
+      default: successData([]),
+    },
+    device_get_ios_device_packages: {
+      default: successData([IOS_APP_A]),
+    },
+    get_ios_device_database_files: {
+      default: successData([IOS_DB_A]),
+    },
+    cancel_ios_device_database_scan: {
+      default: successData(true),
+    },
+    device_push_ios_database_file: {
+      default: successData(true),
+    },
+    db_open: {
+      default: successData(IOS_DB_A.path),
+    },
+    db_switch_database: {
+      default: successData(true),
+    },
+    db_get_tables: {
+      default: successData([{ name: 'users' }]),
+    },
+    db_get_table_data: {
+      default: tableDataResult(DENSE_ROWS_100),
+    },
+    db_add_new_row_with_defaults: {
+      default: successData(true),
+    },
+    get_database_change_history: {
+      default: successData([]),
+    },
+    ...clone(overrides),
+  }
+}
+
+function createIOSScenario(name, overrides = {}) {
+  return {
+    name,
+    strict: true,
+    commands: compactRecord(createIOSBaseCommands(overrides)),
+  }
+}
+
 function createAndroidScenario(name, overrides = {}) {
   return {
     name,
@@ -195,7 +303,10 @@ function createAndroidDeleteRowScenario() {
   return createAndroidScenario('android-delete-row', {
     db_get_table_data: withQueue(
       tableDataResult(DELETED_ROWS),
-      [tableDataResult(INITIAL_ROWS)],
+      [
+        tableDataResult(INITIAL_ROWS),
+        tableDataResult(INITIAL_ROWS),
+      ],
     ),
   })
 }
@@ -204,7 +315,10 @@ function createAndroidClearTableScenario() {
   return createAndroidScenario('android-clear-table', {
     db_get_table_data: withQueue(
       tableDataResult(CLEARED_ROWS),
-      [tableDataResult(INITIAL_ROWS)],
+      [
+        tableDataResult(INITIAL_ROWS),
+        tableDataResult(INITIAL_ROWS),
+      ],
     ),
   })
 }
@@ -253,11 +367,101 @@ function createAndroidRowUpdateFailureScenario() {
   })
 }
 
+function createIOSDenseHappyPathScenario() {
+  return createIOSScenario('ios-dense-happy-path')
+}
+
+function createIOSDeviceChangeResetScenario() {
+  return createIOSScenario('ios-device-change-reset', {
+    device_get_ios_devices: {
+      default: successData([IPHONE_DEVICE_A, IPHONE_DEVICE_B]),
+    },
+    device_get_ios_device_packages: withQueue(
+      successData([IOS_APP_B]),
+      [successData([IOS_APP_A])],
+    ),
+    get_ios_device_database_files: withQueue(
+      successData([IOS_DB_B]),
+      [successData([IOS_DB_A])],
+    ),
+    db_open: withQueue(
+      successData(IOS_DB_B.path),
+      [successData(IOS_DB_A.path)],
+    ),
+  })
+}
+
+function createIOSAppChangeResetScenario() {
+  return createIOSScenario('ios-app-change-reset', {
+    device_get_ios_device_packages: {
+      default: successData([IOS_APP_A, IOS_APP_B]),
+    },
+    get_ios_device_database_files: withQueue(
+      successData([IOS_DB_B]),
+      [successData([IOS_DB_A])],
+    ),
+    db_open: withQueue(
+      successData(IOS_DB_B.path),
+      [successData(IOS_DB_A.path)],
+    ),
+  })
+}
+
+function createIOSScanRaceScenario() {
+  return createIOSScenario('ios-scan-race', {
+    device_get_ios_device_packages: {
+      default: successData([IOS_APP_A, IOS_APP_B]),
+    },
+    get_ios_device_database_files: {
+      queue: [
+        {
+          delayMs: 200,
+          result: {
+            success: true,
+            data: [IOS_DB_A],
+          },
+        },
+        {
+          delayMs: 50,
+          result: {
+            success: true,
+            data: [IOS_DB_B],
+          },
+        },
+      ],
+      default: successData([IOS_DB_B]),
+    },
+  })
+}
+
+function createIOSBulkAddScenario() {
+  return createIOSScenario('ios-bulk-add', {
+    db_get_table_data: withQueue(
+      tableDataResult(DENSE_ROWS_110),
+      [tableDataResult(DENSE_ROWS_100)],
+    ),
+    db_add_new_row_with_defaults: {
+      queue: Array.from({ length: 10 }, () => successData(true)),
+      default: successData(true),
+    },
+    device_push_ios_database_file: {
+      queue: Array.from({ length: 10 }, () => successData(true)),
+      default: successData(true),
+    },
+  })
+}
+
 module.exports = {
   APPLICATION,
   DATABASE_FILE,
   DEVICE,
   INITIAL_ROWS,
+  IOS_APP_A,
+  IOS_APP_B,
+  IOS_DB_A,
+  IOS_DB_B,
+  IPHONE_DEVICE_A,
+  IPHONE_DEVICE_B,
   createAndroidAddRowScenario,
   createAndroidClearTableScenario,
   createAndroidDatabaseFilesFailureScenario,
@@ -269,4 +473,9 @@ module.exports = {
   createAndroidRowUpdateScenario,
   createAndroidTableDataFailureScenario,
   createAndroidTablesFailureScenario,
+  createIOSAppChangeResetScenario,
+  createIOSBulkAddScenario,
+  createIOSDenseHappyPathScenario,
+  createIOSDeviceChangeResetScenario,
+  createIOSScanRaceScenario,
 }

@@ -1,7 +1,7 @@
 import type { ApplicationSelection, DatabaseFile, DeviceInfo } from '@renderer/types'
 import { transformToCamelCase } from '@renderer/utils/caseTransformer'
+import { listenAppEvent } from '@renderer/utils/tauriEventBridge'
 import { useQuery } from '@tanstack/react-query'
-import { listen } from '@tauri-apps/api/event'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 type Device = Pick<DeviceInfo, 'deviceType' | 'id'>
@@ -143,7 +143,7 @@ export function useDatabaseFiles(
     let isMounted = true
     let unlistenPromise: Promise<() => void> | null = null
 
-    unlistenPromise = listen<IOSScanProgressPayload>('ios-db-scan-progress', (event) => {
+    unlistenPromise = listenAppEvent<IOSScanProgressPayload>('ios-db-scan-progress', (event) => {
       if (
         !isMounted
         || event.payload.scanKey !== scanKey
@@ -240,7 +240,9 @@ export function useDatabaseFiles(
     ? isScanFetching && scanState.firstRoundComplete
     : false
   const isLoading = isFirstRoundLoading
-  const isScanComplete = !isScanFetching
+  const isScanComplete = isIosDeviceScan
+    ? !!activeScanRequestId && query.isFetched && !isScanFetching
+    : !isScanFetching
 
   return {
     ...query,

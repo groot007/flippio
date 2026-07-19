@@ -67,14 +67,32 @@ async function selectFirstOption(testId) {
   }
 
   if (supportsOptionTestIds !== false) {
+    const firstOptions = await $$(`[data-testid^="${testId}-option-"]`)
+    for (const firstOption of firstOptions) {
+      if (await firstOption.isDisplayed().catch(() => false)) {
+        supportsOptionTestIds = true
+        await firstOption.click()
+        return
+      }
+    }
+
     const firstOption = $(`[data-testid^="${testId}-option-"]`)
-    if (await firstOption.waitForDisplayed({ timeout: 250, reverse: false }).catch(() => false)) {
+    if (await firstOption.waitForDisplayed({ timeout: 1500, reverse: false }).catch(() => false)) {
       supportsOptionTestIds = true
       await firstOption.click()
       return
     }
 
     supportsOptionTestIds = false
+  }
+
+  const legacyOptions = await $$('//*[@role="option"]')
+
+  for (const legacyOption of legacyOptions) {
+    if (await legacyOption.isDisplayed().catch(() => false)) {
+      await legacyOption.click()
+      return
+    }
   }
 
   const legacyFirstOption = $('(//*[@role="option"])[1]')
@@ -87,6 +105,89 @@ async function selectFirstOption(testId) {
     await browser.keys('ArrowDown')
     await browser.keys('Enter')
   }
+}
+
+async function selectOptionByValue(testId, optionValue) {
+  const select = $(`[data-testid="${testId}"]`)
+  const input = $(`#${testId}`)
+
+  await select.waitForDisplayed({ timeout: DEFAULT_TIMEOUT })
+
+  if (await input.isExisting()) {
+    await input.click()
+  }
+  else {
+    await select.click()
+  }
+
+  const option = $(`[data-testid="${testId}-option-${optionValue}"]`)
+  await option.waitForDisplayed({ timeout: DEFAULT_TIMEOUT })
+  await option.click()
+}
+
+async function selectOptionByText(testId, optionText) {
+  const select = $(`[data-testid="${testId}"]`)
+  const input = $(`#${testId}`)
+
+  await select.waitForDisplayed({ timeout: DEFAULT_TIMEOUT })
+
+  if (await input.isExisting()) {
+    await input.click()
+  }
+  else {
+    await select.click()
+  }
+
+  const exactOption = $(`//*[@role="option"]//*[contains(normalize-space(.), "${optionText}")]`)
+  if (await exactOption.waitForDisplayed({ timeout: 1000 }).catch(() => false)) {
+    await exactOption.click()
+    return
+  }
+
+  const directOption = $(`//*[@role="option" and contains(normalize-space(.), "${optionText}")]`)
+  await directOption.waitForDisplayed({ timeout: DEFAULT_TIMEOUT })
+  await directOption.click()
+}
+
+async function selectNthOption(testId, optionIndex) {
+  const select = $(`[data-testid="${testId}"]`)
+  const input = $(`#${testId}`)
+
+  await select.waitForDisplayed({ timeout: DEFAULT_TIMEOUT })
+
+  if (await input.isExisting()) {
+    await input.click()
+  }
+  else {
+    await select.click()
+  }
+
+  const option = $(`(//*[@role="option"])[${optionIndex}]`)
+  if (await option.waitForDisplayed({ timeout: 1000 }).catch(() => false)) {
+    await option.click()
+    return
+  }
+
+  for (let index = 0; index < optionIndex; index += 1) {
+    await browser.keys('ArrowDown')
+  }
+  await browser.keys('Enter')
+}
+
+async function waitForTextToDisappear(text, timeoutMsg = `Text "${text}" did not disappear`) {
+  await browser.waitUntil(async () => {
+    return !(await $('body').getText()).includes(text)
+  }, {
+    timeout: DEFAULT_TIMEOUT,
+    interval: FAST_INTERVAL,
+    timeoutMsg,
+  })
+}
+
+async function emitTauriEvent(eventName, payload) {
+  await browser.execute((nextEventName, nextPayload) => {
+    window.__FLIPPIO_E2E__?.emitTauriEvent(nextEventName, nextPayload)
+  }, eventName, payload)
 }
 
 async function waitForGridText(text, timeoutMsg = `Grid text "${text}" did not appear`) {
@@ -219,6 +320,33 @@ async function openHappyPathToGrid() {
   await waitForCommand('db_get_table_data', 1, 'Table data fetch did not complete after selecting table')
 }
 
+async function openIOSHappyPathToGrid(options = {}) {
+  const {
+    appText,
+    deviceText,
+  } = options
+
+  await waitForCommand('device_get_ios_devices', 1, 'Initial iPhone device fetch did not complete')
+  if (deviceText) {
+    await selectOptionByText('device-select', deviceText)
+  }
+  else {
+    await selectFirstOption('device-select')
+  }
+  await waitForCommand('device_get_ios_device_packages', 1, 'iPhone app fetch did not complete')
+  if (appText) {
+    await selectOptionByText('app-select', appText)
+  }
+  else {
+    await selectFirstOption('app-select')
+  }
+  await waitForCommand('get_ios_device_database_files', 1, 'iPhone database file fetch did not complete')
+  await selectFirstOption('database-file-select')
+  await waitForCommand('db_get_tables', 1, 'Table fetch did not complete')
+  await selectFirstOption('table-select')
+  await waitForCommand('db_get_table_data', 1, 'Table data fetch did not complete')
+}
+
 async function openRowDetails(rowText) {
   await waitForGridText(rowText, `Grid row "${rowText}" did not render`)
   await clickGridCell(rowText)
@@ -235,14 +363,20 @@ module.exports = {
   clickActionButton,
   clickGridCell,
   clickText,
+  emitTauriEvent,
   getGridText,
   getCommandHistory,
   loadScenario,
   openHappyPathToGrid,
+  openIOSHappyPathToGrid,
   openRowDetails,
   prepareScenario,
   selectFirstOption,
+  selectNthOption,
+  selectOptionByText,
+  selectOptionByValue,
   waitForGridText,
   waitForCommand,
   waitForE2EMode,
+  waitForTextToDisappear,
 }

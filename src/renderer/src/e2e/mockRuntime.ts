@@ -1,3 +1,4 @@
+import { fetchDevices } from '@renderer/hooks/useDevices'
 import { useCurrentDatabaseSelection, useCurrentDeviceSelection, useTableData } from '@renderer/store'
 import { useRowEditingStore } from '@renderer/store/useRowEditingStore'
 import { queryClient } from '../queryClient'
@@ -22,6 +23,12 @@ export interface E2EScenario {
   name?: string
   strict?: boolean
 }
+
+interface E2EEvent {
+  payload: unknown
+}
+
+type E2EEventHandler = (event: E2EEvent) => void
 
 interface CommandHistoryEntry {
   command: string
@@ -72,6 +79,7 @@ const runtimeState: E2ERuntimeState = {
   commandHistory: [],
   scenario: readStoredScenario(),
 }
+const eventListeners = new Map<string, Set<E2EEventHandler>>()
 
 function cloneValue<T>(value: T): T {
   if (typeof structuredClone === 'function') {
@@ -91,6 +99,10 @@ function sleep(delayMs = 0) {
 
 function resetHistory() {
   runtimeState.commandHistory = []
+}
+
+function resetEventListeners() {
+  eventListeners.clear()
 }
 
 function readStoredScenario(): E2EScenario {
@@ -127,6 +139,17 @@ function getCommandMock(command: string) {
   return runtimeState.scenario.commands?.[command]
 }
 
+function emitE2EEvent(name: string, payload: unknown) {
+  const handlers = eventListeners.get(name)
+  if (!handlers) {
+    return
+  }
+
+  for (const handler of handlers) {
+    handler({ payload: cloneValue(payload) })
+  }
+}
+
 function resetRendererState() {
   useCurrentDeviceSelection.setState({
     selectedDevice: null,
@@ -155,17 +178,40 @@ function prepareScenario(scenario: unknown) {
   resetHistory()
   void queryClient.cancelQueries()
   queryClient.clear()
+  resetEventListeners()
   resetRendererState()
-  void queryClient.refetchQueries({
+  void queryClient.fetchQuery({
     queryKey: ['devices'],
-    type: 'active',
+    queryFn: fetchDevices,
+    staleTime: 0,
   }).catch((error) => {
-    console.error('Failed to refetch devices after preparing E2E scenario', error)
+    console.error('Failed to prefetch devices after preparing E2E scenario', error)
   })
 }
 
 export function isE2EModeEnabled() {
   return E2E_MODE_ENABLED
+}
+
+export async function registerE2EEventListener(
+  eventName: string,
+  handler: E2EEventHandler,
+): Promise<() => void> {
+  const handlers = eventListeners.get(eventName) ?? new Set<E2EEventHandler>()
+  handlers.add(handler)
+  eventListeners.set(eventName, handlers)
+
+  return () => {
+    const currentHandlers = eventListeners.get(eventName)
+    if (!currentHandlers) {
+      return
+    }
+
+    currentHandlers.delete(handler)
+    if (currentHandlers.size === 0) {
+      eventListeners.delete(eventName)
+    }
+  }
 }
 
 export async function maybeHandleE2ECommand(
@@ -224,6 +270,7 @@ export function installE2EController() {
       })
       persistScenario(runtimeState.scenario)
       resetHistory()
+      resetEventListeners()
     },
     prepareScenario,
     resetScenario: () => {
@@ -232,9 +279,13 @@ export function installE2EController() {
         window.localStorage.removeItem(STORAGE_KEY)
       }
       resetHistory()
+      resetEventListeners()
       resetRendererState()
     },
     getCommandHistory: () => cloneValue(runtimeState.commandHistory),
     getScenarioState: () => cloneValue(runtimeState.scenario),
+    emitTauriEvent: (eventName: string, payload: unknown) => {
+      emitE2EEvent(eventName, payload)
+    },
   }
 }
