@@ -3,12 +3,11 @@ import { DeviceInfoModal } from '@renderer/components/common/DeviceInfoModal'
 import {
   reconcileSelectionAfterApplicationRefresh,
   reconcileSelectionAfterDeviceRefresh,
-  reconcileSelectionWithApplications,
   reconcileSelectionWithDatabaseFiles,
-  reconcileSelectionWithDevices,
   selectApplication,
   selectDevice,
 } from '@renderer/features/layout/selectionSession'
+import { useAppHeaderSelectionEffects } from '@renderer/features/layout/useAppHeaderSelectionEffects'
 import { useSelectionSessionActions } from '@renderer/features/layout/useSelectionSessionActions'
 import { useSelectionSessionState } from '@renderer/features/layout/useSelectionSessionState'
 import { fetchApplicationsForDevice, useApplications } from '@renderer/hooks/useApplications'
@@ -143,47 +142,17 @@ function AppHeader() {
     }
   }, [isApplicationsError, applicationsError, selectedDevice])
 
-  useEffect(() => {
-    if (!selectedDevice) {
-      return
-    }
-
-    reconcileSelectionWithDevices(
-      {
-        allowMissingSelectedDevice: selectedDevice.deviceType === 'iphone-device',
-        devices: devicesList,
-        preserveDatabaseFile: isDesktopMode,
-        selectedApplication,
-        selectedDatabaseFile,
-        selectedDevice,
-      },
-      selectionActions,
-    )
-  }, [devicesList, isDesktopMode, selectedApplication, selectedDatabaseFile, selectedDevice, selectionActions])
-
-  useEffect(() => {
-    if (!selectedApplication) {
-      return
-    }
-
-    if (isLoading) {
-      return
-    }
-
-    if (isApplicationsError) {
-      return
-    }
-
-    reconcileSelectionWithApplications(
-      {
-        applications: applicationsList,
-        selectedDevice,
-        selectedApplication,
-        selectedDatabaseFile,
-      },
-      selectionActions,
-    )
-  }, [applicationsList, isApplicationsError, isLoading, selectedApplication, selectionActions])
+  useAppHeaderSelectionEffects({
+    applications: applicationsList,
+    devices: devicesList,
+    isApplicationsError,
+    isDesktopMode,
+    isLoadingApplications: isLoading,
+    selectedApplication,
+    selectedDatabaseFile,
+    selectedDevice,
+    selectionActions,
+  })
 
   const handleRefreshDevices = useCallback(async () => {
     try {

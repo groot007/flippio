@@ -71,10 +71,12 @@ interface RefreshSelectionGraphInput {
   allowMissingSelectedDevice?: boolean
   matchedApplication?: ApplicationSelection | null
   matchedDatabaseFile?: DatabaseFile | null
+  matchedDatabaseTable?: DatabaseTable | null
   matchedDevice?: DeviceInfo | null
   preserveDatabaseFile?: boolean
   selectedApplication?: ApplicationSelection | null
   selectedDatabaseFile?: DatabaseFile | null
+  selectedDatabaseTable?: DatabaseTable | null
   selectedDevice?: DeviceInfo | null
 }
 
@@ -105,6 +107,15 @@ interface ReconcileSelectionWithDatabaseFilesInput {
   databaseFiles: DatabaseFile[]
   selectedApplication?: ApplicationSelection | null
   selectedDatabaseFile?: DatabaseFile | null
+  selectedDatabaseTable?: DatabaseTable | null
+  selectedDevice?: DeviceInfo | null
+}
+
+interface ReconcileSelectionWithDatabaseTablesInput {
+  databaseTables: DatabaseTable[]
+  selectedApplication?: ApplicationSelection | null
+  selectedDatabaseFile?: DatabaseFile | null
+  selectedDatabaseTable?: DatabaseTable | null
   selectedDevice?: DeviceInfo | null
 }
 
@@ -122,6 +133,24 @@ interface ReconcileSelectionAfterApplicationRefreshResult {
 
 interface ReconcileSelectionWithDatabaseFilesResult {
   matchedDatabaseFile: DatabaseFile | null
+  refreshResult: RefreshSelectionGraphResult
+}
+
+interface ReconcileSelectionWithDatabaseTablesResult {
+  matchedDatabaseTable: DatabaseTable | null
+  refreshResult: RefreshSelectionGraphResult
+}
+
+interface ReconcileActiveDatabaseFileInput {
+  databaseFile: DatabaseFile
+  selectedApplication?: ApplicationSelection | null
+  selectedDatabaseFile?: DatabaseFile | null
+  selectedDatabaseTable?: DatabaseTable | null
+  selectedDevice?: DeviceInfo | null
+}
+
+interface ReconcileActiveDatabaseFileResult {
+  activeDatabaseFile: DatabaseFile
   refreshResult: RefreshSelectionGraphResult
 }
 
@@ -216,6 +245,17 @@ export function matchSelectedDatabaseFile(
     || file.path === selectedDatabaseFile.path
     || file.filename === selectedDatabaseFile.filename,
   ) ?? null
+}
+
+export function matchSelectedDatabaseTable(
+  databaseTables: DatabaseTable[],
+  selectedDatabaseTable: DatabaseTable | null | undefined,
+) {
+  if (!selectedDatabaseTable) {
+    return null
+  }
+
+  return databaseTables.find(table => table.name === selectedDatabaseTable.name) ?? null
 }
 
 export function clearTableContext(actions: SelectionSessionActions) {
@@ -401,6 +441,27 @@ export function reduceSelectionSession(
         }
       }
 
+      if (typeof event.matchedDatabaseTable !== 'undefined') {
+        if (state.selectedDatabaseTable && !event.matchedDatabaseTable) {
+          return {
+            state: createSelectionSessionState({
+              selectedApplication: state.selectedApplication,
+              selectedDatabaseFile: state.selectedDatabaseFile,
+              selectedDevice: state.selectedDevice,
+            }),
+            effects: createClearTableContextEffects(),
+            refreshResult,
+          }
+        }
+
+        if (event.matchedDatabaseTable && event.matchedDatabaseTable !== state.selectedDatabaseTable) {
+          state = {
+            ...state,
+            selectedDatabaseTable: event.matchedDatabaseTable,
+          }
+        }
+      }
+
       return {
         state,
         effects: createNoEffects(),
@@ -509,10 +570,12 @@ export function refreshSelectionGraph(
     allowMissingSelectedDevice = false,
     matchedApplication,
     matchedDatabaseFile,
+    matchedDatabaseTable,
     matchedDevice,
     preserveDatabaseFile = false,
     selectedApplication,
     selectedDatabaseFile,
+    selectedDatabaseTable,
     selectedDevice,
   }: RefreshSelectionGraphInput,
   actions: SelectionSessionActions,
@@ -520,6 +583,7 @@ export function refreshSelectionGraph(
   const previousState = createSelectionSessionState({
     selectedApplication,
     selectedDatabaseFile,
+    selectedDatabaseTable,
     selectedDevice,
   })
   const transition = reduceSelectionSession(
@@ -529,6 +593,7 @@ export function refreshSelectionGraph(
       allowMissingSelectedDevice,
       matchedApplication,
       matchedDatabaseFile,
+      matchedDatabaseTable,
       matchedDevice,
       preserveDatabaseFile,
     },
@@ -597,6 +662,7 @@ export function reconcileSelectionWithDatabaseFiles(
     databaseFiles,
     selectedApplication,
     selectedDatabaseFile,
+    selectedDatabaseTable,
     selectedDevice,
   }: ReconcileSelectionWithDatabaseFilesInput,
   actions: SelectionSessionActions,
@@ -607,6 +673,7 @@ export function reconcileSelectionWithDatabaseFiles(
       matchedDatabaseFile,
       selectedApplication,
       selectedDatabaseFile,
+      selectedDatabaseTable,
       selectedDevice,
     },
     actions,
@@ -614,6 +681,61 @@ export function reconcileSelectionWithDatabaseFiles(
 
   return {
     matchedDatabaseFile,
+    refreshResult,
+  }
+}
+
+export function reconcileSelectionWithDatabaseTables(
+  {
+    databaseTables,
+    selectedApplication,
+    selectedDatabaseFile,
+    selectedDatabaseTable,
+    selectedDevice,
+  }: ReconcileSelectionWithDatabaseTablesInput,
+  actions: SelectionSessionActions,
+): ReconcileSelectionWithDatabaseTablesResult {
+  const matchedDatabaseTable = matchSelectedDatabaseTable(databaseTables, selectedDatabaseTable)
+  const refreshResult = refreshSelectionGraph(
+    {
+      matchedDatabaseTable,
+      selectedApplication,
+      selectedDatabaseFile,
+      selectedDatabaseTable,
+      selectedDevice,
+    },
+    actions,
+  )
+
+  return {
+    matchedDatabaseTable,
+    refreshResult,
+  }
+}
+
+export function reconcileActiveDatabaseFile(
+  {
+    databaseFile,
+    selectedApplication,
+    selectedDatabaseFile,
+    selectedDatabaseTable,
+    selectedDevice,
+  }: ReconcileActiveDatabaseFileInput,
+  actions: SelectionSessionActions,
+): ReconcileActiveDatabaseFileResult {
+  const refreshResult = refreshSelectionGraph(
+    {
+      matchedDatabaseFile: databaseFile,
+      selectedApplication,
+      selectedDatabaseFile,
+      selectedDatabaseTable,
+      selectedDevice,
+    },
+    actions,
+  )
+
+  return {
+    activeDatabaseFile: databaseFile,
     refreshResult,
   }
 }

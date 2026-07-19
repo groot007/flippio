@@ -17,6 +17,8 @@ let mockSelectedApplication: any
 let mockSelectedDatabaseFile: any
 let mockSelectedDatabaseTable: any
 let mockTableDataState: any
+let mockDatabaseFiles: any[]
+let mockDatabaseTables: any[]
 let mockIsFirstRoundLoading: boolean
 let mockIsBackgroundScanning: boolean
 let mockIsRefreshingTableData: boolean
@@ -118,19 +120,13 @@ const mockRefetchTable = vi.fn()
 
 vi.mock('@renderer/hooks/useDatabaseFiles', () => ({
   useDatabaseFiles: () => ({
-    data: [
-      { filename: 'test.db', path: '/path/to/test.db', deviceType: 'android' },
-      { filename: 'test2.db', path: '/path/to/test2.db', deviceType: 'iphone' },
-    ],
+    data: mockDatabaseFiles,
     isLoading: mockIsFirstRoundLoading,
     isFirstRoundLoading: mockIsFirstRoundLoading,
     isBackgroundScanning: mockIsBackgroundScanning,
     error: null,
     refetch: vi.fn().mockResolvedValue({
-      data: [
-        { filename: 'test.db', path: '/path/to/test.db', deviceType: 'android' },
-        { filename: 'test2.db', path: '/path/to/test2.db', deviceType: 'iphone' },
-      ],
+      data: mockDatabaseFiles,
     }),
   }),
 }))
@@ -138,10 +134,7 @@ vi.mock('@renderer/hooks/useDatabaseFiles', () => ({
 vi.mock('@renderer/hooks/useDatabaseTables', () => ({
   useDatabaseTables: () => ({
     data: {
-      tables: [
-        { name: 'users', columns: 3 },
-        { name: 'posts', columns: 5 },
-      ],
+      tables: mockDatabaseTables,
     },
     isError: false,
     error: null,
@@ -224,6 +217,14 @@ describe('subHeader component', () => {
       isCustomQuery: false,
       tableName: 'users',
     }
+    mockDatabaseFiles = [
+      { filename: 'test.db', path: '/path/to/test.db', deviceType: 'android' },
+      { filename: 'test2.db', path: '/path/to/test2.db', deviceType: 'iphone' },
+    ]
+    mockDatabaseTables = [
+      { name: 'users', columns: 3 },
+      { name: 'posts', columns: 5 },
+    ]
     mockIsFirstRoundLoading = false
     mockIsBackgroundScanning = false
     mockIsRefreshingTableData = false
@@ -384,6 +385,41 @@ describe('subHeader component', () => {
     expect(screen.getByTestId('value-Select Table')).toHaveTextContent('None')
   })
 
+  it('clears a stale selected database when refreshed files no longer contain it', () => {
+    mockSelectedDatabaseFile = {
+      filename: 'missing.db',
+      path: '/path/to/missing.db',
+      deviceType: 'android',
+      packageName: 'com.test.app',
+      location: '/path/to/missing.db',
+    }
+    mockSelectedDatabaseTable = { name: 'users', columns: 3 }
+    mockDatabaseFiles = [
+      { filename: 'test.db', path: '/path/to/test.db', deviceType: 'android' },
+    ]
+
+    const view = render(<SubHeader />)
+    view.rerender(<SubHeader />)
+
+    expect(mockSelectedDatabaseFile).toBeNull()
+    expect(mockSelectedDatabaseTable).toBeNull()
+    expect(mockClearTableData).toHaveBeenCalled()
+  })
+
+  it('clears a stale selected table when refreshed tables no longer contain it', () => {
+    mockSelectedDatabaseTable = { name: 'missing_table', columns: 3 }
+    mockDatabaseTables = [
+      { name: 'users', columns: 3 },
+    ]
+
+    const view = render(<SubHeader />)
+    view.rerender(<SubHeader />)
+
+    expect(mockSelectedDatabaseFile).toMatchObject({ path: '/path/to/test.db' })
+    expect(mockSelectedDatabaseTable).toBeNull()
+    expect(mockClearTableData).toHaveBeenCalled()
+  })
+
   it('keeps the selected database and table visible while an iPhone refresh restarts scanning', async () => {
     mockSelectedDevice = { id: 'iphone-1', name: 'iPhone', deviceType: 'iphone-device' }
     mockSelectedDatabaseFile = {
@@ -412,6 +448,30 @@ describe('subHeader component', () => {
 
     expect(screen.getByTestId('value-Select Database')).toHaveTextContent('test2.db')
     expect(screen.getByTestId('value-Select Table')).toHaveTextContent('users')
+  })
+
+  it('does not clear the selected iPhone database while the live scan list is temporarily incomplete', () => {
+    mockSelectedDevice = { id: 'iphone-1', name: 'iPhone', deviceType: 'iphone-device' }
+    mockSelectedApplication = { bundleId: 'com.test.app', name: 'Test App' }
+    mockSelectedDatabaseFile = {
+      filename: 'test2.db',
+      path: '/path/to/test2.db',
+      deviceType: 'iphone-device',
+      packageName: 'com.test.app',
+      remotePath: '/remote/test2.db',
+    }
+    mockDatabaseFiles = []
+    mockIsBackgroundScanning = true
+
+    const view = render(<SubHeader />)
+    view.rerender(<SubHeader />)
+
+    expect(mockSelectedDatabaseFile).toMatchObject({
+      path: '/path/to/test2.db',
+      remotePath: '/remote/test2.db',
+    })
+    expect(mockSetSelectedDatabaseFile).not.toHaveBeenCalledWith(null)
+    expect(mockClearTableData).not.toHaveBeenCalled()
   })
 
   it('keeps database and table selection disabled during iPhone first-round scan loading', () => {

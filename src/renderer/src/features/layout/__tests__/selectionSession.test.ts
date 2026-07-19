@@ -3,7 +3,9 @@ import {
   clearTableContext,
   matchSelectedApplication,
   matchSelectedDatabaseFile,
+  matchSelectedDatabaseTable,
   matchSelectedDevice,
+  reconcileActiveDatabaseFile,
   reconcileSelectionAfterApplicationRefresh,
   reconcileSelectionAfterDeviceRefresh,
   reconcileSelectionWithApplications,
@@ -91,6 +93,18 @@ describe('selectionSession', () => {
       filename: 'local-copy.db',
       remotePath: '/remote/live.db',
     })
+  })
+
+  it('matches a selected database table by name', () => {
+    const matchedDatabaseTable = matchSelectedDatabaseTable(
+      [
+        { name: 'users' },
+        { name: 'posts' },
+      ],
+      { name: 'posts' },
+    )
+
+    expect(matchedDatabaseTable).toMatchObject({ name: 'posts' })
   })
 
   it('reduces device selection into a cleared downstream session state', () => {
@@ -534,5 +548,44 @@ describe('selectionSession', () => {
     })
     expect(actions.setSelectedDatabaseFile).toHaveBeenCalledWith(null)
     expect(actions.clearTableData).toHaveBeenCalledTimes(1)
+  })
+
+  it('reconcileActiveDatabaseFile swaps in a refreshed active db without clearing the selected table', () => {
+    const actions = createActions()
+    const selectedDevice = { id: 'device-1', name: 'Phone', model: 'Pixel', deviceType: 'android' as const }
+    const selectedApplication = { bundleId: 'com.test.app', name: 'Test App' }
+    const selectedDatabaseFile = {
+      filename: 'old.db',
+      location: '/tmp/old.db',
+      packageName: 'com.test.app',
+      path: '/tmp/old.db',
+      deviceType: 'android' as const,
+    }
+    const refreshedDatabaseFile = {
+      ...selectedDatabaseFile,
+      filename: 'new.db',
+      path: '/tmp/new.db',
+      location: '/tmp/new.db',
+    }
+    const selectedDatabaseTable = { name: 'users' }
+
+    const result = reconcileActiveDatabaseFile(
+      {
+        databaseFile: refreshedDatabaseFile,
+        selectedApplication,
+        selectedDatabaseFile,
+        selectedDatabaseTable,
+        selectedDevice,
+      },
+      actions,
+    )
+
+    expect(result.activeDatabaseFile).toMatchObject({
+      filename: 'new.db',
+      path: '/tmp/new.db',
+    })
+    expect(actions.setSelectedDatabaseFile).toHaveBeenCalledWith(refreshedDatabaseFile)
+    expect(actions.setSelectedDatabaseTable).not.toHaveBeenCalledWith(null)
+    expect(actions.clearTableData).not.toHaveBeenCalled()
   })
 })

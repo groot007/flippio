@@ -7,18 +7,20 @@ import {
   Text,
 } from '@chakra-ui/react'
 import {
-  clearTableContext,
   matchSelectedDatabaseFile,
+  matchSelectedDatabaseTable,
+  reconcileActiveDatabaseFile,
   selectDatabase,
   selectDesktopDatabase,
   selectTable,
 } from '@renderer/features/layout/selectionSession'
 import { useSelectionSessionActions } from '@renderer/features/layout/useSelectionSessionActions'
 import { useSelectionSessionState } from '@renderer/features/layout/useSelectionSessionState'
+import { useSelectionSessionTableState } from '@renderer/features/layout/useSelectionSessionTableState'
+import { useSubHeaderSelectionEffects } from '@renderer/features/layout/useSubHeaderSelectionEffects'
 import { useDatabaseFiles } from '@renderer/hooks/useDatabaseFiles'
 import { useDatabaseTables } from '@renderer/hooks/useDatabaseTables'
 import { useTableDataQuery } from '@renderer/hooks/useTableDataQuery'
-import { useCurrentDatabaseSelection, useTableData } from '@renderer/store'
 import { toaster } from '@renderer/ui/toaster'
 import { groupDatabaseFilesByLocation } from '@renderer/utils/databaseFileGrouping'
 import { ensureActiveDatabaseFile } from '@renderer/utils/databaseFileResolver'
@@ -39,10 +41,10 @@ export function SubHeader() {
   } = useSelectionSessionState()
   const {
     setTableData,
+    tableData: sessionTableData,
     setIsRefreshingTableData,
-  } = useTableData()
-  const tableDataStore = useTableData()
-  const setSelectedDatabaseFile = useCurrentDatabaseSelection(state => state.setSelectedDatabaseFile)
+    setSelectedDatabaseFile,
+  } = useSelectionSessionTableState()
   const selectionActions = useSelectionSessionActions()
 
   const [isQueryModalOpen, setIsQueryModalOpen] = useState(false)
@@ -56,18 +58,18 @@ export function SubHeader() {
     refetch: refetchDatabaseFiles,
   } = useDatabaseFiles(selectedDevice, selectedApplication)
 
-  const { data: tableData, refetch: refetchTable } = useTableDataQuery(selectedDatabaseTable?.name || '')
+  const { data: queriedTableData, refetch: refetchTable } = useTableDataQuery(selectedDatabaseTable?.name || '')
 
   useEffect(() => {
-    if (tableData && !tableDataStore.tableData?.isCustomQuery) {
+    if (queriedTableData && !sessionTableData?.isCustomQuery) {
       setTableData({
-        rows: tableData.rows,
-        columns: tableData.columns,
+        rows: queriedTableData.rows,
+        columns: queriedTableData.columns,
         isCustomQuery: false,
         tableName: selectedDatabaseTable?.name,
       })
     }
-  }, [tableData, selectedDatabaseTable, tableDataStore.tableData?.isCustomQuery])
+  }, [queriedTableData, selectedDatabaseTable, sessionTableData?.isCustomQuery, setTableData])
 
   const isDBPulling = !!selectedApplication?.bundleId && !!selectedDevice?.id && isFirstRoundLoading
 
@@ -164,7 +166,7 @@ export function SubHeader() {
       return null
     }
 
-    return tableOptions.find(table => table.name === selectedDatabaseTable.name) ?? null
+    return matchSelectedDatabaseTable(tableOptions, selectedDatabaseTable)
   }, [selectedDatabaseTable, tableOptions])
 
   // Handler to clear custom query and show default table rows
@@ -172,23 +174,26 @@ export function SubHeader() {
     if (!selectedDatabaseTable) 
       return
     refetchTable()
-    tableDataStore.setTableData({
+    setTableData({
       rows: [],
       columns: [],
       isCustomQuery: false,
       customQuery: '',
       tableName: selectedDatabaseTable.name,
     })
-  }, [selectedDatabaseTable, tableDataStore, refetchTable])
+  }, [refetchTable, selectedDatabaseTable, setTableData])
 
-  useEffect(() => {
-    if (!selectedDatabaseFile?.filename) {
-      clearTableContext({
-        ...selectionActions,
-        setTableData: undefined,
-      })
-    }
-  }, [selectedDatabaseFile, selectionActions])
+  useSubHeaderSelectionEffects({
+    databaseFiles: dbFileOptions,
+    databaseTables: tableOptions,
+    isDatabaseFilesScanning: selectedDevice?.deviceType === 'iphone-device' && (isFirstRoundLoading || isBackgroundScanning),
+    isDesktopMode,
+    selectedApplication,
+    selectedDatabaseFile,
+    selectedDatabaseTable,
+    selectedDevice,
+    selectionActions,
+  })
 
   const onRefreshClick = useCallback(async () => {
     const shouldRefreshCurrentTable = !!selectedDatabaseFile?.path && !!selectedDatabaseTable?.name
@@ -221,10 +226,19 @@ export function SubHeader() {
         }
 
         const refreshedSelectedDatabaseFile = refreshResult.file
-        setSelectedDatabaseFile(refreshedSelectedDatabaseFile)
+        const { activeDatabaseFile } = reconcileActiveDatabaseFile(
+          {
+            databaseFile: refreshedSelectedDatabaseFile,
+            selectedApplication,
+            selectedDatabaseFile,
+            selectedDatabaseTable,
+            selectedDevice,
+          },
+          selectionActions,
+        )
 
         await ensureActiveDatabaseFile({
-          databaseFile: refreshedSelectedDatabaseFile,
+          databaseFile: activeDatabaseFile,
           selectedDevice,
           selectedApplication,
           queryClient,
@@ -271,12 +285,17 @@ export function SubHeader() {
         && selectedApplication?.bundleId
       ) {
         const refreshedFiles = refreshedDatabaseFilesResult?.data ?? []
-        const matchedDatabaseFile = matchSelectedDatabaseFile(refreshedFiles, selectedDatabaseFile)
+        const { matchedDatabaseFile } = reconcileSelectionWithDatabaseFiles(
+          {
+            databaseFiles: refreshedFiles,
+            selectedApplication,
+            selectedDatabaseFile,
+            selectedDatabaseTable,
+            selectedDevice,
+          },
+          selectionActions,
+        )
         const activeDatabaseFile = matchedDatabaseFile ?? selectedDatabaseFile
-
-        if (matchedDatabaseFile && matchedDatabaseFile !== selectedDatabaseFile) {
-          setSelectedDatabaseFile(matchedDatabaseFile)
-        }
 
         await ensureActiveDatabaseFile({
           databaseFile: activeDatabaseFile,
@@ -535,7 +554,7 @@ export function SubHeader() {
             </Button>
 
             {/* Show clear (times) icon if a custom query is active */}
-            {tableDataStore.tableData?.isCustomQuery && (
+            {sessionTableData?.isCustomQuery && (
               <Button
                 data-testid="clear-sql-button"
                 onClick={handleClearCustomQuery}
