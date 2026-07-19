@@ -299,6 +299,7 @@ Status note on July 19, 2026:
 - made `selectionSession` report selection-clear outcomes during refresh reconciliation
 - moved selection identity matching behind `selectionSession`
 - moved drag-and-drop desktop file entry onto the shared selection session path
+- added a shared session-state hook for header-level workflow reads
 - added unit coverage for entering desktop mode
 - broader session object or reducer work is still pending
 

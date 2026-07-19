@@ -9,10 +9,11 @@ import {
   selectDevice,
 } from '@renderer/features/layout/selectionSession'
 import { useSelectionSessionActions } from '@renderer/features/layout/useSelectionSessionActions'
+import { useSelectionSessionState } from '@renderer/features/layout/useSelectionSessionState'
 import { fetchApplicationsForDevice, useApplications } from '@renderer/hooks/useApplications'
 import { fetchDatabaseFilesForSelection } from '@renderer/hooks/useDatabaseFiles'
 import { useDevices } from '@renderer/hooks/useDevices'
-import { useCurrentDatabaseSelection, useCurrentDeviceSelection, useRecentlyUsedApps } from '@renderer/store'
+import { useRecentlyUsedApps } from '@renderer/store'
 import { toaster } from '@renderer/ui/toaster'
 import { useQueryClient } from '@tanstack/react-query'
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -25,9 +26,11 @@ import { Settings } from './Settings'
 function AppHeader() {
   const [isVirtualDeviceModalOpen, setIsVirtualDeviceModalOpen] = useState(false)
 
-  const selectedDevice = useCurrentDeviceSelection(state => state.selectedDevice)
-  const selectedApplication = useCurrentDeviceSelection(state => state.selectedApplication)
-  const selectedDatabaseFile = useCurrentDatabaseSelection(state => state.selectedDatabaseFile)
+  const {
+    selectedDevice,
+    selectedApplication,
+    selectedDatabaseFile,
+  } = useSelectionSessionState()
   const selectionActions = useSelectionSessionActions()
   
   const { addRecentApp, getRecentAppsForDevice } = useRecentlyUsedApps()

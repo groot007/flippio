@@ -14,10 +14,11 @@ import {
   selectTable,
 } from '@renderer/features/layout/selectionSession'
 import { useSelectionSessionActions } from '@renderer/features/layout/useSelectionSessionActions'
+import { useSelectionSessionState } from '@renderer/features/layout/useSelectionSessionState'
 import { useDatabaseFiles } from '@renderer/hooks/useDatabaseFiles'
 import { useDatabaseTables } from '@renderer/hooks/useDatabaseTables'
 import { useTableDataQuery } from '@renderer/hooks/useTableDataQuery'
-import { useCurrentDatabaseSelection, useCurrentDeviceSelection, useTableData } from '@renderer/store'
+import { useCurrentDatabaseSelection, useTableData } from '@renderer/store'
 import { toaster } from '@renderer/ui/toaster'
 import { groupDatabaseFilesByLocation } from '@renderer/utils/databaseFileGrouping'
 import { ensureActiveDatabaseFile } from '@renderer/utils/databaseFileResolver'
@@ -29,16 +30,18 @@ import { CustomQueryModal } from '../data/CustomQueryModal'
 import FLSelect from './../common/FLSelect'
 
 export function SubHeader() {
-  const selectedDevice = useCurrentDeviceSelection(state => state.selectedDevice)
-  const selectedApplication = useCurrentDeviceSelection(state => state.selectedApplication)
+  const {
+    selectedApplication,
+    selectedDatabaseFile,
+    selectedDatabaseTable,
+    selectedDevice,
+  } = useSelectionSessionState()
   const {
     setTableData,
     setIsRefreshingTableData,
   } = useTableData()
   const tableDataStore = useTableData()
-  const selectedDatabaseFile = useCurrentDatabaseSelection(state => state.selectedDatabaseFile)
   const setSelectedDatabaseFile = useCurrentDatabaseSelection(state => state.setSelectedDatabaseFile)
-  const selectedDatabaseTable = useCurrentDatabaseSelection(state => state.selectedDatabaseTable)
   const selectionActions = useSelectionSessionActions()
 
   const [isQueryModalOpen, setIsQueryModalOpen] = useState(false)
