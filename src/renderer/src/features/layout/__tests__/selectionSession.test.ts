@@ -4,6 +4,7 @@ import {
   matchSelectedApplication,
   matchSelectedDatabaseFile,
   matchSelectedDevice,
+  reduceSelectionSession,
   refreshSelectionGraph,
   selectApplication,
   selectDatabase,
@@ -84,6 +85,115 @@ describe('selectionSession', () => {
     expect(matchedDatabaseFile).toMatchObject({
       filename: 'local-copy.db',
       remotePath: '/remote/live.db',
+    })
+  })
+
+  it('reduces device selection into a cleared downstream session state', () => {
+    const device = { id: 'device-1', name: 'Phone', model: 'Pixel', deviceType: 'android' as const }
+
+    const transition = reduceSelectionSession(
+      {
+        selectedDevice: null,
+        selectedApplication: { bundleId: 'com.test.app', name: 'Test App' },
+        selectedDatabaseFile: {
+          filename: 'test.db',
+          location: '/tmp/test.db',
+          packageName: 'com.test.app',
+          path: '/tmp/test.db',
+        },
+        selectedDatabaseTable: { name: 'users' },
+        selectedRow: { id: 1 },
+      },
+      {
+        type: 'selectDevice',
+        device,
+      },
+    )
+
+    expect(transition.state).toMatchObject({
+      selectedDevice: device,
+      selectedApplication: null,
+      selectedDatabaseFile: null,
+      selectedDatabaseTable: null,
+      selectedRow: null,
+    })
+    expect(transition.effects.clearTableContext).toBe(true)
+  })
+
+  it('reduces table selection into a table-focused session state and reset table data payload', () => {
+    const table = { name: 'users' }
+
+    const transition = reduceSelectionSession(
+      {
+        selectedDevice: { id: 'device-1', name: 'Phone', model: 'Pixel', deviceType: 'android' },
+        selectedApplication: { bundleId: 'com.test.app', name: 'Test App' },
+        selectedDatabaseFile: {
+          filename: 'test.db',
+          location: '/tmp/test.db',
+          packageName: 'com.test.app',
+          path: '/tmp/test.db',
+        },
+        selectedDatabaseTable: null,
+        selectedRow: { id: 1 },
+      },
+      {
+        type: 'selectTable',
+        table,
+      },
+    )
+
+    expect(transition.state).toMatchObject({
+      selectedDatabaseTable: table,
+      selectedRow: null,
+    })
+    expect(transition.effects).toMatchObject({
+      clearTableContext: false,
+      tableData: {
+        rows: [],
+        columns: [],
+        isCustomQuery: false,
+        tableName: 'users',
+      },
+    })
+  })
+
+  it('reduces refresh reconciliation and preserves a desktop database when a device disappears', () => {
+    const desktopDatabaseFile = {
+      filename: 'local.db',
+      location: '/tmp/local.db',
+      packageName: '',
+      path: '/tmp/local.db',
+      remotePath: '/tmp/local.db',
+      deviceType: 'desktop' as const,
+    }
+
+    const transition = reduceSelectionSession(
+      {
+        selectedDevice: { id: 'device-1', name: 'Phone', model: 'Pixel', deviceType: 'android' },
+        selectedApplication: { bundleId: 'com.test.app', name: 'Test App' },
+        selectedDatabaseFile: desktopDatabaseFile,
+        selectedDatabaseTable: { name: 'users' },
+        selectedRow: { id: 1 },
+      },
+      {
+        type: 'refreshSelectionGraph',
+        matchedDevice: null,
+        preserveDatabaseFile: true,
+      },
+    )
+
+    expect(transition.state).toMatchObject({
+      selectedDevice: null,
+      selectedApplication: null,
+      selectedDatabaseFile: desktopDatabaseFile,
+      selectedDatabaseTable: null,
+      selectedRow: null,
+    })
+    expect(transition.effects.clearTableContext).toBe(true)
+    expect(transition.refreshResult).toMatchObject({
+      didClearSelectedDevice: true,
+      didClearSelectedApplication: true,
+      didClearSelectedDatabaseFile: false,
     })
   })
 

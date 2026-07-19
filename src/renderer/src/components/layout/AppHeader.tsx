@@ -151,6 +151,8 @@ function AppHeader() {
     refreshSelectionGraph(
       {
         allowMissingSelectedDevice: selectedDevice.deviceType === 'iphone-device',
+        selectedApplication,
+        selectedDatabaseFile,
         selectedDevice,
         matchedDevice,
         preserveDatabaseFile: selectedDatabaseFile?.deviceType === 'desktop',
@@ -175,7 +177,9 @@ function AppHeader() {
     const matchedApplication = matchSelectedApplication(applicationsList, selectedApplication)
     refreshSelectionGraph(
       {
+        selectedDevice,
         selectedApplication,
+        selectedDatabaseFile,
         matchedApplication,
       },
       selectionActions,
@@ -230,7 +234,9 @@ function AppHeader() {
 
           refreshSelectionGraph(
             {
+              selectedDevice: matchedDevice,
               selectedApplication,
+              selectedDatabaseFile,
               matchedApplication,
             },
             selectionActions,
@@ -247,6 +253,8 @@ function AppHeader() {
 
             refreshSelectionGraph(
               {
+                selectedDevice: matchedDevice,
+                selectedApplication: matchedApplication,
                 selectedDatabaseFile,
                 matchedDatabaseFile,
               },

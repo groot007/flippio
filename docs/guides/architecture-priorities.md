@@ -300,6 +300,7 @@ Status note on July 19, 2026:
 - moved selection identity matching behind `selectionSession`
 - moved drag-and-drop desktop file entry onto the shared selection session path
 - added a shared session-state hook for header-level workflow reads
+- introduced the first explicit selection session reducer/event model behind existing helpers
 - added unit coverage for entering desktop mode
 - broader session object or reducer work is still pending
 
