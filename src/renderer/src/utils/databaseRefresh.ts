@@ -6,6 +6,9 @@ import { toaster } from '@renderer/ui/toaster'
 import { useCallback } from 'react'
 
 interface RefreshDatabaseOptions {
+  refreshDatabaseFiles?: boolean
+  refreshDatabaseTables?: boolean
+  refreshTableData?: boolean
   showSuccessToast?: boolean
   showErrorToast?: boolean
 }
@@ -18,12 +21,18 @@ export async function refreshDatabase({
   refetchDatabaseFiles,
   refetchDatabaseTables,
   refetchTable,
+  refreshDatabaseFiles = true,
+  refreshDatabaseTables = true,
+  refreshTableData = true,
   showSuccessToast = true,
   showErrorToast = true,
 }: {
   refetchDatabaseFiles?: () => Promise<any>
   refetchDatabaseTables?: () => Promise<any>
   refetchTable?: () => Promise<any>
+  refreshDatabaseFiles?: boolean
+  refreshDatabaseTables?: boolean
+  refreshTableData?: boolean
   showSuccessToast?: boolean
   showErrorToast?: boolean
 } = {}) {
@@ -31,17 +40,17 @@ export async function refreshDatabase({
     let databaseFilesResult: any
 
     // Refresh database files if refetch function provided
-    if (refetchDatabaseFiles) {
+    if (refreshDatabaseFiles && refetchDatabaseFiles) {
       databaseFilesResult = await refetchDatabaseFiles()
     }
 
     // Refresh database tables if refetch function provided
-    if (refetchDatabaseTables) {
+    if (refreshDatabaseTables && refetchDatabaseTables) {
       await refetchDatabaseTables()
     }
 
     // Refresh table data if refetch function provided
-    if (refetchTable) {
+    if (refreshTableData && refetchTable) {
       await refetchTable()
     }
 

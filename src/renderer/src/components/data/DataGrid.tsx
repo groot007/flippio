@@ -15,6 +15,8 @@ import { useRowEditingStore } from '@renderer/store/useRowEditingStore'
 import { useColorMode } from '@renderer/ui/color-mode'
 import { toaster } from '@renderer/ui/toaster'
 import { extractContextFromState } from '@renderer/utils/contextKey'
+import { ensureActiveDatabaseFile } from '@renderer/utils/databaseFileResolver'
+import { useQueryClient } from '@tanstack/react-query'
 import { colorSchemeDark, colorSchemeLight, themeQuartz } from 'ag-grid-community'
 import { AgGridReact } from 'ag-grid-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -44,9 +46,10 @@ export function DataGrid() {
     setTableData,
   } = useTableData()
   const { setSelectedRow } = useRowEditingStore()
-  const { selectedDatabaseTable, selectedDatabaseFile } = useCurrentDatabaseSelection()
+  const { selectedDatabaseTable, selectedDatabaseFile, setSelectedDatabaseFile } = useCurrentDatabaseSelection()
   const { selectedDevice, selectedApplication } = useCurrentDeviceSelection()
   const { refreshChangeHistory } = useChangeHistoryRefresh()
+  const queryClient = useQueryClient()
   const gridTheme = themeQuartz.withPart(colorMode === 'dark' ? colorSchemeDark : colorSchemeLight)
   const gridRef = useRef<AgGridReact>(null)
   const [isAddingRow, setIsAddingRow] = useState(false)
@@ -82,13 +85,23 @@ export function DataGrid() {
     try {
       setIsAddingRow(true)
 
-      // Extract context for change history
-      const context = extractContextFromState(selectedDevice, selectedApplication, selectedDatabaseFile)
+      const resolvedDatabaseFile = selectedDatabaseFile
+        ? await ensureActiveDatabaseFile({
+            databaseFile: selectedDatabaseFile,
+            selectedDevice,
+            selectedApplication,
+            queryClient,
+            setSelectedDatabaseFile,
+          })
+        : selectedDatabaseFile
 
-      // Use the new addNewRowWithDefaults method to let SQLite handle default values
+      // Extract context for change history
+      const context = extractContextFromState(selectedDevice, selectedApplication, resolvedDatabaseFile)
+
+      // Let the backend infer required placeholder values from table schema.
       const result = await window.api.addNewRowWithDefaults(
         selectedDatabaseTable.name, 
-        selectedDatabaseFile?.path,
+        resolvedDatabaseFile?.path,
         context.deviceId,
         context.deviceName,
         context.deviceType,
@@ -102,30 +115,44 @@ export function DataGrid() {
 
       // Push changes back to device if needed
       if (
-        selectedDatabaseFile
+        resolvedDatabaseFile
         && selectedDevice
-        && selectedDatabaseFile.packageName
-        && (selectedDatabaseFile?.deviceType === 'android'
-          || selectedDatabaseFile?.deviceType === 'iphone'
-          || selectedDatabaseFile?.deviceType === 'iphone-device'
-          || selectedDatabaseFile?.deviceType === 'simulator')
+        && resolvedDatabaseFile.packageName
+        && (resolvedDatabaseFile?.deviceType === 'android'
+          || resolvedDatabaseFile?.deviceType === 'iphone'
+          || resolvedDatabaseFile?.deviceType === 'iphone-device'
+          || resolvedDatabaseFile?.deviceType === 'simulator')
       ) {
         await window.api.pushDatabaseFile(
           selectedDevice.id,
-          selectedDatabaseFile.path,
-          selectedDatabaseFile.packageName,
-          selectedDatabaseFile.remotePath || selectedDatabaseFile.path,
-          selectedDatabaseFile.deviceType,
+          resolvedDatabaseFile.path,
+          resolvedDatabaseFile.packageName,
+          resolvedDatabaseFile.remotePath || resolvedDatabaseFile.path,
+          resolvedDatabaseFile.deviceType,
         )
       }
 
       // Refresh the table data and change history
-      refetchTableData()
+      if (resolvedDatabaseFile?.path) {
+        useTableData.getState().setIsRefreshingTableData(true)
+        await queryClient.invalidateQueries({
+          queryKey: ['tableData', selectedDatabaseTable.name, resolvedDatabaseFile.path],
+          exact: true,
+        })
+        await queryClient.refetchQueries({
+          queryKey: ['tableData', selectedDatabaseTable.name, resolvedDatabaseFile.path],
+          exact: true,
+          type: 'active',
+        })
+      }
+      else {
+        await refetchTableData()
+      }
       refreshChangeHistory()
 
       toaster.create({
         title: 'Row created',
-        description: 'New row has been successfully created with default values',
+        description: 'New row has been successfully created',
         type: 'success',
         duration: 3000,
       })
@@ -141,7 +168,7 @@ export function DataGrid() {
     finally {
       setIsAddingRow(false)
     }
-  }, [selectedDatabaseTable, tableData?.columns, isAddingRow, selectedDatabaseFile, selectedDevice, refetchTableData])
+  }, [selectedDatabaseTable, tableData?.columns, isAddingRow, selectedDatabaseFile, selectedDevice, selectedApplication, refetchTableData, setSelectedDatabaseFile, queryClient])
 
   useEffect(() => {
     // Only update table data from the query hook if it's not a custom query

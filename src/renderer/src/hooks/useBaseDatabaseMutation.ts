@@ -1,9 +1,11 @@
 import type { ChangeHistoryContext } from '@renderer/types/changeHistory'
 import type { UseMutationResult } from '@tanstack/react-query'
+import { useCurrentDatabaseSelection } from '@renderer/store'
 import { useRowEditingStore } from '@renderer/store/useRowEditingStore'
+import { useTableData } from '@renderer/store/useTableData'
 import { toaster } from '@renderer/ui/toaster'
 import { validateDatabaseContext } from '@renderer/utils/contextBuilder'
-import { useDatabaseRefresh } from '@renderer/utils/databaseRefresh'
+import { ensureActiveDatabaseFile } from '@renderer/utils/databaseFileResolver'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useChangeHistoryRefresh } from './useChangeHistory'
 
@@ -22,11 +24,8 @@ export function useBaseDatabaseMutation<TVariables extends ChangeHistoryContext,
   config: BaseMutationConfig<TVariables, TData>,
 ): UseMutationResult<TData, Error, TVariables> {
   const queryClient = useQueryClient()
+  const setSelectedDatabaseFile = useCurrentDatabaseSelection(state => state.setSelectedDatabaseFile)
   const { setSelectedRow } = useRowEditingStore()
-  const { refresh: refreshDatabase } = useDatabaseRefresh({ 
-    showSuccessToast: false, 
-    showErrorToast: false, 
-  })
   const { refreshChangeHistory } = useChangeHistoryRefresh()
 
   return useMutation({
@@ -34,42 +33,62 @@ export function useBaseDatabaseMutation<TVariables extends ChangeHistoryContext,
       if (!validateDatabaseContext(variables)) {
         throw new Error('Missing required database context for operation')
       }
-      
-      return config.mutationFn(variables)
+
+      const resolvedDatabaseFile = await ensureActiveDatabaseFile({
+        databaseFile: variables.selectedDatabaseFile,
+        selectedDevice: variables.selectedDevice,
+        selectedApplication: variables.selectedApplication,
+        queryClient,
+        setSelectedDatabaseFile,
+      })
+
+      return config.mutationFn({
+        ...variables,
+        selectedDatabaseFile: resolvedDatabaseFile,
+      })
     },
     
     onSuccess: async (data: TData, variables: TVariables) => {
-      const { selectedDatabaseFile, selectedDevice, selectedApplication } = variables
+      const { selectedDatabaseFile, selectedDatabaseTable, selectedDevice, selectedApplication } = variables
+      const resolvedDatabaseFile = await ensureActiveDatabaseFile({
+        databaseFile: selectedDatabaseFile,
+        selectedDevice,
+        selectedApplication,
+        queryClient,
+        setSelectedDatabaseFile,
+      })
       
       // Execute custom success callback if provided
       if (config.onSuccessCallback) {
         await config.onSuccessCallback(data, variables)
       }
-      
-      // Push changes back to device if needed
+
       await pushDatabaseToDevice({
-        selectedDatabaseFile,
+        selectedDatabaseFile: resolvedDatabaseFile,
         selectedDevice,
         queryClient,
         selectedApplication,
       })
 
-      // Show success message
-      toaster.create({
-        title: config.successMessage,
-        description: `Operation completed successfully`,
-        type: 'success',
-        duration: 3000,
+      await refreshActiveTableOnly({
+        queryClient,
+        selectedDatabaseFile: resolvedDatabaseFile,
+        selectedDatabaseTable,
       })
+      refreshChangeHistory()
 
-      // Close the panel if requested
+      // Keep the panel open until the current database has been pushed and
+      // the active table has been refreshed from the synced file.
       if (config.shouldClosePanel) {
         setSelectedRow(null)
       }
 
-      // Refresh table data and change history
-      await refreshDatabase()
-      refreshChangeHistory()
+      toaster.create({
+        title: config.successMessage,
+        description: 'Operation completed successfully',
+        type: 'success',
+        duration: 3000,
+      })
     },
     
     onError: (error: Error) => {
@@ -81,6 +100,32 @@ export function useBaseDatabaseMutation<TVariables extends ChangeHistoryContext,
         duration: 5000,
       })
     },
+  })
+}
+
+async function refreshActiveTableOnly({
+  queryClient,
+  selectedDatabaseFile,
+  selectedDatabaseTable,
+}: {
+  queryClient: any
+  selectedDatabaseFile: any
+  selectedDatabaseTable?: any
+}) {
+  if (!selectedDatabaseFile?.path || !selectedDatabaseTable?.name) {
+    return
+  }
+
+  useTableData.getState().setIsRefreshingTableData(true)
+
+  await queryClient.invalidateQueries({
+    queryKey: ['tableData', selectedDatabaseTable.name, selectedDatabaseFile.path],
+    exact: true,
+  })
+  await queryClient.refetchQueries({
+    queryKey: ['tableData', selectedDatabaseTable.name, selectedDatabaseFile.path],
+    exact: true,
+    type: 'active',
   })
 }
 
@@ -135,15 +180,14 @@ async function pushDatabaseToDevice({
       })
       return { success: false, error: pushResult.error }
     }
-    else {
-      console.log('Database file pushed successfully')
-      return { success: true }
-    }
-    
-    // Invalidate and refetch database files
-    await queryClient.invalidateQueries({
+
+    // Invalidate database files after a successful push so later lookups resolve fresh files.
+    void queryClient.invalidateQueries({
       queryKey: ['databaseFiles', selectedDevice.id, selectedApplication?.bundleId],
     })
+
+    console.log('Database file pushed successfully')
+    return { success: true }
   }
   else {
     console.log('Skipping push to device - missing required data:', {

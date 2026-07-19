@@ -1,5 +1,6 @@
 use super::types::*;
 use super::helpers::*;
+use crate::commands::database::helpers::prepare_sqlite_file_for_sync;
 use log::{info, error};
 use std::path::Path;
 use std::fs;
@@ -415,6 +416,9 @@ async fn push_android_db_file(
     info!("Package: {}", package_name);
     info!("Remote path: {}", remote_path);
     info!("Filename: {}", filename);
+
+    prepare_sqlite_file_for_sync(local_path)
+        .map_err(|e| format!("Failed to prepare SQLite file for sync: {}", e))?;
     
     // Check if remote path is on external storage (sdcard)
     if remote_path.contains("sdcard") || remote_path.contains("external") {

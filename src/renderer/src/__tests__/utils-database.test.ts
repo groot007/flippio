@@ -23,6 +23,18 @@ describe('database utility functions tests', () => {
       expect(result).toBe('id = 123')
     })
 
+    it('should prioritize hidden rowid over visible fields', () => {
+      const cols = [{ name: 'id' }, { name: 'name' }]
+      const rowData = {
+        __flippio_rowid: 88,
+        id: 123,
+        name: 'John Doe',
+      }
+
+      const result = buildUniqueCondition(cols, rowData)
+      expect(result).toBe('rowid = 88')
+    })
+
     it('should prioritize fields ending with _id', () => {
       const cols = [
         { name: 'user_id' },
@@ -37,6 +49,22 @@ describe('database utility functions tests', () => {
 
       const result = buildUniqueCondition(cols, rowData)
       expect(result).toBe('user_id = 456')
+    })
+
+    it('should use primary key metadata when present', () => {
+      const cols = [
+        { name: 'tenant_id', pk: true },
+        { name: 'slug', pk: true },
+        { name: 'name', pk: false },
+      ]
+      const rowData = {
+        tenant_id: 5,
+        slug: 'abc',
+        name: 'Row',
+      }
+
+      const result = buildUniqueCondition(cols, rowData)
+      expect(result).toBe('tenant_id = 5 AND slug = \'abc\'')
     })
 
     it('should use all non-null fields when no ID field is present', () => {
@@ -55,7 +83,7 @@ describe('database utility functions tests', () => {
       expect(result).toBe('name = \'John Doe\' AND email = \'john@example.com\' AND status = \'active\'')
     })
 
-    it('should skip null and undefined values in conditions', () => {
+    it('should keep null and undefined values in conditions', () => {
       const cols = [
         { name: 'name' },
         { name: 'email' },
@@ -68,10 +96,10 @@ describe('database utility functions tests', () => {
       }
 
       const result = buildUniqueCondition(cols, rowData)
-      expect(result).toBe('name = \'John Doe\'')
+      expect(result).toBe('name = \'John Doe\' AND email IS NULL AND phone IS NULL')
     })
 
-    it('should skip empty string values in conditions', () => {
+    it('should keep empty string values in conditions', () => {
       const cols = [
         { name: 'name' },
         { name: 'email' },
@@ -84,7 +112,7 @@ describe('database utility functions tests', () => {
       }
 
       const result = buildUniqueCondition(cols, rowData)
-      expect(result).toBe('name = \'John Doe\' AND phone = \'555-1234\'')
+      expect(result).toBe('name = \'John Doe\' AND email = \'\' AND phone = \'555-1234\'')
     })
 
     it('should handle boolean values correctly', () => {
@@ -226,8 +254,7 @@ describe('database utility functions tests', () => {
           expect(result).toBe(`${field} = ${value}`)
         }
         else {
-          // Should use all fields since it doesn't match ID pattern
-          expect(result).toContain('name = \'Test\'')
+          expect(result).toBe(`${field} = ${value} AND name = 'Test'`)
         }
       })
     })
@@ -243,7 +270,7 @@ describe('database utility functions tests', () => {
       }
 
       const result = buildUniqueCondition(cols, rowData)
-      expect(result).toBe('data = \'   whitespace   \'')
+      expect(result).toBe('name = \'\' AND data = \'   whitespace   \'')
     })
 
     it('should handle array-like string representations', () => {
@@ -287,7 +314,6 @@ describe('database utility functions tests', () => {
         }
 
         const result = buildUniqueCondition(cols, rowData)
-        // Function finds 'user id' as an ID field and uses all non-null fields
         expect(result).toBe('user id = 123 AND first name = \'John\'')
       })
 

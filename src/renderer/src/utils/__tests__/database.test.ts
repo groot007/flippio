@@ -23,6 +23,17 @@ describe('database utilities', () => {
       expect(condition).toBe('id = 123')
     })
 
+    it('should prioritize hidden rowid when available', () => {
+      const rowData = {
+        __flippio_rowid: 42,
+        id: 123,
+        name: 'John Doe',
+      }
+
+      const condition = buildUniqueCondition(mockColumns, rowData)
+      expect(condition).toBe('rowid = 42')
+    })
+
     it('should prioritize _id field when available', () => {
       const columns = [
         { name: 'user_id', type: 'INTEGER' },
@@ -55,7 +66,7 @@ describe('database utilities', () => {
       expect(condition).toBe('name = \'John Doe\' AND email = \'john@example.com\' AND age = 25')
     })
 
-    it('should exclude null and undefined values from conditions', () => {
+    it('should preserve null and undefined values in conditions', () => {
       const rowData = {
         id: null,
         name: 'John Doe',
@@ -65,10 +76,10 @@ describe('database utilities', () => {
       }
 
       const condition = buildUniqueCondition(mockColumns, rowData)
-      expect(condition).toBe('name = \'John Doe\' AND email = \'john@example.com\' AND is_active = 1')
+      expect(condition).toBe('id IS NULL AND name = \'John Doe\' AND email = \'john@example.com\' AND age IS NULL AND is_active = 1')
     })
 
-    it('should exclude empty string values from conditions', () => {
+    it('should preserve empty string values in conditions', () => {
       const rowData = {
         id: null,
         name: '',
@@ -77,7 +88,7 @@ describe('database utilities', () => {
       }
 
       const condition = buildUniqueCondition(mockColumns, rowData)
-      expect(condition).toBe('email = \'john@example.com\' AND age = 25')
+      expect(condition).toBe('id IS NULL AND name = \'\' AND email = \'john@example.com\' AND age = 25 AND is_active IS NULL')
     })
 
     it('should handle boolean values correctly', () => {
@@ -87,7 +98,7 @@ describe('database utilities', () => {
       }
 
       const condition = buildUniqueCondition(mockColumns, rowData)
-      expect(condition).toBe('name = \'John Doe\' AND is_active = 1')
+      expect(condition).toBe('id IS NULL AND name = \'John Doe\' AND email IS NULL AND age IS NULL AND is_active = 1')
 
       const rowData2 = {
         name: 'Jane Doe',
@@ -95,7 +106,7 @@ describe('database utilities', () => {
       }
 
       const condition2 = buildUniqueCondition(mockColumns, rowData2)
-      expect(condition2).toBe('name = \'Jane Doe\' AND is_active = 0')
+      expect(condition2).toBe('id IS NULL AND name = \'Jane Doe\' AND email IS NULL AND age IS NULL AND is_active = 0')
     })
 
     it('should handle numeric values correctly', () => {
@@ -105,7 +116,7 @@ describe('database utilities', () => {
       }
 
       const condition = buildUniqueCondition(mockColumns, rowData)
-      expect(condition).toBe('name = \'John Doe\' AND age = 0')
+      expect(condition).toBe('id IS NULL AND name = \'John Doe\' AND email IS NULL AND age = 0 AND is_active IS NULL')
     })
 
     it('should escape single quotes in string values', () => {
@@ -115,7 +126,7 @@ describe('database utilities', () => {
       }
 
       const condition = buildUniqueCondition(mockColumns, rowData)
-      expect(condition).toBe('name = \'O\'\'Brien\' AND email = \'user@domain.com\'')
+      expect(condition).toBe('id IS NULL AND name = \'O\'\'Brien\' AND email = \'user@domain.com\' AND age IS NULL AND is_active IS NULL')
     })
 
     it('should handle all null values by including null conditions', () => {
@@ -141,7 +152,7 @@ describe('database utilities', () => {
       }
 
       const condition = buildUniqueCondition(mockColumns, rowData)
-      expect(condition).toBe('name = \'John Doe\' AND age = 30')
+      expect(condition).toBe('id IS NULL AND name = \'John Doe\' AND email IS NULL AND age = 30 AND is_active IS NULL')
     })
 
     it('should handle empty row data', () => {
@@ -158,7 +169,7 @@ describe('database utilities', () => {
       }
 
       const condition = buildUniqueCondition(mockColumns, rowData)
-      expect(condition).toBe('name = \'Test & Co.\' AND email = \'test+user@example.com\'')
+      expect(condition).toBe('id IS NULL AND name = \'Test & Co.\' AND email = \'test+user@example.com\' AND age IS NULL AND is_active IS NULL')
     })
 
     it('should handle very long strings', () => {
@@ -169,7 +180,7 @@ describe('database utilities', () => {
       }
 
       const condition = buildUniqueCondition(mockColumns, rowData)
-      expect(condition).toBe(`name = '${longString}' AND email = 'test@example.com'`)
+      expect(condition).toBe(`id IS NULL AND name = '${longString}' AND email = 'test@example.com' AND age IS NULL AND is_active IS NULL`)
     })
 
     it('should handle unicode characters', () => {
@@ -179,7 +190,7 @@ describe('database utilities', () => {
       }
 
       const condition = buildUniqueCondition(mockColumns, rowData)
-      expect(condition).toBe('name = \'测试用户\' AND email = \'test@example.com\'')
+      expect(condition).toBe('id IS NULL AND name = \'测试用户\' AND email = \'test@example.com\' AND age IS NULL AND is_active IS NULL')
     })
 
     it('should prefer id over other _id fields', () => {
@@ -196,6 +207,22 @@ describe('database utilities', () => {
 
       const condition = buildUniqueCondition(columns, rowData)
       expect(condition).toBe('id = 123')
+    })
+
+    it('should use explicit primary key metadata when rowid is absent', () => {
+      const columns = [
+        { name: 'tenant_id', type: 'INTEGER', pk: true },
+        { name: 'slug', type: 'TEXT', pk: true },
+        { name: 'title', type: 'TEXT', pk: false },
+      ]
+      const rowData = {
+        tenant_id: 7,
+        slug: 'welcome',
+        title: 'Hello',
+      }
+
+      const condition = buildUniqueCondition(columns, rowData)
+      expect(condition).toBe('tenant_id = 7 AND slug = \'welcome\'')
     })
 
     it('should handle zero as a valid id value', () => {
