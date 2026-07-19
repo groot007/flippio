@@ -1,6 +1,9 @@
 import { describe, expect, it, vi } from 'vitest'
 import {
   clearTableContext,
+  matchSelectedApplication,
+  matchSelectedDatabaseFile,
+  matchSelectedDevice,
   refreshSelectionGraph,
   selectApplication,
   selectDatabase,
@@ -30,6 +33,58 @@ describe('selectionSession', () => {
     expect(actions.setSelectedDatabaseTable).toHaveBeenCalledWith(null)
     expect(actions.clearTableData).toHaveBeenCalledTimes(1)
     expect(actions.setSelectedRow).toHaveBeenCalledWith(null)
+  })
+
+  it('matches a selected device by id', () => {
+    const matchedDevice = matchSelectedDevice(
+      [
+        { id: 'device-1', name: 'Phone', model: 'Pixel', deviceType: 'android' },
+        { id: 'device-2', name: 'Tablet', model: 'Pixel Tablet', deviceType: 'android' },
+      ],
+      { id: 'device-2', name: 'Old Tablet', model: 'Old', deviceType: 'android' },
+    )
+
+    expect(matchedDevice).toMatchObject({ id: 'device-2', name: 'Tablet' })
+  })
+
+  it('matches a selected application by bundle id', () => {
+    const matchedApplication = matchSelectedApplication(
+      [
+        { bundleId: 'com.test.a', name: 'App A' },
+        { bundleId: 'com.test.b', name: 'App B' },
+      ],
+      { bundleId: 'com.test.b', name: 'Old App B' },
+    )
+
+    expect(matchedApplication).toMatchObject({ bundleId: 'com.test.b', name: 'App B' })
+  })
+
+  it('matches a selected database file by remote path before fallback fields', () => {
+    const matchedDatabaseFile = matchSelectedDatabaseFile(
+      [
+        {
+          filename: 'local-copy.db',
+          location: '/tmp',
+          packageName: 'com.test.app',
+          path: '/tmp/local-copy.db',
+          remotePath: '/remote/live.db',
+          deviceType: 'iphone-device',
+        },
+      ],
+      {
+        filename: 'stale-name.db',
+        location: '/tmp',
+        packageName: 'com.test.app',
+        path: '/tmp/stale-name.db',
+        remotePath: '/remote/live.db',
+        deviceType: 'iphone-device',
+      },
+    )
+
+    expect(matchedDatabaseFile).toMatchObject({
+      filename: 'local-copy.db',
+      remotePath: '/remote/live.db',
+    })
   })
 
   it('selectDevice resets all downstream selection state', () => {

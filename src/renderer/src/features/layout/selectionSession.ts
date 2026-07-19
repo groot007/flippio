@@ -62,6 +62,43 @@ interface SelectTableInput {
   table: DatabaseTable | null
 }
 
+export function matchSelectedDevice(
+  devices: DeviceInfo[],
+  selectedDevice: DeviceInfo | null | undefined,
+) {
+  if (!selectedDevice) {
+    return null
+  }
+
+  return devices.find(device => device.id === selectedDevice.id) ?? null
+}
+
+export function matchSelectedApplication(
+  applications: ApplicationSelection[],
+  selectedApplication: ApplicationSelection | null | undefined,
+) {
+  if (!selectedApplication) {
+    return null
+  }
+
+  return applications.find(application => application.bundleId === selectedApplication.bundleId) ?? null
+}
+
+export function matchSelectedDatabaseFile(
+  databaseFiles: DatabaseFile[],
+  selectedDatabaseFile: DatabaseFile | null | undefined,
+) {
+  if (!selectedDatabaseFile) {
+    return null
+  }
+
+  return databaseFiles.find(file =>
+    (selectedDatabaseFile.remotePath && file.remotePath === selectedDatabaseFile.remotePath)
+    || file.path === selectedDatabaseFile.path
+    || file.filename === selectedDatabaseFile.filename,
+  ) ?? null
+}
+
 export function clearTableContext(actions: SelectionSessionActions) {
   actions.setSelectedDatabaseTable(null)
   actions.clearTableData()

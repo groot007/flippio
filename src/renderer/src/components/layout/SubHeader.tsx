@@ -8,6 +8,7 @@ import {
 } from '@chakra-ui/react'
 import {
   clearTableContext,
+  matchSelectedDatabaseFile,
   selectDatabase,
   selectDesktopDatabase,
   selectTable,
@@ -26,14 +27,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { LuDatabase, LuFilter, LuFolderOpen, LuRefreshCcw, LuTable, LuUpload, LuX } from 'react-icons/lu'
 import { CustomQueryModal } from '../data/CustomQueryModal'
 import FLSelect from './../common/FLSelect'
-
-function findMatchingDatabaseFile(currentFile, refreshedFiles) {
-  return refreshedFiles.find(file =>
-    (currentFile.remotePath && file.remotePath === currentFile.remotePath)
-    || file.path === currentFile.path
-    || file.filename === currentFile.filename,
-  ) ?? null
-}
 
 export function SubHeader() {
   const selectedDevice = useCurrentDeviceSelection(state => state.selectedDevice)
@@ -152,12 +145,9 @@ export function SubHeader() {
       return null
     }
 
-    return dbFileOptions
-      .flatMap(group => group.options)
-      .find(file =>
-        file.path === selectedDatabaseFile.path
-        || (selectedDatabaseFile.remotePath && file.remotePath === selectedDatabaseFile.remotePath),
-      ) ?? null
+    const flattenedDatabaseFiles = dbFileOptions.flatMap(group => group.options)
+
+    return matchSelectedDatabaseFile(flattenedDatabaseFiles, selectedDatabaseFile)
   }, [dbFileOptions, selectedDatabaseFile])
 
   const selectedDatabaseTableOption = useMemo(() => {
@@ -272,7 +262,7 @@ export function SubHeader() {
         && selectedApplication?.bundleId
       ) {
         const refreshedFiles = refreshedDatabaseFilesResult?.data ?? []
-        const matchedDatabaseFile = findMatchingDatabaseFile(selectedDatabaseFile, refreshedFiles)
+        const matchedDatabaseFile = matchSelectedDatabaseFile(refreshedFiles, selectedDatabaseFile)
         const activeDatabaseFile = matchedDatabaseFile ?? selectedDatabaseFile
 
         if (matchedDatabaseFile && matchedDatabaseFile !== selectedDatabaseFile) {

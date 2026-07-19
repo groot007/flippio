@@ -1,6 +1,9 @@
 import { Box, Button, HStack, Spinner } from '@chakra-ui/react'
 import { DeviceInfoModal } from '@renderer/components/common/DeviceInfoModal'
 import {
+  matchSelectedApplication,
+  matchSelectedDatabaseFile,
+  matchSelectedDevice,
   refreshSelectionGraph,
   selectApplication,
   selectDevice,
@@ -140,7 +143,7 @@ function AppHeader() {
       return
     }
 
-    const matchedDevice = devicesList.find(device => device.id === selectedDevice.id)
+    const matchedDevice = matchSelectedDevice(devicesList, selectedDevice)
 
     refreshSelectionGraph(
       {
@@ -166,7 +169,7 @@ function AppHeader() {
       return
     }
 
-    const matchedApplication = applicationsList.find(app => app.bundleId === selectedApplication.bundleId)
+    const matchedApplication = matchSelectedApplication(applicationsList, selectedApplication)
     refreshSelectionGraph(
       {
         selectedApplication,
@@ -184,9 +187,7 @@ function AppHeader() {
       })
       const devicesResult = await refreshDevices()
       const refreshedDevices = devicesResult.data ?? []
-      const matchedDevice = selectedDevice
-        ? refreshedDevices.find(device => device.id === selectedDevice.id) ?? null
-        : null
+      const matchedDevice = matchSelectedDevice(refreshedDevices, selectedDevice)
 
       const selectionRefreshResult = refreshSelectionGraph(
         {
@@ -222,7 +223,7 @@ function AppHeader() {
         })
 
         if (selectedApplication) {
-          const matchedApplication = applications.find(app => app.bundleId === selectedApplication.bundleId) ?? null
+          const matchedApplication = matchSelectedApplication(applications, selectedApplication)
 
           refreshSelectionGraph(
             {
@@ -239,7 +240,7 @@ function AppHeader() {
               staleTime: 0,
             })
 
-            const matchedDatabaseFile = databaseFiles.find(file => file.path === selectedDatabaseFile.path) ?? null
+            const matchedDatabaseFile = matchSelectedDatabaseFile(databaseFiles, selectedDatabaseFile)
 
             refreshSelectionGraph(
               {
