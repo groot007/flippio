@@ -160,7 +160,7 @@ describe('selectionSession', () => {
       deviceType: 'android' as const,
     }
 
-    refreshSelectionGraph(
+    const result = refreshSelectionGraph(
       {
         selectedApplication,
         selectedDatabaseFile,
@@ -169,6 +169,12 @@ describe('selectionSession', () => {
       actions,
     )
 
+    expect(result).toMatchObject({
+      didClearSelectedApplication: true,
+      didClearSelectedDatabaseFile: true,
+      didClearSelectedDevice: false,
+      preservedMissingSelectedDevice: false,
+    })
     expect(actions.setSelectedApplication).toHaveBeenCalledWith(null)
     expect(actions.setSelectedDatabaseFile).toHaveBeenCalledWith(null)
     expect(actions.setSelectedDatabaseTable).toHaveBeenCalledWith(null)
@@ -185,7 +191,7 @@ describe('selectionSession', () => {
       deviceType: 'iphone-device' as const,
     }
 
-    refreshSelectionGraph(
+    const result = refreshSelectionGraph(
       {
         selectedDevice,
         matchedDevice: null,
@@ -194,6 +200,12 @@ describe('selectionSession', () => {
       actions,
     )
 
+    expect(result).toMatchObject({
+      didClearSelectedApplication: false,
+      didClearSelectedDatabaseFile: false,
+      didClearSelectedDevice: false,
+      preservedMissingSelectedDevice: true,
+    })
     expect(actions.setSelectedDevice).not.toHaveBeenCalled()
     expect(actions.setSelectedApplication).not.toHaveBeenCalled()
     expect(actions.setSelectedDatabaseFile).not.toHaveBeenCalled()

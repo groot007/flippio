@@ -188,7 +188,7 @@ function AppHeader() {
         ? refreshedDevices.find(device => device.id === selectedDevice.id) ?? null
         : null
 
-      refreshSelectionGraph(
+      const selectionRefreshResult = refreshSelectionGraph(
         {
           selectedDevice,
           matchedDevice,
@@ -197,7 +197,7 @@ function AppHeader() {
         selectionActions,
       )
 
-      if (selectedDevice && !matchedDevice) {
+      if (selectionRefreshResult.didClearSelectedDevice) {
         toaster.create({
           title: 'Success',
           description: 'Device list refreshed',

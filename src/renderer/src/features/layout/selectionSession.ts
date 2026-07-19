@@ -35,6 +35,13 @@ interface RefreshSelectionGraphInput {
   selectedDevice?: DeviceInfo | null
 }
 
+interface RefreshSelectionGraphResult {
+  didClearSelectedApplication: boolean
+  didClearSelectedDatabaseFile: boolean
+  didClearSelectedDevice: boolean
+  preservedMissingSelectedDevice: boolean
+}
+
 interface SelectDatabaseInput {
   actions: SelectionSessionActions
   databaseFile: DatabaseFile | null
@@ -121,20 +128,31 @@ export function refreshSelectionGraph(
     selectedDevice,
   }: RefreshSelectionGraphInput,
   actions: SelectionSessionActions,
-) {
+): RefreshSelectionGraphResult {
+  const result: RefreshSelectionGraphResult = {
+    didClearSelectedApplication: false,
+    didClearSelectedDatabaseFile: false,
+    didClearSelectedDevice: false,
+    preservedMissingSelectedDevice: false,
+  }
+
   if (typeof matchedDevice !== 'undefined') {
     if (selectedDevice && !matchedDevice && allowMissingSelectedDevice) {
-      return
+      result.preservedMissingSelectedDevice = true
+      return result
     }
 
     if (selectedDevice && !matchedDevice) {
       actions.setSelectedDevice(null)
       actions.setSelectedApplication(null)
+      result.didClearSelectedDevice = true
+      result.didClearSelectedApplication = true
       if (!preserveDatabaseFile) {
         actions.setSelectedDatabaseFile(null)
+        result.didClearSelectedDatabaseFile = true
       }
       clearTableContext(actions)
-      return
+      return result
     }
 
     if (matchedDevice && matchedDevice !== selectedDevice) {
@@ -146,8 +164,10 @@ export function refreshSelectionGraph(
     if (selectedApplication && !matchedApplication) {
       actions.setSelectedApplication(null)
       actions.setSelectedDatabaseFile(null)
+      result.didClearSelectedApplication = true
+      result.didClearSelectedDatabaseFile = true
       clearTableContext(actions)
-      return
+      return result
     }
 
     if (matchedApplication && matchedApplication !== selectedApplication) {
@@ -158,12 +178,15 @@ export function refreshSelectionGraph(
   if (typeof matchedDatabaseFile !== 'undefined') {
     if (selectedDatabaseFile && !matchedDatabaseFile) {
       actions.setSelectedDatabaseFile(null)
+      result.didClearSelectedDatabaseFile = true
       clearTableContext(actions)
-      return
+      return result
     }
 
     if (matchedDatabaseFile && matchedDatabaseFile !== selectedDatabaseFile) {
       actions.setSelectedDatabaseFile(matchedDatabaseFile)
     }
   }
+
+  return result
 }

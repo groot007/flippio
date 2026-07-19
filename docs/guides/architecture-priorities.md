@@ -296,6 +296,7 @@ Status note on July 19, 2026:
 
 - started by moving desktop custom-file transition reset policy behind `selectionSession`
 - moved the passive iPhone list-flicker preserve rule behind `selectionSession`
+- made `selectionSession` report selection-clear outcomes during refresh reconciliation
 - added unit coverage for entering desktop mode
 - broader session object or reducer work is still pending
 
