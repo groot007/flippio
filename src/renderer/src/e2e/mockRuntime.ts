@@ -184,7 +184,7 @@ function resetRendererState() {
   })
 }
 
-function prepareScenario(scenario: unknown) {
+async function prepareScenario(scenario: unknown): Promise<void> {
   runtimeState.scenario = cloneValue({
     ...bootstrapScenario,
     ...(scenario as E2EScenario),
