@@ -10,6 +10,7 @@ import {
   matchSelectedDatabaseFile,
   matchSelectedDatabaseTable,
   reconcileActiveDatabaseFile,
+  reconcileSelectionWithDatabaseFiles,
   selectDatabase,
   selectDesktopDatabase,
   selectTable,

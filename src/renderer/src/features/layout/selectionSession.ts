@@ -46,6 +46,7 @@ type SelectionSessionEvent
     allowMissingSelectedDevice?: boolean
     matchedApplication?: ApplicationSelection | null
     matchedDatabaseFile?: DatabaseFile | null
+    matchedDatabaseTable?: DatabaseTable | null
     matchedDevice?: DeviceInfo | null
     preserveDatabaseFile?: boolean
   }

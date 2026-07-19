@@ -7,8 +7,12 @@ import {
   reconcileSelectionWithDatabaseTables,
 } from './selectionSession'
 
+interface DatabaseFileGroupOption {
+  options?: DatabaseFile[]
+}
+
 interface UseSubHeaderSelectionEffectsParams {
-  databaseFiles: Array<{ options?: DatabaseFile[] } | DatabaseFile>
+  databaseFiles: Array<DatabaseFileGroupOption | DatabaseFile>
   databaseTables: DatabaseTable[]
   isDatabaseFilesScanning: boolean
   isDesktopMode: boolean
@@ -17,6 +21,12 @@ interface UseSubHeaderSelectionEffectsParams {
   selectedDatabaseTable: DatabaseTable | null
   selectedDevice: DeviceInfo | null
   selectionActions: SelectionSessionActions
+}
+
+function isDatabaseFileGroupOption(
+  optionOrGroup: DatabaseFileGroupOption | DatabaseFile,
+): optionOrGroup is DatabaseFileGroupOption {
+  return 'options' in optionOrGroup
 }
 
 export function useSubHeaderSelectionEffects({
@@ -30,6 +40,14 @@ export function useSubHeaderSelectionEffects({
   selectedDevice,
   selectionActions,
 }: UseSubHeaderSelectionEffectsParams) {
+  const flattenedDatabaseFiles = databaseFiles.flatMap<DatabaseFile>((optionOrGroup) => {
+    if (isDatabaseFileGroupOption(optionOrGroup)) {
+      return optionOrGroup.options ?? []
+    }
+
+    return [optionOrGroup]
+  })
+
   useEffect(() => {
     if (!selectedDatabaseFile?.filename) {
       clearTableContext(selectionActions)
@@ -46,7 +64,6 @@ export function useSubHeaderSelectionEffects({
       return
     }
 
-    const flattenedDatabaseFiles = databaseFiles.flatMap(optionOrGroup => optionOrGroup.options ?? [optionOrGroup])
     reconcileSelectionWithDatabaseFiles(
       {
         databaseFiles: flattenedDatabaseFiles,
@@ -58,7 +75,7 @@ export function useSubHeaderSelectionEffects({
       selectionActions,
     )
   }, [
-    databaseFiles,
+    flattenedDatabaseFiles,
     isDesktopMode,
     isDatabaseFilesScanning,
     selectedApplication,
