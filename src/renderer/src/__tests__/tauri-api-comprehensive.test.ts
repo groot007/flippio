@@ -67,6 +67,7 @@ describe('tauri API - critical infrastructure tests', () => {
         'device:checkAppExistence',
         'device:pushIOSDbFile',
         'device:getIOSDeviceDatabaseFiles',
+        'device:refreshIOSDeviceDatabaseFile',
         'simulator:getIOSSimulatorDatabaseFiles',
         'simulator:uploadSimulatorIOSDbFile',
       ]
@@ -100,6 +101,41 @@ describe('tauri API - critical infrastructure tests', () => {
         expect(electron.includes(':')).toBe(true)
         expect(tauri.includes('_')).toBe(true)
         expect(tauri.includes(':')).toBe(false)
+      })
+    })
+
+    it('should pass named parameters for prioritized iPhone database refresh', async () => {
+      mockInvoke.mockResolvedValue({
+        success: true,
+        data: {
+          path: '/tmp/flippio.db',
+          filename: 'flippio.db',
+          deviceType: 'iphone-device',
+          packageName: 'com.test.app',
+          remotePath: '/Documents/SQLite/flippio.db',
+        },
+      })
+
+      const result = await tauriApi.api.refreshIOSDeviceDatabaseFile(
+        'iphone-1',
+        'com.test.app',
+        '/Documents/SQLite/flippio.db',
+      )
+
+      expect(mockInvoke).toHaveBeenCalledWith('refresh_ios_device_database_file', {
+        deviceId: 'iphone-1',
+        packageName: 'com.test.app',
+        remotePath: '/Documents/SQLite/flippio.db',
+      })
+      expect(result).toEqual({
+        success: true,
+        file: {
+          path: '/tmp/flippio.db',
+          filename: 'flippio.db',
+          deviceType: 'iphone-device',
+          packageName: 'com.test.app',
+          remotePath: '/Documents/SQLite/flippio.db',
+        },
       })
     })
   })
@@ -298,6 +334,20 @@ describe('tauri API - critical infrastructure tests', () => {
         const simulatorDevices = result.devices.filter((d: any) => d.deviceType === 'simulator')
         expect(simulatorDevices).toHaveLength(2) // Only booted simulators
         expect(simulatorDevices.map((d: any) => d.id)).toEqual(['sim1', 'sim3'])
+      })
+
+      it('should route scan cancellation through the device bridge adapter', async () => {
+        mockInvoke.mockResolvedValue({ success: true, data: 'cancelled' })
+
+        const result = await tauriApi.api.cancelIOSDeviceDatabaseScan('device-1:com.test.app')
+
+        expect(mockInvoke).toHaveBeenCalledWith('cancel_ios_device_database_scan', {
+          scanKey: 'device-1:com.test.app',
+        })
+        expect(result).toEqual({
+          success: true,
+          result: 'cancelled',
+        })
       })
     })
 

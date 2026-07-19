@@ -1,7 +1,8 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { QueryClientProvider } from '@tanstack/react-query'
 import { AllCommunityModule, ModuleRegistry } from 'ag-grid-community'
 
 import Main from './pages/Main'
+import { queryClient } from './queryClient'
 import { Provider } from './ui/provider'
 import { Toaster } from './ui/toaster'
 
@@ -27,22 +28,16 @@ if (import.meta.env.PROD && !import.meta.env.VITEST && typeof window !== 'undefi
 // Register all Community features
 ModuleRegistry.registerModules([AllCommunityModule])
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      refetchOnWindowFocus: false, // Disable auto refetch on window focus
-    },
-  },
-})
-
 function App(): JSX.Element {
   return (
-    <QueryClientProvider client={queryClient}>
-      <Provider>
-        <Main />
-        <Toaster />
-      </Provider>
-    </QueryClientProvider>
+    <div data-testid="app-shell">
+      <QueryClientProvider client={queryClient}>
+        <Provider>
+          <Main />
+          <Toaster />
+        </Provider>
+      </QueryClientProvider>
+    </div>
   )
 }
 

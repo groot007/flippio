@@ -126,6 +126,7 @@ export function FieldItem({ fieldKey, fieldType, value, isEditing, onChange, isL
             colorScheme={showJsonError ? 'red' : 'blue'}
             onClick={handleToggleEditorMode}
             title={userPreferredTextMode ? 'Switch to JSON editor' : 'Switch to text editor'}
+            disabled={isLoading}
           >
             {userPreferredTextMode ? <LuCode /> : <LuType />}
           </IconButton>
@@ -153,6 +154,7 @@ export function FieldItem({ fieldKey, fieldType, value, isEditing, onChange, isL
                           value={value}
                           onChange={newValue => onChange(fieldKey, newValue)}
                           isEditing={isEditing}
+                          isLoading={isLoading}
                           isDark={isDark}
                         />
                       )
@@ -168,6 +170,7 @@ export function FieldItem({ fieldKey, fieldType, value, isEditing, onChange, isL
                           resize="vertical"
                           fontFamily="mono"
                           fontSize="sm"
+                          disabled={isLoading}
                         />
                       )
                 )
@@ -194,6 +197,7 @@ export function FieldItem({ fieldKey, fieldType, value, isEditing, onChange, isL
                     value={value}
                     onChange={newValue => onChange(fieldKey, newValue)}
                     isEditing={isEditing}
+                    isLoading={isLoading}
                     isDark={isDark}
                   />
                 )

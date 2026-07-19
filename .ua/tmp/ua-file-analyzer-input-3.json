@@ -1,0 +1,290 @@
+{
+  "projectRoot": "/Users/mykolastanislavchuk/Home/Flippio",
+  "batchFiles": [
+    {
+      "path": "example_app/hooks/useColorScheme.web.ts",
+      "language": "typescript",
+      "sizeLines": 21,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/hooks/useThemeColor.ts",
+      "language": "typescript",
+      "sizeLines": 22,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/ios/.xcode.env",
+      "language": "config",
+      "sizeLines": 11,
+      "fileCategory": "config"
+    },
+    {
+      "path": "example_app/ios/FlippioRN.xcodeproj/project.pbxproj",
+      "language": "pbxproj",
+      "sizeLines": 555,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/ios/FlippioRN.xcodeproj/xcshareddata/xcschemes/FlippioRN.xcscheme",
+      "language": "xcscheme",
+      "sizeLines": 88,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/ios/FlippioRN.xcworkspace/contents.xcworkspacedata",
+      "language": "xcworkspacedata",
+      "sizeLines": 10,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/ios/FlippioRN/AppDelegate.h",
+      "language": "c",
+      "sizeLines": 7,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/ios/FlippioRN/AppDelegate.mm",
+      "language": "mm",
+      "sizeLines": 62,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/ios/FlippioRN/FlippioRN-Bridging-Header.h",
+      "language": "c",
+      "sizeLines": 3,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/ios/FlippioRN/FlippioRN.entitlements",
+      "language": "entitlements",
+      "sizeLines": 4,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/ios/FlippioRN/Images.xcassets/AppIcon.appiconset/Contents.json",
+      "language": "json",
+      "sizeLines": 14,
+      "fileCategory": "config"
+    },
+    {
+      "path": "example_app/ios/FlippioRN/Images.xcassets/Contents.json",
+      "language": "json",
+      "sizeLines": 6,
+      "fileCategory": "config"
+    },
+    {
+      "path": "example_app/ios/FlippioRN/Images.xcassets/SplashScreenBackground.colorset/Contents.json",
+      "language": "json",
+      "sizeLines": 20,
+      "fileCategory": "config"
+    },
+    {
+      "path": "example_app/ios/FlippioRN/Images.xcassets/SplashScreenLogo.imageset/Contents.json",
+      "language": "json",
+      "sizeLines": 23,
+      "fileCategory": "config"
+    },
+    {
+      "path": "example_app/ios/FlippioRN/Info.plist",
+      "language": "xml",
+      "sizeLines": 81,
+      "fileCategory": "config"
+    },
+    {
+      "path": "example_app/ios/FlippioRN/main.m",
+      "language": "m",
+      "sizeLines": 10,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/ios/FlippioRN/noop-file.swift",
+      "language": "swift",
+      "sizeLines": 4,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/ios/FlippioRN/PrivacyInfo.xcprivacy",
+      "language": "xcprivacy",
+      "sizeLines": 48,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/ios/FlippioRN/SplashScreen.storyboard",
+      "language": "storyboard",
+      "sizeLines": 41,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/ios/FlippioRN/Supporting/Expo.plist",
+      "language": "xml",
+      "sizeLines": 11,
+      "fileCategory": "config"
+    },
+    {
+      "path": "example_app/ios/Podfile",
+      "language": "unknown",
+      "sizeLines": 87,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/ios/Podfile.properties.json",
+      "language": "json",
+      "sizeLines": 5,
+      "fileCategory": "config"
+    },
+    {
+      "path": "example_app/package.json",
+      "language": "json",
+      "sizeLines": 55,
+      "fileCategory": "config"
+    },
+    {
+      "path": "example_app/README.md",
+      "language": "markdown",
+      "sizeLines": 50,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "example_app/scripts/reset-project.js",
+      "language": "javascript",
+      "sizeLines": 118,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/tsconfig.json",
+      "language": "json",
+      "sizeLines": 17,
+      "fileCategory": "config"
+    },
+    {
+      "path": "example_app/utils/database.ts",
+      "language": "typescript",
+      "sizeLines": 248,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Makefile",
+      "language": "makefile",
+      "sizeLines": 210,
+      "fileCategory": "infra"
+    },
+    {
+      "path": "package.json",
+      "language": "json",
+      "sizeLines": 73,
+      "fileCategory": "config"
+    },
+    {
+      "path": "README.md",
+      "language": "markdown",
+      "sizeLines": 98,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "resources/flippio.icns",
+      "language": "icns",
+      "sizeLines": 1266,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/libs/libcrypto.3.dylib",
+      "language": "dylib",
+      "sizeLines": 18092,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/libs/libimobiledevice-1.0.6.dylib",
+      "language": "dylib",
+      "sizeLines": 322,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/libs/libimobiledevice-glue-1.0.0.dylib",
+      "language": "dylib",
+      "sizeLines": 216,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/libs/liblzma.5.dylib",
+      "language": "dylib",
+      "sizeLines": 980,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/libs/libplist-2.0.4.dylib",
+      "language": "dylib",
+      "sizeLines": 349,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/libs/libssl.3.dylib",
+      "language": "dylib",
+      "sizeLines": 3013,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/libs/libusbmuxd-2.0.7.dylib",
+      "language": "dylib",
+      "sizeLines": 109,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/libs/libzip.5.5.dylib",
+      "language": "dylib",
+      "sizeLines": 340,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/libs/libzstd.1.5.7.dylib",
+      "language": "dylib",
+      "sizeLines": 4743,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "example_app/hooks/useColorScheme.web.ts": [],
+    "example_app/hooks/useThemeColor.ts": [
+      "example_app/constants/Colors.ts",
+      "example_app/hooks/useColorScheme.ts"
+    ],
+    "example_app/ios/.xcode.env": [],
+    "example_app/ios/FlippioRN.xcodeproj/project.pbxproj": [],
+    "example_app/ios/FlippioRN.xcodeproj/xcshareddata/xcschemes/FlippioRN.xcscheme": [],
+    "example_app/ios/FlippioRN.xcworkspace/contents.xcworkspacedata": [],
+    "example_app/ios/FlippioRN/AppDelegate.h": [],
+    "example_app/ios/FlippioRN/AppDelegate.mm": [],
+    "example_app/ios/FlippioRN/FlippioRN-Bridging-Header.h": [],
+    "example_app/ios/FlippioRN/FlippioRN.entitlements": [],
+    "example_app/ios/FlippioRN/Images.xcassets/AppIcon.appiconset/Contents.json": [],
+    "example_app/ios/FlippioRN/Images.xcassets/Contents.json": [],
+    "example_app/ios/FlippioRN/Images.xcassets/SplashScreenBackground.colorset/Contents.json": [],
+    "example_app/ios/FlippioRN/Images.xcassets/SplashScreenLogo.imageset/Contents.json": [],
+    "example_app/ios/FlippioRN/Info.plist": [],
+    "example_app/ios/FlippioRN/main.m": [],
+    "example_app/ios/FlippioRN/noop-file.swift": [],
+    "example_app/ios/FlippioRN/PrivacyInfo.xcprivacy": [],
+    "example_app/ios/FlippioRN/SplashScreen.storyboard": [],
+    "example_app/ios/FlippioRN/Supporting/Expo.plist": [],
+    "example_app/ios/Podfile": [],
+    "example_app/ios/Podfile.properties.json": [],
+    "example_app/package.json": [],
+    "example_app/README.md": [],
+    "example_app/scripts/reset-project.js": [],
+    "example_app/tsconfig.json": [],
+    "example_app/utils/database.ts": [],
+    "Makefile": [],
+    "package.json": [],
+    "README.md": [],
+    "resources/flippio.icns": [],
+    "resources/libimobiledevice/libs/libcrypto.3.dylib": [],
+    "resources/libimobiledevice/libs/libimobiledevice-1.0.6.dylib": [],
+    "resources/libimobiledevice/libs/libimobiledevice-glue-1.0.0.dylib": [],
+    "resources/libimobiledevice/libs/liblzma.5.dylib": [],
+    "resources/libimobiledevice/libs/libplist-2.0.4.dylib": [],
+    "resources/libimobiledevice/libs/libssl.3.dylib": [],
+    "resources/libimobiledevice/libs/libusbmuxd-2.0.7.dylib": [],
+    "resources/libimobiledevice/libs/libzip.5.5.dylib": [],
+    "resources/libimobiledevice/libs/libzstd.1.5.7.dylib": []
+  }
+}

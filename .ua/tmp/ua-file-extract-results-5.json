@@ -1,0 +1,7029 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 40,
+  "filesSkipped": [],
+  "results": [
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicedate-idevicedate.o",
+      "language": "o",
+      "fileCategory": "code",
+      "totalLines": 167,
+      "nonEmptyLines": 163,
+      "metrics": {}
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicedate.c",
+      "language": "c",
+      "fileCategory": "code",
+      "totalLines": 256,
+      "nonEmptyLines": 233,
+      "functions": [
+        {
+          "name": "print_usage",
+          "startLine": 53,
+          "endLine": 76,
+          "params": [
+            "argc",
+            "argv",
+            "is_error"
+          ]
+        },
+        {
+          "name": "main",
+          "startLine": 78,
+          "endLine": 256,
+          "params": [
+            "argc",
+            "argv"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "main",
+          "line": 78,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "print_usage",
+          "callee": "strrchr",
+          "lineNumber": 55
+        },
+        {
+          "caller": "print_usage",
+          "callee": "fprintf",
+          "lineNumber": 56
+        },
+        {
+          "caller": "print_usage",
+          "callee": "fprintf",
+          "lineNumber": 57
+        },
+        {
+          "caller": "main",
+          "callee": "signal",
+          "lineNumber": 108
+        },
+        {
+          "caller": "main",
+          "callee": "getopt_long",
+          "lineNumber": 111
+        },
+        {
+          "caller": "main",
+          "callee": "idevice_set_debug_level",
+          "lineNumber": 114
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 118
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 119
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 128
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 131
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 135
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 136
+        },
+        {
+          "caller": "main",
+          "callee": "atoi",
+          "lineNumber": 139
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 141
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 142
+        },
+        {
+          "caller": "main",
+          "callee": "time",
+          "lineNumber": 148
+        },
+        {
+          "caller": "main",
+          "callee": "localtime",
+          "lineNumber": 150
+        },
+        {
+          "caller": "main",
+          "callee": "mktime",
+          "lineNumber": 152
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 155
+        },
+        {
+          "caller": "main",
+          "callee": "idevice_new_with_options",
+          "lineNumber": 162
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 165
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 167
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_client_new_with_handshake",
+          "lineNumber": 172
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 173
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_get_value",
+          "lineNumber": 178
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 179
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 185
+        },
+        {
+          "caller": "main",
+          "callee": "plist_get_node_type",
+          "lineNumber": 190
+        },
+        {
+          "caller": "main",
+          "callee": "plist_get_uint_val",
+          "lineNumber": 197
+        },
+        {
+          "caller": "main",
+          "callee": "plist_get_real_val",
+          "lineNumber": 202
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 207
+        },
+        {
+          "caller": "main",
+          "callee": "plist_free",
+          "lineNumber": 210
+        },
+        {
+          "caller": "main",
+          "callee": "localtime",
+          "lineNumber": 215
+        },
+        {
+          "caller": "main",
+          "callee": "strftime",
+          "lineNumber": 218
+        },
+        {
+          "caller": "main",
+          "callee": "puts",
+          "lineNumber": 219
+        },
+        {
+          "caller": "main",
+          "callee": "plist_free",
+          "lineNumber": 223
+        },
+        {
+          "caller": "main",
+          "callee": "plist_new_uint",
+          "lineNumber": 228
+        },
+        {
+          "caller": "main",
+          "callee": "plist_new_real",
+          "lineNumber": 231
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 234
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_set_value",
+          "lineNumber": 238
+        },
+        {
+          "caller": "main",
+          "callee": "localtime",
+          "lineNumber": 239
+        },
+        {
+          "caller": "main",
+          "callee": "strftime",
+          "lineNumber": 240
+        },
+        {
+          "caller": "main",
+          "callee": "puts",
+          "lineNumber": 241
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 243
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_client_free",
+          "lineNumber": 250
+        },
+        {
+          "caller": "main",
+          "callee": "idevice_free",
+          "lineNumber": 253
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicedebug",
+      "language": "unknown",
+      "fileCategory": "code",
+      "totalLines": 237,
+      "nonEmptyLines": 234,
+      "metrics": {}
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicedebug-idevicedebug.o",
+      "language": "o",
+      "fileCategory": "code",
+      "totalLines": 204,
+      "nonEmptyLines": 199,
+      "metrics": {}
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicedebug.c",
+      "language": "c",
+      "fileCategory": "code",
+      "totalLines": 625,
+      "nonEmptyLines": 557,
+      "functions": [
+        {
+          "name": "on_signal",
+          "startLine": 60,
+          "endLine": 64,
+          "params": [
+            "sig"
+          ]
+        },
+        {
+          "name": "cancel_receive",
+          "startLine": 66,
+          "endLine": 69,
+          "params": []
+        },
+        {
+          "name": "instproxy_client_get_object_by_key_from_info_dictionary_for_bundle_identifier",
+          "startLine": 71,
+          "endLine": 116,
+          "params": [
+            "client",
+            "appid",
+            "key",
+            "node"
+          ]
+        },
+        {
+          "name": "debugserver_client_handle_response",
+          "startLine": 118,
+          "endLine": 176,
+          "params": [
+            "client",
+            "response",
+            "exit_status"
+          ]
+        },
+        {
+          "name": "print_usage",
+          "startLine": 178,
+          "endLine": 202,
+          "params": [
+            "argc",
+            "argv",
+            "is_error"
+          ]
+        },
+        {
+          "name": "main",
+          "startLine": 204,
+          "endLine": 625,
+          "params": [
+            "argc",
+            "argv"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "main",
+          "line": 204,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "on_signal",
+          "callee": "fprintf",
+          "lineNumber": 62
+        },
+        {
+          "caller": "instproxy_client_get_object_by_key_from_info_dictionary_for_bundle_identifier",
+          "callee": "instproxy_client_options_new",
+          "lineNumber": 79
+        },
+        {
+          "caller": "instproxy_client_get_object_by_key_from_info_dictionary_for_bundle_identifier",
+          "callee": "instproxy_client_options_add",
+          "lineNumber": 80
+        },
+        {
+          "caller": "instproxy_client_get_object_by_key_from_info_dictionary_for_bundle_identifier",
+          "callee": "instproxy_client_options_set_return_attributes",
+          "lineNumber": 83
+        },
+        {
+          "caller": "instproxy_client_get_object_by_key_from_info_dictionary_for_bundle_identifier",
+          "callee": "instproxy_lookup",
+          "lineNumber": 89
+        },
+        {
+          "caller": "instproxy_client_get_object_by_key_from_info_dictionary_for_bundle_identifier",
+          "callee": "instproxy_client_options_free",
+          "lineNumber": 91
+        },
+        {
+          "caller": "instproxy_client_get_object_by_key_from_info_dictionary_for_bundle_identifier",
+          "callee": "plist_access_path",
+          "lineNumber": 97
+        },
+        {
+          "caller": "instproxy_client_get_object_by_key_from_info_dictionary_for_bundle_identifier",
+          "callee": "plist_free",
+          "lineNumber": 100
+        },
+        {
+          "caller": "instproxy_client_get_object_by_key_from_info_dictionary_for_bundle_identifier",
+          "callee": "plist_dict_get_item",
+          "lineNumber": 105
+        },
+        {
+          "caller": "instproxy_client_get_object_by_key_from_info_dictionary_for_bundle_identifier",
+          "callee": "plist_copy",
+          "lineNumber": 107
+        },
+        {
+          "caller": "instproxy_client_get_object_by_key_from_info_dictionary_for_bundle_identifier",
+          "callee": "log_debug",
+          "lineNumber": 109
+        },
+        {
+          "caller": "instproxy_client_get_object_by_key_from_info_dictionary_for_bundle_identifier",
+          "callee": "plist_free",
+          "lineNumber": 113
+        },
+        {
+          "caller": "debugserver_client_handle_response",
+          "callee": "debugserver_decode_string",
+          "lineNumber": 130
+        },
+        {
+          "caller": "debugserver_client_handle_response",
+          "callee": "strlen",
+          "lineNumber": 130
+        },
+        {
+          "caller": "debugserver_client_handle_response",
+          "callee": "printf",
+          "lineNumber": 131
+        },
+        {
+          "caller": "debugserver_client_handle_response",
+          "callee": "fflush",
+          "lineNumber": 132
+        },
+        {
+          "caller": "debugserver_client_handle_response",
+          "callee": "log_debug",
+          "lineNumber": 135
+        },
+        {
+          "caller": "debugserver_client_handle_response",
+          "callee": "printf",
+          "lineNumber": 146
+        },
+        {
+          "caller": "debugserver_client_handle_response",
+          "callee": "debugserver_decode_string",
+          "lineNumber": 149
+        },
+        {
+          "caller": "debugserver_client_handle_response",
+          "callee": "strlen",
+          "lineNumber": 149
+        },
+        {
+          "caller": "debugserver_client_handle_response",
+          "callee": "printf",
+          "lineNumber": 151
+        },
+        {
+          "caller": "debugserver_client_handle_response",
+          "callee": "log_debug",
+          "lineNumber": 159
+        },
+        {
+          "caller": "debugserver_client_handle_response",
+          "callee": "strlen",
+          "lineNumber": 162
+        },
+        {
+          "caller": "debugserver_client_handle_response",
+          "callee": "log_debug",
+          "lineNumber": 163
+        },
+        {
+          "caller": "debugserver_client_handle_response",
+          "callee": "log_debug",
+          "lineNumber": 165
+        },
+        {
+          "caller": "debugserver_client_handle_response",
+          "callee": "free",
+          "lineNumber": 169
+        },
+        {
+          "caller": "debugserver_client_handle_response",
+          "callee": "free",
+          "lineNumber": 173
+        },
+        {
+          "caller": "print_usage",
+          "callee": "strrchr",
+          "lineNumber": 180
+        },
+        {
+          "caller": "print_usage",
+          "callee": "fprintf",
+          "lineNumber": 181
+        },
+        {
+          "caller": "print_usage",
+          "callee": "fprintf",
+          "lineNumber": 182
+        },
+        {
+          "caller": "main",
+          "callee": "signal",
+          "lineNumber": 240
+        },
+        {
+          "caller": "main",
+          "callee": "signal",
+          "lineNumber": 241
+        },
+        {
+          "caller": "main",
+          "callee": "signal",
+          "lineNumber": 243
+        },
+        {
+          "caller": "main",
+          "callee": "signal",
+          "lineNumber": 244
+        },
+        {
+          "caller": "main",
+          "callee": "getopt_long",
+          "lineNumber": 247
+        },
+        {
+          "caller": "main",
+          "callee": "idevice_set_debug_level",
+          "lineNumber": 252
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 257
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 258
+        },
+        {
+          "caller": "main",
+          "callee": "strchr",
+          "lineNumber": 270
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 271
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 272
+        },
+        {
+          "caller": "main",
+          "callee": "malloc",
+          "lineNumber": 278
+        },
+        {
+          "caller": "main",
+          "callee": "realloc",
+          "lineNumber": 280
+        },
+        {
+          "caller": "main",
+          "callee": "strdup",
+          "lineNumber": 281
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 285
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 290
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 295
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 305
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 306
+        },
+        {
+          "caller": "main",
+          "callee": "strcmp",
+          "lineNumber": 310
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 314
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 315
+        },
+        {
+          "caller": "main",
+          "callee": "strcmp",
+          "lineNumber": 322
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 326
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 327
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 338
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 339
+        },
+        {
+          "caller": "main",
+          "callee": "realloc",
+          "lineNumber": 345
+        },
+        {
+          "caller": "main",
+          "callee": "idevice_new_with_options",
+          "lineNumber": 351
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 354
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 356
+        },
+        {
+          "caller": "main",
+          "callee": "instproxy_client_start_service",
+          "lineNumber": 362
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 363
+        },
+        {
+          "caller": "main",
+          "callee": "instproxy_client_get_path_for_bundle_identifier",
+          "lineNumber": 367
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 369
+        },
+        {
+          "caller": "main",
+          "callee": "instproxy_client_get_object_by_key_from_info_dictionary_for_bundle_identifier",
+          "lineNumber": 374
+        },
+        {
+          "caller": "main",
+          "callee": "instproxy_client_free",
+          "lineNumber": 375
+        },
+        {
+          "caller": "main",
+          "callee": "plist_get_node_type",
+          "lineNumber": 378
+        },
+        {
+          "caller": "main",
+          "callee": "plist_get_string_val",
+          "lineNumber": 379
+        },
+        {
+          "caller": "main",
+          "callee": "log_debug",
+          "lineNumber": 380
+        },
+        {
+          "caller": "main",
+          "callee": "plist_free",
+          "lineNumber": 381
+        },
+        {
+          "caller": "main",
+          "callee": "plist_free",
+          "lineNumber": 383
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 384
+        },
+        {
+          "caller": "main",
+          "callee": "debugserver_client_start_service",
+          "lineNumber": 389
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 390
+        },
+        {
+          "caller": "main",
+          "callee": "debugserver_client_set_receive_params",
+          "lineNumber": 400
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 401
+        },
+        {
+          "caller": "main",
+          "callee": "log_debug",
+          "lineNumber": 407
+        },
+        {
+          "caller": "main",
+          "callee": "debugserver_command_new",
+          "lineNumber": 408
+        },
+        {
+          "caller": "main",
+          "callee": "debugserver_client_send_command",
+          "lineNumber": 409
+        },
+        {
+          "caller": "main",
+          "callee": "debugserver_command_free",
+          "lineNumber": 410
+        },
+        {
+          "caller": "main",
+          "callee": "strncmp",
+          "lineNumber": 413
+        },
+        {
+          "caller": "main",
+          "callee": "debugserver_client_handle_response",
+          "lineNumber": 414
+        },
+        {
+          "caller": "main",
+          "callee": "free",
+          "lineNumber": 417
+        },
+        {
+          "caller": "main",
+          "callee": "log_debug",
+          "lineNumber": 423
+        },
+        {
+          "caller": "main",
+          "callee": "debugserver_command_new",
+          "lineNumber": 425
+        },
+        {
+          "caller": "main",
+          "callee": "debugserver_client_send_command",
+          "lineNumber": 426
+        },
+        {
+          "caller": "main",
+          "callee": "debugserver_command_free",
+          "lineNumber": 427
+        },
+        {
+          "caller": "main",
+          "callee": "strncmp",
+          "lineNumber": 430
+        },
+        {
+          "caller": "main",
+          "callee": "debugserver_client_handle_response",
+          "lineNumber": 431
+        },
+        {
+          "caller": "main",
+          "callee": "free",
+          "lineNumber": 434
+        },
+        {
+          "caller": "main",
+          "callee": "log_debug",
+          "lineNumber": 439
+        },
+        {
+          "caller": "main",
+          "callee": "debugserver_command_new",
+          "lineNumber": 441
+        },
+        {
+          "caller": "main",
+          "callee": "debugserver_client_send_command",
+          "lineNumber": 442
+        },
+        {
+          "caller": "main",
+          "callee": "debugserver_command_free",
+          "lineNumber": 443
+        },
+        {
+          "caller": "main",
+          "callee": "strncmp",
+          "lineNumber": 446
+        },
+        {
+          "caller": "main",
+          "callee": "debugserver_client_handle_response",
+          "lineNumber": 447
+        },
+        {
+          "caller": "main",
+          "callee": "free",
+          "lineNumber": 450
+        },
+        {
+          "caller": "main",
+          "callee": "log_debug",
+          "lineNumber": 456
+        },
+        {
+          "caller": "main",
+          "callee": "log_debug",
+          "lineNumber": 458
+        },
+        {
+          "caller": "main",
+          "callee": "debugserver_client_set_environment_hex_encoded",
+          "lineNumber": 459
+        },
+        {
+          "caller": "main",
+          "callee": "log_debug",
+          "lineNumber": 464
+        },
+        {
+          "caller": "main",
+          "callee": "malloc",
+          "lineNumber": 467
+        },
+        {
+          "caller": "main",
+          "callee": "log_debug",
+          "lineNumber": 469
+        },
+        {
+          "caller": "main",
+          "callee": "log_debug",
+          "lineNumber": 472
+        },
+        {
+          "caller": "main",
+          "callee": "debugserver_client_set_argv",
+          "lineNumber": 477
+        },
+        {
+          "caller": "main",
+          "callee": "free",
+          "lineNumber": 478
+        },
+        {
+          "caller": "main",
+          "callee": "log_debug",
+          "lineNumber": 481
+        },
+        {
+          "caller": "main",
+          "callee": "debugserver_command_new",
+          "lineNumber": 482
+        },
+        {
+          "caller": "main",
+          "callee": "debugserver_client_send_command",
+          "lineNumber": 483
+        },
+        {
+          "caller": "main",
+          "callee": "debugserver_command_free",
+          "lineNumber": 484
+        },
+        {
+          "caller": "main",
+          "callee": "strncmp",
+          "lineNumber": 487
+        },
+        {
+          "caller": "main",
+          "callee": "debugserver_client_handle_response",
+          "lineNumber": 488
+        },
+        {
+          "caller": "main",
+          "callee": "free",
+          "lineNumber": 491
+        },
+        {
+          "caller": "main",
+          "callee": "debugserver_command_new",
+          "lineNumber": 496
+        },
+        {
+          "caller": "main",
+          "callee": "debugserver_client_send_command",
+          "lineNumber": 497
+        },
+        {
+          "caller": "main",
+          "callee": "debugserver_command_free",
+          "lineNumber": 498
+        },
+        {
+          "caller": "main",
+          "callee": "log_debug",
+          "lineNumber": 504
+        },
+        {
+          "caller": "main",
+          "callee": "debugserver_command_new",
+          "lineNumber": 505
+        },
+        {
+          "caller": "main",
+          "callee": "debugserver_client_send_command",
+          "lineNumber": 506
+        },
+        {
+          "caller": "main",
+          "callee": "debugserver_command_free",
+          "lineNumber": 507
+        },
+        {
+          "caller": "main",
+          "callee": "log_debug",
+          "lineNumber": 515
+        },
+        {
+          "caller": "main",
+          "callee": "debugserver_command_new",
+          "lineNumber": 516
+        },
+        {
+          "caller": "main",
+          "callee": "debugserver_client_send_command",
+          "lineNumber": 517
+        },
+        {
+          "caller": "main",
+          "callee": "debugserver_command_free",
+          "lineNumber": 518
+        },
+        {
+          "caller": "main",
+          "callee": "strncmp",
+          "lineNumber": 521
+        },
+        {
+          "caller": "main",
+          "callee": "debugserver_client_handle_response",
+          "lineNumber": 522
+        },
+        {
+          "caller": "main",
+          "callee": "free",
+          "lineNumber": 525
+        },
+        {
+          "caller": "main",
+          "callee": "log_debug",
+          "lineNumber": 530
+        },
+        {
+          "caller": "main",
+          "callee": "debugserver_command_new",
+          "lineNumber": 531
+        },
+        {
+          "caller": "main",
+          "callee": "debugserver_client_send_command",
+          "lineNumber": 532
+        },
+        {
+          "caller": "main",
+          "callee": "debugserver_command_free",
+          "lineNumber": 533
+        },
+        {
+          "caller": "main",
+          "callee": "log_debug",
+          "lineNumber": 535
+        },
+        {
+          "caller": "main",
+          "callee": "log_debug",
+          "lineNumber": 538
+        },
+        {
+          "caller": "main",
+          "callee": "log_debug",
+          "lineNumber": 541
+        },
+        {
+          "caller": "main",
+          "callee": "log_debug",
+          "lineNumber": 546
+        },
+        {
+          "caller": "main",
+          "callee": "strncmp",
+          "lineNumber": 547
+        },
+        {
+          "caller": "main",
+          "callee": "debugserver_client_handle_response",
+          "lineNumber": 548
+        },
+        {
+          "caller": "main",
+          "callee": "log_debug",
+          "lineNumber": 550
+        },
+        {
+          "caller": "main",
+          "callee": "debugserver_client_receive_response",
+          "lineNumber": 559
+        },
+        {
+          "caller": "main",
+          "callee": "debugserver_client_set_receive_params",
+          "lineNumber": 563
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 564
+        },
+        {
+          "caller": "main",
+          "callee": "debugserver_command_new",
+          "lineNumber": 569
+        },
+        {
+          "caller": "main",
+          "callee": "debugserver_client_send_command",
+          "lineNumber": 570
+        },
+        {
+          "caller": "main",
+          "callee": "debugserver_command_free",
+          "lineNumber": 571
+        },
+        {
+          "caller": "main",
+          "callee": "strncmp",
+          "lineNumber": 574
+        },
+        {
+          "caller": "main",
+          "callee": "debugserver_client_handle_response",
+          "lineNumber": 575
+        },
+        {
+          "caller": "main",
+          "callee": "free",
+          "lineNumber": 577
+        },
+        {
+          "caller": "main",
+          "callee": "log_debug",
+          "lineNumber": 582
+        },
+        {
+          "caller": "main",
+          "callee": "debugserver_command_new",
+          "lineNumber": 583
+        },
+        {
+          "caller": "main",
+          "callee": "debugserver_client_send_command",
+          "lineNumber": 584
+        },
+        {
+          "caller": "main",
+          "callee": "debugserver_command_free",
+          "lineNumber": 585
+        },
+        {
+          "caller": "main",
+          "callee": "strncmp",
+          "lineNumber": 588
+        },
+        {
+          "caller": "main",
+          "callee": "debugserver_client_handle_response",
+          "lineNumber": 589
+        },
+        {
+          "caller": "main",
+          "callee": "free",
+          "lineNumber": 591
+        },
+        {
+          "caller": "main",
+          "callee": "free",
+          "lineNumber": 604
+        },
+        {
+          "caller": "main",
+          "callee": "free",
+          "lineNumber": 606
+        },
+        {
+          "caller": "main",
+          "callee": "free",
+          "lineNumber": 610
+        },
+        {
+          "caller": "main",
+          "callee": "free",
+          "lineNumber": 613
+        },
+        {
+          "caller": "main",
+          "callee": "free",
+          "lineNumber": 616
+        },
+        {
+          "caller": "main",
+          "callee": "debugserver_client_free",
+          "lineNumber": 619
+        },
+        {
+          "caller": "main",
+          "callee": "idevice_free",
+          "lineNumber": 622
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 6,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicedebugserverproxy",
+      "language": "unknown",
+      "fileCategory": "code",
+      "totalLines": 233,
+      "nonEmptyLines": 231,
+      "metrics": {}
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicedebugserverproxy-idevicedebugserverproxy.o",
+      "language": "o",
+      "fileCategory": "code",
+      "totalLines": 162,
+      "nonEmptyLines": 158,
+      "metrics": {}
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicedebugserverproxy.c",
+      "language": "c",
+      "fileCategory": "code",
+      "totalLines": 375,
+      "nonEmptyLines": 326,
+      "functions": [
+        {
+          "name": "clean_exit",
+          "startLine": 75,
+          "endLine": 79,
+          "params": [
+            "sig"
+          ]
+        },
+        {
+          "name": "print_usage",
+          "startLine": 81,
+          "endLine": 102,
+          "params": [
+            "argc",
+            "argv",
+            "is_error"
+          ]
+        },
+        {
+          "name": "intercept_packet",
+          "startLine": 104,
+          "endLine": 122,
+          "params": [
+            "packet",
+            "packet_len"
+          ]
+        },
+        {
+          "name": "main",
+          "startLine": 202,
+          "endLine": 375,
+          "params": [
+            "argc",
+            "argv"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "thread_info",
+          "startLine": 66,
+          "endLine": 70,
+          "methods": [],
+          "properties": [
+            "th",
+            "client_fd",
+            "next"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "thread_info",
+          "line": 66,
+          "isDefault": false
+        },
+        {
+          "name": "main",
+          "line": 202,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "clean_exit",
+          "callee": "fprintf",
+          "lineNumber": 77
+        },
+        {
+          "caller": "print_usage",
+          "callee": "strrchr",
+          "lineNumber": 83
+        },
+        {
+          "caller": "print_usage",
+          "callee": "fprintf",
+          "lineNumber": 84
+        },
+        {
+          "caller": "print_usage",
+          "callee": "fprintf",
+          "lineNumber": 85
+        },
+        {
+          "caller": "intercept_packet",
+          "callee": "memcmp",
+          "lineNumber": 109
+        },
+        {
+          "caller": "intercept_packet",
+          "callee": "sprintf",
+          "lineNumber": 110
+        },
+        {
+          "caller": "intercept_packet",
+          "callee": "strlen",
+          "lineNumber": 115
+        },
+        {
+          "caller": "intercept_packet",
+          "callee": "sprintf",
+          "lineNumber": 119
+        },
+        {
+          "caller": "intercept_packet",
+          "callee": "strlen",
+          "lineNumber": 120
+        },
+        {
+          "caller": "main",
+          "callee": "memset",
+          "lineNumber": 225
+        },
+        {
+          "caller": "main",
+          "callee": "memset",
+          "lineNumber": 226
+        },
+        {
+          "caller": "main",
+          "callee": "sigemptyset",
+          "lineNumber": 229
+        },
+        {
+          "caller": "main",
+          "callee": "sigemptyset",
+          "lineNumber": 232
+        },
+        {
+          "caller": "main",
+          "callee": "sigaction",
+          "lineNumber": 234
+        },
+        {
+          "caller": "main",
+          "callee": "sigaction",
+          "lineNumber": 235
+        },
+        {
+          "caller": "main",
+          "callee": "sigaction",
+          "lineNumber": 236
+        },
+        {
+          "caller": "main",
+          "callee": "sigaction",
+          "lineNumber": 237
+        },
+        {
+          "caller": "main",
+          "callee": "signal",
+          "lineNumber": 240
+        },
+        {
+          "caller": "main",
+          "callee": "signal",
+          "lineNumber": 241
+        },
+        {
+          "caller": "main",
+          "callee": "getopt_long",
+          "lineNumber": 245
+        },
+        {
+          "caller": "main",
+          "callee": "idevice_set_debug_level",
+          "lineNumber": 249
+        },
+        {
+          "caller": "main",
+          "callee": "socket_set_verbose",
+          "lineNumber": 250
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 254
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 255
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 267
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 270
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 273
+        },
+        {
+          "caller": "main",
+          "callee": "atoi",
+          "lineNumber": 280
+        },
+        {
+          "caller": "main",
+          "callee": "atoi",
+          "lineNumber": 281
+        },
+        {
+          "caller": "main",
+          "callee": "idevice_new_with_options",
+          "lineNumber": 285
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 288
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 290
+        },
+        {
+          "caller": "main",
+          "callee": "socket_create",
+          "lineNumber": 297
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 299
+        },
+        {
+          "caller": "main",
+          "callee": "socket_get_socket_port",
+          "lineNumber": 307
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 308
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 312
+        },
+        {
+          "caller": "main",
+          "callee": "debug",
+          "lineNumber": 316
+        },
+        {
+          "caller": "main",
+          "callee": "socket_accept",
+          "lineNumber": 319
+        },
+        {
+          "caller": "main",
+          "callee": "debug",
+          "lineNumber": 324
+        },
+        {
+          "caller": "main",
+          "callee": "malloc",
+          "lineNumber": 326
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 328
+        },
+        {
+          "caller": "main",
+          "callee": "exit",
+          "lineNumber": 329
+        },
+        {
+          "caller": "main",
+          "callee": "malloc",
+          "lineNumber": 340
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 342
+        },
+        {
+          "caller": "main",
+          "callee": "exit",
+          "lineNumber": 343
+        },
+        {
+          "caller": "main",
+          "callee": "thread_new",
+          "lineNumber": 348
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 349
+        },
+        {
+          "caller": "main",
+          "callee": "socket_shutdown",
+          "lineNumber": 350
+        },
+        {
+          "caller": "main",
+          "callee": "socket_close",
+          "lineNumber": 351
+        },
+        {
+          "caller": "main",
+          "callee": "debug",
+          "lineNumber": 356
+        },
+        {
+          "caller": "main",
+          "callee": "socket_shutdown",
+          "lineNumber": 361
+        },
+        {
+          "caller": "main",
+          "callee": "socket_close",
+          "lineNumber": 362
+        },
+        {
+          "caller": "main",
+          "callee": "thread_join",
+          "lineNumber": 363
+        },
+        {
+          "caller": "main",
+          "callee": "thread_free",
+          "lineNumber": 364
+        },
+        {
+          "caller": "main",
+          "callee": "free",
+          "lineNumber": 366
+        },
+        {
+          "caller": "main",
+          "callee": "idevice_free",
+          "lineNumber": 371
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 2,
+        "functionCount": 4,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicedevmodectl",
+      "language": "unknown",
+      "fileCategory": "code",
+      "totalLines": 195,
+      "nonEmptyLines": 191,
+      "metrics": {}
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicedevmodectl-idevicedevmodectl.o",
+      "language": "o",
+      "fileCategory": "code",
+      "totalLines": 232,
+      "nonEmptyLines": 228,
+      "metrics": {}
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicedevmodectl.c",
+      "language": "c",
+      "fileCategory": "code",
+      "totalLines": 462,
+      "nonEmptyLines": 410,
+      "functions": [
+        {
+          "name": "print_usage",
+          "startLine": 58,
+          "endLine": 86,
+          "params": [
+            "argc",
+            "argv",
+            "is_error"
+          ]
+        },
+        {
+          "name": "get_developer_mode_status",
+          "startLine": 100,
+          "endLine": 134,
+          "params": [
+            "device_udid",
+            "_use_network"
+          ]
+        },
+        {
+          "name": "amfi_service_send_msg",
+          "startLine": 136,
+          "endLine": 168,
+          "params": [
+            "amfi",
+            "msg"
+          ]
+        },
+        {
+          "name": "amfi_send_action",
+          "startLine": 170,
+          "endLine": 210,
+          "params": [
+            "device",
+            "action"
+          ]
+        },
+        {
+          "name": "device_event_cb",
+          "startLine": 214,
+          "endLine": 234,
+          "params": [
+            "event",
+            "userdata"
+          ]
+        },
+        {
+          "name": "main",
+          "startLine": 241,
+          "endLine": 462,
+          "params": [
+            "argc",
+            "argv"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "main",
+          "line": 241,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "print_usage",
+          "callee": "strrchr",
+          "lineNumber": 60
+        },
+        {
+          "caller": "print_usage",
+          "callee": "fprintf",
+          "lineNumber": 61
+        },
+        {
+          "caller": "print_usage",
+          "callee": "fprintf",
+          "lineNumber": 62
+        },
+        {
+          "caller": "get_developer_mode_status",
+          "callee": "idevice_new_with_options",
+          "lineNumber": 108
+        },
+        {
+          "caller": "get_developer_mode_status",
+          "callee": "lockdownd_client_new_with_handshake",
+          "lineNumber": 113
+        },
+        {
+          "caller": "get_developer_mode_status",
+          "callee": "idevice_free",
+          "lineNumber": 114
+        },
+        {
+          "caller": "get_developer_mode_status",
+          "callee": "lockdownd_get_value",
+          "lineNumber": 118
+        },
+        {
+          "caller": "get_developer_mode_status",
+          "callee": "fprintf",
+          "lineNumber": 120
+        },
+        {
+          "caller": "get_developer_mode_status",
+          "callee": "lockdownd_strerror",
+          "lineNumber": 120
+        },
+        {
+          "caller": "get_developer_mode_status",
+          "callee": "lockdownd_client_free",
+          "lineNumber": 121
+        },
+        {
+          "caller": "get_developer_mode_status",
+          "callee": "idevice_free",
+          "lineNumber": 122
+        },
+        {
+          "caller": "get_developer_mode_status",
+          "callee": "plist_get_bool_val",
+          "lineNumber": 127
+        },
+        {
+          "caller": "get_developer_mode_status",
+          "callee": "plist_free",
+          "lineNumber": 128
+        },
+        {
+          "caller": "get_developer_mode_status",
+          "callee": "lockdownd_client_free",
+          "lineNumber": 130
+        },
+        {
+          "caller": "get_developer_mode_status",
+          "callee": "idevice_free",
+          "lineNumber": 131
+        },
+        {
+          "caller": "amfi_service_send_msg",
+          "callee": "property_list_service_send_xml_plist",
+          "lineNumber": 141
+        },
+        {
+          "caller": "amfi_service_send_msg",
+          "callee": "plist_copy",
+          "lineNumber": 141
+        },
+        {
+          "caller": "amfi_service_send_msg",
+          "callee": "fprintf",
+          "lineNumber": 143
+        },
+        {
+          "caller": "amfi_service_send_msg",
+          "callee": "property_list_service_receive_plist",
+          "lineNumber": 147
+        },
+        {
+          "caller": "amfi_service_send_msg",
+          "callee": "plist_dict_get_item",
+          "lineNumber": 149
+        },
+        {
+          "caller": "amfi_service_send_msg",
+          "callee": "plist_get_string_ptr",
+          "lineNumber": 151
+        },
+        {
+          "caller": "amfi_service_send_msg",
+          "callee": "fprintf",
+          "lineNumber": 152
+        },
+        {
+          "caller": "amfi_service_send_msg",
+          "callee": "strstr",
+          "lineNumber": 153
+        },
+        {
+          "caller": "amfi_service_send_msg",
+          "callee": "plist_dict_get_item",
+          "lineNumber": 159
+        },
+        {
+          "caller": "amfi_service_send_msg",
+          "callee": "fprintf",
+          "lineNumber": 162
+        },
+        {
+          "caller": "amfi_service_send_msg",
+          "callee": "plist_free",
+          "lineNumber": 165
+        },
+        {
+          "caller": "amfi_send_action",
+          "callee": "lockdownd_client_new_with_handshake",
+          "lineNumber": 176
+        },
+        {
+          "caller": "amfi_send_action",
+          "callee": "fprintf",
+          "lineNumber": 177
+        },
+        {
+          "caller": "amfi_send_action",
+          "callee": "lockdownd_start_service",
+          "lineNumber": 181
+        },
+        {
+          "caller": "amfi_send_action",
+          "callee": "fprintf",
+          "lineNumber": 183
+        },
+        {
+          "caller": "amfi_send_action",
+          "callee": "lockdownd_strerror",
+          "lineNumber": 183
+        },
+        {
+          "caller": "amfi_send_action",
+          "callee": "lockdownd_client_free",
+          "lineNumber": 184
+        },
+        {
+          "caller": "amfi_send_action",
+          "callee": "lockdownd_client_free",
+          "lineNumber": 187
+        },
+        {
+          "caller": "amfi_send_action",
+          "callee": "property_list_service_client_new",
+          "lineNumber": 191
+        },
+        {
+          "caller": "amfi_send_action",
+          "callee": "fprintf",
+          "lineNumber": 192
+        },
+        {
+          "caller": "amfi_send_action",
+          "callee": "lockdownd_service_descriptor_free",
+          "lineNumber": 194
+        },
+        {
+          "caller": "amfi_send_action",
+          "callee": "idevice_free",
+          "lineNumber": 195
+        },
+        {
+          "caller": "amfi_send_action",
+          "callee": "lockdownd_service_descriptor_free",
+          "lineNumber": 198
+        },
+        {
+          "caller": "amfi_send_action",
+          "callee": "plist_new_dict",
+          "lineNumber": 200
+        },
+        {
+          "caller": "amfi_send_action",
+          "callee": "plist_dict_set_item",
+          "lineNumber": 201
+        },
+        {
+          "caller": "amfi_send_action",
+          "callee": "plist_new_uint",
+          "lineNumber": 201
+        },
+        {
+          "caller": "amfi_send_action",
+          "callee": "amfi_service_send_msg",
+          "lineNumber": 203
+        },
+        {
+          "caller": "amfi_send_action",
+          "callee": "plist_free",
+          "lineNumber": 204
+        },
+        {
+          "caller": "amfi_send_action",
+          "callee": "property_list_service_client_free",
+          "lineNumber": 206
+        },
+        {
+          "caller": "device_event_cb",
+          "callee": "strdup",
+          "lineNumber": 224
+        },
+        {
+          "caller": "device_event_cb",
+          "callee": "strcmp",
+          "lineNumber": 226
+        },
+        {
+          "caller": "device_event_cb",
+          "callee": "strcmp",
+          "lineNumber": 230
+        },
+        {
+          "caller": "main",
+          "callee": "signal",
+          "lineNumber": 263
+        },
+        {
+          "caller": "main",
+          "callee": "getopt_long",
+          "lineNumber": 266
+        },
+        {
+          "caller": "main",
+          "callee": "idevice_set_debug_level",
+          "lineNumber": 269
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 273
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 274
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 283
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 286
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 289
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 297
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 298
+        },
+        {
+          "caller": "main",
+          "callee": "strcmp",
+          "lineNumber": 303
+        },
+        {
+          "caller": "main",
+          "callee": "strcmp",
+          "lineNumber": 306
+        },
+        {
+          "caller": "main",
+          "callee": "strcmp",
+          "lineNumber": 309
+        },
+        {
+          "caller": "main",
+          "callee": "strcmp",
+          "lineNumber": 312
+        },
+        {
+          "caller": "main",
+          "callee": "strcmp",
+          "lineNumber": 315
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 320
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 321
+        },
+        {
+          "caller": "main",
+          "callee": "idevice_get_device_list_extended",
+          "lineNumber": 328
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 329
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 333
+        },
+        {
+          "caller": "main",
+          "callee": "strcmp",
+          "lineNumber": 338
+        },
+        {
+          "caller": "main",
+          "callee": "get_developer_mode_status",
+          "lineNumber": 339
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 346
+        },
+        {
+          "caller": "main",
+          "callee": "idevice_device_list_extended_free",
+          "lineNumber": 348
+        },
+        {
+          "caller": "main",
+          "callee": "idevice_events_subscribe",
+          "lineNumber": 354
+        },
+        {
+          "caller": "main",
+          "callee": "WAIT_FOR",
+          "lineNumber": 356
+        },
+        {
+          "caller": "main",
+          "callee": "idevice_new_with_options",
+          "lineNumber": 358
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 361
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 363
+        },
+        {
+          "caller": "main",
+          "callee": "idevice_get_udid",
+          "lineNumber": 369
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_client_new_with_handshake",
+          "lineNumber": 372
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 373
+        },
+        {
+          "caller": "main",
+          "callee": "idevice_free",
+          "lineNumber": 374
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_get_value",
+          "lineNumber": 378
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_client_free",
+          "lineNumber": 379
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 382
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_strerror",
+          "lineNumber": 382
+        },
+        {
+          "caller": "main",
+          "callee": "idevice_free",
+          "lineNumber": 383
+        },
+        {
+          "caller": "main",
+          "callee": "plist_get_bool_val",
+          "lineNumber": 388
+        },
+        {
+          "caller": "main",
+          "callee": "idevice_free",
+          "lineNumber": 392
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 393
+        },
+        {
+          "caller": "main",
+          "callee": "amfi_send_action",
+          "lineNumber": 399
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 402
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 404
+        },
+        {
+          "caller": "main",
+          "callee": "idevice_free",
+          "lineNumber": 408
+        },
+        {
+          "caller": "main",
+          "callee": "WAIT_FOR",
+          "lineNumber": 410
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 412
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 416
+        },
+        {
+          "caller": "main",
+          "callee": "WAIT_FOR",
+          "lineNumber": 419
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 421
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 425
+        },
+        {
+          "caller": "main",
+          "callee": "idevice_new",
+          "lineNumber": 427
+        },
+        {
+          "caller": "main",
+          "callee": "amfi_send_action",
+          "lineNumber": 428
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 431
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 433
+        },
+        {
+          "caller": "main",
+          "callee": "amfi_send_action",
+          "lineNumber": 437
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 438
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 440
+        },
+        {
+          "caller": "main",
+          "callee": "amfi_send_action",
+          "lineNumber": 443
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 445
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 447
+        },
+        {
+          "caller": "main",
+          "callee": "amfi_send_action",
+          "lineNumber": 450
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 452
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 454
+        },
+        {
+          "caller": "main",
+          "callee": "idevice_free",
+          "lineNumber": 459
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 6,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicediagnostics",
+      "language": "unknown",
+      "fileCategory": "code",
+      "totalLines": 186,
+      "nonEmptyLines": 182,
+      "metrics": {}
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicediagnostics-idevicediagnostics.o",
+      "language": "o",
+      "fileCategory": "code",
+      "totalLines": 209,
+      "nonEmptyLines": 205,
+      "metrics": {}
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicediagnostics.c",
+      "language": "c",
+      "fileCategory": "code",
+      "totalLines": 344,
+      "nonEmptyLines": 322,
+      "functions": [
+        {
+          "name": "print_xml",
+          "startLine": 53,
+          "endLine": 61,
+          "params": [
+            "node"
+          ]
+        },
+        {
+          "name": "print_usage",
+          "startLine": 63,
+          "endLine": 90,
+          "params": [
+            "argc",
+            "argv",
+            "is_error"
+          ]
+        },
+        {
+          "name": "main",
+          "startLine": 92,
+          "endLine": 344,
+          "params": [
+            "argc",
+            "argv"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "main",
+          "line": 92,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "print_xml",
+          "callee": "plist_to_xml",
+          "lineNumber": 57
+        },
+        {
+          "caller": "print_xml",
+          "callee": "puts",
+          "lineNumber": 59
+        },
+        {
+          "caller": "print_usage",
+          "callee": "strrchr",
+          "lineNumber": 65
+        },
+        {
+          "caller": "print_usage",
+          "callee": "fprintf",
+          "lineNumber": 66
+        },
+        {
+          "caller": "print_usage",
+          "callee": "fprintf",
+          "lineNumber": 67
+        },
+        {
+          "caller": "main",
+          "callee": "signal",
+          "lineNumber": 117
+        },
+        {
+          "caller": "main",
+          "callee": "getopt_long",
+          "lineNumber": 120
+        },
+        {
+          "caller": "main",
+          "callee": "idevice_set_debug_level",
+          "lineNumber": 123
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 127
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 128
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 137
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 140
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 143
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 151
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 152
+        },
+        {
+          "caller": "main",
+          "callee": "strcmp",
+          "lineNumber": 156
+        },
+        {
+          "caller": "main",
+          "callee": "strcmp",
+          "lineNumber": 159
+        },
+        {
+          "caller": "main",
+          "callee": "strcmp",
+          "lineNumber": 162
+        },
+        {
+          "caller": "main",
+          "callee": "strcmp",
+          "lineNumber": 165
+        },
+        {
+          "caller": "main",
+          "callee": "strcmp",
+          "lineNumber": 168
+        },
+        {
+          "caller": "main",
+          "callee": "strcmp",
+          "lineNumber": 168
+        },
+        {
+          "caller": "main",
+          "callee": "strcmp",
+          "lineNumber": 168
+        },
+        {
+          "caller": "main",
+          "callee": "strcmp",
+          "lineNumber": 168
+        },
+        {
+          "caller": "main",
+          "callee": "strcmp",
+          "lineNumber": 168
+        },
+        {
+          "caller": "main",
+          "callee": "strdup",
+          "lineNumber": 170
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 172
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 173
+        },
+        {
+          "caller": "main",
+          "callee": "strdup",
+          "lineNumber": 177
+        },
+        {
+          "caller": "main",
+          "callee": "strcmp",
+          "lineNumber": 179
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 183
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 184
+        },
+        {
+          "caller": "main",
+          "callee": "plist_new_array",
+          "lineNumber": 188
+        },
+        {
+          "caller": "main",
+          "callee": "plist_array_append_item",
+          "lineNumber": 190
+        },
+        {
+          "caller": "main",
+          "callee": "plist_new_string",
+          "lineNumber": 190
+        },
+        {
+          "caller": "main",
+          "callee": "strcmp",
+          "lineNumber": 194
+        },
+        {
+          "caller": "main",
+          "callee": "strdup",
+          "lineNumber": 198
+        },
+        {
+          "caller": "main",
+          "callee": "strcmp",
+          "lineNumber": 201
+        },
+        {
+          "caller": "main",
+          "callee": "strdup",
+          "lineNumber": 205
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 211
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 212
+        },
+        {
+          "caller": "main",
+          "callee": "idevice_new_with_options",
+          "lineNumber": 216
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 218
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 220
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_client_new_with_handshake",
+          "lineNumber": 225
+        },
+        {
+          "caller": "main",
+          "callee": "idevice_free",
+          "lineNumber": 226
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 227
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_start_service",
+          "lineNumber": 232
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_start_service",
+          "lineNumber": 235
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_client_free",
+          "lineNumber": 237
+        },
+        {
+          "caller": "main",
+          "callee": "idevice_free",
+          "lineNumber": 240
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 241
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_strerror",
+          "lineNumber": 241
+        },
+        {
+          "caller": "main",
+          "callee": "diagnostics_relay_client_new",
+          "lineNumber": 248
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 249
+        },
+        {
+          "caller": "main",
+          "callee": "diagnostics_relay_sleep",
+          "lineNumber": 253
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 254
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 257
+        },
+        {
+          "caller": "main",
+          "callee": "diagnostics_relay_restart",
+          "lineNumber": 261
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 262
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 265
+        },
+        {
+          "caller": "main",
+          "callee": "diagnostics_relay_shutdown",
+          "lineNumber": 269
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 270
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 273
+        },
+        {
+          "caller": "main",
+          "callee": "diagnostics_relay_query_mobilegestalt",
+          "lineNumber": 277
+        },
+        {
+          "caller": "main",
+          "callee": "print_xml",
+          "lineNumber": 279
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 283
+        },
+        {
+          "caller": "main",
+          "callee": "diagnostics_relay_query_ioregistry_entry",
+          "lineNumber": 287
+        },
+        {
+          "caller": "main",
+          "callee": "print_xml",
+          "lineNumber": 289
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 293
+        },
+        {
+          "caller": "main",
+          "callee": "diagnostics_relay_query_ioregistry_plane",
+          "lineNumber": 297
+        },
+        {
+          "caller": "main",
+          "callee": "print_xml",
+          "lineNumber": 299
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 303
+        },
+        {
+          "caller": "main",
+          "callee": "diagnostics_relay_request_diagnostics",
+          "lineNumber": 308
+        },
+        {
+          "caller": "main",
+          "callee": "print_xml",
+          "lineNumber": 310
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 314
+        },
+        {
+          "caller": "main",
+          "callee": "diagnostics_relay_goodbye",
+          "lineNumber": 319
+        },
+        {
+          "caller": "main",
+          "callee": "diagnostics_relay_client_free",
+          "lineNumber": 320
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 323
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_service_descriptor_free",
+          "lineNumber": 327
+        },
+        {
+          "caller": "main",
+          "callee": "idevice_free",
+          "lineNumber": 331
+        },
+        {
+          "caller": "main",
+          "callee": "plist_free",
+          "lineNumber": 335
+        },
+        {
+          "caller": "main",
+          "callee": "plist_free",
+          "lineNumber": 338
+        },
+        {
+          "caller": "main",
+          "callee": "free",
+          "lineNumber": 341
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 3,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/ideviceenterrecovery",
+      "language": "unknown",
+      "fileCategory": "code",
+      "totalLines": 162,
+      "nonEmptyLines": 160,
+      "metrics": {}
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/ideviceenterrecovery-ideviceenterrecovery.o",
+      "language": "o",
+      "fileCategory": "code",
+      "totalLines": 41,
+      "nonEmptyLines": 39,
+      "metrics": {}
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/ideviceenterrecovery.c",
+      "language": "c",
+      "fileCategory": "code",
+      "totalLines": 139,
+      "nonEmptyLines": 126,
+      "functions": [
+        {
+          "name": "print_usage",
+          "startLine": 40,
+          "endLine": 56,
+          "params": [
+            "argc",
+            "argv",
+            "is_error"
+          ]
+        },
+        {
+          "name": "main",
+          "startLine": 58,
+          "endLine": 139,
+          "params": [
+            "argc",
+            "argv"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "main",
+          "line": 58,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "print_usage",
+          "callee": "strrchr",
+          "lineNumber": 42
+        },
+        {
+          "caller": "print_usage",
+          "callee": "fprintf",
+          "lineNumber": 43
+        },
+        {
+          "caller": "print_usage",
+          "callee": "fprintf",
+          "lineNumber": 44
+        },
+        {
+          "caller": "main",
+          "callee": "signal",
+          "lineNumber": 74
+        },
+        {
+          "caller": "main",
+          "callee": "getopt_long",
+          "lineNumber": 77
+        },
+        {
+          "caller": "main",
+          "callee": "idevice_set_debug_level",
+          "lineNumber": 80
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 83
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 86
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 89
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 97
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 98
+        },
+        {
+          "caller": "main",
+          "callee": "idevice_new",
+          "lineNumber": 103
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 105
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_client_new",
+          "lineNumber": 109
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 110
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_strerror",
+          "lineNumber": 110
+        },
+        {
+          "caller": "main",
+          "callee": "idevice_free",
+          "lineNumber": 111
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 116
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_enter_recovery",
+          "lineNumber": 117
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_client_free",
+          "lineNumber": 119
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_client_new_with_handshake",
+          "lineNumber": 121
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 122
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_strerror",
+          "lineNumber": 122
+        },
+        {
+          "caller": "main",
+          "callee": "idevice_free",
+          "lineNumber": 123
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_enter_recovery",
+          "lineNumber": 126
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 129
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 132
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_client_free",
+          "lineNumber": 135
+        },
+        {
+          "caller": "main",
+          "callee": "idevice_free",
+          "lineNumber": 136
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/ideviceimagemounter",
+      "language": "unknown",
+      "fileCategory": "code",
+      "totalLines": 242,
+      "nonEmptyLines": 237,
+      "metrics": {}
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/ideviceimagemounter-ideviceimagemounter.o",
+      "language": "o",
+      "fileCategory": "code",
+      "totalLines": 297,
+      "nonEmptyLines": 291,
+      "metrics": {}
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/ideviceimagemounter.c",
+      "language": "c",
+      "fileCategory": "code",
+      "totalLines": 778,
+      "nonEmptyLines": 713,
+      "functions": [
+        {
+          "name": "print_usage",
+          "startLine": 79,
+          "endLine": 110,
+          "params": [
+            "argc",
+            "argv",
+            "is_error"
+          ]
+        },
+        {
+          "name": "parse_opts",
+          "startLine": 112,
+          "endLine": 167,
+          "params": [
+            "argc",
+            "argv"
+          ]
+        },
+        {
+          "name": "mim_upload_cb",
+          "startLine": 169,
+          "endLine": 172,
+          "params": [
+            "buf",
+            "size",
+            "userdata"
+          ]
+        },
+        {
+          "name": "main",
+          "startLine": 174,
+          "endLine": 778,
+          "params": [
+            "argc",
+            "argv"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "main",
+          "line": 174,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "print_usage",
+          "callee": "strrchr",
+          "lineNumber": 81
+        },
+        {
+          "caller": "print_usage",
+          "callee": "fprintf",
+          "lineNumber": 82
+        },
+        {
+          "caller": "print_usage",
+          "callee": "fprintf",
+          "lineNumber": 83
+        },
+        {
+          "caller": "parse_opts",
+          "callee": "getopt_long",
+          "lineNumber": 128
+        },
+        {
+          "caller": "parse_opts",
+          "callee": "print_usage",
+          "lineNumber": 135
+        },
+        {
+          "caller": "parse_opts",
+          "callee": "exit",
+          "lineNumber": 136
+        },
+        {
+          "caller": "parse_opts",
+          "callee": "fprintf",
+          "lineNumber": 139
+        },
+        {
+          "caller": "parse_opts",
+          "callee": "print_usage",
+          "lineNumber": 140
+        },
+        {
+          "caller": "parse_opts",
+          "callee": "exit",
+          "lineNumber": 141
+        },
+        {
+          "caller": "parse_opts",
+          "callee": "printf",
+          "lineNumber": 158
+        },
+        {
+          "caller": "parse_opts",
+          "callee": "exit",
+          "lineNumber": 159
+        },
+        {
+          "caller": "parse_opts",
+          "callee": "print_usage",
+          "lineNumber": 161
+        },
+        {
+          "caller": "parse_opts",
+          "callee": "exit",
+          "lineNumber": 162
+        },
+        {
+          "caller": "parse_opts",
+          "callee": "idevice_set_debug_level",
+          "lineNumber": 165
+        },
+        {
+          "caller": "parse_opts",
+          "callee": "tss_set_debug_level",
+          "lineNumber": 166
+        },
+        {
+          "caller": "mim_upload_cb",
+          "callee": "fread",
+          "lineNumber": 171
+        },
+        {
+          "caller": "main",
+          "callee": "signal",
+          "lineNumber": 188
+        },
+        {
+          "caller": "main",
+          "callee": "parse_opts",
+          "lineNumber": 190
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 196
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 197
+        },
+        {
+          "caller": "main",
+          "callee": "strcmp",
+          "lineNumber": 204
+        },
+        {
+          "caller": "main",
+          "callee": "strcmp",
+          "lineNumber": 207
+        },
+        {
+          "caller": "main",
+          "callee": "strcmp",
+          "lineNumber": 210
+        },
+        {
+          "caller": "main",
+          "callee": "strcmp",
+          "lineNumber": 210
+        },
+        {
+          "caller": "main",
+          "callee": "strcmp",
+          "lineNumber": 213
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 232
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 233
+        },
+        {
+          "caller": "main",
+          "callee": "strdup",
+          "lineNumber": 236
+        },
+        {
+          "caller": "main",
+          "callee": "strdup",
+          "lineNumber": 238
+        },
+        {
+          "caller": "main",
+          "callee": "asprintf",
+          "lineNumber": 240
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 241
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 248
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 249
+        },
+        {
+          "caller": "main",
+          "callee": "idevice_new_with_options",
+          "lineNumber": 257
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 259
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 261
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_client_new_with_handshake",
+          "lineNumber": 266
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 267
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_get_value",
+          "lineNumber": 273
+        },
+        {
+          "caller": "main",
+          "callee": "plist_get_node_type",
+          "lineNumber": 274
+        },
+        {
+          "caller": "main",
+          "callee": "plist_get_string_val",
+          "lineNumber": 275
+        },
+        {
+          "caller": "main",
+          "callee": "sscanf",
+          "lineNumber": 281
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_get_value",
+          "lineNumber": 290
+        },
+        {
+          "caller": "main",
+          "callee": "plist_get_bool_val",
+          "lineNumber": 292
+        },
+        {
+          "caller": "main",
+          "callee": "plist_free",
+          "lineNumber": 293
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 296
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_start_service",
+          "lineNumber": 301
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 304
+        },
+        {
+          "caller": "main",
+          "callee": "mobile_image_mounter_new",
+          "lineNumber": 308
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 309
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_service_descriptor_free",
+          "lineNumber": 314
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_start_service",
+          "lineNumber": 321
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 323
+        },
+        {
+          "caller": "main",
+          "callee": "afc_client_new",
+          "lineNumber": 326
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 327
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_service_descriptor_free",
+          "lineNumber": 331
+        },
+        {
+          "caller": "main",
+          "callee": "stat",
+          "lineNumber": 335
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 336
+        },
+        {
+          "caller": "main",
+          "callee": "strerror",
+          "lineNumber": 336
+        },
+        {
+          "caller": "main",
+          "callee": "stat",
+          "lineNumber": 340
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 341
+        },
+        {
+          "caller": "main",
+          "callee": "strerror",
+          "lineNumber": 341
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_client_free",
+          "lineNumber": 346
+        },
+        {
+          "caller": "main",
+          "callee": "mobile_image_mounter_lookup_image",
+          "lineNumber": 361
+        },
+        {
+          "caller": "main",
+          "callee": "plist_write_to_stream",
+          "lineNumber": 364
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 366
+        },
+        {
+          "caller": "main",
+          "callee": "fopen",
+          "lineNumber": 376
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 378
+        },
+        {
+          "caller": "main",
+          "callee": "strerror",
+          "lineNumber": 378
+        },
+        {
+          "caller": "main",
+          "callee": "fstat",
+          "lineNumber": 381
+        },
+        {
+          "caller": "main",
+          "callee": "fileno",
+          "lineNumber": 381
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 382
+        },
+        {
+          "caller": "main",
+          "callee": "strerror",
+          "lineNumber": 382
+        },
+        {
+          "caller": "main",
+          "callee": "malloc",
+          "lineNumber": 385
+        },
+        {
+          "caller": "main",
+          "callee": "fread",
+          "lineNumber": 386
+        },
+        {
+          "caller": "main",
+          "callee": "fclose",
+          "lineNumber": 387
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 389
+        },
+        {
+          "caller": "main",
+          "callee": "fopen",
+          "lineNumber": 393
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 395
+        },
+        {
+          "caller": "main",
+          "callee": "strerror",
+          "lineNumber": 395
+        },
+        {
+          "caller": "main",
+          "callee": "stat",
+          "lineNumber": 399
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 400
+        },
+        {
+          "caller": "main",
+          "callee": "strerror",
+          "lineNumber": 400
+        },
+        {
+          "caller": "main",
+          "callee": "S_ISDIR",
+          "lineNumber": 403
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 404
+        },
+        {
+          "caller": "main",
+          "callee": "string_build_path",
+          "lineNumber": 407
+        },
+        {
+          "caller": "main",
+          "callee": "plist_read_from_file",
+          "lineNumber": 409
+        },
+        {
+          "caller": "main",
+          "callee": "free",
+          "lineNumber": 410
+        },
+        {
+          "caller": "main",
+          "callee": "string_build_path",
+          "lineNumber": 411
+        },
+        {
+          "caller": "main",
+          "callee": "plist_read_from_file",
+          "lineNumber": 412
+        },
+        {
+          "caller": "main",
+          "callee": "string_build_path",
+          "lineNumber": 413
+        },
+        {
+          "caller": "main",
+          "callee": "free",
+          "lineNumber": 414
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 419
+        },
+        {
+          "caller": "main",
+          "callee": "mobile_image_mounter_query_personalization_identifiers",
+          "lineNumber": 424
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 426
+        },
+        {
+          "caller": "main",
+          "callee": "plist_dict_get_uint",
+          "lineNumber": 430
+        },
+        {
+          "caller": "main",
+          "callee": "plist_dict_get_uint",
+          "lineNumber": 431
+        },
+        {
+          "caller": "main",
+          "callee": "plist_dict_get_item",
+          "lineNumber": 433
+        },
+        {
+          "caller": "main",
+          "callee": "plist_array_new_iter",
+          "lineNumber": 435
+        },
+        {
+          "caller": "main",
+          "callee": "plist_array_next_item",
+          "lineNumber": 439
+        },
+        {
+          "caller": "main",
+          "callee": "plist_dict_get_uint",
+          "lineNumber": 443
+        },
+        {
+          "caller": "main",
+          "callee": "plist_dict_get_uint",
+          "lineNumber": 444
+        },
+        {
+          "caller": "main",
+          "callee": "plist_mem_free",
+          "lineNumber": 450
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 452
+        },
+        {
+          "caller": "main",
+          "callee": "plist_access_path",
+          "lineNumber": 455
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 457
+        },
+        {
+          "caller": "main",
+          "callee": "plist_access_path",
+          "lineNumber": 460
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 462
+        },
+        {
+          "caller": "main",
+          "callee": "string_build_path",
+          "lineNumber": 465
+        },
+        {
+          "caller": "main",
+          "callee": "plist_get_string_ptr",
+          "lineNumber": 465
+        },
+        {
+          "caller": "main",
+          "callee": "buffer_read_from_filename",
+          "lineNumber": 468
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 469
+        },
+        {
+          "caller": "main",
+          "callee": "plist_new_dict",
+          "lineNumber": 472
+        },
+        {
+          "caller": "main",
+          "callee": "plist_dict_set_item",
+          "lineNumber": 473
+        },
+        {
+          "caller": "main",
+          "callee": "plist_new_data",
+          "lineNumber": 473
+        },
+        {
+          "caller": "main",
+          "callee": "free",
+          "lineNumber": 474
+        },
+        {
+          "caller": "main",
+          "callee": "string_build_path",
+          "lineNumber": 475
+        },
+        {
+          "caller": "main",
+          "callee": "plist_get_string_ptr",
+          "lineNumber": 475
+        },
+        {
+          "caller": "main",
+          "callee": "free",
+          "lineNumber": 476
+        },
+        {
+          "caller": "main",
+          "callee": "fopen",
+          "lineNumber": 478
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 480
+        },
+        {
+          "caller": "main",
+          "callee": "strerror",
+          "lineNumber": 480
+        },
+        {
+          "caller": "main",
+          "callee": "sha384_init",
+          "lineNumber": 487
+        },
+        {
+          "caller": "main",
+          "callee": "fstat",
+          "lineNumber": 488
+        },
+        {
+          "caller": "main",
+          "callee": "fileno",
+          "lineNumber": 488
+        },
+        {
+          "caller": "main",
+          "callee": "feof",
+          "lineNumber": 490
+        },
+        {
+          "caller": "main",
+          "callee": "fread",
+          "lineNumber": 491
+        },
+        {
+          "caller": "main",
+          "callee": "sha384_update",
+          "lineNumber": 495
+        },
+        {
+          "caller": "main",
+          "callee": "rewind",
+          "lineNumber": 497
+        },
+        {
+          "caller": "main",
+          "callee": "sha384_final",
+          "lineNumber": 498
+        },
+        {
+          "caller": "main",
+          "callee": "mobile_image_mounter_query_personalization_manifest",
+          "lineNumber": 502
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 503
+        },
+        {
+          "caller": "main",
+          "callee": "mobile_image_mounter_free",
+          "lineNumber": 506
+        },
+        {
+          "caller": "main",
+          "callee": "mobile_image_mounter_start_service",
+          "lineNumber": 508
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 511
+        },
+        {
+          "caller": "main",
+          "callee": "tss_request_new",
+          "lineNumber": 516
+        },
+        {
+          "caller": "main",
+          "callee": "plist_new_dict",
+          "lineNumber": 517
+        },
+        {
+          "caller": "main",
+          "callee": "tss_parameters_add_from_manifest",
+          "lineNumber": 518
+        },
+        {
+          "caller": "main",
+          "callee": "plist_dict_new_iter",
+          "lineNumber": 522
+        },
+        {
+          "caller": "main",
+          "callee": "plist_dict_next_item",
+          "lineNumber": 526
+        },
+        {
+          "caller": "main",
+          "callee": "strncmp",
+          "lineNumber": 528
+        },
+        {
+          "caller": "main",
+          "callee": "plist_dict_set_item",
+          "lineNumber": 529
+        },
+        {
+          "caller": "main",
+          "callee": "plist_copy",
+          "lineNumber": 529
+        },
+        {
+          "caller": "main",
+          "callee": "free",
+          "lineNumber": 532
+        },
+        {
+          "caller": "main",
+          "callee": "plist_mem_free",
+          "lineNumber": 534
+        },
+        {
+          "caller": "main",
+          "callee": "plist_dict_copy_uint",
+          "lineNumber": 536
+        },
+        {
+          "caller": "main",
+          "callee": "plist_dict_set_item",
+          "lineNumber": 537
+        },
+        {
+          "caller": "main",
+          "callee": "plist_new_bool",
+          "lineNumber": 537
+        },
+        {
+          "caller": "main",
+          "callee": "plist_dict_set_item",
+          "lineNumber": 538
+        },
+        {
+          "caller": "main",
+          "callee": "plist_new_bool",
+          "lineNumber": 538
+        },
+        {
+          "caller": "main",
+          "callee": "plist_dict_set_item",
+          "lineNumber": 539
+        },
+        {
+          "caller": "main",
+          "callee": "plist_new_bool",
+          "lineNumber": 539
+        },
+        {
+          "caller": "main",
+          "callee": "mobile_image_mounter_query_nonce",
+          "lineNumber": 542
+        },
+        {
+          "caller": "main",
+          "callee": "plist_dict_set_item",
+          "lineNumber": 544
+        },
+        {
+          "caller": "main",
+          "callee": "plist_new_data",
+          "lineNumber": 544
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 546
+        },
+        {
+          "caller": "main",
+          "callee": "mobile_image_mounter_free",
+          "lineNumber": 549
+        },
+        {
+          "caller": "main",
+          "callee": "plist_dict_set_item",
+          "lineNumber": 552
+        },
+        {
+          "caller": "main",
+          "callee": "plist_new_data",
+          "lineNumber": 552
+        },
+        {
+          "caller": "main",
+          "callee": "plist_dict_set_item",
+          "lineNumber": 553
+        },
+        {
+          "caller": "main",
+          "callee": "plist_new_bool",
+          "lineNumber": 553
+        },
+        {
+          "caller": "main",
+          "callee": "tss_request_add_ap_tags",
+          "lineNumber": 554
+        },
+        {
+          "caller": "main",
+          "callee": "tss_request_add_common_tags",
+          "lineNumber": 555
+        },
+        {
+          "caller": "main",
+          "callee": "tss_request_add_ap_img4_tags",
+          "lineNumber": 556
+        },
+        {
+          "caller": "main",
+          "callee": "plist_free",
+          "lineNumber": 557
+        },
+        {
+          "caller": "main",
+          "callee": "tss_request_send",
+          "lineNumber": 560
+        },
+        {
+          "caller": "main",
+          "callee": "plist_free",
+          "lineNumber": 561
+        },
+        {
+          "caller": "main",
+          "callee": "plist_dict_get_item",
+          "lineNumber": 563
+        },
+        {
+          "caller": "main",
+          "callee": "PLIST_IS_DATA",
+          "lineNumber": 564
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 565
+        },
+        {
+          "caller": "main",
+          "callee": "plist_get_data_val",
+          "lineNumber": 570
+        },
+        {
+          "caller": "main",
+          "callee": "plist_free",
+          "lineNumber": 572
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 573
+        },
+        {
+          "caller": "main",
+          "callee": "asprintf",
+          "lineNumber": 582
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 583
+        },
+        {
+          "caller": "main",
+          "callee": "asprintf",
+          "lineNumber": 587
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 588
+        },
+        {
+          "caller": "main",
+          "callee": "mobile_image_mounter_start_service",
+          "lineNumber": 597
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 604
+        },
+        {
+          "caller": "main",
+          "callee": "mobile_image_mounter_upload_image",
+          "lineNumber": 605
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 609
+        },
+        {
+          "caller": "main",
+          "callee": "afc_get_file_info",
+          "lineNumber": 611
+        },
+        {
+          "caller": "main",
+          "callee": "afc_make_directory",
+          "lineNumber": 612
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 613
+        },
+        {
+          "caller": "main",
+          "callee": "free",
+          "lineNumber": 619
+        },
+        {
+          "caller": "main",
+          "callee": "free",
+          "lineNumber": 622
+        },
+        {
+          "caller": "main",
+          "callee": "afc_file_open",
+          "lineNumber": 626
+        },
+        {
+          "caller": "main",
+          "callee": "fclose",
+          "lineNumber": 628
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 629
+        },
+        {
+          "caller": "main",
+          "callee": "fread",
+          "lineNumber": 636
+        },
+        {
+          "caller": "main",
+          "callee": "afc_file_write",
+          "lineNumber": 641
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 643
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 649
+        },
+        {
+          "caller": "main",
+          "callee": "afc_file_close",
+          "lineNumber": 651
+        },
+        {
+          "caller": "main",
+          "callee": "fclose",
+          "lineNumber": 652
+        },
+        {
+          "caller": "main",
+          "callee": "afc_file_close",
+          "lineNumber": 659
+        },
+        {
+          "caller": "main",
+          "callee": "fclose",
+          "lineNumber": 663
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 667
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 669
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 673
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 675
+        },
+        {
+          "caller": "main",
+          "callee": "mobile_image_mounter_mount_image_with_options",
+          "lineNumber": 676
+        },
+        {
+          "caller": "main",
+          "callee": "plist_dict_get_item",
+          "lineNumber": 679
+        },
+        {
+          "caller": "main",
+          "callee": "plist_get_string_val",
+          "lineNumber": 682
+        },
+        {
+          "caller": "main",
+          "callee": "strcmp",
+          "lineNumber": 684
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 685
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 688
+        },
+        {
+          "caller": "main",
+          "callee": "plist_write_to_stream",
+          "lineNumber": 689
+        },
+        {
+          "caller": "main",
+          "callee": "free",
+          "lineNumber": 691
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 693
+        },
+        {
+          "caller": "main",
+          "callee": "plist_write_to_stream",
+          "lineNumber": 694
+        },
+        {
+          "caller": "main",
+          "callee": "plist_dict_get_item",
+          "lineNumber": 697
+        },
+        {
+          "caller": "main",
+          "callee": "plist_get_string_val",
+          "lineNumber": 700
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 702
+        },
+        {
+          "caller": "main",
+          "callee": "free",
+          "lineNumber": 703
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 705
+        },
+        {
+          "caller": "main",
+          "callee": "plist_write_to_stream",
+          "lineNumber": 706
+        },
+        {
+          "caller": "main",
+          "callee": "plist_dict_get_item",
+          "lineNumber": 708
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 710
+        },
+        {
+          "caller": "main",
+          "callee": "plist_get_string_ptr",
+          "lineNumber": 710
+        },
+        {
+          "caller": "main",
+          "callee": "plist_write_to_stream",
+          "lineNumber": 713
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 717
+        },
+        {
+          "caller": "main",
+          "callee": "mobile_image_mounter_unmount_image",
+          "lineNumber": 721
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 724
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 728
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 732
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 736
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 740
+        },
+        {
+          "caller": "main",
+          "callee": "mobile_image_mounter_query_developer_mode_status",
+          "lineNumber": 744
+        },
+        {
+          "caller": "main",
+          "callee": "plist_write_to_stream",
+          "lineNumber": 747
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 749
+        },
+        {
+          "caller": "main",
+          "callee": "plist_free",
+          "lineNumber": 754
+        },
+        {
+          "caller": "main",
+          "callee": "mobile_image_mounter_hangup",
+          "lineNumber": 759
+        },
+        {
+          "caller": "main",
+          "callee": "mobile_image_mounter_free",
+          "lineNumber": 761
+        },
+        {
+          "caller": "main",
+          "callee": "afc_client_free",
+          "lineNumber": 765
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_client_free",
+          "lineNumber": 768
+        },
+        {
+          "caller": "main",
+          "callee": "idevice_free",
+          "lineNumber": 770
+        },
+        {
+          "caller": "main",
+          "callee": "free",
+          "lineNumber": 773
+        },
+        {
+          "caller": "main",
+          "callee": "free",
+          "lineNumber": 775
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 4,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/ideviceinfo",
+      "language": "unknown",
+      "fileCategory": "code",
+      "totalLines": 172,
+      "nonEmptyLines": 169,
+      "metrics": {}
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/ideviceinfo-ideviceinfo.o",
+      "language": "o",
+      "fileCategory": "code",
+      "totalLines": 167,
+      "nonEmptyLines": 164,
+      "metrics": {}
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/ideviceinfo.c",
+      "language": "c",
+      "fileCategory": "code",
+      "totalLines": 261,
+      "nonEmptyLines": 241,
+      "functions": [
+        {
+          "name": "is_domain_known",
+          "startLine": 82,
+          "endLine": 91,
+          "params": [
+            "domain"
+          ]
+        },
+        {
+          "name": "print_usage",
+          "startLine": 93,
+          "endLine": 123,
+          "params": [
+            "argc",
+            "argv",
+            "is_error"
+          ]
+        },
+        {
+          "name": "main",
+          "startLine": 125,
+          "endLine": 260,
+          "params": [
+            "argc",
+            "argv"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "main",
+          "line": 125,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "is_domain_known",
+          "callee": "strstr",
+          "lineNumber": 86
+        },
+        {
+          "caller": "print_usage",
+          "callee": "strrchr",
+          "lineNumber": 96
+        },
+        {
+          "caller": "print_usage",
+          "callee": "fprintf",
+          "lineNumber": 97
+        },
+        {
+          "caller": "print_usage",
+          "callee": "fprintf",
+          "lineNumber": 98
+        },
+        {
+          "caller": "print_usage",
+          "callee": "fprintf",
+          "lineNumber": 114
+        },
+        {
+          "caller": "print_usage",
+          "callee": "fprintf",
+          "lineNumber": 116
+        },
+        {
+          "caller": "print_usage",
+          "callee": "fprintf",
+          "lineNumber": 118
+        },
+        {
+          "caller": "main",
+          "callee": "signal",
+          "lineNumber": 156
+        },
+        {
+          "caller": "main",
+          "callee": "getopt_long",
+          "lineNumber": 159
+        },
+        {
+          "caller": "main",
+          "callee": "idevice_set_debug_level",
+          "lineNumber": 162
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 166
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 167
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 177
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 178
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 185
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 186
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 198
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 201
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 204
+        },
+        {
+          "caller": "main",
+          "callee": "idevice_new_with_options",
+          "lineNumber": 212
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 215
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 217
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_client_new",
+          "lineNumber": 223
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_client_new_with_handshake",
+          "lineNumber": 224
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 225
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_strerror",
+          "lineNumber": 225
+        },
+        {
+          "caller": "main",
+          "callee": "idevice_free",
+          "lineNumber": 226
+        },
+        {
+          "caller": "main",
+          "callee": "is_domain_known",
+          "lineNumber": 230
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 231
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_get_value",
+          "lineNumber": 235
+        },
+        {
+          "caller": "main",
+          "callee": "plist_to_xml",
+          "lineNumber": 239
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 240
+        },
+        {
+          "caller": "main",
+          "callee": "free",
+          "lineNumber": 241
+        },
+        {
+          "caller": "main",
+          "callee": "plist_write_to_stream",
+          "lineNumber": 244
+        },
+        {
+          "caller": "main",
+          "callee": "plist_write_to_stream",
+          "lineNumber": 248
+        },
+        {
+          "caller": "main",
+          "callee": "plist_free",
+          "lineNumber": 251
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_client_free",
+          "lineNumber": 256
+        },
+        {
+          "caller": "main",
+          "callee": "idevice_free",
+          "lineNumber": 257
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 3,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/ideviceinstaller",
+      "language": "unknown",
+      "fileCategory": "code",
+      "totalLines": 164,
+      "nonEmptyLines": 163,
+      "metrics": {}
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicename",
+      "language": "unknown",
+      "fileCategory": "code",
+      "totalLines": 172,
+      "nonEmptyLines": 170,
+      "metrics": {}
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicename-idevicename.o",
+      "language": "o",
+      "fileCategory": "code",
+      "totalLines": 50,
+      "nonEmptyLines": 48,
+      "metrics": {}
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicename.c",
+      "language": "c",
+      "fileCategory": "code",
+      "totalLines": 159,
+      "nonEmptyLines": 144,
+      "functions": [
+        {
+          "name": "print_usage",
+          "startLine": 40,
+          "endLine": 58,
+          "params": [
+            "argc",
+            "argv",
+            "is_error"
+          ]
+        },
+        {
+          "name": "main",
+          "startLine": 60,
+          "endLine": 159,
+          "params": [
+            "argc",
+            "argv"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "main",
+          "line": 60,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "print_usage",
+          "callee": "strrchr",
+          "lineNumber": 42
+        },
+        {
+          "caller": "print_usage",
+          "callee": "fprintf",
+          "lineNumber": 43
+        },
+        {
+          "caller": "print_usage",
+          "callee": "fprintf",
+          "lineNumber": 44
+        },
+        {
+          "caller": "main",
+          "callee": "signal",
+          "lineNumber": 76
+        },
+        {
+          "caller": "main",
+          "callee": "getopt_long",
+          "lineNumber": 79
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 83
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 84
+        },
+        {
+          "caller": "main",
+          "callee": "exit",
+          "lineNumber": 85
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 93
+        },
+        {
+          "caller": "main",
+          "callee": "idevice_set_debug_level",
+          "lineNumber": 96
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 99
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 102
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 111
+        },
+        {
+          "caller": "main",
+          "callee": "idevice_new_with_options",
+          "lineNumber": 116
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 118
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 120
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_client_new_with_handshake",
+          "lineNumber": 126
+        },
+        {
+          "caller": "main",
+          "callee": "idevice_free",
+          "lineNumber": 128
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 129
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_get_device_name",
+          "lineNumber": 136
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 138
+        },
+        {
+          "caller": "main",
+          "callee": "free",
+          "lineNumber": 139
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 142
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_set_value",
+          "lineNumber": 146
+        },
+        {
+          "caller": "main",
+          "callee": "plist_new_string",
+          "lineNumber": 146
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 148
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 151
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_client_free",
+          "lineNumber": 155
+        },
+        {
+          "caller": "main",
+          "callee": "idevice_free",
+          "lineNumber": 156
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicenotificationproxy",
+      "language": "unknown",
+      "fileCategory": "code",
+      "totalLines": 196,
+      "nonEmptyLines": 192,
+      "metrics": {}
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicenotificationproxy-idevicenotificationproxy.o",
+      "language": "o",
+      "fileCategory": "code",
+      "totalLines": 156,
+      "nonEmptyLines": 151,
+      "metrics": {}
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicenotificationproxy.c",
+      "language": "c",
+      "fileCategory": "code",
+      "totalLines": 305,
+      "nonEmptyLines": 267,
+      "functions": [
+        {
+          "name": "clean_exit",
+          "startLine": 58,
+          "endLine": 62,
+          "params": [
+            "sig"
+          ]
+        },
+        {
+          "name": "print_usage",
+          "startLine": 64,
+          "endLine": 88,
+          "params": [
+            "argc",
+            "argv",
+            "is_error"
+          ]
+        },
+        {
+          "name": "notify_cb",
+          "startLine": 90,
+          "endLine": 93,
+          "params": [
+            "notification",
+            "user_data"
+          ]
+        },
+        {
+          "name": "main",
+          "startLine": 95,
+          "endLine": 305,
+          "params": [
+            "argc",
+            "argv"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "main",
+          "line": 95,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "clean_exit",
+          "callee": "fprintf",
+          "lineNumber": 60
+        },
+        {
+          "caller": "print_usage",
+          "callee": "strrchr",
+          "lineNumber": 66
+        },
+        {
+          "caller": "print_usage",
+          "callee": "fprintf",
+          "lineNumber": 67
+        },
+        {
+          "caller": "print_usage",
+          "callee": "fprintf",
+          "lineNumber": 68
+        },
+        {
+          "caller": "notify_cb",
+          "callee": "printf",
+          "lineNumber": 92
+        },
+        {
+          "caller": "main",
+          "callee": "signal",
+          "lineNumber": 126
+        },
+        {
+          "caller": "main",
+          "callee": "signal",
+          "lineNumber": 127
+        },
+        {
+          "caller": "main",
+          "callee": "signal",
+          "lineNumber": 129
+        },
+        {
+          "caller": "main",
+          "callee": "signal",
+          "lineNumber": 130
+        },
+        {
+          "caller": "main",
+          "callee": "getopt_long",
+          "lineNumber": 134
+        },
+        {
+          "caller": "main",
+          "callee": "idevice_set_debug_level",
+          "lineNumber": 137
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 141
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 142
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 154
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 157
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 160
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 168
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 169
+        },
+        {
+          "caller": "main",
+          "callee": "strcmp",
+          "lineNumber": 173
+        },
+        {
+          "caller": "main",
+          "callee": "strcmp",
+          "lineNumber": 175
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 182
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 183
+        },
+        {
+          "caller": "main",
+          "callee": "malloc",
+          "lineNumber": 188
+        },
+        {
+          "caller": "main",
+          "callee": "strlen",
+          "lineNumber": 191
+        },
+        {
+          "caller": "main",
+          "callee": "strncmp",
+          "lineNumber": 191
+        },
+        {
+          "caller": "main",
+          "callee": "realloc",
+          "lineNumber": 192
+        },
+        {
+          "caller": "main",
+          "callee": "strdup",
+          "lineNumber": 193
+        },
+        {
+          "caller": "main",
+          "callee": "realloc",
+          "lineNumber": 203
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 210
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 211
+        },
+        {
+          "caller": "main",
+          "callee": "idevice_new_with_options",
+          "lineNumber": 215
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 217
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 219
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_client_new",
+          "lineNumber": 225
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_client_new_with_handshake",
+          "lineNumber": 227
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 230
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_strerror",
+          "lineNumber": 230
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_start_service",
+          "lineNumber": 234
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_client_free",
+          "lineNumber": 236
+        },
+        {
+          "caller": "main",
+          "callee": "np_client_new",
+          "lineNumber": 239
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 240
+        },
+        {
+          "caller": "main",
+          "callee": "np_set_notify_callback",
+          "lineNumber": 243
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 249
+        },
+        {
+          "caller": "main",
+          "callee": "np_post_notification",
+          "lineNumber": 250
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 258
+        },
+        {
+          "caller": "main",
+          "callee": "np_observe_notification",
+          "lineNumber": 259
+        },
+        {
+          "caller": "main",
+          "callee": "sleep",
+          "lineNumber": 265
+        },
+        {
+          "caller": "main",
+          "callee": "np_client_free",
+          "lineNumber": 274
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 279
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_strerror",
+          "lineNumber": 279
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_service_descriptor_free",
+          "lineNumber": 283
+        },
+        {
+          "caller": "main",
+          "callee": "free",
+          "lineNumber": 291
+        },
+        {
+          "caller": "main",
+          "callee": "free",
+          "lineNumber": 294
+        },
+        {
+          "caller": "main",
+          "callee": "free",
+          "lineNumber": 298
+        },
+        {
+          "caller": "main",
+          "callee": "idevice_free",
+          "lineNumber": 302
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 4,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicepair",
+      "language": "unknown",
+      "fileCategory": "code",
+      "totalLines": 512,
+      "nonEmptyLines": 510,
+      "metrics": {}
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicepair-idevicepair.o",
+      "language": "o",
+      "fileCategory": "code",
+      "totalLines": 290,
+      "nonEmptyLines": 287,
+      "metrics": {}
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicepair.c",
+      "language": "c",
+      "fileCategory": "code",
+      "totalLines": 479,
+      "nonEmptyLines": 434,
+      "functions": [
+        {
+          "name": "print_error_message",
+          "startLine": 114,
+          "endLine": 144,
+          "params": [
+            "err"
+          ]
+        },
+        {
+          "name": "print_usage",
+          "startLine": 146,
+          "endLine": 190,
+          "params": [
+            "argc",
+            "argv",
+            "is_error"
+          ]
+        },
+        {
+          "name": "main",
+          "startLine": 192,
+          "endLine": 478,
+          "params": [
+            "argc",
+            "argv"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "main",
+          "line": 192,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "my_getch",
+          "callee": "tcgetattr",
+          "lineNumber": 62
+        },
+        {
+          "caller": "my_getch",
+          "callee": "tcsetattr",
+          "lineNumber": 65
+        },
+        {
+          "caller": "my_getch",
+          "callee": "getchar",
+          "lineNumber": 66
+        },
+        {
+          "caller": "my_getch",
+          "callee": "tcsetattr",
+          "lineNumber": 67
+        },
+        {
+          "caller": "get_hidden_input",
+          "callee": "my_getch",
+          "lineNumber": 77
+        },
+        {
+          "caller": "get_hidden_input",
+          "callee": "isprint",
+          "lineNumber": 80
+        },
+        {
+          "caller": "get_hidden_input",
+          "callee": "fputc",
+          "lineNumber": 83
+        },
+        {
+          "caller": "get_hidden_input",
+          "callee": "fputs",
+          "lineNumber": 86
+        },
+        {
+          "caller": "pairing_cb",
+          "callee": "printf",
+          "lineNumber": 98
+        },
+        {
+          "caller": "pairing_cb",
+          "callee": "fflush",
+          "lineNumber": 99
+        },
+        {
+          "caller": "pairing_cb",
+          "callee": "get_hidden_input",
+          "lineNumber": 101
+        },
+        {
+          "caller": "pairing_cb",
+          "callee": "printf",
+          "lineNumber": 103
+        },
+        {
+          "caller": "pairing_cb",
+          "callee": "printf",
+          "lineNumber": 105
+        },
+        {
+          "caller": "pairing_cb",
+          "callee": "plist_write_to_stream",
+          "lineNumber": 106
+        },
+        {
+          "caller": "pairing_cb",
+          "callee": "PLIST_OPT_INDENT_BY",
+          "lineNumber": 106
+        },
+        {
+          "caller": "pairing_cb",
+          "callee": "printf",
+          "lineNumber": 108
+        },
+        {
+          "caller": "print_error_message",
+          "callee": "printf",
+          "lineNumber": 118
+        },
+        {
+          "caller": "print_error_message",
+          "callee": "printf",
+          "lineNumber": 122
+        },
+        {
+          "caller": "print_error_message",
+          "callee": "printf",
+          "lineNumber": 125
+        },
+        {
+          "caller": "print_error_message",
+          "callee": "printf",
+          "lineNumber": 128
+        },
+        {
+          "caller": "print_error_message",
+          "callee": "printf",
+          "lineNumber": 131
+        },
+        {
+          "caller": "print_error_message",
+          "callee": "printf",
+          "lineNumber": 135
+        },
+        {
+          "caller": "print_error_message",
+          "callee": "printf",
+          "lineNumber": 137
+        },
+        {
+          "caller": "print_error_message",
+          "callee": "printf",
+          "lineNumber": 141
+        },
+        {
+          "caller": "print_usage",
+          "callee": "strrchr",
+          "lineNumber": 148
+        },
+        {
+          "caller": "print_usage",
+          "callee": "fprintf",
+          "lineNumber": 149
+        },
+        {
+          "caller": "print_usage",
+          "callee": "fprintf",
+          "lineNumber": 150
+        },
+        {
+          "caller": "print_usage",
+          "callee": "fprintf",
+          "lineNumber": 166
+        },
+        {
+          "caller": "print_usage",
+          "callee": "fprintf",
+          "lineNumber": 171
+        },
+        {
+          "caller": "print_usage",
+          "callee": "fprintf",
+          "lineNumber": 177
+        },
+        {
+          "caller": "print_usage",
+          "callee": "fprintf",
+          "lineNumber": 185
+        },
+        {
+          "caller": "main",
+          "callee": "getopt_long",
+          "lineNumber": 230
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 233
+        },
+        {
+          "caller": "main",
+          "callee": "exit",
+          "lineNumber": 234
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 237
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 238
+        },
+        {
+          "caller": "main",
+          "callee": "free",
+          "lineNumber": 242
+        },
+        {
+          "caller": "main",
+          "callee": "strdup",
+          "lineNumber": 243
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 254
+        },
+        {
+          "caller": "main",
+          "callee": "plist_read_from_file",
+          "lineNumber": 259
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 261
+        },
+        {
+          "caller": "main",
+          "callee": "plist_from_json",
+          "lineNumber": 268
+        },
+        {
+          "caller": "main",
+          "callee": "strlen",
+          "lineNumber": 268
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 269
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 276
+        },
+        {
+          "caller": "main",
+          "callee": "idevice_set_debug_level",
+          "lineNumber": 283
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 286
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 290
+        },
+        {
+          "caller": "main",
+          "callee": "signal",
+          "lineNumber": 297
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 301
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 302
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 308
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 309
+        },
+        {
+          "caller": "main",
+          "callee": "strcmp",
+          "lineNumber": 316
+        },
+        {
+          "caller": "main",
+          "callee": "strcmp",
+          "lineNumber": 318
+        },
+        {
+          "caller": "main",
+          "callee": "strcmp",
+          "lineNumber": 320
+        },
+        {
+          "caller": "main",
+          "callee": "strcmp",
+          "lineNumber": 322
+        },
+        {
+          "caller": "main",
+          "callee": "strcmp",
+          "lineNumber": 324
+        },
+        {
+          "caller": "main",
+          "callee": "strcmp",
+          "lineNumber": 326
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 329
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 330
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 337
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 338
+        },
+        {
+          "caller": "main",
+          "callee": "userpref_read_system_buid",
+          "lineNumber": 347
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 349
+        },
+        {
+          "caller": "main",
+          "callee": "free",
+          "lineNumber": 351
+        },
+        {
+          "caller": "main",
+          "callee": "userpref_get_paired_udids",
+          "lineNumber": 361
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 363
+        },
+        {
+          "caller": "main",
+          "callee": "free",
+          "lineNumber": 364
+        },
+        {
+          "caller": "main",
+          "callee": "free",
+          "lineNumber": 366
+        },
+        {
+          "caller": "main",
+          "callee": "idevice_new_with_options",
+          "lineNumber": 371
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 374
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 376
+        },
+        {
+          "caller": "main",
+          "callee": "idevice_get_udid",
+          "lineNumber": 382
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 384
+        },
+        {
+          "caller": "main",
+          "callee": "userpref_read_pair_record",
+          "lineNumber": 394
+        },
+        {
+          "caller": "main",
+          "callee": "pair_record_get_host_id",
+          "lineNumber": 395
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 397
+        },
+        {
+          "caller": "main",
+          "callee": "free",
+          "lineNumber": 399
+        },
+        {
+          "caller": "main",
+          "callee": "plist_free",
+          "lineNumber": 400
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_client_new",
+          "lineNumber": 406
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 408
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_query_type",
+          "lineNumber": 415
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 417
+        },
+        {
+          "caller": "main",
+          "callee": "strcmp",
+          "lineNumber": 421
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 422
+        },
+        {
+          "caller": "main",
+          "callee": "free",
+          "lineNumber": 424
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_cu_pairing_create",
+          "lineNumber": 432
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_pair_cu",
+          "lineNumber": 434
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_pair",
+          "lineNumber": 439
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 442
+        },
+        {
+          "caller": "main",
+          "callee": "print_error_message",
+          "lineNumber": 445
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_client_free",
+          "lineNumber": 450
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_client_new_with_handshake",
+          "lineNumber": 452
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 454
+        },
+        {
+          "caller": "main",
+          "callee": "print_error_message",
+          "lineNumber": 457
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_unpair",
+          "lineNumber": 462
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 464
+        },
+        {
+          "caller": "main",
+          "callee": "print_error_message",
+          "lineNumber": 467
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_client_free",
+          "lineNumber": 473
+        },
+        {
+          "caller": "main",
+          "callee": "idevice_free",
+          "lineNumber": 474
+        },
+        {
+          "caller": "main",
+          "callee": "free",
+          "lineNumber": 475
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 3,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/ideviceprovision",
+      "language": "unknown",
+      "fileCategory": "code",
+      "totalLines": 248,
+      "nonEmptyLines": 244,
+      "metrics": {}
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/ideviceprovision-ideviceprovision.o",
+      "language": "o",
+      "fileCategory": "code",
+      "totalLines": 279,
+      "nonEmptyLines": 276,
+      "metrics": {}
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/ideviceprovision.c",
+      "language": "c",
+      "fileCategory": "code",
+      "totalLines": 689,
+      "nonEmptyLines": 638,
+      "functions": [
+        {
+          "name": "print_usage",
+          "startLine": 50,
+          "endLine": 84,
+          "params": [
+            "argc",
+            "argv",
+            "is_error"
+          ]
+        },
+        {
+          "name": "asn1_next_item",
+          "startLine": 100,
+          "endLine": 108,
+          "params": [
+            "p"
+          ]
+        },
+        {
+          "name": "asn1_item_get_size",
+          "startLine": 110,
+          "endLine": 138,
+          "params": [
+            "p"
+          ]
+        },
+        {
+          "name": "asn1_skip_item",
+          "startLine": 140,
+          "endLine": 145,
+          "params": [
+            "p"
+          ]
+        },
+        {
+          "name": "profile_get_embedded_plist",
+          "startLine": 147,
+          "endLine": 243,
+          "params": [
+            "profile"
+          ]
+        },
+        {
+          "name": "profile_read_from_file",
+          "startLine": 245,
+          "endLine": 289,
+          "params": [
+            "path",
+            "profile_data",
+            "profile_size"
+          ]
+        },
+        {
+          "name": "main",
+          "startLine": 291,
+          "endLine": 688,
+          "params": [
+            "argc",
+            "argv"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "main",
+          "line": 291,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "print_usage",
+          "callee": "strrchr",
+          "lineNumber": 52
+        },
+        {
+          "caller": "print_usage",
+          "callee": "fprintf",
+          "lineNumber": 53
+        },
+        {
+          "caller": "print_usage",
+          "callee": "fprintf",
+          "lineNumber": 54
+        },
+        {
+          "caller": "asn1_item_get_size",
+          "callee": "ntohs",
+          "lineNumber": 120
+        },
+        {
+          "caller": "asn1_item_get_size",
+          "callee": "ntohl",
+          "lineNumber": 124
+        },
+        {
+          "caller": "asn1_item_get_size",
+          "callee": "ntohl",
+          "lineNumber": 128
+        },
+        {
+          "caller": "asn1_item_get_size",
+          "callee": "fprintf",
+          "lineNumber": 131
+        },
+        {
+          "caller": "asn1_skip_item",
+          "callee": "asn1_item_get_size",
+          "lineNumber": 142
+        },
+        {
+          "caller": "profile_get_embedded_plist",
+          "callee": "plist_get_node_type",
+          "lineNumber": 149
+        },
+        {
+          "caller": "profile_get_embedded_plist",
+          "callee": "fprintf",
+          "lineNumber": 150
+        },
+        {
+          "caller": "profile_get_embedded_plist",
+          "callee": "plist_get_data_val",
+          "lineNumber": 155
+        },
+        {
+          "caller": "profile_get_embedded_plist",
+          "callee": "fprintf",
+          "lineNumber": 157
+        },
+        {
+          "caller": "profile_get_embedded_plist",
+          "callee": "free",
+          "lineNumber": 164
+        },
+        {
+          "caller": "profile_get_embedded_plist",
+          "callee": "fprintf",
+          "lineNumber": 165
+        },
+        {
+          "caller": "profile_get_embedded_plist",
+          "callee": "asn1_item_get_size",
+          "lineNumber": 168
+        },
+        {
+          "caller": "profile_get_embedded_plist",
+          "callee": "free",
+          "lineNumber": 176
+        },
+        {
+          "caller": "profile_get_embedded_plist",
+          "callee": "fprintf",
+          "lineNumber": 177
+        },
+        {
+          "caller": "profile_get_embedded_plist",
+          "callee": "asn1_next_item",
+          "lineNumber": 180
+        },
+        {
+          "caller": "profile_get_embedded_plist",
+          "callee": "free",
+          "lineNumber": 183
+        },
+        {
+          "caller": "profile_get_embedded_plist",
+          "callee": "fprintf",
+          "lineNumber": 184
+        },
+        {
+          "caller": "profile_get_embedded_plist",
+          "callee": "asn1_skip_item",
+          "lineNumber": 187
+        },
+        {
+          "caller": "profile_get_embedded_plist",
+          "callee": "free",
+          "lineNumber": 190
+        },
+        {
+          "caller": "profile_get_embedded_plist",
+          "callee": "fprintf",
+          "lineNumber": 191
+        },
+        {
+          "caller": "profile_get_embedded_plist",
+          "callee": "asn1_next_item",
+          "lineNumber": 194
+        },
+        {
+          "caller": "profile_get_embedded_plist",
+          "callee": "free",
+          "lineNumber": 197
+        },
+        {
+          "caller": "profile_get_embedded_plist",
+          "callee": "fprintf",
+          "lineNumber": 198
+        },
+        {
+          "caller": "profile_get_embedded_plist",
+          "callee": "asn1_next_item",
+          "lineNumber": 201
+        },
+        {
+          "caller": "profile_get_embedded_plist",
+          "callee": "asn1_skip_item",
+          "lineNumber": 206
+        },
+        {
+          "caller": "profile_get_embedded_plist",
+          "callee": "free",
+          "lineNumber": 210
+        },
+        {
+          "caller": "profile_get_embedded_plist",
+          "callee": "fprintf",
+          "lineNumber": 211
+        },
+        {
+          "caller": "profile_get_embedded_plist",
+          "callee": "asn1_next_item",
+          "lineNumber": 214
+        },
+        {
+          "caller": "profile_get_embedded_plist",
+          "callee": "free",
+          "lineNumber": 217
+        },
+        {
+          "caller": "profile_get_embedded_plist",
+          "callee": "fprintf",
+          "lineNumber": 218
+        },
+        {
+          "caller": "profile_get_embedded_plist",
+          "callee": "asn1_skip_item",
+          "lineNumber": 221
+        },
+        {
+          "caller": "profile_get_embedded_plist",
+          "callee": "free",
+          "lineNumber": 224
+        },
+        {
+          "caller": "profile_get_embedded_plist",
+          "callee": "fprintf",
+          "lineNumber": 225
+        },
+        {
+          "caller": "profile_get_embedded_plist",
+          "callee": "asn1_next_item",
+          "lineNumber": 228
+        },
+        {
+          "caller": "profile_get_embedded_plist",
+          "callee": "free",
+          "lineNumber": 231
+        },
+        {
+          "caller": "profile_get_embedded_plist",
+          "callee": "fprintf",
+          "lineNumber": 232
+        },
+        {
+          "caller": "profile_get_embedded_plist",
+          "callee": "asn1_item_get_size",
+          "lineNumber": 235
+        },
+        {
+          "caller": "profile_get_embedded_plist",
+          "callee": "asn1_next_item",
+          "lineNumber": 236
+        },
+        {
+          "caller": "profile_get_embedded_plist",
+          "callee": "plist_from_xml",
+          "lineNumber": 239
+        },
+        {
+          "caller": "profile_get_embedded_plist",
+          "callee": "free",
+          "lineNumber": 240
+        },
+        {
+          "caller": "profile_read_from_file",
+          "callee": "fopen",
+          "lineNumber": 247
+        },
+        {
+          "caller": "profile_read_from_file",
+          "callee": "fprintf",
+          "lineNumber": 249
+        },
+        {
+          "caller": "profile_read_from_file",
+          "callee": "fseek",
+          "lineNumber": 252
+        },
+        {
+          "caller": "profile_read_from_file",
+          "callee": "ftell",
+          "lineNumber": 253
+        },
+        {
+          "caller": "profile_read_from_file",
+          "callee": "fseek",
+          "lineNumber": 254
+        },
+        {
+          "caller": "profile_read_from_file",
+          "callee": "fprintf",
+          "lineNumber": 257
+        },
+        {
+          "caller": "profile_read_from_file",
+          "callee": "fclose",
+          "lineNumber": 258
+        },
+        {
+          "caller": "profile_read_from_file",
+          "callee": "malloc",
+          "lineNumber": 262
+        },
+        {
+          "caller": "profile_read_from_file",
+          "callee": "fprintf",
+          "lineNumber": 264
+        },
+        {
+          "caller": "profile_read_from_file",
+          "callee": "fclose",
+          "lineNumber": 265
+        },
+        {
+          "caller": "profile_read_from_file",
+          "callee": "fread",
+          "lineNumber": 271
+        },
+        {
+          "caller": "profile_read_from_file",
+          "callee": "fclose",
+          "lineNumber": 277
+        },
+        {
+          "caller": "profile_read_from_file",
+          "callee": "free",
+          "lineNumber": 280
+        },
+        {
+          "caller": "profile_read_from_file",
+          "callee": "fprintf",
+          "lineNumber": 281
+        },
+        {
+          "caller": "main",
+          "callee": "signal",
+          "lineNumber": 318
+        },
+        {
+          "caller": "main",
+          "callee": "getopt_long",
+          "lineNumber": 321
+        },
+        {
+          "caller": "main",
+          "callee": "idevice_set_debug_level",
+          "lineNumber": 324
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 328
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 329
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 338
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 341
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 347
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 355
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 356
+        },
+        {
+          "caller": "main",
+          "callee": "strcmp",
+          "lineNumber": 361
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 365
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 366
+        },
+        {
+          "caller": "main",
+          "callee": "strcmp",
+          "lineNumber": 371
+        },
+        {
+          "caller": "main",
+          "callee": "strcmp",
+          "lineNumber": 374
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 378
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 379
+        },
+        {
+          "caller": "main",
+          "callee": "strlen",
+          "lineNumber": 384
+        },
+        {
+          "caller": "main",
+          "callee": "strcmp",
+          "lineNumber": 388
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 392
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 393
+        },
+        {
+          "caller": "main",
+          "callee": "strcmp",
+          "lineNumber": 398
+        },
+        {
+          "caller": "main",
+          "callee": "strcmp",
+          "lineNumber": 401
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 405
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 406
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 412
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 413
+        },
+        {
+          "caller": "main",
+          "callee": "profile_read_from_file",
+          "lineNumber": 420
+        },
+        {
+          "caller": "main",
+          "callee": "plist_new_data",
+          "lineNumber": 423
+        },
+        {
+          "caller": "main",
+          "callee": "profile_get_embedded_plist",
+          "lineNumber": 424
+        },
+        {
+          "caller": "main",
+          "callee": "plist_free",
+          "lineNumber": 425
+        },
+        {
+          "caller": "main",
+          "callee": "free",
+          "lineNumber": 426
+        },
+        {
+          "caller": "main",
+          "callee": "plist_to_xml",
+          "lineNumber": 432
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 434
+        },
+        {
+          "caller": "main",
+          "callee": "free",
+          "lineNumber": 435
+        },
+        {
+          "caller": "main",
+          "callee": "plist_get_node_type",
+          "lineNumber": 438
+        },
+        {
+          "caller": "main",
+          "callee": "plist_write_to_stream",
+          "lineNumber": 439
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 441
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 446
+        },
+        {
+          "caller": "main",
+          "callee": "plist_free",
+          "lineNumber": 448
+        },
+        {
+          "caller": "main",
+          "callee": "stat",
+          "lineNumber": 456
+        },
+        {
+          "caller": "main",
+          "callee": "S_ISDIR",
+          "lineNumber": 456
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 457
+        },
+        {
+          "caller": "main",
+          "callee": "idevice_new_with_options",
+          "lineNumber": 462
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 465
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 467
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_client_new_with_handshake",
+          "lineNumber": 472
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 473
+        },
+        {
+          "caller": "main",
+          "callee": "idevice_free",
+          "lineNumber": 474
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_get_value",
+          "lineNumber": 480
+        },
+        {
+          "caller": "main",
+          "callee": "plist_get_node_type",
+          "lineNumber": 481
+        },
+        {
+          "caller": "main",
+          "callee": "plist_get_string_val",
+          "lineNumber": 482
+        },
+        {
+          "caller": "main",
+          "callee": "plist_free",
+          "lineNumber": 484
+        },
+        {
+          "caller": "main",
+          "callee": "sscanf",
+          "lineNumber": 489
+        },
+        {
+          "caller": "main",
+          "callee": "free",
+          "lineNumber": 490
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 493
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_client_free",
+          "lineNumber": 494
+        },
+        {
+          "caller": "main",
+          "callee": "idevice_free",
+          "lineNumber": 495
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_start_service",
+          "lineNumber": 500
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 502
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_strerror",
+          "lineNumber": 502
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_client_free",
+          "lineNumber": 503
+        },
+        {
+          "caller": "main",
+          "callee": "idevice_free",
+          "lineNumber": 504
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_client_free",
+          "lineNumber": 507
+        },
+        {
+          "caller": "main",
+          "callee": "misagent_client_new",
+          "lineNumber": 511
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 512
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_service_descriptor_free",
+          "lineNumber": 514
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_client_free",
+          "lineNumber": 515
+        },
+        {
+          "caller": "main",
+          "callee": "idevice_free",
+          "lineNumber": 516
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_service_descriptor_free",
+          "lineNumber": 521
+        },
+        {
+          "caller": "main",
+          "callee": "profile_read_from_file",
+          "lineNumber": 528
+        },
+        {
+          "caller": "main",
+          "callee": "plist_new_data",
+          "lineNumber": 533
+        },
+        {
+          "caller": "main",
+          "callee": "free",
+          "lineNumber": 534
+        },
+        {
+          "caller": "main",
+          "callee": "misagent_install",
+          "lineNumber": 536
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 537
+        },
+        {
+          "caller": "main",
+          "callee": "misagent_get_status_code",
+          "lineNumber": 539
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 540
+        },
+        {
+          "caller": "main",
+          "callee": "misagent_copy",
+          "lineNumber": 550
+        },
+        {
+          "caller": "main",
+          "callee": "misagent_copy_all",
+          "lineNumber": 552
+        },
+        {
+          "caller": "main",
+          "callee": "plist_array_get_size",
+          "lineNumber": 556
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 558
+        },
+        {
+          "caller": "main",
+          "callee": "plist_array_get_item",
+          "lineNumber": 564
+        },
+        {
+          "caller": "main",
+          "callee": "profile_get_embedded_plist",
+          "lineNumber": 565
+        },
+        {
+          "caller": "main",
+          "callee": "plist_get_node_type",
+          "lineNumber": 566
+        },
+        {
+          "caller": "main",
+          "callee": "plist_dict_get_item",
+          "lineNumber": 568
+        },
+        {
+          "caller": "main",
+          "callee": "plist_get_node_type",
+          "lineNumber": 569
+        },
+        {
+          "caller": "main",
+          "callee": "plist_get_string_val",
+          "lineNumber": 570
+        },
+        {
+          "caller": "main",
+          "callee": "plist_dict_get_item",
+          "lineNumber": 572
+        },
+        {
+          "caller": "main",
+          "callee": "plist_get_node_type",
+          "lineNumber": 573
+        },
+        {
+          "caller": "main",
+          "callee": "plist_get_string_val",
+          "lineNumber": 574
+        },
+        {
+          "caller": "main",
+          "callee": "strcmp",
+          "lineNumber": 578
+        },
+        {
+          "caller": "main",
+          "callee": "free",
+          "lineNumber": 581
+        },
+        {
+          "caller": "main",
+          "callee": "free",
+          "lineNumber": 582
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 586
+        },
+        {
+          "caller": "main",
+          "callee": "sprintf",
+          "lineNumber": 590
+        },
+        {
+          "caller": "main",
+          "callee": "sprintf",
+          "lineNumber": 592
+        },
+        {
+          "caller": "main",
+          "callee": "fopen",
+          "lineNumber": 594
+        },
+        {
+          "caller": "main",
+          "callee": "plist_get_data_val",
+          "lineNumber": 598
+        },
+        {
+          "caller": "main",
+          "callee": "fwrite",
+          "lineNumber": 599
+        },
+        {
+          "caller": "main",
+          "callee": "fclose",
+          "lineNumber": 600
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 601
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 603
+        },
+        {
+          "caller": "main",
+          "callee": "strerror",
+          "lineNumber": 603
+        },
+        {
+          "caller": "main",
+          "callee": "free",
+          "lineNumber": 606
+        },
+        {
+          "caller": "main",
+          "callee": "free",
+          "lineNumber": 607
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 610
+        },
+        {
+          "caller": "main",
+          "callee": "misagent_get_status_code",
+          "lineNumber": 614
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 615
+        },
+        {
+          "caller": "main",
+          "callee": "plist_free",
+          "lineNumber": 618
+        },
+        {
+          "caller": "main",
+          "callee": "misagent_remove",
+          "lineNumber": 624
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 625
+        },
+        {
+          "caller": "main",
+          "callee": "misagent_get_status_code",
+          "lineNumber": 627
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 628
+        },
+        {
+          "caller": "main",
+          "callee": "misagent_copy",
+          "lineNumber": 635
+        },
+        {
+          "caller": "main",
+          "callee": "misagent_copy_all",
+          "lineNumber": 637
+        },
+        {
+          "caller": "main",
+          "callee": "plist_array_get_size",
+          "lineNumber": 642
+        },
+        {
+          "caller": "main",
+          "callee": "plist_array_get_item",
+          "lineNumber": 645
+        },
+        {
+          "caller": "main",
+          "callee": "profile_get_embedded_plist",
+          "lineNumber": 646
+        },
+        {
+          "caller": "main",
+          "callee": "plist_get_node_type",
+          "lineNumber": 647
+        },
+        {
+          "caller": "main",
+          "callee": "plist_dict_get_item",
+          "lineNumber": 649
+        },
+        {
+          "caller": "main",
+          "callee": "plist_get_node_type",
+          "lineNumber": 650
+        },
+        {
+          "caller": "main",
+          "callee": "plist_get_string_val",
+          "lineNumber": 651
+        },
+        {
+          "caller": "main",
+          "callee": "plist_dict_get_item",
+          "lineNumber": 653
+        },
+        {
+          "caller": "main",
+          "callee": "plist_get_node_type",
+          "lineNumber": 654
+        },
+        {
+          "caller": "main",
+          "callee": "plist_get_string_val",
+          "lineNumber": 655
+        },
+        {
+          "caller": "main",
+          "callee": "misagent_remove",
+          "lineNumber": 659
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 660
+        },
+        {
+          "caller": "main",
+          "callee": "misagent_get_status_code",
+          "lineNumber": 663
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 664
+        },
+        {
+          "caller": "main",
+          "callee": "free",
+          "lineNumber": 667
+        },
+        {
+          "caller": "main",
+          "callee": "free",
+          "lineNumber": 668
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 670
+        },
+        {
+          "caller": "main",
+          "callee": "misagent_get_status_code",
+          "lineNumber": 672
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 673
+        },
+        {
+          "caller": "main",
+          "callee": "plist_free",
+          "lineNumber": 676
+        },
+        {
+          "caller": "main",
+          "callee": "misagent_client_free",
+          "lineNumber": 683
+        },
+        {
+          "caller": "main",
+          "callee": "idevice_free",
+          "lineNumber": 685
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 7,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicescreenshot",
+      "language": "unknown",
+      "fileCategory": "code",
+      "totalLines": 177,
+      "nonEmptyLines": 173,
+      "metrics": {}
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicescreenshot-idevicescreenshot.o",
+      "language": "o",
+      "fileCategory": "code",
+      "totalLines": 110,
+      "nonEmptyLines": 106,
+      "metrics": {}
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicescreenshot.c",
+      "language": "c",
+      "fileCategory": "code",
+      "totalLines": 242,
+      "nonEmptyLines": 223,
+      "functions": [
+        {
+          "name": "get_image_filename",
+          "startLine": 43,
+          "endLine": 93,
+          "params": [
+            "imgdata",
+            "filename"
+          ]
+        },
+        {
+          "name": "print_usage",
+          "startLine": 95,
+          "endLine": 122,
+          "params": [
+            "argc",
+            "argv",
+            "is_error"
+          ]
+        },
+        {
+          "name": "main",
+          "startLine": 124,
+          "endLine": 242,
+          "params": [
+            "argc",
+            "argv"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "main",
+          "line": 124,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "get_image_filename",
+          "callee": "strrchr",
+          "lineNumber": 47
+        },
+        {
+          "caller": "get_image_filename",
+          "callee": "strchr",
+          "lineNumber": 48
+        },
+        {
+          "caller": "get_image_filename",
+          "callee": "memcmp",
+          "lineNumber": 55
+        },
+        {
+          "caller": "get_image_filename",
+          "callee": "memcmp",
+          "lineNumber": 57
+        },
+        {
+          "caller": "get_image_filename",
+          "callee": "printf",
+          "lineNumber": 60
+        },
+        {
+          "caller": "get_image_filename",
+          "callee": "malloc",
+          "lineNumber": 68
+        },
+        {
+          "caller": "get_image_filename",
+          "callee": "strlen",
+          "lineNumber": 68
+        },
+        {
+          "caller": "get_image_filename",
+          "callee": "strcpy",
+          "lineNumber": 69
+        },
+        {
+          "caller": "get_image_filename",
+          "callee": "free",
+          "lineNumber": 70
+        },
+        {
+          "caller": "get_image_filename",
+          "callee": "time",
+          "lineNumber": 73
+        },
+        {
+          "caller": "get_image_filename",
+          "callee": "malloc",
+          "lineNumber": 74
+        },
+        {
+          "caller": "get_image_filename",
+          "callee": "strftime",
+          "lineNumber": 75
+        },
+        {
+          "caller": "get_image_filename",
+          "callee": "gmtime",
+          "lineNumber": 75
+        },
+        {
+          "caller": "get_image_filename",
+          "callee": "malloc",
+          "lineNumber": 79
+        },
+        {
+          "caller": "get_image_filename",
+          "callee": "strlen",
+          "lineNumber": 79
+        },
+        {
+          "caller": "get_image_filename",
+          "callee": "strlen",
+          "lineNumber": 79
+        },
+        {
+          "caller": "get_image_filename",
+          "callee": "sprintf",
+          "lineNumber": 80
+        },
+        {
+          "caller": "get_image_filename",
+          "callee": "access",
+          "lineNumber": 83
+        },
+        {
+          "caller": "get_image_filename",
+          "callee": "sprintf",
+          "lineNumber": 87
+        },
+        {
+          "caller": "get_image_filename",
+          "callee": "free",
+          "lineNumber": 90
+        },
+        {
+          "caller": "get_image_filename",
+          "callee": "free",
+          "lineNumber": 92
+        },
+        {
+          "caller": "print_usage",
+          "callee": "strrchr",
+          "lineNumber": 97
+        },
+        {
+          "caller": "print_usage",
+          "callee": "fprintf",
+          "lineNumber": 98
+        },
+        {
+          "caller": "print_usage",
+          "callee": "fprintf",
+          "lineNumber": 99
+        },
+        {
+          "caller": "main",
+          "callee": "signal",
+          "lineNumber": 146
+        },
+        {
+          "caller": "main",
+          "callee": "getopt_long",
+          "lineNumber": 151
+        },
+        {
+          "caller": "main",
+          "callee": "idevice_set_debug_level",
+          "lineNumber": 154
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 158
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 159
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 168
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 171
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 174
+        },
+        {
+          "caller": "main",
+          "callee": "strdup",
+          "lineNumber": 182
+        },
+        {
+          "caller": "main",
+          "callee": "idevice_new_with_options",
+          "lineNumber": 185
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 187
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 189
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_client_new_with_handshake",
+          "lineNumber": 194
+        },
+        {
+          "caller": "main",
+          "callee": "idevice_free",
+          "lineNumber": 195
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 196
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_start_service",
+          "lineNumber": 200
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_client_free",
+          "lineNumber": 201
+        },
+        {
+          "caller": "main",
+          "callee": "screenshotr_client_new",
+          "lineNumber": 203
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 204
+        },
+        {
+          "caller": "main",
+          "callee": "screenshotr_take_screenshot",
+          "lineNumber": 208
+        },
+        {
+          "caller": "main",
+          "callee": "get_image_filename",
+          "lineNumber": 209
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 211
+        },
+        {
+          "caller": "main",
+          "callee": "fopen",
+          "lineNumber": 213
+        },
+        {
+          "caller": "main",
+          "callee": "fwrite",
+          "lineNumber": 215
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 216
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 219
+        },
+        {
+          "caller": "main",
+          "callee": "fclose",
+          "lineNumber": 221
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 223
+        },
+        {
+          "caller": "main",
+          "callee": "strerror",
+          "lineNumber": 223
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 227
+        },
+        {
+          "caller": "main",
+          "callee": "screenshotr_client_free",
+          "lineNumber": 229
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 232
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_strerror",
+          "lineNumber": 232
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_service_descriptor_free",
+          "lineNumber": 236
+        },
+        {
+          "caller": "main",
+          "callee": "idevice_free",
+          "lineNumber": 238
+        },
+        {
+          "caller": "main",
+          "callee": "free",
+          "lineNumber": 239
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 3,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicesetlocation",
+      "language": "unknown",
+      "fileCategory": "code",
+      "totalLines": 173,
+      "nonEmptyLines": 172,
+      "metrics": {}
+    }
+  ]
+}

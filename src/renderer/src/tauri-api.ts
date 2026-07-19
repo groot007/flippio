@@ -1,6 +1,14 @@
 // Tauri API wrapper - provides the same interface as Electron preload API
 // This allows the frontend to work unchanged between Electron and Tauri
 
+import { createDatabaseApi } from '@renderer/api/databases'
+import { createDeviceApi } from '@renderer/api/devices'
+import {
+  getUnhandledCommandSentinel,
+  installE2EController,
+  isE2EModeEnabled,
+  maybeHandleE2ECommand,
+} from '@renderer/e2e/mockRuntime'
 import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 
@@ -19,6 +27,7 @@ async function initializeEventSystem() {
 
 // Initialize events immediately
 initializeEventSystem()
+installE2EController()
 
 // Types to match the Electron API
 interface DeviceResponse<T> {
@@ -169,6 +178,7 @@ const COMMAND_MAP = {
   'device:checkAppExistence': 'device_check_app_existence',
   'device:pushIOSDbFile': 'device_push_ios_database_file',
   'device:getIOSDeviceDatabaseFiles': 'get_ios_device_database_files',
+  'device:refreshIOSDeviceDatabaseFile': 'refresh_ios_device_database_file',
   'device:cancelIOSDeviceDatabaseScan': 'cancel_ios_device_database_scan',
   'ios:getDeviceInfo': 'ios_get_device_info',
   'simulator:getIOSSimulatorDatabaseFiles': 'get_ios_simulator_database_files',
@@ -206,6 +216,21 @@ const COMMAND_MAP = {
   'dialog:saveFile': 'dialog_save_file',
   'dialog:saveTextFile': 'export_text_file',
   'common:exportLogs': 'export_logs',
+}
+
+async function invokeTauriCommand<T>(tauriCommand: string, parameters?: Record<string, unknown>): Promise<T> {
+  if (isE2EModeEnabled()) {
+    const mockedResult = await maybeHandleE2ECommand(tauriCommand, parameters ?? {})
+    if (mockedResult !== getUnhandledCommandSentinel()) {
+      return mockedResult as T
+    }
+  }
+
+  if (typeof parameters === 'undefined') {
+    return invoke<T>(tauriCommand)
+  }
+
+  return invoke<T>(tauriCommand, parameters)
 }
 
 // Helper function for commands that need to preserve Electron-style response structure
@@ -258,7 +283,7 @@ async function invokeCommandWithResponse<T>(electronCommand: string, dataFieldNa
       }
 
       console.log(`🔍 [invokeCommandWithResponse] Invoking ${tauriCommand} with parameters:`, parameters)
-      const response = await invoke<DeviceResponse<T>>(tauriCommand, parameters)
+      const response = await invokeTauriCommand<DeviceResponse<T>>(tauriCommand, parameters)
       console.log(`🔍 [invokeCommandWithResponse] Raw response from ${tauriCommand}:`, response)
 
       // Validate the response structure
@@ -305,6 +330,7 @@ function getParameterNames(command: string): string[] {
     device_get_ios_packages: ['deviceId'],
     device_get_ios_device_packages: ['deviceId'],
     get_ios_device_database_files: ['deviceId', 'packageName', 'scanRequestId'],
+    refresh_ios_device_database_file: ['deviceId', 'packageName', 'remotePath'],
     cancel_ios_device_database_scan: ['scanKey'],
     get_ios_simulator_database_files: ['deviceId', 'packageName'],
     device_check_app_existence: ['deviceId', 'packageName'],
@@ -349,119 +375,12 @@ function getParameterNames(command: string): string[] {
 
 // API object that matches the Electron preload API exactly
 export const api = {
-  // Device methods
-  // Returns all devices: Android, iOS simulators, iPhone devices, and running emulators
-  getDevices: async () => {
-    try {
-      // Fetch physical Android devices
-      const androidResp = await invokeCommandWithResponse('adb:getDevices', 'devices')
-      // Fetch physical iOS devices (simulators and physical)
-      const iosResp = await invokeCommandWithResponse('device:getIOsDevices', 'devices')
-      
-      /**
-       * Fetch iOS simulators
-       * Sometimes for some reason this command hangs and blocks the JS thread
-       * hence we use abortController to cancel it after 5 seconds 
-       */
-      let iosSimulatorsResp: { success: boolean, simulators: any[] } = { success: false, simulators: [] }
-      const abortController = new AbortController()
-      const timeoutId = setTimeout(() => abortController.abort(), 5000)
-      
-      try {
-        const result = await Promise.race([
-          invokeCommandWithResponse('getIOSSimulators', 'simulators'),
-          new Promise<{ success: boolean, simulators: any[] }>((_, reject) => {
-            abortController.signal.addEventListener('abort', () => {
-              reject(new Error('iOS Simulators fetch timed out'))
-            })
-          }),
-        ])
-        iosSimulatorsResp = { success: result.success, simulators: result.simulators || [] }
-        clearTimeout(timeoutId)
-      }
-      catch (error) {
-        clearTimeout(timeoutId)
-        console.warn('Failed to fetch iOS simulators, continuing without them:', error)
-        iosSimulatorsResp = { success: false, simulators: [] }
-      }
-
-      const allDevices = []
-
-      // Add physical Android devices with labels
-      if (androidResp.success && androidResp.devices) {
-        androidResp.devices.forEach((device: any) => {
-          allDevices.push({
-            ...device,
-            label: `${device.name || device.id}`,
-            description: device.description || 'Android',
-          })
-        })
-      }
-
-      // Add physical iOS devices with labels
-      if (iosResp.success && iosResp.devices) {
-        iosResp.devices.forEach((device: any) => {
-          allDevices.push({
-            ...device,
-            label: `${device.name || device.id}`,
-            description: 'iPhone Device',
-          })
-        })
-      }
-
-      // Add iOS simulators (only booted ones)
-      if (iosSimulatorsResp.success && iosSimulatorsResp.simulators) {
-        iosSimulatorsResp.simulators
-          .filter((simulator: any) => simulator.state === 'Booted')
-          .forEach((simulator: any) => {
-            allDevices.push({
-              id: simulator.id,
-              name: simulator.name,
-              model: simulator.name, // Add model field for Device interface compatibility
-              label: `${simulator.model}`,
-              description: 'iPhone Simulator',
-              platform: 'ios',
-              deviceType: 'simulator',
-            })
-          })
-      }
-
-      return { success: true, devices: allDevices }
-    }
-    catch (error) {
-      console.error('Error getting devices:', error)
-      return { success: false, error: (error as Error).message }
-    }
-  },
-
-  getIOSPackages: (deviceId: string) => {
-    console.log('getIOSPackages called with deviceId:', deviceId)
-    return invokeCommandWithResponse('device:getIosPackages', 'packages', deviceId)
-  },
-
-  getAndroidPackages: (deviceId: string) =>
-    invokeCommandWithResponse('adb:getPackages', 'packages', deviceId),
-
-  getIOsDevicePackages: (deviceId: string) =>
-    invokeCommandWithResponse('device:getIosDevicePackages', 'packages', deviceId),
-
-  getAndroidDatabaseFiles: (deviceId: string, applicationId: string) =>
-    invokeCommandWithResponse('adb:getAndroidDatabaseFiles', 'files', deviceId, applicationId),
-
-  checkAppExistence: (deviceId: string, applicationId: string) =>
-    invokeCommandWithResponse('device:checkAppExistence', 'exists', deviceId, applicationId),
-
-  getIOSDeviceDatabaseFiles: (deviceId: string, applicationId: string, scanRequestId?: string) =>
-    invokeCommandWithResponse('device:getIOSDeviceDatabaseFiles', 'files', deviceId, applicationId, scanRequestId),
-
-  cancelIOSDeviceDatabaseScan: (scanKey: string) =>
-    invokeCommandWithResponse('device:cancelIOSDeviceDatabaseScan', 'result', scanKey),
+  ...createDeviceApi({
+    invokeCommandWithResponse,
+  }),
 
   getIOSDeviceDatabaseFilesNew: (deviceId: string, applicationId: string) =>
     invokeCommandWithResponse('device:getIOSDeviceDatabaseFilesNew', 'files', deviceId, applicationId),
-
-  getIOSSimulatorDatabaseFiles: (deviceId: string, applicationId: string) =>
-    invokeCommandWithResponse('simulator:getIOSSimulatorDatabaseFiles', 'files', deviceId, applicationId),
 
   pushDatabaseFile: async (deviceId: string, localPath: string, packageName: string, remotePath: string, deviceType?: string) => {
     // Validate required parameters
@@ -514,110 +433,12 @@ export const api = {
     }
   },
 
-  // Database methods
-  getTables: async (dbPath?: string) => {
-    if (dbPath) {
-      validateInput(dbPath, 'dbPath', { type: 'string', maxLength: 500 })
-    }
-
-    try {
-      const response = await invoke<any>('db_get_tables', {
-        currentDbPath: dbPath,
-      })
-
-      const validatedResponse = validateDeviceResponse(response)
-
-      if (validatedResponse.success && validatedResponse.data) {
-        return {
-          success: true,
-          tables: validatedResponse.data,
-        }
-      }
-      else {
-        return { success: false, error: validatedResponse.error || 'Failed to get tables' }
-      }
-    }
-    catch (error) {
-      if (error instanceof APIValidationError) {
-        throw error
-      }
-      return { success: false, error: (error as Error).message }
-    }
-  },
-
-  openDatabase: async (filePath: string) => {
-    validateInput(filePath, 'filePath', { required: true, type: 'string', maxLength: 500 })
-
-    // Additional file path validation
-    if (!filePath.match(/\.(db|sqlite|sqlite3)$/i)) {
-      throw new APIValidationError(
-        'Invalid database file extension. Expected .db, .sqlite, or .sqlite3',
-        'INVALID_FILE_EXTENSION',
-        { filePath },
-      )
-    }
-
-    try {
-      const response = await invoke<any>('db_open', { filePath })
-      const validatedResponse = validateDeviceResponse(response)
-
-      return {
-        success: validatedResponse.success,
-        path: validatedResponse.data,
-        error: validatedResponse.error,
-      }
-    }
-    catch (error) {
-      if (error instanceof APIValidationError) {
-        throw error
-      }
-      return { success: false, error: (error as Error).message }
-    }
-  },
-
-  getTableInfo: async (tableName: string, dbPath?: string) => {
-    validateInput(tableName, 'tableName', { required: true, type: 'string', maxLength: 100 })
-    if (dbPath) {
-      validateInput(dbPath, 'dbPath', { type: 'string', maxLength: 500 })
-    }
-
-    // Validate table name for SQL injection
-    if (!/^[a-z_]\w*$/i.test(tableName)) {
-      throw new APIValidationError(
-        'Invalid table name. Must start with letter or underscore and contain only alphanumeric characters and underscores',
-        'INVALID_TABLE_NAME',
-        { tableName },
-      )
-    }
-
-    try {
-      const response = await invoke<DeviceResponse<any>>('db_get_table_data', {
-        tableName,
-        currentDbPath: dbPath,
-      })
-
-      const validatedResponse = validateDeviceResponse(response)
-
-      if (validatedResponse.success && validatedResponse.data) {
-        const tableData = validatedResponse.data as { columns: any[], rows: any[] }
-        // Transform to match Electron API structure
-        return {
-          success: true,
-          columns: tableData.columns,
-          rows: tableData.rows,
-        }
-      }
-      else {
-        return { success: false, error: validatedResponse.error || 'Failed to get table info' }
-      }
-    }
-    catch (error) {
-      if (error instanceof APIValidationError) {
-        throw error
-      }
-      return { success: false, error: (error as Error).message }
-    }
-  },
+  ...createDatabaseApi({
+    invokeCommandWithResponse,
+    invokeRaw: invokeTauriCommand,
+    validateDeviceResponse,
+    validateInput,
+  }),
 
   updateTableRow: (
     tableName: string,
@@ -681,9 +502,6 @@ export const api = {
   ) =>
     invokeCommandWithResponse('db:clearTable', 'result', tableName, dbPath, deviceId, deviceName, deviceType, packageName, appName),
 
-  switchDatabase: (filePath: string) =>
-    invokeCommandWithResponse('db:switchDatabase', 'result', filePath),
-
   // Change history methods
   getChangeHistory: async (contextKey: string, tableName?: string) => {
     console.log('🔍 [API] getChangeHistory called with:', { contextKey, tableName })
@@ -714,64 +532,6 @@ export const api = {
 
   generateCustomFileContextKey: (databasePath: string) =>
     invokeCommandWithResponse('db:generateCustomFileContextKey', 'data', databasePath),
-
-  // File dialog methods
-  openFile: async () => {
-    try {
-      const response = await invoke<any>('dialog_select_file')
-      // dialog_select_file returns DialogResult directly, not wrapped in DeviceResponse
-      const dialogResult = response as { canceled?: boolean, file_paths?: string[], file_path?: string }
-
-      return {
-        canceled: dialogResult?.canceled || false,
-        filePaths: dialogResult?.file_paths || (dialogResult?.file_path ? [dialogResult.file_path] : []),
-      }
-    }
-    catch (error) {
-      console.error('Error opening file:', error)
-      return { canceled: true, filePaths: [] }
-    }
-  },
-
-  exportFile: async (options: any) => {
-    // Validate export options
-    if (options) {
-      validateInput(options.dbFilePath, 'dbFilePath', { type: 'string', maxLength: 500 })
-      validateInput(options.defaultPath, 'defaultPath', { type: 'string', maxLength: 500 })
-
-      if (options.filters && Array.isArray(options.filters)) {
-        for (const filter of options.filters) {
-          validateInput(filter.name, 'filter.name', { type: 'string', maxLength: 100 })
-          if (filter.extensions && !Array.isArray(filter.extensions)) {
-            throw new APIValidationError(
-              'Filter extensions must be an array',
-              'INVALID_FILTER_EXTENSIONS',
-              { filter },
-            )
-          }
-        }
-      }
-    }
-
-    try {
-      // Transform camelCase to snake_case for Rust
-      const transformedOptions = {
-        db_file_path: options?.dbFilePath,
-        default_path: options?.defaultPath,
-        filters: options?.filters?.map((filter: any) => ({
-          name: filter.name,
-          extensions: filter.extensions,
-        })),
-      }
-
-      const response = await invoke<string | null>('dialog_save_file', { options: transformedOptions })
-      return response
-    }
-    catch (error) {
-      console.error('Error saving file:', error)
-      return null
-    }
-  },
 
   exportTextFile: async (options: {
     content: string
@@ -806,7 +566,7 @@ export const api = {
         })),
       }
 
-      const response = await invoke<string | null>('export_text_file', { options: transformedOptions })
+      const response = await invokeTauriCommand<string | null>('export_text_file', { options: transformedOptions })
       return response
     }
     catch (error) {
@@ -817,7 +577,7 @@ export const api = {
 
   exportLogs: async () => {
     try {
-      const response = await invoke<string | null>('export_logs')
+      const response = await invokeTauriCommand<string | null>('export_logs')
       return response
     }
     catch (error) {
@@ -840,7 +600,7 @@ export const api = {
   // Auto-updater methods
   checkForUpdates: async () => {
     try {
-      const response = await invoke<any>('check_for_updates')
+      const response = await invokeTauriCommand<any>('check_for_updates')
       return {
         success: response.success,
         updateAvailable: response.data?.available || false,
@@ -858,7 +618,7 @@ export const api = {
 
   downloadAndInstallUpdate: async () => {
     try {
-      const response = await invoke<any>('download_and_install_update')
+      const response = await invokeTauriCommand<any>('download_and_install_update')
       return {
         success: response.success,
         error: response.error,
@@ -910,7 +670,7 @@ export const api = {
         const uint8Array = new Uint8Array(arrayBuffer)
 
         // Call our Tauri command to save the dropped file content
-        const filePath = await invoke<string>('save_dropped_file', {
+        const filePath = await invokeTauriCommand<string>('save_dropped_file', {
           fileContent: Array.from(uint8Array),
           filename: file.name,
         })

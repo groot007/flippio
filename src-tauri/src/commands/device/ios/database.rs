@@ -4,7 +4,7 @@
 //! detection, pulling, and pushing of database files.
 
 use super::super::types::{DeviceResponse, DatabaseFile};
-use super::super::helpers::force_clean_temp_dir;
+use super::super::helpers::clean_temp_dir;
 use super::file_utils::{pull_ios_db_file, IosAppAccessType};
 use super::tools::get_tool_command_legacy;
 use serde::Serialize;
@@ -490,12 +490,13 @@ pub async fn get_ios_device_database_files(
     info!("Device ID: {}", device_id);
     info!("Package name: {}", package_name);
     
-    info!("Step 1: Force cleaning temporary directory to avoid stale data");
-    // Force clean temp directory before pulling new files to avoid stale data
-    if let Err(e) = force_clean_temp_dir() {
-        log::warn!("❌ Failed to force clean temp directory: {}", e);
+    info!("Step 1: Preparing temporary directory for pulled database files");
+    // Preserve active temp database files so in-flight table reads do not lose
+    // their local copy while a background rescan is still running.
+    if let Err(e) = clean_temp_dir() {
+        log::warn!("❌ Failed to prepare temp directory: {}", e);
     } else {
-        info!("✅ Successfully force cleaned temp directory before pulling new database files");
+        info!("✅ Temp directory ready for pulled database files");
     }
     
     let shell = app_handle.shell();
@@ -700,6 +701,58 @@ pub async fn get_ios_device_database_files(
         data: Some(database_files),
         error: None,
     })
+}
+
+#[tauri::command]
+pub async fn refresh_ios_device_database_file(
+    app_handle: tauri::AppHandle,
+    device_id: String,
+    package_name: String,
+    remote_path: String,
+) -> Result<DeviceResponse<DatabaseFile>, String> {
+    info!("=== REFRESH iOS DEVICE DATABASE FILE STARTED ===");
+    info!("Device ID: {}", device_id);
+    info!("Package name: {}", package_name);
+    info!("Remote path: {}", remote_path);
+
+    let filename = std::path::Path::new(&remote_path)
+        .file_name()
+        .and_then(|name| name.to_str())
+        .unwrap_or("unknown")
+        .to_string();
+    let location = location_from_remote_path(&remote_path);
+    let access_type = access_type_for_remote_path(&remote_path);
+
+    match pull_ios_db_file(
+        &app_handle,
+        &device_id,
+        &package_name,
+        &remote_path,
+        true,
+        access_type,
+    ).await {
+        Ok(local_path) => {
+            let db_file = DatabaseFile {
+                path: local_path,
+                package_name,
+                filename,
+                remote_path: Some(remote_path),
+                location,
+                device_type: "iphone-device".to_string(),
+            };
+
+            Ok(DeviceResponse {
+                success: true,
+                data: Some(db_file),
+                error: None,
+            })
+        }
+        Err(error) => Ok(DeviceResponse {
+            success: false,
+            data: None,
+            error: Some(error.to_string()),
+        }),
+    }
 }
 
 #[tauri::command]

@@ -83,8 +83,15 @@ export function useTableDataQuery(tableName: string) {
     staleTime: 0,
     gcTime: 0,
     retry: (failureCount, error) => {
-      // Retry up to 3 times for connection-related errors
-      if (failureCount < 3 && error.message.includes('no such table')) {
+      // Retry transient file/connection races during fast selection changes.
+      if (
+        failureCount < 3
+        && (
+          error.message.includes('no such table')
+          || error.message.includes('Database file does not exist')
+          || error.message.includes('Failed to open database')
+        )
+      ) {
         console.log(`🔄 Retrying table data fetch (attempt ${failureCount + 1}/3):`, error.message)
         return true
       }

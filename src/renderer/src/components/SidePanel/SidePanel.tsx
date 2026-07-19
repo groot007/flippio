@@ -25,6 +25,7 @@ export function SidePanel() {
   const { selectedDevice, selectedApplication } = useCurrentDeviceSelection()
   const { selectedDatabaseFile, selectedDatabaseTable } = useCurrentDatabaseSelection()
   const tableData = useTableData(state => state.tableData)
+  const isRefreshingTableData = useTableData(state => state.isRefreshingTableData)
   const [isLoading, setIsLoading] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [editedData, setEditedData] = useState<Record<string, any>>({})
@@ -157,6 +158,7 @@ export function SidePanel() {
                     )
                   })}
                   <Button
+                    data-testid="remove-row-button"
                     colorScheme="red"
                     variant="outline"
                     onClick={() => {
@@ -166,11 +168,13 @@ export function SidePanel() {
                     width="full"
                     mt={8}
                     mb={2}
+                    disabled={isLoading || isRefreshingTableData}
                     _hover={{ bg: 'red.50', _dark: { bg: 'red.900' } }}
                   >
                     Remove Row
                   </Button>
                   <Button
+                    data-testid="clear-table-button"
                     colorScheme="orange"
                     variant="outline"
                     onClick={() => {
@@ -179,6 +183,7 @@ export function SidePanel() {
                     size="md"
                     width="full"
                     mb={4}
+                    disabled={isLoading || isRefreshingTableData}
                     _hover={{ bg: 'orange.50', _dark: { bg: 'orange.900' } }}
                   >
                     Clear Whole Table

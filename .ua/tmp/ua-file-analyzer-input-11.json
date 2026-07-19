@@ -1,0 +1,14 @@
+{
+  "projectRoot": "/Users/mykolastanislavchuk/Home/Flippio",
+  "batchFiles": [
+    {
+      "path": "vitest.config.ts",
+      "language": "typescript",
+      "sizeLines": 77,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "vitest.config.ts": []
+  }
+}

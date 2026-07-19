@@ -28,10 +28,12 @@ export const RowEditor: React.FC<RowEditorProps> = ({
 }) => {
   const { selectedRow, setSelectedRow } = useRowEditingStore()
   const tableData = useTableData(state => state.tableData)
+  const isRefreshingTableData = useTableData(state => state.isRefreshingTableData)
   const { selectedDevice, selectedApplication } = useCurrentDeviceSelection()
   const { selectedDatabaseFile, selectedDatabaseTable } = useCurrentDatabaseSelection()
   const { refetch: refetchTable } = useTableDataQuery(selectedDatabaseTable?.name || '')
   const { refreshChangeHistory } = useChangeHistoryRefresh()
+  const isBusy = isLoading || isRefreshingTableData
 
   const startEditing = useCallback(() => {
     if (selectedRow?.rowData) {
@@ -176,9 +178,10 @@ export const RowEditor: React.FC<RowEditorProps> = ({
         {!isEditing
           ? (
               <Button
+                data-testid="edit-row-button"
                 size="sm"
                 onClick={startEditing}
-                disabled={isLoading}
+                disabled={isBusy}
               >
                 <LuPencil />
                 {' '}
@@ -189,10 +192,11 @@ export const RowEditor: React.FC<RowEditorProps> = ({
           : (
               <>
                 <Button
+                  data-testid="save-row-button"
                   colorScheme="green"
                   size="sm"
                   onClick={handleSave}
-                  disabled={isLoading}
+                  disabled={isBusy}
                 >
                   {isLoading
                     ? (
@@ -212,7 +216,7 @@ export const RowEditor: React.FC<RowEditorProps> = ({
                   size="sm"
                   colorPalette="pink"
                   onClick={cancelEditing}
-                  disabled={isLoading}
+                  disabled={isBusy}
                 >
                   Cancel
                 </Button>

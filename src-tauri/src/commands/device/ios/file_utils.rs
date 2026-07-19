@@ -25,6 +25,34 @@ impl IosAppAccessType {
     }
 }
 
+fn afcclient_output_indicates_failure(stdout: &[u8], stderr: &[u8]) -> Option<String> {
+    let stdout_text = String::from_utf8_lossy(stdout);
+    let stderr_text = String::from_utf8_lossy(stderr);
+
+    let combined = if stderr_text.trim().is_empty() {
+        stdout_text.to_string()
+    } else if stdout_text.trim().is_empty() {
+        stderr_text.to_string()
+    } else {
+        format!("{stdout_text}\n{stderr_text}")
+    };
+
+    let trimmed = combined.trim();
+    if trimmed.is_empty() {
+        return None;
+    }
+
+    let lowered = trimmed.to_ascii_lowercase();
+    if lowered.contains("failed to overwrite existing file")
+        || lowered.starts_with("error:")
+        || lowered.contains("\nerror:")
+    {
+        return Some(trimmed.to_string());
+    }
+
+    None
+}
+
 /// Pull iOS database file to local temp directory
 pub async fn pull_ios_db_file(
     app_handle: &tauri::AppHandle,
@@ -52,6 +80,18 @@ pub async fn pull_ios_db_file(
     info!("Step 3: Creating local file path");
     let local_path = temp_dir.join(&unique_filename);
     info!("✅ Local path: {}", local_path.display());
+
+    if local_path.exists() {
+        info!("Step 3a: Removing existing local temp file before pull");
+        fs::remove_file(&local_path)
+            .map_err(|e| format!("Failed to remove stale temp file {}: {}", local_path.display(), e))?;
+        let metadata_path = format!("{}.meta.json", local_path.display());
+        if let Err(e) = fs::remove_file(&metadata_path) {
+            if e.kind() != std::io::ErrorKind::NotFound {
+                return Err(format!("Failed to remove stale metadata file {}: {}", metadata_path, e).into());
+            }
+        }
+    }
     
     if is_device {
         info!("Step 4: Pulling from physical iOS device using afcclient");
@@ -87,6 +127,11 @@ pub async fn pull_ios_db_file(
         if !output.status.success() {
             let error_msg = String::from_utf8_lossy(&output.stderr);
             error!("❌ afcclient command failed: {}", error_msg);
+            return Err(format!("iOS pull failed: {}", error_msg).into());
+        }
+
+        if let Some(error_msg) = afcclient_output_indicates_failure(&output.stdout, &output.stderr) {
+            error!("❌ afcclient reported pull failure despite success status: {}", error_msg);
             return Err(format!("iOS pull failed: {}", error_msg).into());
         }
     } else {
@@ -163,4 +208,28 @@ pub async fn pull_ios_db_file(
     info!("✅ File pull completed successfully: {}", final_path);
     
     Ok(final_path)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::afcclient_output_indicates_failure;
+
+    #[test]
+    fn detects_overwrite_failure_reported_on_stdout() {
+        let result = afcclient_output_indicates_failure(
+            b"Error: Failed to overwrite existing file without '-f' option: /tmp/test.db\n",
+            b"",
+        );
+
+        assert!(result.is_some());
+    }
+
+    #[test]
+    fn ignores_normal_success_output() {
+        let result = afcclient_output_indicates_failure(b"", b"");
+        assert!(result.is_none());
+
+        let result = afcclient_output_indicates_failure(b"Transferred 1 file successfully", b"");
+        assert!(result.is_none());
+    }
 }

@@ -1,10 +1,15 @@
 import { Box, Button, HStack, Spinner } from '@chakra-ui/react'
 import { DeviceInfoModal } from '@renderer/components/common/DeviceInfoModal'
+import {
+  refreshSelectionGraph,
+  selectApplication,
+  selectDevice,
+} from '@renderer/features/layout/selectionSession'
+import { useSelectionSessionActions } from '@renderer/features/layout/useSelectionSessionActions'
 import { fetchApplicationsForDevice, useApplications } from '@renderer/hooks/useApplications'
 import { fetchDatabaseFilesForSelection } from '@renderer/hooks/useDatabaseFiles'
 import { useDevices } from '@renderer/hooks/useDevices'
-import { useCurrentDatabaseSelection, useCurrentDeviceSelection, useRecentlyUsedApps, useTableData } from '@renderer/store'
-import { useRowEditingStore } from '@renderer/store/useRowEditingStore'
+import { useCurrentDatabaseSelection, useCurrentDeviceSelection, useRecentlyUsedApps } from '@renderer/store'
 import { toaster } from '@renderer/ui/toaster'
 import { useQueryClient } from '@tanstack/react-query'
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -18,14 +23,9 @@ function AppHeader() {
   const [isVirtualDeviceModalOpen, setIsVirtualDeviceModalOpen] = useState(false)
 
   const selectedDevice = useCurrentDeviceSelection(state => state.selectedDevice)
-  const setSelectedDevice = useCurrentDeviceSelection(state => state.setSelectedDevice)
   const selectedApplication = useCurrentDeviceSelection(state => state.selectedApplication)
-  const setSelectedApplication = useCurrentDeviceSelection(state => state.setSelectedApplication)
   const selectedDatabaseFile = useCurrentDatabaseSelection(state => state.selectedDatabaseFile)
-  const setSelectedDatabaseFile = useCurrentDatabaseSelection(state => state.setSelectedDatabaseFile)
-  const setSelectedDatabaseTable = useCurrentDatabaseSelection(state => state.setSelectedDatabaseTable)
-  const clearTableData = useTableData(state => state.clearTableData)
-  const setSelectedRow = useRowEditingStore(state => state.setSelectedRow)
+  const selectionActions = useSelectionSessionActions()
   
   const { addRecentApp, getRecentAppsForDevice } = useRecentlyUsedApps()
   const queryClient = useQueryClient()
@@ -142,25 +142,22 @@ function AppHeader() {
 
     const matchedDevice = devicesList.find(device => device.id === selectedDevice.id)
 
-    if (!matchedDevice) {
-      setSelectedApplication(null)
-      setSelectedDevice(null)
-      setSelectedDatabaseTable(null)
-      clearTableData()
-      setSelectedRow(null)
-      
-      // Only clear database file if it's not a custom file (desktop type)
-      if (selectedDatabaseFile?.deviceType !== 'desktop') {
-        setSelectedDatabaseFile(null)
-      }
-
+    // Physical iPhones can briefly disappear from tool output while package
+    // commands are in flight. Keep the current selection until an explicit
+    // manual refresh confirms it is gone.
+    if (!matchedDevice && selectedDevice.deviceType === 'iphone-device') {
       return
     }
 
-    if (matchedDevice !== selectedDevice) {
-      setSelectedDevice(matchedDevice)
-    }
-  }, [devicesList, selectedDevice, selectedDatabaseFile, setSelectedApplication, setSelectedDevice, setSelectedDatabaseFile, setSelectedDatabaseTable])
+    refreshSelectionGraph(
+      {
+        selectedDevice,
+        matchedDevice,
+        preserveDatabaseFile: selectedDatabaseFile?.deviceType === 'desktop',
+      },
+      selectionActions,
+    )
+  }, [devicesList, selectedDatabaseFile, selectedDevice, selectionActions])
 
   useEffect(() => {
     if (!selectedApplication) {
@@ -171,21 +168,19 @@ function AppHeader() {
       return
     }
 
-    const matchedApplication = applicationsList.find(app => app.bundleId === selectedApplication.bundleId)
-
-    if (!matchedApplication) {
-      setSelectedApplication(null)
-      setSelectedDatabaseTable(null)
-      setSelectedDatabaseFile(null)
-      clearTableData()
-      setSelectedRow(null)
+    if (isApplicationsError) {
       return
     }
 
-    if (matchedApplication !== selectedApplication) {
-      setSelectedApplication(matchedApplication)
-    }
-  }, [applicationsList, isLoading, selectedApplication, setSelectedApplication, setSelectedDatabaseFile, setSelectedDatabaseTable])
+    const matchedApplication = applicationsList.find(app => app.bundleId === selectedApplication.bundleId)
+    refreshSelectionGraph(
+      {
+        selectedApplication,
+        matchedApplication,
+      },
+      selectionActions,
+    )
+  }, [applicationsList, isApplicationsError, isLoading, selectedApplication, selectionActions])
 
   const handleRefreshDevices = useCallback(async () => {
     try {
@@ -199,20 +194,33 @@ function AppHeader() {
         ? refreshedDevices.find(device => device.id === selectedDevice.id) ?? null
         : null
 
+      refreshSelectionGraph(
+        {
+          selectedDevice,
+          matchedDevice,
+          preserveDatabaseFile: selectedDatabaseFile?.deviceType === 'desktop',
+        },
+        selectionActions,
+      )
+
       if (selectedDevice && !matchedDevice) {
-        setSelectedDevice(null)
-        setSelectedApplication(null)
-        setSelectedDatabaseTable(null)
-        clearTableData()
-        setSelectedRow(null)
-        if (selectedDatabaseFile?.deviceType !== 'desktop') {
-          setSelectedDatabaseFile(null)
-        }
+        toaster.create({
+          title: 'Success',
+          description: 'Device list refreshed',
+          type: 'success',
+          duration: 3000,
+          meta: {
+            closable: true,
+          },
+        })
+        console.info('CriticalPath: device refresh completed', {
+          deviceId: matchedDevice?.id ?? null,
+          bundleId: selectedApplication?.bundleId ?? null,
+        })
+        return
       }
 
       if (matchedDevice) {
-        setSelectedDevice(matchedDevice)
-
         const applications = await queryClient.fetchQuery({
           queryKey: ['applications', matchedDevice.id, matchedDevice.deviceType],
           queryFn: () => fetchApplicationsForDevice(matchedDevice),
@@ -222,37 +230,30 @@ function AppHeader() {
         if (selectedApplication) {
           const matchedApplication = applications.find(app => app.bundleId === selectedApplication.bundleId) ?? null
 
-          if (matchedApplication) {
-            setSelectedApplication(matchedApplication)
+          refreshSelectionGraph(
+            {
+              selectedApplication,
+              matchedApplication,
+            },
+            selectionActions,
+          )
 
-            if (selectedDatabaseFile?.deviceType !== 'desktop') {
-              const databaseFiles = await queryClient.fetchQuery({
-                queryKey: ['databaseFiles', matchedDevice.id, matchedApplication.bundleId],
-                queryFn: () => fetchDatabaseFilesForSelection(matchedDevice, matchedApplication),
-                staleTime: 0,
-              })
+          if (matchedApplication && selectedDatabaseFile?.deviceType !== 'desktop' && selectedDatabaseFile) {
+            const databaseFiles = await queryClient.fetchQuery({
+              queryKey: ['databaseFiles', matchedDevice.id, matchedApplication.bundleId],
+              queryFn: () => fetchDatabaseFilesForSelection(matchedDevice, matchedApplication),
+              staleTime: 0,
+            })
 
-              if (selectedDatabaseFile) {
-                const matchedDatabaseFile = databaseFiles.find(file => file.path === selectedDatabaseFile.path) ?? null
+            const matchedDatabaseFile = databaseFiles.find(file => file.path === selectedDatabaseFile.path) ?? null
 
-                if (matchedDatabaseFile) {
-                  setSelectedDatabaseFile(matchedDatabaseFile)
-                }
-                else {
-                  setSelectedDatabaseFile(null)
-                  setSelectedDatabaseTable(null)
-                  clearTableData()
-                  setSelectedRow(null)
-                }
-              }
-            }
-          }
-          else {
-            setSelectedApplication(null)
-            setSelectedDatabaseFile(null)
-            setSelectedDatabaseTable(null)
-            clearTableData()
-            setSelectedRow(null)
+            refreshSelectionGraph(
+              {
+                selectedDatabaseFile,
+                matchedDatabaseFile,
+              },
+              selectionActions,
+            )
           }
         }
       }
@@ -289,10 +290,7 @@ function AppHeader() {
     selectedApplication,
     selectedDatabaseFile,
     selectedDevice,
-    setSelectedApplication,
-    setSelectedDatabaseFile,
-    setSelectedDatabaseTable,
-    setSelectedDevice,
+    selectionActions,
   ])
 
   const devicesSelectOptions = useMemo(() =>
@@ -360,7 +358,10 @@ function AppHeader() {
       return null
     }
 
-    return devicesSelectOptions.find(device => device.id === selectedDevice.id) ?? null
+    return devicesSelectOptions.find(device => device.id === selectedDevice.id) ?? {
+      ...selectedDevice,
+      label: selectedDevice.label || selectedDevice.name || selectedDevice.id,
+    }
   }, [devicesSelectOptions, selectedDevice])
 
   const selectedApplicationOption = useMemo(() => {
@@ -377,13 +378,11 @@ function AppHeader() {
       deviceType: value?.deviceType ?? null,
       deviceName: value?.name ?? value?.label ?? null,
     })
-    setSelectedDevice(value)
-    setSelectedApplication(null)
-    setSelectedDatabaseFile(null)
-    setSelectedDatabaseTable(null)
-    clearTableData()
-    setSelectedRow(null)
-  }, [clearTableData, setSelectedApplication, setSelectedDatabaseFile, setSelectedDatabaseTable, setSelectedDevice, setSelectedRow])
+    selectDevice({
+      device: value,
+      actions: selectionActions,
+    })
+  }, [selectionActions])
 
   const handlePackageChange = useCallback((value) => {
     console.info('CriticalPath: app selected', {
@@ -391,17 +390,13 @@ function AppHeader() {
       bundleId: value?.bundleId ?? null,
       appName: value?.name ?? null,
     })
-    setSelectedDatabaseFile(null)
-    setSelectedDatabaseTable(null)
-    setSelectedApplication(value)
-    clearTableData()
-    setSelectedRow(null)
-    
-    // Add to recently used apps if we have a device and app selected
-    if (selectedDevice && value) {
-      addRecentApp(value, selectedDevice.id, selectedDevice.name || selectedDevice.id)
-    }
-  }, [addRecentApp, clearTableData, selectedDevice, setSelectedApplication, setSelectedDatabaseFile, setSelectedDatabaseTable, setSelectedRow])
+    selectApplication({
+      application: value,
+      currentDevice: selectedDevice,
+      addRecentApp,
+      actions: selectionActions,
+    })
+  }, [addRecentApp, selectedDevice, selectionActions])
 
   const handleOpenVirtualDeviceModal = useCallback(() => {
     setIsVirtualDeviceModalOpen(true)
@@ -431,6 +426,7 @@ function AppHeader() {
           {/* Device and App Selection */}
           <HStack gap={4} alignItems="center" flex={1}>
             <FLSelect
+              testId="device-select"
               options={devicesSelectOptions}
               label="Select Device"
               value={selectedDeviceOption}
@@ -440,6 +436,7 @@ function AppHeader() {
               noOptionsMessage="No devices found. Connect a device or launch an emulator/simulator"
             />
             <FLSelect
+              testId="app-select"
               options={applicationSelectOptions}
               label="Select App"
               menuListWidth={300}

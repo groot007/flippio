@@ -1,0 +1,56 @@
+name: E2E
+
+on:
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: e2e-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tauri-e2e:
+    name: Tauri E2E
+    runs-on: macos-latest
+    timeout-minutes: 25
+
+    env:
+      CI: true
+      NODE_ENV: test
+      VITE_E2E_MODE: 'true'
+      WDIO_LOG_LEVEL: error
+      RUST_BACKTRACE: 1
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: yarn
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust build artifacts
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: |
+            src-tauri -> target
+
+      - name: Install JavaScript dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Install tauri-driver
+        run: cargo install tauri-driver
+
+      - name: Build renderer assets
+        run: yarn build:renderer
+
+      - name: Build Tauri debug binary
+        run: cargo build --manifest-path src-tauri/Cargo.toml
+
+      - name: Run mocked WDIO E2E suite
+        run: yarn test:e2e:clean

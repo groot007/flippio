@@ -1,0 +1,1197 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 40,
+  "filesSkipped": [],
+  "results": [
+    {
+      "path": "example_app/android/app/src/main/res/mipmap-xxhdpi/ic_launcher_foreground.webp",
+      "language": "webp",
+      "fileCategory": "code",
+      "totalLines": 75,
+      "nonEmptyLines": 75,
+      "metrics": {}
+    },
+    {
+      "path": "example_app/android/app/src/main/res/mipmap-xxhdpi/ic_launcher_round.webp",
+      "language": "webp",
+      "fileCategory": "code",
+      "totalLines": 34,
+      "nonEmptyLines": 34,
+      "metrics": {}
+    },
+    {
+      "path": "example_app/android/app/src/main/res/mipmap-xxhdpi/ic_launcher.webp",
+      "language": "webp",
+      "fileCategory": "code",
+      "totalLines": 17,
+      "nonEmptyLines": 17,
+      "metrics": {}
+    },
+    {
+      "path": "example_app/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_foreground.webp",
+      "language": "webp",
+      "fileCategory": "code",
+      "totalLines": 122,
+      "nonEmptyLines": 122,
+      "metrics": {}
+    },
+    {
+      "path": "example_app/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.webp",
+      "language": "webp",
+      "fileCategory": "code",
+      "totalLines": 51,
+      "nonEmptyLines": 51,
+      "metrics": {}
+    },
+    {
+      "path": "example_app/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.webp",
+      "language": "webp",
+      "fileCategory": "code",
+      "totalLines": 56,
+      "nonEmptyLines": 56,
+      "metrics": {}
+    },
+    {
+      "path": "example_app/android/app/src/main/res/values-night/colors.xml",
+      "language": "xml",
+      "fileCategory": "config",
+      "totalLines": 1,
+      "nonEmptyLines": 1,
+      "metrics": {}
+    },
+    {
+      "path": "example_app/android/app/src/main/res/values/colors.xml",
+      "language": "xml",
+      "fileCategory": "config",
+      "totalLines": 6,
+      "nonEmptyLines": 6,
+      "metrics": {}
+    },
+    {
+      "path": "example_app/android/app/src/main/res/values/strings.xml",
+      "language": "xml",
+      "fileCategory": "config",
+      "totalLines": 6,
+      "nonEmptyLines": 6,
+      "metrics": {}
+    },
+    {
+      "path": "example_app/android/app/src/main/res/values/styles.xml",
+      "language": "xml",
+      "fileCategory": "config",
+      "totalLines": 19,
+      "nonEmptyLines": 19,
+      "metrics": {}
+    },
+    {
+      "path": "example_app/android/build.gradle",
+      "language": "gradle",
+      "fileCategory": "config",
+      "totalLines": 41,
+      "nonEmptyLines": 36,
+      "metrics": {}
+    },
+    {
+      "path": "example_app/android/gradle.properties",
+      "language": "properties",
+      "fileCategory": "config",
+      "totalLines": 56,
+      "nonEmptyLines": 44,
+      "metrics": {}
+    },
+    {
+      "path": "example_app/android/gradle/wrapper/gradle-wrapper.jar",
+      "language": "jar",
+      "fileCategory": "code",
+      "totalLines": 152,
+      "nonEmptyLines": 151,
+      "metrics": {}
+    },
+    {
+      "path": "example_app/android/gradle/wrapper/gradle-wrapper.properties",
+      "language": "properties",
+      "fileCategory": "config",
+      "totalLines": 7,
+      "nonEmptyLines": 7,
+      "metrics": {}
+    },
+    {
+      "path": "example_app/android/gradlew",
+      "language": "unknown",
+      "fileCategory": "code",
+      "totalLines": 252,
+      "nonEmptyLines": 224,
+      "metrics": {}
+    },
+    {
+      "path": "example_app/android/gradlew.bat",
+      "language": "batch",
+      "fileCategory": "script",
+      "totalLines": 94,
+      "nonEmptyLines": 73,
+      "metrics": {}
+    },
+    {
+      "path": "example_app/android/settings.gradle",
+      "language": "gradle",
+      "fileCategory": "config",
+      "totalLines": 38,
+      "nonEmptyLines": 33,
+      "metrics": {}
+    },
+    {
+      "path": "example_app/app.json",
+      "language": "json",
+      "fileCategory": "config",
+      "totalLines": 45,
+      "nonEmptyLines": 45,
+      "sections": [
+        {
+          "heading": "expo",
+          "level": 1,
+          "line": 2
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 1
+      }
+    },
+    {
+      "path": "example_app/app/_layout.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 64,
+      "nonEmptyLines": 55,
+      "functions": [
+        {
+          "name": "RootLayout",
+          "startLine": 17,
+          "endLine": 64,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "RootLayout",
+          "line": 17,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "RootLayout",
+          "callee": "useColorScheme",
+          "lineNumber": 18
+        },
+        {
+          "caller": "RootLayout",
+          "callee": "useFonts",
+          "lineNumber": 19
+        },
+        {
+          "caller": "RootLayout",
+          "callee": "require",
+          "lineNumber": 22
+        },
+        {
+          "caller": "RootLayout",
+          "callee": "useState",
+          "lineNumber": 24
+        },
+        {
+          "caller": "RootLayout",
+          "callee": "useEffect",
+          "lineNumber": 26
+        },
+        {
+          "caller": "prepare",
+          "callee": "setAppReady",
+          "lineNumber": 33
+        },
+        {
+          "caller": "prepare",
+          "callee": "SplashScreen.hideAsync",
+          "lineNumber": 34
+        },
+        {
+          "caller": "prepare",
+          "callee": "console.warn",
+          "lineNumber": 37
+        },
+        {
+          "caller": "prepare",
+          "callee": "setAppReady",
+          "lineNumber": 38
+        },
+        {
+          "caller": "RootLayout",
+          "callee": "prepare",
+          "lineNumber": 42
+        },
+        {
+          "caller": "RootLayout",
+          "callee": "useEffect",
+          "lineNumber": 45
+        },
+        {
+          "caller": "RootLayout",
+          "callee": "initDatabase().catch",
+          "lineNumber": 46
+        },
+        {
+          "caller": "RootLayout",
+          "callee": "initDatabase",
+          "lineNumber": 46
+        },
+        {
+          "caller": "RootLayout",
+          "callee": "console.warn",
+          "lineNumber": 47
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "example_app/app/(tabs)/_layout.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 46,
+      "nonEmptyLines": 43,
+      "functions": [
+        {
+          "name": "TabLayout",
+          "startLine": 11,
+          "endLine": 46,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "TabLayout",
+          "line": 11,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "TabLayout",
+          "callee": "useColorScheme",
+          "lineNumber": 12
+        },
+        {
+          "caller": "TabLayout",
+          "callee": "Platform.select",
+          "lineNumber": 21
+        }
+      ],
+      "metrics": {
+        "importCount": 5,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "example_app/app/(tabs)/index.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 44,
+      "nonEmptyLines": 42,
+      "functions": [
+        {
+          "name": "HomeScreen",
+          "startLine": 5,
+          "endLine": 21,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "HomeScreen",
+          "line": 5,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "HomeScreen",
+          "callee": "require",
+          "lineNumber": 12
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "example_app/app/+not-found.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 32,
+      "nonEmptyLines": 29,
+      "functions": [
+        {
+          "name": "NotFoundScreen",
+          "startLine": 7,
+          "endLine": 19,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "NotFoundScreen",
+          "line": 7,
+          "isDefault": true
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "example_app/components/__tests__/__snapshots__/ThemedText-test.tsx.snap",
+      "language": "snap",
+      "fileCategory": "code",
+      "totalLines": 24,
+      "nonEmptyLines": 23,
+      "metrics": {}
+    },
+    {
+      "path": "example_app/components/__tests__/ThemedText-test.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 10,
+      "nonEmptyLines": 7,
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "example_app/components/Collapsible.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 47,
+      "nonEmptyLines": 42,
+      "functions": [
+        {
+          "name": "Collapsible",
+          "startLine": 11,
+          "endLine": 35,
+          "params": [
+            "{ children, title }"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "Collapsible",
+          "line": 11,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "Collapsible",
+          "callee": "useState",
+          "lineNumber": 12
+        },
+        {
+          "caller": "Collapsible",
+          "callee": "useColorScheme",
+          "lineNumber": 13
+        },
+        {
+          "caller": "Collapsible",
+          "callee": "setIsOpen",
+          "lineNumber": 19
+        }
+      ],
+      "metrics": {
+        "importCount": 5,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "example_app/components/DatabaseItems.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 575,
+      "nonEmptyLines": 529,
+      "functions": [
+        {
+          "name": "DatabaseItems",
+          "startLine": 30,
+          "endLine": 499,
+          "params": [
+            "{ style }"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "DatabaseItems",
+          "line": 30,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "DatabaseItems",
+          "callee": "useState",
+          "lineNumber": 31
+        },
+        {
+          "caller": "DatabaseItems",
+          "callee": "useState",
+          "lineNumber": 32
+        },
+        {
+          "caller": "DatabaseItems",
+          "callee": "useState",
+          "lineNumber": 33
+        },
+        {
+          "caller": "DatabaseItems",
+          "callee": "useColorScheme",
+          "lineNumber": 34
+        },
+        {
+          "caller": "DatabaseItems",
+          "callee": "useCallback",
+          "lineNumber": 37
+        },
+        {
+          "caller": "DatabaseItems",
+          "callee": "getItems",
+          "lineNumber": 39
+        },
+        {
+          "caller": "DatabaseItems",
+          "callee": "setItems",
+          "lineNumber": 40
+        },
+        {
+          "caller": "DatabaseItems",
+          "callee": "console.error",
+          "lineNumber": 43
+        },
+        {
+          "caller": "DatabaseItems",
+          "callee": "setItems",
+          "lineNumber": 44
+        },
+        {
+          "caller": "DatabaseItems",
+          "callee": "setLoading",
+          "lineNumber": 47
+        },
+        {
+          "caller": "handleDelete",
+          "callee": "deleteItem",
+          "lineNumber": 54
+        },
+        {
+          "caller": "handleDelete",
+          "callee": "Haptics.notificationAsync",
+          "lineNumber": 55
+        },
+        {
+          "caller": "handleDelete",
+          "callee": "fetchItems",
+          "lineNumber": 56
+        },
+        {
+          "caller": "handleDelete",
+          "callee": "console.error",
+          "lineNumber": 59
+        },
+        {
+          "caller": "DatabaseItems",
+          "callee": "useCallback",
+          "lineNumber": 64
+        },
+        {
+          "caller": "DatabaseItems",
+          "callee": "setRefreshing",
+          "lineNumber": 65
+        },
+        {
+          "caller": "DatabaseItems",
+          "callee": "fetchItems",
+          "lineNumber": 66
+        },
+        {
+          "caller": "DatabaseItems",
+          "callee": "setRefreshing",
+          "lineNumber": 67
+        },
+        {
+          "caller": "DatabaseItems",
+          "callee": "Haptics.notificationAsync",
+          "lineNumber": 69
+        },
+        {
+          "caller": "DatabaseItems",
+          "callee": "useEffect",
+          "lineNumber": 73
+        },
+        {
+          "caller": "DatabaseItems",
+          "callee": "fetchItems",
+          "lineNumber": 74
+        },
+        {
+          "caller": "renderArray",
+          "callee": "array.join",
+          "lineNumber": 89
+        },
+        {
+          "caller": "renderSimpleObject",
+          "callee": "Object.entries(obj)\n      .map(([key, value]) => `${key}: ${value}`)\n      .join",
+          "lineNumber": 99
+        },
+        {
+          "caller": "renderSimpleObject",
+          "callee": "Object.entries(obj)\n      .map",
+          "lineNumber": 99
+        },
+        {
+          "caller": "renderSimpleObject",
+          "callee": "Object.entries",
+          "lineNumber": 99
+        },
+        {
+          "caller": "renderObjectList",
+          "callee": "list.map",
+          "lineNumber": 133
+        },
+        {
+          "caller": "renderSmartHomeData",
+          "callee": "renderArray",
+          "lineNumber": 176
+        },
+        {
+          "caller": "renderSmartHomeData",
+          "callee": "renderArray",
+          "lineNumber": 180
+        },
+        {
+          "caller": "renderSmartHomeData",
+          "callee": "renderArray",
+          "lineNumber": 181
+        },
+        {
+          "caller": "renderRecipeData",
+          "callee": "renderObjectList",
+          "lineNumber": 237
+        },
+        {
+          "caller": "renderRecipeData",
+          "callee": "renderSimpleObject",
+          "lineNumber": 245
+        },
+        {
+          "caller": "renderRecipeData",
+          "callee": "renderArray",
+          "lineNumber": 247
+        },
+        {
+          "caller": "renderFitnessData",
+          "callee": "jsonData.schedule.map",
+          "lineNumber": 283
+        },
+        {
+          "caller": "renderFitnessData",
+          "callee": "renderArray",
+          "lineNumber": 298
+        },
+        {
+          "caller": "renderFitnessData",
+          "callee": "renderArray",
+          "lineNumber": 299
+        },
+        {
+          "caller": "renderAppUpdateData",
+          "callee": "jsonData.changes.map",
+          "lineNumber": 350
+        },
+        {
+          "caller": "renderAppUpdateData",
+          "callee": "jsonData.compatibility.devices.join",
+          "lineNumber": 374
+        },
+        {
+          "caller": "renderAppUpdateData",
+          "callee": "renderSimpleObject",
+          "lineNumber": 379
+        },
+        {
+          "caller": "renderJsonData",
+          "callee": "renderSmartHomeData",
+          "lineNumber": 390
+        },
+        {
+          "caller": "renderJsonData",
+          "callee": "renderRecipeData",
+          "lineNumber": 393
+        },
+        {
+          "caller": "renderJsonData",
+          "callee": "renderFitnessData",
+          "lineNumber": 396
+        },
+        {
+          "caller": "renderJsonData",
+          "callee": "renderAppUpdateData",
+          "lineNumber": 399
+        },
+        {
+          "caller": "renderItem",
+          "callee": "renderJsonData",
+          "lineNumber": 423
+        },
+        {
+          "caller": "renderItem",
+          "callee": "new Date(item.created_at).toLocaleString",
+          "lineNumber": 426
+        },
+        {
+          "caller": "renderItem",
+          "callee": "onDelete",
+          "lineNumber": 435
+        },
+        {
+          "caller": "RefreshButton",
+          "callee": "Haptics.impactAsync",
+          "lineNumber": 451
+        },
+        {
+          "caller": "RefreshButton",
+          "callee": "onRefresh",
+          "lineNumber": 452
+        },
+        {
+          "caller": "DatabaseItems",
+          "callee": "renderItem",
+          "lineNumber": 485
+        },
+        {
+          "caller": "DatabaseItems",
+          "callee": "item.id.toString",
+          "lineNumber": 486
+        }
+      ],
+      "metrics": {
+        "importCount": 4,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "example_app/components/ExternalLink.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 24,
+      "nonEmptyLines": 22,
+      "functions": [
+        {
+          "name": "ExternalLink",
+          "startLine": 8,
+          "endLine": 24,
+          "params": [
+            "{ href, ...rest }"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "ExternalLink",
+          "line": 8,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "ExternalLink",
+          "callee": "event.preventDefault",
+          "lineNumber": 17
+        },
+        {
+          "caller": "ExternalLink",
+          "callee": "openBrowserAsync",
+          "lineNumber": 19
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "example_app/components/HapticTab.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 19,
+      "nonEmptyLines": 18,
+      "functions": [
+        {
+          "name": "HapticTab",
+          "startLine": 5,
+          "endLine": 19,
+          "params": [
+            "props"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "HapticTab",
+          "line": 5,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "HapticTab",
+          "callee": "Haptics.impactAsync",
+          "lineNumber": 13
+        },
+        {
+          "caller": "HapticTab",
+          "callee": "props.onPressIn",
+          "lineNumber": 15
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "example_app/components/HelloWave.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 40,
+      "nonEmptyLines": 34,
+      "functions": [
+        {
+          "name": "HelloWave",
+          "startLine": 13,
+          "endLine": 32,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "HelloWave",
+          "line": 13,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "HelloWave",
+          "callee": "useSharedValue",
+          "lineNumber": 14
+        },
+        {
+          "caller": "HelloWave",
+          "callee": "useEffect",
+          "lineNumber": 16
+        },
+        {
+          "caller": "HelloWave",
+          "callee": "withRepeat",
+          "lineNumber": 17
+        },
+        {
+          "caller": "HelloWave",
+          "callee": "withSequence",
+          "lineNumber": 18
+        },
+        {
+          "caller": "HelloWave",
+          "callee": "withTiming",
+          "lineNumber": 18
+        },
+        {
+          "caller": "HelloWave",
+          "callee": "withTiming",
+          "lineNumber": 18
+        },
+        {
+          "caller": "HelloWave",
+          "callee": "useAnimatedStyle",
+          "lineNumber": 23
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "example_app/components/ParallaxScrollView.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 84,
+      "nonEmptyLines": 78,
+      "functions": [
+        {
+          "name": "ParallaxScrollView",
+          "startLine": 21,
+          "endLine": 68,
+          "params": [
+            "{\n  children,\n  headerImage,\n  headerBackgroundColor,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "ParallaxScrollView",
+          "line": 21,
+          "isDefault": true
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "ParallaxScrollView",
+          "callee": "useColorScheme",
+          "lineNumber": 26
+        },
+        {
+          "caller": "ParallaxScrollView",
+          "callee": "useAnimatedRef",
+          "lineNumber": 27
+        },
+        {
+          "caller": "ParallaxScrollView",
+          "callee": "useScrollViewOffset",
+          "lineNumber": 28
+        },
+        {
+          "caller": "ParallaxScrollView",
+          "callee": "useBottomTabOverflow",
+          "lineNumber": 29
+        },
+        {
+          "caller": "ParallaxScrollView",
+          "callee": "useAnimatedStyle",
+          "lineNumber": 30
+        },
+        {
+          "caller": "ParallaxScrollView",
+          "callee": "interpolate",
+          "lineNumber": 34
+        },
+        {
+          "caller": "ParallaxScrollView",
+          "callee": "interpolate",
+          "lineNumber": 41
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "example_app/components/ThemedText.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 61,
+      "nonEmptyLines": 56,
+      "functions": [
+        {
+          "name": "ThemedText",
+          "startLine": 12,
+          "endLine": 35,
+          "params": [
+            "{\n  style,\n  lightColor,\n  darkColor,\n  type = 'default',\n  ...rest\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "ThemedText",
+          "line": 12,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "ThemedText",
+          "callee": "useThemeColor",
+          "lineNumber": 19
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "example_app/components/ThemedView.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 15,
+      "nonEmptyLines": 11,
+      "functions": [
+        {
+          "name": "ThemedView",
+          "startLine": 11,
+          "endLine": 15,
+          "params": [
+            "{ style, lightColor, darkColor, ...otherProps }"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "ThemedView",
+          "line": 11,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "ThemedView",
+          "callee": "useThemeColor",
+          "lineNumber": 12
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "example_app/components/ui/IconSymbol.ios.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 33,
+      "nonEmptyLines": 32,
+      "functions": [
+        {
+          "name": "IconSymbol",
+          "startLine": 5,
+          "endLine": 33,
+          "params": [
+            "{\n  name,\n  size = 24,\n  color,\n  style,\n  weight = 'regular',\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "IconSymbol",
+          "line": 5,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "example_app/components/ui/IconSymbol.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 43,
+      "nonEmptyLines": 39,
+      "functions": [
+        {
+          "name": "IconSymbol",
+          "startLine": 30,
+          "endLine": 43,
+          "params": [
+            "{\n  name,\n  size = 24,\n  color,\n  style,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "IconSymbol",
+          "line": 30,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "example_app/components/ui/TabBarBackground.ios.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 22,
+      "nonEmptyLines": 20,
+      "functions": [
+        {
+          "name": "BlurTabBarBackground",
+          "startLine": 6,
+          "endLine": 16,
+          "params": []
+        },
+        {
+          "name": "useBottomTabOverflow",
+          "startLine": 18,
+          "endLine": 22,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "BlurTabBarBackground",
+          "line": 6,
+          "isDefault": true
+        },
+        {
+          "name": "useBottomTabOverflow",
+          "line": 18,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "useBottomTabOverflow",
+          "callee": "useBottomTabBarHeight",
+          "lineNumber": 19
+        },
+        {
+          "caller": "useBottomTabOverflow",
+          "callee": "useSafeAreaInsets",
+          "lineNumber": 20
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 2,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "example_app/components/ui/TabBarBackground.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 6,
+      "nonEmptyLines": 5,
+      "functions": [
+        {
+          "name": "useBottomTabOverflow",
+          "startLine": 4,
+          "endLine": 6,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "useBottomTabOverflow",
+          "line": 4,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "example_app/constants/Colors.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 26,
+      "nonEmptyLines": 24,
+      "exports": [
+        {
+          "name": "Colors",
+          "line": 9,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "example_app/databases/ecommerce_sample.db",
+      "language": "db",
+      "fileCategory": "code",
+      "totalLines": 70,
+      "nonEmptyLines": 70,
+      "metrics": {}
+    },
+    {
+      "path": "example_app/databases/notes_sample.db",
+      "language": "db",
+      "fileCategory": "code",
+      "totalLines": 40,
+      "nonEmptyLines": 40,
+      "metrics": {}
+    },
+    {
+      "path": "example_app/hooks/useColorScheme.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 1,
+      "nonEmptyLines": 1,
+      "exports": [
+        {
+          "name": "useColorScheme",
+          "line": 1,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    }
+  ]
+}

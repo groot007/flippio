@@ -1,0 +1,1098 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 40,
+  "filesSkipped": [],
+  "results": [
+    {
+      "path": ".codex/skills/grilling/SKILL.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 12,
+      "nonEmptyLines": 8,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 0
+      }
+    },
+    {
+      "path": ".codex/skills/improve-codebase-architecture/SKILL.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 71,
+      "nonEmptyLines": 45,
+      "sections": [
+        {
+          "heading": "Improve Codebase Architecture",
+          "level": 1,
+          "line": 7
+        },
+        {
+          "heading": "Process",
+          "level": 2,
+          "line": 16
+        },
+        {
+          "heading": "1. Explore",
+          "level": 3,
+          "line": 18
+        },
+        {
+          "heading": "2. Present candidates as an HTML report",
+          "level": 3,
+          "line": 37
+        },
+        {
+          "heading": "3. Grilling loop",
+          "level": 3,
+          "line": 62
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 5
+      }
+    },
+    {
+      "path": ".codex/skills/tdd/SKILL.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 36,
+      "nonEmptyLines": 22,
+      "sections": [
+        {
+          "heading": "Test-Driven Development",
+          "level": 1,
+          "line": 6
+        },
+        {
+          "heading": "What a good test is",
+          "level": 2,
+          "line": 12
+        },
+        {
+          "heading": "Seams — where tests go",
+          "level": 2,
+          "line": 18
+        },
+        {
+          "heading": "Anti-patterns",
+          "level": 2,
+          "line": 26
+        },
+        {
+          "heading": "Rules of the loop",
+          "level": 2,
+          "line": 32
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 5
+      }
+    },
+    {
+      "path": ".gitattributes",
+      "language": "unknown",
+      "fileCategory": "code",
+      "totalLines": 4,
+      "nonEmptyLines": 4,
+      "metrics": {}
+    },
+    {
+      "path": ".github/copilot-instructions.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 242,
+      "nonEmptyLines": 194,
+      "sections": [
+        {
+          "heading": "Flippio AI Coding Instructions",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Architecture Overview",
+          "level": 2,
+          "line": 3
+        },
+        {
+          "heading": "Critical Development Workflows",
+          "level": 2,
+          "line": 10
+        },
+        {
+          "heading": "Build & Development",
+          "level": 3,
+          "line": 12
+        },
+        {
+          "heading": "Testing Strategy",
+          "level": 3,
+          "line": 24
+        },
+        {
+          "heading": "External Dependencies Management",
+          "level": 3,
+          "line": 34
+        },
+        {
+          "heading": "Project-Specific Patterns",
+          "level": 2,
+          "line": 40
+        },
+        {
+          "heading": "State Management Architecture",
+          "level": 3,
+          "line": 42
+        },
+        {
+          "heading": "Tauri Command Integration",
+          "level": 3,
+          "line": 52
+        },
+        {
+          "heading": "Database Connection Patterns",
+          "level": 3,
+          "line": 68
+        },
+        {
+          "heading": "Device Detection Logic",
+          "level": 3,
+          "line": 73
+        },
+        {
+          "heading": "Error Handling Conventions",
+          "level": 3,
+          "line": 81
+        },
+        {
+          "heading": "Component Testing Patterns",
+          "level": 2,
+          "line": 86
+        },
+        {
+          "heading": "Provider Wrapping",
+          "level": 3,
+          "line": 88
+        },
+        {
+          "heading": "Store Mocking",
+          "level": 3,
+          "line": 97
+        },
+        {
+          "heading": "AG Grid Testing",
+          "level": 3,
+          "line": 105
+        },
+        {
+          "heading": "Integration Points & Cross-Component Communication",
+          "level": 2,
+          "line": 110
+        },
+        {
+          "heading": "Device → App → Database Flow",
+          "level": 3,
+          "line": 112
+        },
+        {
+          "heading": "File Upload/Export Flow",
+          "level": 3,
+          "line": 118
+        },
+        {
+          "heading": "Auto-Updater Integration",
+          "level": 3,
+          "line": 123
+        },
+        {
+          "heading": "Development Environment Setup",
+          "level": 2,
+          "line": 128
+        },
+        {
+          "heading": "Required Tools",
+          "level": 3,
+          "line": 130
+        },
+        {
+          "heading": "Environment Variables (.env)",
+          "level": 3,
+          "line": 136
+        },
+        {
+          "heading": "Pre-commit Automation",
+          "level": 3,
+          "line": 144
+        },
+        {
+          "heading": "Device-Specific Database Extraction Workflows",
+          "level": 2,
+          "line": 147
+        },
+        {
+          "heading": "Android Database Extraction (ADB)",
+          "level": 3,
+          "line": 149
+        },
+        {
+          "heading": "iOS Physical Device Extraction (libimobiledevice)",
+          "level": 3,
+          "line": 169
+        },
+        {
+          "heading": "iOS Simulator Extraction (xcrun simctl)",
+          "level": 3,
+          "line": 184
+        },
+        {
+          "heading": "Database Push Workflows",
+          "level": 3,
+          "line": 198
+        },
+        {
+          "heading": "Error Handling Patterns",
+          "level": 3,
+          "line": 211
+        },
+        {
+          "heading": "Communication Style",
+          "level": 2,
+          "line": 230
+        },
+        {
+          "heading": "Copilot Code Editing Instructions",
+          "level": 2,
+          "line": 238
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 32
+      }
+    },
+    {
+      "path": ".github/workflows/lint.yml",
+      "language": "yaml",
+      "fileCategory": "infra",
+      "totalLines": 32,
+      "nonEmptyLines": 25,
+      "sections": [
+        {
+          "heading": "name",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "on",
+          "level": 1,
+          "line": 3
+        },
+        {
+          "heading": "jobs",
+          "level": 1,
+          "line": 9
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 3
+      }
+    },
+    {
+      "path": ".github/workflows/release.yml.disabled",
+      "language": "disabled",
+      "fileCategory": "infra",
+      "totalLines": 59,
+      "nonEmptyLines": 46,
+      "metrics": {}
+    },
+    {
+      "path": ".github/workflows/tauri-release.yml",
+      "language": "yaml",
+      "fileCategory": "infra",
+      "totalLines": 83,
+      "nonEmptyLines": 72,
+      "sections": [
+        {
+          "heading": "name",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "on",
+          "level": 1,
+          "line": 3
+        },
+        {
+          "heading": "jobs",
+          "level": 1,
+          "line": 8
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 3
+      }
+    },
+    {
+      "path": ".github/workflows/tests.yml",
+      "language": "yaml",
+      "fileCategory": "infra",
+      "totalLines": 32,
+      "nonEmptyLines": 25,
+      "sections": [
+        {
+          "heading": "name",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "on",
+          "level": 1,
+          "line": 3
+        },
+        {
+          "heading": "jobs",
+          "level": 1,
+          "line": 9
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 3
+      }
+    },
+    {
+      "path": ".npmrc",
+      "language": "unknown",
+      "fileCategory": "code",
+      "totalLines": 9,
+      "nonEmptyLines": 8,
+      "metrics": {}
+    },
+    {
+      "path": ".prettierignore",
+      "language": "unknown",
+      "fileCategory": "code",
+      "totalLines": 6,
+      "nonEmptyLines": 6,
+      "metrics": {}
+    },
+    {
+      "path": ".prettierrc.yaml",
+      "language": "yaml",
+      "fileCategory": "config",
+      "totalLines": 4,
+      "nonEmptyLines": 4,
+      "sections": [
+        {
+          "heading": "singleQuote",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "semi",
+          "level": 1,
+          "line": 2
+        },
+        {
+          "heading": "printWidth",
+          "level": 1,
+          "line": 3
+        },
+        {
+          "heading": "trailingComma",
+          "level": 1,
+          "line": 4
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 4
+      }
+    },
+    {
+      "path": ".ua/.understandignore",
+      "language": "unknown",
+      "fileCategory": "code",
+      "totalLines": 88,
+      "nonEmptyLines": 82,
+      "metrics": {}
+    },
+    {
+      "path": "AGENTS.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 99,
+      "nonEmptyLines": 76,
+      "sections": [
+        {
+          "heading": "AGENTS.md",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Purpose",
+          "level": 2,
+          "line": 3
+        },
+        {
+          "heading": "Stack",
+          "level": 2,
+          "line": 7
+        },
+        {
+          "heading": "Important Paths",
+          "level": 2,
+          "line": 13
+        },
+        {
+          "heading": "Application Flow",
+          "level": 2,
+          "line": 27
+        },
+        {
+          "heading": "Repo Rules",
+          "level": 2,
+          "line": 40
+        },
+        {
+          "heading": "Commands",
+          "level": 2,
+          "line": 52
+        },
+        {
+          "heading": "Release Notes",
+          "level": 2,
+          "line": 82
+        },
+        {
+          "heading": "Known Gotchas",
+          "level": 2,
+          "line": 89
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 9
+      }
+    },
+    {
+      "path": "CHANGELOG.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 42,
+      "nonEmptyLines": 24,
+      "sections": [
+        {
+          "heading": "Changelog",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "[Unreleased]",
+          "level": 2,
+          "line": 8
+        },
+        {
+          "heading": "[0.4.4]",
+          "level": 2,
+          "line": 10
+        },
+        {
+          "heading": "[0.4.2]",
+          "level": 2,
+          "line": 16
+        },
+        {
+          "heading": "[0.4.1]",
+          "level": 2,
+          "line": 21
+        },
+        {
+          "heading": "[0.4.0]",
+          "level": 2,
+          "line": 29
+        },
+        {
+          "heading": "Added",
+          "level": 3,
+          "line": 31
+        },
+        {
+          "heading": "Changed",
+          "level": 3,
+          "line": 37
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 8
+      }
+    },
+    {
+      "path": "dev-app-update.yml",
+      "language": "yaml",
+      "fileCategory": "config",
+      "totalLines": 3,
+      "nonEmptyLines": 3,
+      "sections": [
+        {
+          "heading": "provider",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "url",
+          "level": 1,
+          "line": 2
+        },
+        {
+          "heading": "updaterCacheDirName",
+          "level": 1,
+          "line": 3
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 3
+      }
+    },
+    {
+      "path": "docs/guides/build-and-deployment.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 63,
+      "nonEmptyLines": 45,
+      "sections": [
+        {
+          "heading": "Build And Deployment",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Local Builds",
+          "level": 2,
+          "line": 3
+        },
+        {
+          "heading": "Release Workflow",
+          "level": 2,
+          "line": 15
+        },
+        {
+          "heading": "Required Release Secrets",
+          "level": 2,
+          "line": 41
+        },
+        {
+          "heading": "Updater Notes",
+          "level": 2,
+          "line": 55
+        },
+        {
+          "heading": "What Was Removed",
+          "level": 2,
+          "line": 61
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 6
+      }
+    },
+    {
+      "path": "docs/guides/development-setup.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 75,
+      "nonEmptyLines": 54,
+      "sections": [
+        {
+          "heading": "Development Setup",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Purpose",
+          "level": 2,
+          "line": 3
+        },
+        {
+          "heading": "Requirements",
+          "level": 2,
+          "line": 7
+        },
+        {
+          "heading": "Install",
+          "level": 2,
+          "line": 19
+        },
+        {
+          "heading": "Core Commands",
+          "level": 2,
+          "line": 35
+        },
+        {
+          "heading": "Focused Validation",
+          "level": 2,
+          "line": 47
+        },
+        {
+          "heading": "Test Fixtures",
+          "level": 2,
+          "line": 67
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 7
+      }
+    },
+    {
+      "path": "docs/README.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 13,
+      "nonEmptyLines": 8,
+      "sections": [
+        {
+          "heading": "Flippio Docs",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Keep These Files Current",
+          "level": 2,
+          "line": 5
+        },
+        {
+          "heading": "Documentation Rule",
+          "level": 2,
+          "line": 11
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 3
+      }
+    },
+    {
+      "path": "eslint.config.mjs",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 21,
+      "nonEmptyLines": 20,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "example_app/android/app/build.gradle",
+      "language": "gradle",
+      "fileCategory": "config",
+      "totalLines": 176,
+      "nonEmptyLines": 155,
+      "metrics": {}
+    },
+    {
+      "path": "example_app/android/app/debug.keystore",
+      "language": "keystore",
+      "fileCategory": "code",
+      "totalLines": 9,
+      "nonEmptyLines": 9,
+      "metrics": {}
+    },
+    {
+      "path": "example_app/android/app/proguard-rules.pro",
+      "language": "pro",
+      "fileCategory": "code",
+      "totalLines": 14,
+      "nonEmptyLines": 12,
+      "metrics": {}
+    },
+    {
+      "path": "example_app/android/app/src/debug/AndroidManifest.xml",
+      "language": "xml",
+      "fileCategory": "config",
+      "totalLines": 7,
+      "nonEmptyLines": 5,
+      "metrics": {}
+    },
+    {
+      "path": "example_app/android/app/src/main/AndroidManifest.xml",
+      "language": "xml",
+      "fileCategory": "config",
+      "totalLines": 32,
+      "nonEmptyLines": 32,
+      "metrics": {}
+    },
+    {
+      "path": "example_app/android/app/src/main/java/com/kolia_stanis/Flippio_RN/MainActivity.kt",
+      "language": "kotlin",
+      "fileCategory": "code",
+      "totalLines": 65,
+      "nonEmptyLines": 57,
+      "functions": [
+        {
+          "name": "onCreate",
+          "startLine": 15,
+          "endLine": 24,
+          "params": [
+            "savedInstanceState"
+          ]
+        },
+        {
+          "name": "getMainComponentName",
+          "startLine": 30,
+          "endLine": 30,
+          "params": []
+        },
+        {
+          "name": "createReactActivityDelegate",
+          "startLine": 36,
+          "endLine": 45,
+          "params": []
+        },
+        {
+          "name": "invokeDefaultOnBackPressed",
+          "startLine": 52,
+          "endLine": 64,
+          "params": []
+        }
+      ],
+      "classes": [
+        {
+          "name": "MainActivity",
+          "startLine": 14,
+          "endLine": 65,
+          "methods": [
+            "onCreate",
+            "getMainComponentName",
+            "createReactActivityDelegate",
+            "invokeDefaultOnBackPressed"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "onCreate",
+          "line": 15,
+          "isDefault": false
+        },
+        {
+          "name": "getMainComponentName",
+          "line": 30,
+          "isDefault": false
+        },
+        {
+          "name": "createReactActivityDelegate",
+          "line": 36,
+          "isDefault": false
+        },
+        {
+          "name": "invokeDefaultOnBackPressed",
+          "line": 52,
+          "isDefault": false
+        },
+        {
+          "name": "MainActivity",
+          "line": 14,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "onCreate",
+          "callee": "registerOnActivity",
+          "lineNumber": 21
+        },
+        {
+          "caller": "onCreate",
+          "callee": "onCreate",
+          "lineNumber": 23
+        },
+        {
+          "caller": "createReactActivityDelegate",
+          "callee": "ReactActivityDelegateWrapper",
+          "lineNumber": 37
+        },
+        {
+          "caller": "invokeDefaultOnBackPressed",
+          "callee": "invokeDefaultOnBackPressed",
+          "lineNumber": 56
+        },
+        {
+          "caller": "invokeDefaultOnBackPressed",
+          "callee": "invokeDefaultOnBackPressed",
+          "lineNumber": 63
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 5,
+        "functionCount": 4,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "example_app/android/app/src/main/java/com/kolia_stanis/Flippio_RN/MainApplication.kt",
+      "language": "kotlin",
+      "fileCategory": "code",
+      "totalLines": 57,
+      "nonEmptyLines": 46,
+      "functions": [
+        {
+          "name": "onCreate",
+          "startLine": 43,
+          "endLine": 51,
+          "params": []
+        },
+        {
+          "name": "onConfigurationChanged",
+          "startLine": 53,
+          "endLine": 56,
+          "params": [
+            "newConfig"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "MainApplication",
+          "startLine": 19,
+          "endLine": 57,
+          "methods": [
+            "onCreate",
+            "onConfigurationChanged"
+          ],
+          "properties": [
+            "reactNativeHost",
+            "reactHost"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "reactNativeHost",
+          "line": 21,
+          "isDefault": false
+        },
+        {
+          "name": "reactHost",
+          "line": 40,
+          "isDefault": false
+        },
+        {
+          "name": "onCreate",
+          "line": 43,
+          "isDefault": false
+        },
+        {
+          "name": "onConfigurationChanged",
+          "line": 53,
+          "isDefault": false
+        },
+        {
+          "name": "MainApplication",
+          "line": 19,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "getPackages",
+          "callee": "PackageList",
+          "lineNumber": 25
+        },
+        {
+          "caller": "onCreate",
+          "callee": "onCreate",
+          "lineNumber": 44
+        },
+        {
+          "caller": "onCreate",
+          "callee": "init",
+          "lineNumber": 45
+        },
+        {
+          "caller": "onCreate",
+          "callee": "load",
+          "lineNumber": 48
+        },
+        {
+          "caller": "onCreate",
+          "callee": "onApplicationCreate",
+          "lineNumber": 50
+        },
+        {
+          "caller": "onConfigurationChanged",
+          "callee": "onConfigurationChanged",
+          "lineNumber": 54
+        },
+        {
+          "caller": "onConfigurationChanged",
+          "callee": "onConfigurationChanged",
+          "lineNumber": 55
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 5,
+        "functionCount": 2,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "example_app/android/app/src/main/res/drawable/ic_launcher_background.xml",
+      "language": "xml",
+      "fileCategory": "config",
+      "totalLines": 6,
+      "nonEmptyLines": 6,
+      "metrics": {}
+    },
+    {
+      "path": "example_app/android/app/src/main/res/drawable/rn_edit_text_material.xml",
+      "language": "xml",
+      "fileCategory": "config",
+      "totalLines": 37,
+      "nonEmptyLines": 30,
+      "metrics": {}
+    },
+    {
+      "path": "example_app/android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml",
+      "language": "xml",
+      "fileCategory": "config",
+      "totalLines": 5,
+      "nonEmptyLines": 5,
+      "metrics": {}
+    },
+    {
+      "path": "example_app/android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml",
+      "language": "xml",
+      "fileCategory": "config",
+      "totalLines": 5,
+      "nonEmptyLines": 5,
+      "metrics": {}
+    },
+    {
+      "path": "example_app/android/app/src/main/res/mipmap-hdpi/ic_launcher_foreground.webp",
+      "language": "webp",
+      "fileCategory": "code",
+      "totalLines": 33,
+      "nonEmptyLines": 33,
+      "metrics": {}
+    },
+    {
+      "path": "example_app/android/app/src/main/res/mipmap-hdpi/ic_launcher_round.webp",
+      "language": "webp",
+      "fileCategory": "code",
+      "totalLines": 23,
+      "nonEmptyLines": 23,
+      "metrics": {}
+    },
+    {
+      "path": "example_app/android/app/src/main/res/mipmap-hdpi/ic_launcher.webp",
+      "language": "webp",
+      "fileCategory": "code",
+      "totalLines": 8,
+      "nonEmptyLines": 8,
+      "metrics": {}
+    },
+    {
+      "path": "example_app/android/app/src/main/res/mipmap-mdpi/ic_launcher_foreground.webp",
+      "language": "webp",
+      "fileCategory": "code",
+      "totalLines": 28,
+      "nonEmptyLines": 28,
+      "metrics": {}
+    },
+    {
+      "path": "example_app/android/app/src/main/res/mipmap-mdpi/ic_launcher_round.webp",
+      "language": "webp",
+      "fileCategory": "code",
+      "totalLines": 15,
+      "nonEmptyLines": 15,
+      "metrics": {}
+    },
+    {
+      "path": "example_app/android/app/src/main/res/mipmap-mdpi/ic_launcher.webp",
+      "language": "webp",
+      "fileCategory": "code",
+      "totalLines": 4,
+      "nonEmptyLines": 4,
+      "metrics": {}
+    },
+    {
+      "path": "example_app/android/app/src/main/res/mipmap-xhdpi/ic_launcher_foreground.webp",
+      "language": "webp",
+      "fileCategory": "code",
+      "totalLines": 55,
+      "nonEmptyLines": 55,
+      "metrics": {}
+    },
+    {
+      "path": "example_app/android/app/src/main/res/mipmap-xhdpi/ic_launcher_round.webp",
+      "language": "webp",
+      "fileCategory": "code",
+      "totalLines": 24,
+      "nonEmptyLines": 24,
+      "metrics": {}
+    },
+    {
+      "path": "example_app/android/app/src/main/res/mipmap-xhdpi/ic_launcher.webp",
+      "language": "webp",
+      "fileCategory": "code",
+      "totalLines": 22,
+      "nonEmptyLines": 22,
+      "metrics": {}
+    }
+  ]
+}

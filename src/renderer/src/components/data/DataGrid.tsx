@@ -1,4 +1,5 @@
 import {
+  Badge,
   Box,
   Button,
   Center,
@@ -37,6 +38,7 @@ export function DataGrid() {
   const { colorMode } = useColorMode()
   const {
     isLoadingTableData,
+    isRefreshingTableData,
     setIsLoadingTableData,
     tableData,
     setTableData,
@@ -51,6 +53,7 @@ export function DataGrid() {
   const [pageSize, setPageSize] = useState(20)
 
   const { data, error, refetch: refetchTableData } = useTableDataQuery(selectedDatabaseTable?.name || '')
+  const hasRows = !!tableData?.rows?.length
   const emptyStateMessage = useMemo(() => {
     if (!selectedDevice && !selectedDatabaseFile) {
       return 'Select device and app to load data'
@@ -150,6 +153,9 @@ export function DataGrid() {
         tableName: selectedDatabaseTable?.name,
       })
       setIsLoadingTableData(false)
+      if (isRefreshingTableData) {
+        useTableData.getState().setIsRefreshingTableData(false)
+      }
     }
     else if (!data && !tableData?.isCustomQuery) {
       setTableData({
@@ -159,8 +165,11 @@ export function DataGrid() {
         tableName: selectedDatabaseTable?.name,
       })
       setIsLoadingTableData(false)
+      if (isRefreshingTableData) {
+        useTableData.getState().setIsRefreshingTableData(false)
+      }
     }
-  }, [data, selectedDatabaseTable, tableData?.isCustomQuery, setTableData, setIsLoadingTableData])
+  }, [data, isRefreshingTableData, selectedDatabaseTable, tableData?.isCustomQuery, setTableData, setIsLoadingTableData])
 
   // Sync with AG Grid pagination events
   useEffect(() => {
@@ -260,9 +269,10 @@ export function DataGrid() {
     }
   }, [tableData?.rows, tableData?.columns, columnsSizing])
 
-  if (isLoadingTableData) {
+  if (isLoadingTableData && !hasRows) {
     return (
       <Flex
+        data-testid="data-grid-loading"
         justifyContent="center"
         alignItems="center"
         height="calc(100vh - 140px)"
@@ -274,7 +284,7 @@ export function DataGrid() {
 
   if (error) {
     return (
-      <Center height="calc(100vh - 140px)" flexDirection="column">
+      <Center data-testid="data-grid-error" height="calc(100vh - 140px)" flexDirection="column">
         <Text fontSize="xl" mb={4} color="red.500">Error loading data</Text>
         <Text color="gray.500">{String(error)}</Text>
       </Center>
@@ -283,7 +293,7 @@ export function DataGrid() {
 
   if (emptyStateMessage) {
     return (
-      <Center height="calc(100vh - 140px)" flexDirection="column">
+      <Center data-testid="data-grid-empty-state" height="calc(100vh - 140px)" flexDirection="column">
         <Text fontSize="lg" fontWeight="medium" color="textPrimary">{emptyStateMessage}</Text>
         <Text color="textSecondary">Current grid cleared until new context is ready.</Text>
       </Center>
@@ -291,11 +301,45 @@ export function DataGrid() {
   }
 
   return (
-    <Box flex={1} height="full" width="full" position="relative">
+    <Box data-testid="data-grid-shell" flex={1} height="full" width="full" position="relative">
+      {isRefreshingTableData && (
+        <Flex
+          position="absolute"
+          right={6}
+          bottom={20}
+          pointerEvents="none"
+          zIndex={2}
+        >
+          <Box
+            minW="180px"
+            maxW="220px"
+            px={3}
+            py={2.5}
+            borderRadius="lg"
+            borderWidth="1px"
+            boxShadow="xl"
+            bg={colorMode === 'dark' ? 'rgba(15, 23, 42, 0.92)' : 'rgba(255, 255, 255, 0.95)'}
+            borderColor={colorMode === 'dark' ? 'blue.800' : 'blue.200'}
+            backdropFilter="blur(8px)"
+          >
+            <Flex align="center" gap={2}>
+              <Spinner size="xs" color="flipioPrimary" />
+              <Text fontSize="sm" fontWeight="medium" color="textPrimary">
+                Syncing fresh rows
+              </Text>
+              <Badge colorPalette="blue" variant="subtle" ml="auto">
+                Read only
+              </Badge>
+            </Flex>
+          </Box>
+        </Flex>
+      )}
       <Box
         height="calc(100% - 50px)"
         width="100%"
         onDragOver={e => e.preventDefault()}
+        opacity={isRefreshingTableData ? 0.88 : 1}
+        transition="opacity 0.2s ease"
       >
         <AgGridReact
           ref={gridRef}
@@ -310,7 +354,9 @@ export function DataGrid() {
           pagination={true}
           paginationPageSize={pageSize}
           loading={false}
-          suppressCellFocus={false}
+          suppressCellFocus={isRefreshingTableData}
+          suppressClickEdit={isRefreshingTableData}
+          readOnlyEdit={isRefreshingTableData}
           onFirstDataRendered={columnsSizing}
         />
       </Box>
@@ -323,6 +369,7 @@ export function DataGrid() {
 
       {selectedDatabaseTable && (
         <Button
+          data-testid="add-row-button"
           aria-label="Add new row"
           size="lg"
           position="absolute"
@@ -334,6 +381,7 @@ export function DataGrid() {
           p={0}
           onClick={handleAddNewRow}
           loading={isAddingRow}
+          disabled={isRefreshingTableData}
           _hover={{ transform: 'scale(1.05)' }}
           transition="all 0.2s"
         >

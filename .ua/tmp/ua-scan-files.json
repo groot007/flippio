@@ -1,0 +1,2468 @@
+{
+  "scriptCompleted": true,
+  "files": [
+    {
+      "path": ".codex/skills/grilling/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 12,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/skills/improve-codebase-architecture/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 71,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/skills/tdd/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 36,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".gitattributes",
+      "language": "unknown",
+      "sizeLines": 4,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".github/copilot-instructions.md",
+      "language": "markdown",
+      "sizeLines": 242,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".github/workflows/lint.yml",
+      "language": "yaml",
+      "sizeLines": 32,
+      "fileCategory": "infra"
+    },
+    {
+      "path": ".github/workflows/release.yml.disabled",
+      "language": "disabled",
+      "sizeLines": 59,
+      "fileCategory": "infra"
+    },
+    {
+      "path": ".github/workflows/tauri-release.yml",
+      "language": "yaml",
+      "sizeLines": 83,
+      "fileCategory": "infra"
+    },
+    {
+      "path": ".github/workflows/tests.yml",
+      "language": "yaml",
+      "sizeLines": 32,
+      "fileCategory": "infra"
+    },
+    {
+      "path": ".npmrc",
+      "language": "unknown",
+      "sizeLines": 9,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".prettierignore",
+      "language": "unknown",
+      "sizeLines": 6,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".prettierrc.yaml",
+      "language": "yaml",
+      "sizeLines": 4,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".ua/.understandignore",
+      "language": "unknown",
+      "sizeLines": 88,
+      "fileCategory": "code"
+    },
+    {
+      "path": "AGENTS.md",
+      "language": "markdown",
+      "sizeLines": 99,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "CHANGELOG.md",
+      "language": "markdown",
+      "sizeLines": 42,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "dev-app-update.yml",
+      "language": "yaml",
+      "sizeLines": 3,
+      "fileCategory": "config"
+    },
+    {
+      "path": "docs/guides/build-and-deployment.md",
+      "language": "markdown",
+      "sizeLines": 63,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/guides/development-setup.md",
+      "language": "markdown",
+      "sizeLines": 75,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/README.md",
+      "language": "markdown",
+      "sizeLines": 13,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "eslint.config.mjs",
+      "language": "javascript",
+      "sizeLines": 21,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/android/app/build.gradle",
+      "language": "gradle",
+      "sizeLines": 176,
+      "fileCategory": "config"
+    },
+    {
+      "path": "example_app/android/app/debug.keystore",
+      "language": "keystore",
+      "sizeLines": 8,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/android/app/proguard-rules.pro",
+      "language": "pro",
+      "sizeLines": 14,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/android/app/src/debug/AndroidManifest.xml",
+      "language": "xml",
+      "sizeLines": 7,
+      "fileCategory": "config"
+    },
+    {
+      "path": "example_app/android/app/src/main/AndroidManifest.xml",
+      "language": "xml",
+      "sizeLines": 31,
+      "fileCategory": "config"
+    },
+    {
+      "path": "example_app/android/app/src/main/java/com/kolia_stanis/Flippio_RN/MainActivity.kt",
+      "language": "kotlin",
+      "sizeLines": 65,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/android/app/src/main/java/com/kolia_stanis/Flippio_RN/MainApplication.kt",
+      "language": "kotlin",
+      "sizeLines": 57,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/android/app/src/main/res/drawable/ic_launcher_background.xml",
+      "language": "xml",
+      "sizeLines": 5,
+      "fileCategory": "config"
+    },
+    {
+      "path": "example_app/android/app/src/main/res/drawable/rn_edit_text_material.xml",
+      "language": "xml",
+      "sizeLines": 37,
+      "fileCategory": "config"
+    },
+    {
+      "path": "example_app/android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml",
+      "language": "xml",
+      "sizeLines": 4,
+      "fileCategory": "config"
+    },
+    {
+      "path": "example_app/android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml",
+      "language": "xml",
+      "sizeLines": 4,
+      "fileCategory": "config"
+    },
+    {
+      "path": "example_app/android/app/src/main/res/mipmap-hdpi/ic_launcher_foreground.webp",
+      "language": "webp",
+      "sizeLines": 32,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/android/app/src/main/res/mipmap-hdpi/ic_launcher_round.webp",
+      "language": "webp",
+      "sizeLines": 22,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/android/app/src/main/res/mipmap-hdpi/ic_launcher.webp",
+      "language": "webp",
+      "sizeLines": 7,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/android/app/src/main/res/mipmap-mdpi/ic_launcher_foreground.webp",
+      "language": "webp",
+      "sizeLines": 27,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/android/app/src/main/res/mipmap-mdpi/ic_launcher_round.webp",
+      "language": "webp",
+      "sizeLines": 14,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/android/app/src/main/res/mipmap-mdpi/ic_launcher.webp",
+      "language": "webp",
+      "sizeLines": 3,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/android/app/src/main/res/mipmap-xhdpi/ic_launcher_foreground.webp",
+      "language": "webp",
+      "sizeLines": 54,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/android/app/src/main/res/mipmap-xhdpi/ic_launcher_round.webp",
+      "language": "webp",
+      "sizeLines": 23,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/android/app/src/main/res/mipmap-xhdpi/ic_launcher.webp",
+      "language": "webp",
+      "sizeLines": 21,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/android/app/src/main/res/mipmap-xxhdpi/ic_launcher_foreground.webp",
+      "language": "webp",
+      "sizeLines": 74,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/android/app/src/main/res/mipmap-xxhdpi/ic_launcher_round.webp",
+      "language": "webp",
+      "sizeLines": 33,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/android/app/src/main/res/mipmap-xxhdpi/ic_launcher.webp",
+      "language": "webp",
+      "sizeLines": 16,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_foreground.webp",
+      "language": "webp",
+      "sizeLines": 121,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.webp",
+      "language": "webp",
+      "sizeLines": 50,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.webp",
+      "language": "webp",
+      "sizeLines": 55,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/android/app/src/main/res/values-night/colors.xml",
+      "language": "xml",
+      "sizeLines": 0,
+      "fileCategory": "config"
+    },
+    {
+      "path": "example_app/android/app/src/main/res/values/colors.xml",
+      "language": "xml",
+      "sizeLines": 5,
+      "fileCategory": "config"
+    },
+    {
+      "path": "example_app/android/app/src/main/res/values/strings.xml",
+      "language": "xml",
+      "sizeLines": 5,
+      "fileCategory": "config"
+    },
+    {
+      "path": "example_app/android/app/src/main/res/values/styles.xml",
+      "language": "xml",
+      "sizeLines": 18,
+      "fileCategory": "config"
+    },
+    {
+      "path": "example_app/android/build.gradle",
+      "language": "gradle",
+      "sizeLines": 41,
+      "fileCategory": "config"
+    },
+    {
+      "path": "example_app/android/gradle.properties",
+      "language": "properties",
+      "sizeLines": 56,
+      "fileCategory": "config"
+    },
+    {
+      "path": "example_app/android/gradle/wrapper/gradle-wrapper.jar",
+      "language": "jar",
+      "sizeLines": 151,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/android/gradle/wrapper/gradle-wrapper.properties",
+      "language": "properties",
+      "sizeLines": 7,
+      "fileCategory": "config"
+    },
+    {
+      "path": "example_app/android/gradlew",
+      "language": "unknown",
+      "sizeLines": 252,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/android/gradlew.bat",
+      "language": "batch",
+      "sizeLines": 94,
+      "fileCategory": "script"
+    },
+    {
+      "path": "example_app/android/settings.gradle",
+      "language": "gradle",
+      "sizeLines": 38,
+      "fileCategory": "config"
+    },
+    {
+      "path": "example_app/app.json",
+      "language": "json",
+      "sizeLines": 45,
+      "fileCategory": "config"
+    },
+    {
+      "path": "example_app/app/_layout.tsx",
+      "language": "typescript",
+      "sizeLines": 64,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/app/(tabs)/_layout.tsx",
+      "language": "typescript",
+      "sizeLines": 46,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/app/(tabs)/index.tsx",
+      "language": "typescript",
+      "sizeLines": 44,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/app/+not-found.tsx",
+      "language": "typescript",
+      "sizeLines": 32,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/components/__tests__/__snapshots__/ThemedText-test.tsx.snap",
+      "language": "snap",
+      "sizeLines": 24,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/components/__tests__/ThemedText-test.tsx",
+      "language": "typescript",
+      "sizeLines": 10,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/components/Collapsible.tsx",
+      "language": "typescript",
+      "sizeLines": 47,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/components/DatabaseItems.tsx",
+      "language": "typescript",
+      "sizeLines": 575,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/components/ExternalLink.tsx",
+      "language": "typescript",
+      "sizeLines": 24,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/components/HapticTab.tsx",
+      "language": "typescript",
+      "sizeLines": 19,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/components/HelloWave.tsx",
+      "language": "typescript",
+      "sizeLines": 40,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/components/ParallaxScrollView.tsx",
+      "language": "typescript",
+      "sizeLines": 84,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/components/ThemedText.tsx",
+      "language": "typescript",
+      "sizeLines": 61,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/components/ThemedView.tsx",
+      "language": "typescript",
+      "sizeLines": 15,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/components/ui/IconSymbol.ios.tsx",
+      "language": "typescript",
+      "sizeLines": 33,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/components/ui/IconSymbol.tsx",
+      "language": "typescript",
+      "sizeLines": 43,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/components/ui/TabBarBackground.ios.tsx",
+      "language": "typescript",
+      "sizeLines": 22,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/components/ui/TabBarBackground.tsx",
+      "language": "typescript",
+      "sizeLines": 6,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/constants/Colors.ts",
+      "language": "typescript",
+      "sizeLines": 26,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/databases/ecommerce_sample.db",
+      "language": "db",
+      "sizeLines": 69,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/databases/notes_sample.db",
+      "language": "db",
+      "sizeLines": 39,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/hooks/useColorScheme.ts",
+      "language": "typescript",
+      "sizeLines": 1,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/hooks/useColorScheme.web.ts",
+      "language": "typescript",
+      "sizeLines": 21,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/hooks/useThemeColor.ts",
+      "language": "typescript",
+      "sizeLines": 22,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/ios/.xcode.env",
+      "language": "config",
+      "sizeLines": 11,
+      "fileCategory": "config"
+    },
+    {
+      "path": "example_app/ios/FlippioRN.xcodeproj/project.pbxproj",
+      "language": "pbxproj",
+      "sizeLines": 555,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/ios/FlippioRN.xcodeproj/xcshareddata/xcschemes/FlippioRN.xcscheme",
+      "language": "xcscheme",
+      "sizeLines": 88,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/ios/FlippioRN.xcworkspace/contents.xcworkspacedata",
+      "language": "xcworkspacedata",
+      "sizeLines": 10,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/ios/FlippioRN/AppDelegate.h",
+      "language": "c",
+      "sizeLines": 7,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/ios/FlippioRN/AppDelegate.mm",
+      "language": "mm",
+      "sizeLines": 62,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/ios/FlippioRN/FlippioRN-Bridging-Header.h",
+      "language": "c",
+      "sizeLines": 3,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/ios/FlippioRN/FlippioRN.entitlements",
+      "language": "entitlements",
+      "sizeLines": 4,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/ios/FlippioRN/Images.xcassets/AppIcon.appiconset/Contents.json",
+      "language": "json",
+      "sizeLines": 14,
+      "fileCategory": "config"
+    },
+    {
+      "path": "example_app/ios/FlippioRN/Images.xcassets/Contents.json",
+      "language": "json",
+      "sizeLines": 6,
+      "fileCategory": "config"
+    },
+    {
+      "path": "example_app/ios/FlippioRN/Images.xcassets/SplashScreenBackground.colorset/Contents.json",
+      "language": "json",
+      "sizeLines": 20,
+      "fileCategory": "config"
+    },
+    {
+      "path": "example_app/ios/FlippioRN/Images.xcassets/SplashScreenLogo.imageset/Contents.json",
+      "language": "json",
+      "sizeLines": 23,
+      "fileCategory": "config"
+    },
+    {
+      "path": "example_app/ios/FlippioRN/Info.plist",
+      "language": "xml",
+      "sizeLines": 81,
+      "fileCategory": "config"
+    },
+    {
+      "path": "example_app/ios/FlippioRN/main.m",
+      "language": "m",
+      "sizeLines": 10,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/ios/FlippioRN/noop-file.swift",
+      "language": "swift",
+      "sizeLines": 4,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/ios/FlippioRN/PrivacyInfo.xcprivacy",
+      "language": "xcprivacy",
+      "sizeLines": 48,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/ios/FlippioRN/SplashScreen.storyboard",
+      "language": "storyboard",
+      "sizeLines": 41,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/ios/FlippioRN/Supporting/Expo.plist",
+      "language": "xml",
+      "sizeLines": 11,
+      "fileCategory": "config"
+    },
+    {
+      "path": "example_app/ios/Podfile",
+      "language": "unknown",
+      "sizeLines": 87,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/ios/Podfile.properties.json",
+      "language": "json",
+      "sizeLines": 5,
+      "fileCategory": "config"
+    },
+    {
+      "path": "example_app/package.json",
+      "language": "json",
+      "sizeLines": 55,
+      "fileCategory": "config"
+    },
+    {
+      "path": "example_app/README.md",
+      "language": "markdown",
+      "sizeLines": 50,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "example_app/scripts/reset-project.js",
+      "language": "javascript",
+      "sizeLines": 118,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/tsconfig.json",
+      "language": "json",
+      "sizeLines": 17,
+      "fileCategory": "config"
+    },
+    {
+      "path": "example_app/utils/database.ts",
+      "language": "typescript",
+      "sizeLines": 248,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Makefile",
+      "language": "makefile",
+      "sizeLines": 210,
+      "fileCategory": "infra"
+    },
+    {
+      "path": "package.json",
+      "language": "json",
+      "sizeLines": 73,
+      "fileCategory": "config"
+    },
+    {
+      "path": "README.md",
+      "language": "markdown",
+      "sizeLines": 98,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "resources/flippio.icns",
+      "language": "icns",
+      "sizeLines": 1266,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/libs/libcrypto.3.dylib",
+      "language": "dylib",
+      "sizeLines": 18092,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/libs/libimobiledevice-1.0.6.dylib",
+      "language": "dylib",
+      "sizeLines": 322,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/libs/libimobiledevice-glue-1.0.0.dylib",
+      "language": "dylib",
+      "sizeLines": 216,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/libs/liblzma.5.dylib",
+      "language": "dylib",
+      "sizeLines": 980,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/libs/libplist-2.0.4.dylib",
+      "language": "dylib",
+      "sizeLines": 349,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/libs/libssl.3.dylib",
+      "language": "dylib",
+      "sizeLines": 3013,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/libs/libusbmuxd-2.0.7.dylib",
+      "language": "dylib",
+      "sizeLines": 109,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/libs/libzip.5.5.dylib",
+      "language": "dylib",
+      "sizeLines": 340,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/libs/libzstd.1.5.7.dylib",
+      "language": "dylib",
+      "sizeLines": 4743,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/.deps/afcclient-afcclient.Po",
+      "language": "po",
+      "sizeLines": 344,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/.deps/idevice_id-idevice_id.Po",
+      "language": "po",
+      "sizeLines": 292,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/.deps/idevicebackup-idevicebackup.Po",
+      "language": "po",
+      "sizeLines": 346,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/.deps/idevicebackup2-idevicebackup2.Po",
+      "language": "po",
+      "sizeLines": 352,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/.deps/idevicebtlogger-idevicebtlogger.Po",
+      "language": "po",
+      "sizeLines": 340,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/.deps/idevicecrashreport-idevicecrashreport.Po",
+      "language": "po",
+      "sizeLines": 308,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/.deps/idevicedate-idevicedate.Po",
+      "language": "po",
+      "sizeLines": 298,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/.deps/idevicedebug-idevicedebug.Po",
+      "language": "po",
+      "sizeLines": 305,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/.deps/idevicedebugserverproxy-idevicedebugserverproxy.Po",
+      "language": "po",
+      "sizeLines": 361,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/.deps/idevicedevmodectl-idevicedevmodectl.Po",
+      "language": "po",
+      "sizeLines": 334,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/.deps/idevicediagnostics-idevicediagnostics.Po",
+      "language": "po",
+      "sizeLines": 304,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/.deps/ideviceenterrecovery-ideviceenterrecovery.Po",
+      "language": "po",
+      "sizeLines": 299,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/.deps/ideviceimagemounter-ideviceimagemounter.Po",
+      "language": "po",
+      "sizeLines": 359,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/.deps/ideviceinfo-ideviceinfo.Po",
+      "language": "po",
+      "sizeLines": 298,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/.deps/idevicename-idevicename.Po",
+      "language": "po",
+      "sizeLines": 294,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/.deps/idevicenotificationproxy-idevicenotificationproxy.Po",
+      "language": "po",
+      "sizeLines": 301,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/.deps/idevicepair-idevicepair.Po",
+      "language": "po",
+      "sizeLines": 314,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/.deps/ideviceprovision-ideviceprovision.Po",
+      "language": "po",
+      "sizeLines": 328,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/.deps/idevicescreenshot-idevicescreenshot.Po",
+      "language": "po",
+      "sizeLines": 304,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/.deps/idevicesetlocation-idevicesetlocation.Po",
+      "language": "po",
+      "sizeLines": 299,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/.deps/idevicesyslog-idevicesyslog.Po",
+      "language": "po",
+      "sizeLines": 304,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/afcclient",
+      "language": "unknown",
+      "sizeLines": 242,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/afcclient-afcclient.o",
+      "language": "o",
+      "sizeLines": 437,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/afcclient.c",
+      "language": "c",
+      "sizeLines": 1665,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevice_id",
+      "language": "unknown",
+      "sizeLines": 177,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevice_id-idevice_id.o",
+      "language": "o",
+      "sizeLines": 43,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevice_id.c",
+      "language": "c",
+      "sizeLines": 174,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicebackup",
+      "language": "unknown",
+      "sizeLines": 233,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicebackup-idevicebackup.o",
+      "language": "o",
+      "sizeLines": 345,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicebackup.c",
+      "language": "c",
+      "sizeLines": 1571,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicebackup2",
+      "language": "unknown",
+      "sizeLines": 318,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicebackup2-idevicebackup2.o",
+      "language": "o",
+      "sizeLines": 453,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicebackup2.c",
+      "language": "c",
+      "sizeLines": 2701,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicebtlogger",
+      "language": "unknown",
+      "sizeLines": 205,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicebtlogger-idevicebtlogger.o",
+      "language": "o",
+      "sizeLines": 164,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicebtlogger.c",
+      "language": "c",
+      "sizeLines": 458,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicecrashreport",
+      "language": "unknown",
+      "sizeLines": 175,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicecrashreport-idevicecrashreport.o",
+      "language": "o",
+      "sizeLines": 165,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicecrashreport.c",
+      "language": "c",
+      "sizeLines": 548,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicedate",
+      "language": "unknown",
+      "sizeLines": 179,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicedate-idevicedate.o",
+      "language": "o",
+      "sizeLines": 166,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicedate.c",
+      "language": "c",
+      "sizeLines": 256,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicedebug",
+      "language": "unknown",
+      "sizeLines": 236,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicedebug-idevicedebug.o",
+      "language": "o",
+      "sizeLines": 203,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicedebug.c",
+      "language": "c",
+      "sizeLines": 625,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicedebugserverproxy",
+      "language": "unknown",
+      "sizeLines": 232,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicedebugserverproxy-idevicedebugserverproxy.o",
+      "language": "o",
+      "sizeLines": 161,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicedebugserverproxy.c",
+      "language": "c",
+      "sizeLines": 375,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicedevmodectl",
+      "language": "unknown",
+      "sizeLines": 194,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicedevmodectl-idevicedevmodectl.o",
+      "language": "o",
+      "sizeLines": 231,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicedevmodectl.c",
+      "language": "c",
+      "sizeLines": 462,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicediagnostics",
+      "language": "unknown",
+      "sizeLines": 185,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicediagnostics-idevicediagnostics.o",
+      "language": "o",
+      "sizeLines": 208,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicediagnostics.c",
+      "language": "c",
+      "sizeLines": 344,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/ideviceenterrecovery",
+      "language": "unknown",
+      "sizeLines": 161,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/ideviceenterrecovery-ideviceenterrecovery.o",
+      "language": "o",
+      "sizeLines": 40,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/ideviceenterrecovery.c",
+      "language": "c",
+      "sizeLines": 139,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/ideviceimagemounter",
+      "language": "unknown",
+      "sizeLines": 241,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/ideviceimagemounter-ideviceimagemounter.o",
+      "language": "o",
+      "sizeLines": 296,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/ideviceimagemounter.c",
+      "language": "c",
+      "sizeLines": 778,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/ideviceinfo",
+      "language": "unknown",
+      "sizeLines": 171,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/ideviceinfo-ideviceinfo.o",
+      "language": "o",
+      "sizeLines": 166,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/ideviceinfo.c",
+      "language": "c",
+      "sizeLines": 261,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/ideviceinstaller",
+      "language": "unknown",
+      "sizeLines": 163,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicename",
+      "language": "unknown",
+      "sizeLines": 171,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicename-idevicename.o",
+      "language": "o",
+      "sizeLines": 49,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicename.c",
+      "language": "c",
+      "sizeLines": 159,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicenotificationproxy",
+      "language": "unknown",
+      "sizeLines": 195,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicenotificationproxy-idevicenotificationproxy.o",
+      "language": "o",
+      "sizeLines": 155,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicenotificationproxy.c",
+      "language": "c",
+      "sizeLines": 305,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicepair",
+      "language": "unknown",
+      "sizeLines": 511,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicepair-idevicepair.o",
+      "language": "o",
+      "sizeLines": 289,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicepair.c",
+      "language": "c",
+      "sizeLines": 479,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/ideviceprovision",
+      "language": "unknown",
+      "sizeLines": 247,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/ideviceprovision-ideviceprovision.o",
+      "language": "o",
+      "sizeLines": 278,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/ideviceprovision.c",
+      "language": "c",
+      "sizeLines": 689,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicescreenshot",
+      "language": "unknown",
+      "sizeLines": 176,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicescreenshot-idevicescreenshot.o",
+      "language": "o",
+      "sizeLines": 109,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicescreenshot.c",
+      "language": "c",
+      "sizeLines": 242,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicesetlocation",
+      "language": "unknown",
+      "sizeLines": 172,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicesetlocation-idevicesetlocation.o",
+      "language": "o",
+      "sizeLines": 79,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicesetlocation.c",
+      "language": "c",
+      "sizeLines": 192,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicesyslog",
+      "language": "unknown",
+      "sizeLines": 267,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicesyslog-idevicesyslog.o",
+      "language": "o",
+      "sizeLines": 299,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicesyslog.c",
+      "language": "c",
+      "sizeLines": 784,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/Makefile.am",
+      "language": "am",
+      "sizeLines": 144,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/Makefile.in",
+      "language": "in",
+      "sizeLines": 1460,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/Makefile.txt",
+      "language": "txt",
+      "sizeLines": 1460,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "resources/libimobiledevice/tools/afcclient",
+      "language": "unknown",
+      "sizeLines": 242,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools/idevice_id",
+      "language": "unknown",
+      "sizeLines": 177,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools/ideviceinfo",
+      "language": "unknown",
+      "sizeLines": 171,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools/ideviceinstaller",
+      "language": "unknown",
+      "sizeLines": 163,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools/libcrypto.3.dylib",
+      "language": "dylib",
+      "sizeLines": 18092,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools/libimobiledevice-1.0.6.dylib",
+      "language": "dylib",
+      "sizeLines": 322,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools/libimobiledevice-glue-1.0.0.dylib",
+      "language": "dylib",
+      "sizeLines": 216,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools/liblzma.5.dylib",
+      "language": "dylib",
+      "sizeLines": 980,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools/libplist-2.0.4.dylib",
+      "language": "dylib",
+      "sizeLines": 349,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools/libssl.3.dylib",
+      "language": "dylib",
+      "sizeLines": 3013,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools/libusbmuxd-2.0.7.dylib",
+      "language": "dylib",
+      "sizeLines": 109,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools/libzip.5.5.dylib",
+      "language": "dylib",
+      "sizeLines": 340,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools/libzstd.1.5.7.dylib",
+      "language": "dylib",
+      "sizeLines": 4743,
+      "fileCategory": "code"
+    },
+    {
+      "path": "scripts/generate-test-databases.js",
+      "language": "javascript",
+      "sizeLines": 431,
+      "fileCategory": "code"
+    },
+    {
+      "path": "scripts/update-version.js",
+      "language": "javascript",
+      "sizeLines": 279,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/build.rs",
+      "language": "rust",
+      "sizeLines": 137,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/Cargo.toml",
+      "language": "toml",
+      "sizeLines": 56,
+      "fileCategory": "config"
+    },
+    {
+      "path": "src-tauri/DEVICE_TESTS.md",
+      "language": "markdown",
+      "sizeLines": 174,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "src-tauri/icons/icon.icns",
+      "language": "icns",
+      "sizeLines": 603,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/macos-deps/afcclient",
+      "language": "unknown",
+      "sizeLines": 242,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/macos-deps/afcclient-aarch64-apple-darwin",
+      "language": "unknown",
+      "sizeLines": 242,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/macos-deps/afcclient-universal-apple-darwin",
+      "language": "unknown",
+      "sizeLines": 242,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/macos-deps/afcclient-x86_64-apple-darwin",
+      "language": "unknown",
+      "sizeLines": 242,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/macos-deps/idevice_id",
+      "language": "unknown",
+      "sizeLines": 177,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/macos-deps/idevice_id-aarch64-apple-darwin",
+      "language": "unknown",
+      "sizeLines": 177,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/macos-deps/idevice_id-universal-apple-darwin",
+      "language": "unknown",
+      "sizeLines": 177,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/macos-deps/idevice_id-x86_64-apple-darwin",
+      "language": "unknown",
+      "sizeLines": 177,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/macos-deps/ideviceinfo",
+      "language": "unknown",
+      "sizeLines": 171,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/macos-deps/ideviceinfo-aarch64-apple-darwin",
+      "language": "unknown",
+      "sizeLines": 171,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/macos-deps/ideviceinfo-universal-apple-darwin",
+      "language": "unknown",
+      "sizeLines": 171,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/macos-deps/ideviceinfo-x86_64-apple-darwin",
+      "language": "unknown",
+      "sizeLines": 171,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/macos-deps/ideviceinstaller",
+      "language": "unknown",
+      "sizeLines": 163,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/macos-deps/ideviceinstaller-aarch64-apple-darwin",
+      "language": "unknown",
+      "sizeLines": 163,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/macos-deps/ideviceinstaller-universal-apple-darwin",
+      "language": "unknown",
+      "sizeLines": 163,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/macos-deps/ideviceinstaller-x86_64-apple-darwin",
+      "language": "unknown",
+      "sizeLines": 163,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/macos-deps/libcrypto.3.dylib",
+      "language": "dylib",
+      "sizeLines": 18092,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/macos-deps/libimobiledevice-1.0.6.dylib",
+      "language": "dylib",
+      "sizeLines": 322,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/macos-deps/libimobiledevice-glue-1.0.0.dylib",
+      "language": "dylib",
+      "sizeLines": 216,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/macos-deps/liblzma.5.dylib",
+      "language": "dylib",
+      "sizeLines": 980,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/macos-deps/libplist-2.0.4.dylib",
+      "language": "dylib",
+      "sizeLines": 349,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/macos-deps/libssl.3.dylib",
+      "language": "dylib",
+      "sizeLines": 3013,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/macos-deps/libusbmuxd-2.0.7.dylib",
+      "language": "dylib",
+      "sizeLines": 109,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/macos-deps/libzip.5.5.dylib",
+      "language": "dylib",
+      "sizeLines": 340,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/macos-deps/libzstd.1.5.7.dylib",
+      "language": "dylib",
+      "sizeLines": 4743,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/README.md",
+      "language": "markdown",
+      "sizeLines": 106,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "src-tauri/src/commands/common.rs",
+      "language": "rust",
+      "sizeLines": 522,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/src/commands/database/change_history/commands.rs",
+      "language": "rust",
+      "sizeLines": 287,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/src/commands/database/change_history/integration.rs",
+      "language": "rust",
+      "sizeLines": 232,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/src/commands/database/change_history/manager.rs",
+      "language": "rust",
+      "sizeLines": 345,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/src/commands/database/change_history/mod.rs",
+      "language": "rust",
+      "sizeLines": 32,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/src/commands/database/change_history/types.rs",
+      "language": "rust",
+      "sizeLines": 196,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/src/commands/database/change_tracking.rs",
+      "language": "rust",
+      "sizeLines": 167,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/src/commands/database/commands.rs",
+      "language": "rust",
+      "sizeLines": 1819,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/src/commands/database/connection_manager.rs",
+      "language": "rust",
+      "sizeLines": 218,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/src/commands/database/helpers.rs",
+      "language": "rust",
+      "sizeLines": 330,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/src/commands/database/mod.rs",
+      "language": "rust",
+      "sizeLines": 18,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/src/commands/database/tests/mod.rs",
+      "language": "rust",
+      "sizeLines": 296,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/src/commands/database/types.rs",
+      "language": "rust",
+      "sizeLines": 118,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/src/commands/device/adb.rs",
+      "language": "rust",
+      "sizeLines": 1289,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/src/commands/device/helpers.rs",
+      "language": "rust",
+      "sizeLines": 463,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/src/commands/device/ios/common.rs",
+      "language": "rust",
+      "sizeLines": 0,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/src/commands/device/ios/database.rs",
+      "language": "rust",
+      "sizeLines": 996,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/src/commands/device/ios/device.rs",
+      "language": "rust",
+      "sizeLines": 472,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/src/commands/device/ios/diagnostic.rs",
+      "language": "rust",
+      "sizeLines": 199,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/src/commands/device/ios/file_utils.rs",
+      "language": "rust",
+      "sizeLines": 166,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/src/commands/device/ios/mod.rs",
+      "language": "rust",
+      "sizeLines": 29,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/src/commands/device/ios/packages.rs",
+      "language": "rust",
+      "sizeLines": 616,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/src/commands/device/ios/simulator.rs",
+      "language": "rust",
+      "sizeLines": 356,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/src/commands/device/ios/tests/mod.rs",
+      "language": "rust",
+      "sizeLines": 469,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/src/commands/device/ios/tool_validation.rs",
+      "language": "rust",
+      "sizeLines": 429,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/src/commands/device/ios/tools.rs",
+      "language": "rust",
+      "sizeLines": 302,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/src/commands/device/mod.rs",
+      "language": "rust",
+      "sizeLines": 11,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/src/commands/device/types.rs",
+      "language": "rust",
+      "sizeLines": 56,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/src/commands/device/virtual_device.rs",
+      "language": "rust",
+      "sizeLines": 231,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/src/commands/mod.rs",
+      "language": "rust",
+      "sizeLines": 5,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/src/commands/updater.rs",
+      "language": "rust",
+      "sizeLines": 190,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/src/lib.rs",
+      "language": "rust",
+      "sizeLines": 33,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/src/main.rs",
+      "language": "rust",
+      "sizeLines": 151,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/tauri-ci.conf.json",
+      "language": "json",
+      "sizeLines": 66,
+      "fileCategory": "config"
+    },
+    {
+      "path": "src-tauri/tauri.conf.json",
+      "language": "json",
+      "sizeLines": 95,
+      "fileCategory": "config"
+    },
+    {
+      "path": "src-tauri/tests/device_integration_tests.rs",
+      "language": "rust",
+      "sizeLines": 406,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/tests/fixtures/databases/test_complex.db",
+      "language": "db",
+      "sizeLines": 23,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/tests/fixtures/databases/test_ecommerce.db",
+      "language": "db",
+      "sizeLines": 69,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/tests/fixtures/databases/test_notes.db",
+      "language": "db",
+      "sizeLines": 39,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/tests/mod.rs",
+      "language": "rust",
+      "sizeLines": 209,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/index.html",
+      "language": "html",
+      "sizeLines": 234,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "src/renderer/package.json",
+      "language": "json",
+      "sizeLines": 11,
+      "fileCategory": "config"
+    },
+    {
+      "path": "src/renderer/src/__tests__/integration/component-integration.test.tsx",
+      "language": "typescript",
+      "sizeLines": 304,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/__tests__/integration/main-user-flow.test.tsx",
+      "language": "typescript",
+      "sizeLines": 297,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/__tests__/tauri-api-basic.test.ts",
+      "language": "typescript",
+      "sizeLines": 32,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/__tests__/tauri-api-comprehensive.test.ts",
+      "language": "typescript",
+      "sizeLines": 879,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/__tests__/user-workflow-integration.test.tsx",
+      "language": "typescript",
+      "sizeLines": 340,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/__tests__/utils-case-transformer.test.ts",
+      "language": "typescript",
+      "sizeLines": 332,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/__tests__/utils-common.test.ts",
+      "language": "typescript",
+      "sizeLines": 282,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/__tests__/utils-database.test.ts",
+      "language": "typescript",
+      "sizeLines": 367,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/__tests__/utils-type-validation.test.ts",
+      "language": "typescript",
+      "sizeLines": 482,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/App.tsx",
+      "language": "typescript",
+      "sizeLines": 49,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/assets/base.css",
+      "language": "css",
+      "sizeLines": 45,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "src/renderer/src/assets/main.css",
+      "language": "css",
+      "sizeLines": 97,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "src/renderer/src/components/__tests__/SidePanel.test.tsx",
+      "language": "typescript",
+      "sizeLines": 184,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/components/ChangeHistory/ChangeHistoryIndicator.tsx",
+      "language": "typescript",
+      "sizeLines": 82,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/components/ChangeHistory/ChangeHistoryPanel.tsx",
+      "language": "typescript",
+      "sizeLines": 328,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/components/ChangeHistory/index.ts",
+      "language": "typescript",
+      "sizeLines": 2,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/components/common/DeviceInfoModal.tsx",
+      "language": "typescript",
+      "sizeLines": 194,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/components/common/FLModal.tsx",
+      "language": "typescript",
+      "sizeLines": 129,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/components/common/FLSelect.tsx",
+      "language": "typescript",
+      "sizeLines": 327,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/components/data/__tests__/DataGrid.test.tsx",
+      "language": "typescript",
+      "sizeLines": 131,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/components/data/animations.ts",
+      "language": "typescript",
+      "sizeLines": 26,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/components/data/CustomQueryModal.tsx",
+      "language": "typescript",
+      "sizeLines": 87,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/components/data/DataGrid.tsx",
+      "language": "typescript",
+      "sizeLines": 345,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/components/data/DragAndDropProvider.tsx",
+      "language": "typescript",
+      "sizeLines": 380,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/components/data/TableFooter.tsx",
+      "language": "typescript",
+      "sizeLines": 342,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/components/data/VirtualDeviceModal.tsx",
+      "language": "typescript",
+      "sizeLines": 308,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/components/layout/__tests__/AppHeader.test.tsx",
+      "language": "typescript",
+      "sizeLines": 267,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/components/layout/__tests__/Settings.test.tsx",
+      "language": "typescript",
+      "sizeLines": 132,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/components/layout/__tests__/SubHeader.test.tsx",
+      "language": "typescript",
+      "sizeLines": 264,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/components/layout/AppHeader.tsx",
+      "language": "typescript",
+      "sizeLines": 528,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/components/layout/PackageSetModal.tsx",
+      "language": "typescript",
+      "sizeLines": 168,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/components/layout/Settings.tsx",
+      "language": "typescript",
+      "sizeLines": 403,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/components/layout/SubHeader.tsx",
+      "language": "typescript",
+      "sizeLines": 504,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/components/SidePanel/__tests__/DeleteRowDialog.test.tsx",
+      "language": "typescript",
+      "sizeLines": 222,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/components/SidePanel/__tests__/Field.test.tsx",
+      "language": "typescript",
+      "sizeLines": 395,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/components/SidePanel/__tests__/JsonViewer.test.tsx",
+      "language": "typescript",
+      "sizeLines": 196,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/components/SidePanel/__tests__/RowEditor.test.tsx",
+      "language": "typescript",
+      "sizeLines": 143,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/components/SidePanel/ClearTableDialog.tsx",
+      "language": "typescript",
+      "sizeLines": 56,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/components/SidePanel/DeleteRowDialog.tsx",
+      "language": "typescript",
+      "sizeLines": 56,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/components/SidePanel/Field.tsx",
+      "language": "typescript",
+      "sizeLines": 212,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/components/SidePanel/index.ts",
+      "language": "typescript",
+      "sizeLines": 1,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/components/SidePanel/JsonEditor.tsx",
+      "language": "typescript",
+      "sizeLines": 34,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/components/SidePanel/JsonViewer.tsx",
+      "language": "typescript",
+      "sizeLines": 17,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/components/SidePanel/RowEditor.tsx",
+      "language": "typescript",
+      "sizeLines": 224,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/components/SidePanel/SidePanel.tsx",
+      "language": "typescript",
+      "sizeLines": 206,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/frontend-log.ts",
+      "language": "typescript",
+      "sizeLines": 68,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/hooks/__tests__/useApplications.test.ts",
+      "language": "typescript",
+      "sizeLines": 347,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/hooks/__tests__/useChangeHistory.test.ts",
+      "language": "typescript",
+      "sizeLines": 208,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/hooks/__tests__/useDatabaseFiles.test.ts",
+      "language": "typescript",
+      "sizeLines": 401,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/hooks/__tests__/useTableDataQuery.test.tsx",
+      "language": "typescript",
+      "sizeLines": 79,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/hooks/useApplications.ts",
+      "language": "typescript",
+      "sizeLines": 64,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/hooks/useAutoUpdater.ts",
+      "language": "typescript",
+      "sizeLines": 126,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/hooks/useBaseDatabaseMutation.ts",
+      "language": "typescript",
+      "sizeLines": 158,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/hooks/useChangeHistory.ts",
+      "language": "typescript",
+      "sizeLines": 157,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/hooks/useChangeHistoryMutations.ts",
+      "language": "typescript",
+      "sizeLines": 189,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/hooks/useDatabaseFiles.ts",
+      "language": "typescript",
+      "sizeLines": 258,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/hooks/useDatabaseTables.ts",
+      "language": "typescript",
+      "sizeLines": 48,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/hooks/useDevices.ts",
+      "language": "typescript",
+      "sizeLines": 20,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/hooks/useTableDataQuery.ts",
+      "language": "typescript",
+      "sizeLines": 95,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/hooks/useTableMutations.ts",
+      "language": "typescript",
+      "sizeLines": 85,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/main.tsx",
+      "language": "typescript",
+      "sizeLines": 35,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/pages/Main.tsx",
+      "language": "typescript",
+      "sizeLines": 27,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/store/__tests__/appStore.test.ts",
+      "language": "typescript",
+      "sizeLines": 282,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/store/__tests__/useCurrentDeviceSelection.test.ts",
+      "language": "typescript",
+      "sizeLines": 279,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/store/__tests__/useThemeStore.test.ts",
+      "language": "typescript",
+      "sizeLines": 162,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/store/appStore.ts",
+      "language": "typescript",
+      "sizeLines": 205,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/store/index.ts",
+      "language": "typescript",
+      "sizeLines": 4,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/store/useCurrentDatabaseSelection.ts",
+      "language": "typescript",
+      "sizeLines": 32,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/store/useCurrentDeviceSelection.ts",
+      "language": "typescript",
+      "sizeLines": 33,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/store/useRecentlyUsedApps.ts",
+      "language": "typescript",
+      "sizeLines": 103,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/store/useRowEditingStore.ts",
+      "language": "typescript",
+      "sizeLines": 24,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/store/useTableData.ts",
+      "language": "typescript",
+      "sizeLines": 25,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/store/useThemeStore.ts",
+      "language": "typescript",
+      "sizeLines": 117,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/tauri-api.ts",
+      "language": "typescript",
+      "sizeLines": 957,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/test-utils/render.tsx",
+      "language": "typescript",
+      "sizeLines": 49,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/test-utils/setup.ts",
+      "language": "typescript",
+      "sizeLines": 154,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/types/changeHistory.ts",
+      "language": "typescript",
+      "sizeLines": 73,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/types/devices.ts",
+      "language": "typescript",
+      "sizeLines": 24,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/types/env.d.ts",
+      "language": "typescript",
+      "sizeLines": 1,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/types/global.d.ts",
+      "language": "typescript",
+      "sizeLines": 159,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/types/index.ts",
+      "language": "typescript",
+      "sizeLines": 1,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/ui/color-mode.tsx",
+      "language": "typescript",
+      "sizeLines": 168,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/ui/provider.tsx",
+      "language": "typescript",
+      "sizeLines": 13,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/ui/theme.ts",
+      "language": "typescript",
+      "sizeLines": 193,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/ui/toaster.tsx",
+      "language": "typescript",
+      "sizeLines": 45,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/ui/tooltip.tsx",
+      "language": "typescript",
+      "sizeLines": 47,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/utils/__tests__/common.test.ts",
+      "language": "typescript",
+      "sizeLines": 170,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/utils/__tests__/database.test.ts",
+      "language": "typescript",
+      "sizeLines": 211,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/utils/caseTransformer.ts",
+      "language": "typescript",
+      "sizeLines": 67,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/utils/common.ts",
+      "language": "typescript",
+      "sizeLines": 55,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/utils/contextBuilder.ts",
+      "language": "typescript",
+      "sizeLines": 56,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/utils/contextKey.ts",
+      "language": "typescript",
+      "sizeLines": 136,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/utils/database.ts",
+      "language": "typescript",
+      "sizeLines": 51,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/utils/databaseFileGrouping.ts",
+      "language": "typescript",
+      "sizeLines": 85,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/utils/databaseFileResolver.ts",
+      "language": "typescript",
+      "sizeLines": 129,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/utils/databaseRefresh.ts",
+      "language": "typescript",
+      "sizeLines": 128,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/utils/index.ts",
+      "language": "typescript",
+      "sizeLines": 3,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/utils/operationTypeUtils.ts",
+      "language": "typescript",
+      "sizeLines": 168,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/src/utils/typeValidation.ts",
+      "language": "typescript",
+      "sizeLines": 181,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/renderer/tsconfig.json",
+      "language": "json",
+      "sizeLines": 26,
+      "fileCategory": "config"
+    },
+    {
+      "path": "src/renderer/vite.config.ts",
+      "language": "typescript",
+      "sizeLines": 36,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src/types/performance-api.ts",
+      "language": "typescript",
+      "sizeLines": 62,
+      "fileCategory": "code"
+    },
+    {
+      "path": "test-transformer.js",
+      "language": "javascript",
+      "sizeLines": 24,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tsconfig.json",
+      "language": "json",
+      "sizeLines": 20,
+      "fileCategory": "config"
+    },
+    {
+      "path": "tsconfig.web.json",
+      "language": "json",
+      "sizeLines": 34,
+      "fileCategory": "config"
+    },
+    {
+      "path": "vitest.config.ts",
+      "language": "typescript",
+      "sizeLines": 77,
+      "fileCategory": "code"
+    }
+  ],
+  "totalFiles": 401,
+  "filteredByIgnore": 0,
+  "estimatedComplexity": "large",
+  "stats": {
+    "filesScanned": 401,
+    "byCategory": {
+      "docs": 14,
+      "code": 342,
+      "infra": 5,
+      "config": 36,
+      "script": 1,
+      "markup": 3
+    },
+    "byLanguage": {
+      "markdown": 13,
+      "unknown": 48,
+      "yaml": 5,
+      "disabled": 1,
+      "javascript": 5,
+      "gradle": 3,
+      "keystore": 1,
+      "pro": 1,
+      "xml": 12,
+      "kotlin": 2,
+      "webp": 15,
+      "properties": 2,
+      "jar": 1,
+      "batch": 1,
+      "json": 15,
+      "typescript": 122,
+      "snap": 1,
+      "db": 5,
+      "config": 1,
+      "pbxproj": 1,
+      "xcscheme": 1,
+      "xcworkspacedata": 1,
+      "c": 23,
+      "mm": 1,
+      "entitlements": 1,
+      "m": 1,
+      "swift": 1,
+      "xcprivacy": 1,
+      "storyboard": 1,
+      "makefile": 1,
+      "icns": 2,
+      "dylib": 27,
+      "po": 21,
+      "o": 21,
+      "am": 1,
+      "in": 1,
+      "txt": 1,
+      "rust": 36,
+      "toml": 1,
+      "html": 1,
+      "css": 2
+    }
+  }
+}

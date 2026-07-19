@@ -1,0 +1,287 @@
+{
+  "projectRoot": "/Users/mykolastanislavchuk/Home/Flippio",
+  "batchFiles": [
+    {
+      "path": ".codex/skills/grilling/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 12,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/skills/improve-codebase-architecture/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 71,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/skills/tdd/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 36,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".gitattributes",
+      "language": "unknown",
+      "sizeLines": 4,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".github/copilot-instructions.md",
+      "language": "markdown",
+      "sizeLines": 242,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".github/workflows/lint.yml",
+      "language": "yaml",
+      "sizeLines": 32,
+      "fileCategory": "infra"
+    },
+    {
+      "path": ".github/workflows/release.yml.disabled",
+      "language": "disabled",
+      "sizeLines": 59,
+      "fileCategory": "infra"
+    },
+    {
+      "path": ".github/workflows/tauri-release.yml",
+      "language": "yaml",
+      "sizeLines": 83,
+      "fileCategory": "infra"
+    },
+    {
+      "path": ".github/workflows/tests.yml",
+      "language": "yaml",
+      "sizeLines": 32,
+      "fileCategory": "infra"
+    },
+    {
+      "path": ".npmrc",
+      "language": "unknown",
+      "sizeLines": 9,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".prettierignore",
+      "language": "unknown",
+      "sizeLines": 6,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".prettierrc.yaml",
+      "language": "yaml",
+      "sizeLines": 4,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".ua/.understandignore",
+      "language": "unknown",
+      "sizeLines": 88,
+      "fileCategory": "code"
+    },
+    {
+      "path": "AGENTS.md",
+      "language": "markdown",
+      "sizeLines": 99,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "CHANGELOG.md",
+      "language": "markdown",
+      "sizeLines": 42,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "dev-app-update.yml",
+      "language": "yaml",
+      "sizeLines": 3,
+      "fileCategory": "config"
+    },
+    {
+      "path": "docs/guides/build-and-deployment.md",
+      "language": "markdown",
+      "sizeLines": 63,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/guides/development-setup.md",
+      "language": "markdown",
+      "sizeLines": 75,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/README.md",
+      "language": "markdown",
+      "sizeLines": 13,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "eslint.config.mjs",
+      "language": "javascript",
+      "sizeLines": 21,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/android/app/build.gradle",
+      "language": "gradle",
+      "sizeLines": 176,
+      "fileCategory": "config"
+    },
+    {
+      "path": "example_app/android/app/debug.keystore",
+      "language": "keystore",
+      "sizeLines": 8,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/android/app/proguard-rules.pro",
+      "language": "pro",
+      "sizeLines": 14,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/android/app/src/debug/AndroidManifest.xml",
+      "language": "xml",
+      "sizeLines": 7,
+      "fileCategory": "config"
+    },
+    {
+      "path": "example_app/android/app/src/main/AndroidManifest.xml",
+      "language": "xml",
+      "sizeLines": 31,
+      "fileCategory": "config"
+    },
+    {
+      "path": "example_app/android/app/src/main/java/com/kolia_stanis/Flippio_RN/MainActivity.kt",
+      "language": "kotlin",
+      "sizeLines": 65,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/android/app/src/main/java/com/kolia_stanis/Flippio_RN/MainApplication.kt",
+      "language": "kotlin",
+      "sizeLines": 57,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/android/app/src/main/res/drawable/ic_launcher_background.xml",
+      "language": "xml",
+      "sizeLines": 5,
+      "fileCategory": "config"
+    },
+    {
+      "path": "example_app/android/app/src/main/res/drawable/rn_edit_text_material.xml",
+      "language": "xml",
+      "sizeLines": 37,
+      "fileCategory": "config"
+    },
+    {
+      "path": "example_app/android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml",
+      "language": "xml",
+      "sizeLines": 4,
+      "fileCategory": "config"
+    },
+    {
+      "path": "example_app/android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml",
+      "language": "xml",
+      "sizeLines": 4,
+      "fileCategory": "config"
+    },
+    {
+      "path": "example_app/android/app/src/main/res/mipmap-hdpi/ic_launcher_foreground.webp",
+      "language": "webp",
+      "sizeLines": 32,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/android/app/src/main/res/mipmap-hdpi/ic_launcher_round.webp",
+      "language": "webp",
+      "sizeLines": 22,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/android/app/src/main/res/mipmap-hdpi/ic_launcher.webp",
+      "language": "webp",
+      "sizeLines": 7,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/android/app/src/main/res/mipmap-mdpi/ic_launcher_foreground.webp",
+      "language": "webp",
+      "sizeLines": 27,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/android/app/src/main/res/mipmap-mdpi/ic_launcher_round.webp",
+      "language": "webp",
+      "sizeLines": 14,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/android/app/src/main/res/mipmap-mdpi/ic_launcher.webp",
+      "language": "webp",
+      "sizeLines": 3,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/android/app/src/main/res/mipmap-xhdpi/ic_launcher_foreground.webp",
+      "language": "webp",
+      "sizeLines": 54,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/android/app/src/main/res/mipmap-xhdpi/ic_launcher_round.webp",
+      "language": "webp",
+      "sizeLines": 23,
+      "fileCategory": "code"
+    },
+    {
+      "path": "example_app/android/app/src/main/res/mipmap-xhdpi/ic_launcher.webp",
+      "language": "webp",
+      "sizeLines": 21,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    ".codex/skills/grilling/SKILL.md": [],
+    ".codex/skills/improve-codebase-architecture/SKILL.md": [],
+    ".codex/skills/tdd/SKILL.md": [],
+    ".gitattributes": [],
+    ".github/copilot-instructions.md": [],
+    ".github/workflows/lint.yml": [],
+    ".github/workflows/release.yml.disabled": [],
+    ".github/workflows/tauri-release.yml": [],
+    ".github/workflows/tests.yml": [],
+    ".npmrc": [],
+    ".prettierignore": [],
+    ".prettierrc.yaml": [],
+    ".ua/.understandignore": [],
+    "AGENTS.md": [],
+    "CHANGELOG.md": [],
+    "dev-app-update.yml": [],
+    "docs/guides/build-and-deployment.md": [],
+    "docs/guides/development-setup.md": [],
+    "docs/README.md": [],
+    "eslint.config.mjs": [],
+    "example_app/android/app/build.gradle": [],
+    "example_app/android/app/debug.keystore": [],
+    "example_app/android/app/proguard-rules.pro": [],
+    "example_app/android/app/src/debug/AndroidManifest.xml": [],
+    "example_app/android/app/src/main/AndroidManifest.xml": [],
+    "example_app/android/app/src/main/java/com/kolia_stanis/Flippio_RN/MainActivity.kt": [],
+    "example_app/android/app/src/main/java/com/kolia_stanis/Flippio_RN/MainApplication.kt": [],
+    "example_app/android/app/src/main/res/drawable/ic_launcher_background.xml": [],
+    "example_app/android/app/src/main/res/drawable/rn_edit_text_material.xml": [],
+    "example_app/android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml": [],
+    "example_app/android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml": [],
+    "example_app/android/app/src/main/res/mipmap-hdpi/ic_launcher_foreground.webp": [],
+    "example_app/android/app/src/main/res/mipmap-hdpi/ic_launcher_round.webp": [],
+    "example_app/android/app/src/main/res/mipmap-hdpi/ic_launcher.webp": [],
+    "example_app/android/app/src/main/res/mipmap-mdpi/ic_launcher_foreground.webp": [],
+    "example_app/android/app/src/main/res/mipmap-mdpi/ic_launcher_round.webp": [],
+    "example_app/android/app/src/main/res/mipmap-mdpi/ic_launcher.webp": [],
+    "example_app/android/app/src/main/res/mipmap-xhdpi/ic_launcher_foreground.webp": [],
+    "example_app/android/app/src/main/res/mipmap-xhdpi/ic_launcher_round.webp": [],
+    "example_app/android/app/src/main/res/mipmap-xhdpi/ic_launcher.webp": []
+  }
+}

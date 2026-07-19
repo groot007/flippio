@@ -28,9 +28,11 @@ export async function refreshDatabase({
   showErrorToast?: boolean
 } = {}) {
   try {
+    let databaseFilesResult: any
+
     // Refresh database files if refetch function provided
     if (refetchDatabaseFiles) {
-      await refetchDatabaseFiles()
+      databaseFilesResult = await refetchDatabaseFiles()
     }
 
     // Refresh database tables if refetch function provided
@@ -52,6 +54,8 @@ export async function refreshDatabase({
         duration: 3000,
       })
     }
+
+    return databaseFilesResult
   }
   catch (error) {
     console.error('Error refreshing database:', error)

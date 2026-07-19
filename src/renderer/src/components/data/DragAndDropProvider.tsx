@@ -1,5 +1,6 @@
 import { Box, Flex, Icon, Text } from '@chakra-ui/react'
 import { keyframes } from '@emotion/react'
+import { isE2EModeEnabled } from '@renderer/e2e/mockRuntime'
 import { useCurrentDatabaseSelection, useCurrentDeviceSelection } from '@renderer/store'
 import { useColorMode } from '@renderer/ui/color-mode'
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow'
@@ -262,6 +263,22 @@ export const DragAndDropProvider: React.FC<DragAndDropProviderProps> = ({ childr
       window.removeEventListener('drop', handleDrop)
     }
   }, [handleDragEnter, handleDragOver, handleDragLeave, handleDrop])
+
+  useEffect(() => {
+    if (!isE2EModeEnabled() || typeof window === 'undefined' || !window.__FLIPPIO_E2E__) {
+      return
+    }
+
+    window.__FLIPPIO_E2E__.dropFile = (path: string) => {
+      void handleFile(path)
+    }
+
+    return () => {
+      if (window.__FLIPPIO_E2E__) {
+        delete window.__FLIPPIO_E2E__.dropFile
+      }
+    }
+  }, [handleFile])
 
   return (
     <DragAndDropContext.Provider value={{ handleFile, isProcessingFile }}>

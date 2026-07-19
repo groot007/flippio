@@ -2,6 +2,8 @@
 pub mod types;
 pub mod helpers;
 pub mod commands;
+mod connection_access;
+mod table_reads;
 pub mod connection_manager;
 pub mod change_history;
 pub mod change_tracking;
@@ -12,6 +14,7 @@ pub mod tests;
 // Re-export everything to maintain compatibility
 pub use types::*;
 pub use commands::*;
+pub use table_reads::*;
 pub use connection_manager::DatabaseConnectionManager;
 
 // Re-export change history components

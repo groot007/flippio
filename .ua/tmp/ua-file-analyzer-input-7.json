@@ -1,0 +1,339 @@
+{
+  "projectRoot": "/Users/mykolastanislavchuk/Home/Flippio",
+  "batchFiles": [
+    {
+      "path": "src-tauri/macos-deps/ideviceinstaller-aarch64-apple-darwin",
+      "language": "unknown",
+      "sizeLines": 163,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/macos-deps/ideviceinstaller-universal-apple-darwin",
+      "language": "unknown",
+      "sizeLines": 163,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/macos-deps/ideviceinstaller-x86_64-apple-darwin",
+      "language": "unknown",
+      "sizeLines": 163,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/macos-deps/libcrypto.3.dylib",
+      "language": "dylib",
+      "sizeLines": 18092,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/macos-deps/libimobiledevice-1.0.6.dylib",
+      "language": "dylib",
+      "sizeLines": 322,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/macos-deps/libimobiledevice-glue-1.0.0.dylib",
+      "language": "dylib",
+      "sizeLines": 216,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/macos-deps/liblzma.5.dylib",
+      "language": "dylib",
+      "sizeLines": 980,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/macos-deps/libplist-2.0.4.dylib",
+      "language": "dylib",
+      "sizeLines": 349,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/macos-deps/libssl.3.dylib",
+      "language": "dylib",
+      "sizeLines": 3013,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/macos-deps/libusbmuxd-2.0.7.dylib",
+      "language": "dylib",
+      "sizeLines": 109,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/macos-deps/libzip.5.5.dylib",
+      "language": "dylib",
+      "sizeLines": 340,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/macos-deps/libzstd.1.5.7.dylib",
+      "language": "dylib",
+      "sizeLines": 4743,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/README.md",
+      "language": "markdown",
+      "sizeLines": 106,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "src-tauri/src/commands/common.rs",
+      "language": "rust",
+      "sizeLines": 522,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/src/commands/database/change_history/commands.rs",
+      "language": "rust",
+      "sizeLines": 287,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/src/commands/database/change_history/integration.rs",
+      "language": "rust",
+      "sizeLines": 232,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/src/commands/database/change_history/manager.rs",
+      "language": "rust",
+      "sizeLines": 345,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/src/commands/database/change_history/mod.rs",
+      "language": "rust",
+      "sizeLines": 32,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/src/commands/database/change_history/types.rs",
+      "language": "rust",
+      "sizeLines": 196,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/src/commands/database/change_tracking.rs",
+      "language": "rust",
+      "sizeLines": 167,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/src/commands/database/commands.rs",
+      "language": "rust",
+      "sizeLines": 1819,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/src/commands/database/connection_manager.rs",
+      "language": "rust",
+      "sizeLines": 218,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/src/commands/database/helpers.rs",
+      "language": "rust",
+      "sizeLines": 330,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/src/commands/database/mod.rs",
+      "language": "rust",
+      "sizeLines": 18,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/src/commands/database/tests/mod.rs",
+      "language": "rust",
+      "sizeLines": 296,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/src/commands/database/types.rs",
+      "language": "rust",
+      "sizeLines": 118,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/src/commands/device/adb.rs",
+      "language": "rust",
+      "sizeLines": 1289,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/src/commands/device/helpers.rs",
+      "language": "rust",
+      "sizeLines": 463,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/src/commands/device/ios/common.rs",
+      "language": "rust",
+      "sizeLines": 0,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/src/commands/device/ios/database.rs",
+      "language": "rust",
+      "sizeLines": 996,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/src/commands/device/ios/device.rs",
+      "language": "rust",
+      "sizeLines": 472,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/src/commands/device/ios/diagnostic.rs",
+      "language": "rust",
+      "sizeLines": 199,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/src/commands/device/ios/file_utils.rs",
+      "language": "rust",
+      "sizeLines": 166,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/src/commands/device/ios/mod.rs",
+      "language": "rust",
+      "sizeLines": 29,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/src/commands/device/ios/packages.rs",
+      "language": "rust",
+      "sizeLines": 616,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/src/commands/device/ios/simulator.rs",
+      "language": "rust",
+      "sizeLines": 356,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/src/commands/device/ios/tests/mod.rs",
+      "language": "rust",
+      "sizeLines": 469,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/src/commands/device/ios/tool_validation.rs",
+      "language": "rust",
+      "sizeLines": 429,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/src/commands/device/ios/tools.rs",
+      "language": "rust",
+      "sizeLines": 302,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/src/commands/device/mod.rs",
+      "language": "rust",
+      "sizeLines": 11,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "src-tauri/macos-deps/ideviceinstaller-aarch64-apple-darwin": [],
+    "src-tauri/macos-deps/ideviceinstaller-universal-apple-darwin": [],
+    "src-tauri/macos-deps/ideviceinstaller-x86_64-apple-darwin": [],
+    "src-tauri/macos-deps/libcrypto.3.dylib": [],
+    "src-tauri/macos-deps/libimobiledevice-1.0.6.dylib": [],
+    "src-tauri/macos-deps/libimobiledevice-glue-1.0.0.dylib": [],
+    "src-tauri/macos-deps/liblzma.5.dylib": [],
+    "src-tauri/macos-deps/libplist-2.0.4.dylib": [],
+    "src-tauri/macos-deps/libssl.3.dylib": [],
+    "src-tauri/macos-deps/libusbmuxd-2.0.7.dylib": [],
+    "src-tauri/macos-deps/libzip.5.5.dylib": [],
+    "src-tauri/macos-deps/libzstd.1.5.7.dylib": [],
+    "src-tauri/README.md": [],
+    "src-tauri/src/commands/common.rs": [],
+    "src-tauri/src/commands/database/change_history/commands.rs": [
+      "src-tauri/src/commands/database/change_history/mod.rs",
+      "src-tauri/src/commands/database/mod.rs"
+    ],
+    "src-tauri/src/commands/database/change_history/integration.rs": [
+      "src-tauri/src/commands/database/types.rs"
+    ],
+    "src-tauri/src/commands/database/change_history/manager.rs": [
+      "src-tauri/src/commands/database/change_history/types.rs"
+    ],
+    "src-tauri/src/commands/database/change_history/mod.rs": [
+      "src-tauri/src/commands/database/change_history/commands.rs",
+      "src-tauri/src/commands/database/change_history/integration.rs",
+      "src-tauri/src/commands/database/change_history/manager.rs",
+      "src-tauri/src/commands/database/change_history/types.rs"
+    ],
+    "src-tauri/src/commands/database/change_history/types.rs": [],
+    "src-tauri/src/commands/database/change_tracking.rs": [
+      "src-tauri/src/commands/database/change_history/mod.rs"
+    ],
+    "src-tauri/src/commands/database/commands.rs": [
+      "src-tauri/src/commands/database/change_history/mod.rs",
+      "src-tauri/src/commands/database/change_tracking.rs",
+      "src-tauri/src/commands/database/helpers.rs",
+      "src-tauri/src/commands/database/types.rs"
+    ],
+    "src-tauri/src/commands/database/connection_manager.rs": [
+      "src-tauri/src/commands/database/helpers.rs",
+      "src-tauri/src/commands/database/types.rs"
+    ],
+    "src-tauri/src/commands/database/helpers.rs": [],
+    "src-tauri/src/commands/database/mod.rs": [
+      "src-tauri/src/commands/database/change_history/mod.rs",
+      "src-tauri/src/commands/database/change_tracking.rs",
+      "src-tauri/src/commands/database/commands.rs",
+      "src-tauri/src/commands/database/connection_manager.rs",
+      "src-tauri/src/commands/database/helpers.rs",
+      "src-tauri/src/commands/database/tests/mod.rs",
+      "src-tauri/src/commands/database/types.rs"
+    ],
+    "src-tauri/src/commands/database/tests/mod.rs": [
+      "src-tauri/src/commands/database/mod.rs"
+    ],
+    "src-tauri/src/commands/database/types.rs": [],
+    "src-tauri/src/commands/device/adb.rs": [],
+    "src-tauri/src/commands/device/helpers.rs": [],
+    "src-tauri/src/commands/device/ios/common.rs": [],
+    "src-tauri/src/commands/device/ios/database.rs": [],
+    "src-tauri/src/commands/device/ios/device.rs": [],
+    "src-tauri/src/commands/device/ios/diagnostic.rs": [],
+    "src-tauri/src/commands/device/ios/file_utils.rs": [],
+    "src-tauri/src/commands/device/ios/mod.rs": [
+      "src-tauri/src/commands/device/ios/common.rs",
+      "src-tauri/src/commands/device/ios/database.rs",
+      "src-tauri/src/commands/device/ios/device.rs",
+      "src-tauri/src/commands/device/ios/diagnostic.rs",
+      "src-tauri/src/commands/device/ios/file_utils.rs",
+      "src-tauri/src/commands/device/ios/packages.rs",
+      "src-tauri/src/commands/device/ios/simulator.rs",
+      "src-tauri/src/commands/device/ios/tests/mod.rs",
+      "src-tauri/src/commands/device/ios/tool_validation.rs",
+      "src-tauri/src/commands/device/ios/tools.rs"
+    ],
+    "src-tauri/src/commands/device/ios/packages.rs": [],
+    "src-tauri/src/commands/device/ios/simulator.rs": [],
+    "src-tauri/src/commands/device/ios/tests/mod.rs": [
+      "src-tauri/src/commands/device/ios/diagnostic.rs",
+      "src-tauri/src/commands/device/types.rs"
+    ],
+    "src-tauri/src/commands/device/ios/tool_validation.rs": [],
+    "src-tauri/src/commands/device/ios/tools.rs": [],
+    "src-tauri/src/commands/device/mod.rs": [
+      "src-tauri/src/commands/device/adb.rs",
+      "src-tauri/src/commands/device/helpers.rs",
+      "src-tauri/src/commands/device/ios/mod.rs",
+      "src-tauri/src/commands/device/types.rs",
+      "src-tauri/src/commands/device/virtual_device.rs"
+    ]
+  }
+}

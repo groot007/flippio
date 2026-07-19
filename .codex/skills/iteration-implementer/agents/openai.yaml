@@ -1,0 +1,7 @@
+interface:
+  display_name: Iteration Implementer
+  short_description: Delegate one refactor slice through implement and review loops
+  default_prompt: Use $iteration-implementer to run the next refactor iteration through the worker and reviewer loop.
+
+policy:
+  allow_implicit_invocation: true

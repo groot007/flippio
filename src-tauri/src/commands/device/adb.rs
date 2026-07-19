@@ -5,6 +5,260 @@ use std::path::Path;
 use std::fs;
 use chrono;
 use serde_json;
+use std::future::Future;
+
+fn parse_adb_devices_output(devices_output: &str) -> Vec<Device> {
+    let mut devices = Vec::new();
+
+    for line in devices_output.lines().skip(1) {
+        let trimmed_line = line.trim();
+        if trimmed_line.is_empty() {
+            continue;
+        }
+
+        let parts: Vec<&str> = trimmed_line.split_whitespace().collect();
+        log::info!("Parsing line: '{}', parts: {:?}", trimmed_line, parts);
+
+        if parts.len() >= 2 && parts[1] == "device" {
+            let device_id = parts[0].to_string();
+            let mut model = "Unknown".to_string();
+            let mut device_name = device_id.clone();
+
+            let is_physical_device = trimmed_line.contains("usb:");
+            let description = if is_physical_device {
+                "Android device".to_string()
+            } else {
+                "Android emulator".to_string()
+            };
+
+            for part in &parts[2..] {
+                if part.starts_with("model:") {
+                    model = part.replace("model:", "");
+                } else if part.starts_with("device:") {
+                    device_name = part.replace("device:", "");
+                }
+            }
+
+            log::info!("Found device: id={}, name={}, model={}", device_id, device_name, model);
+
+            devices.push(Device {
+                id: device_id,
+                name: device_name,
+                model,
+                device_type: "android".to_string(),
+                description,
+            });
+        }
+    }
+
+    devices
+}
+
+fn parse_adb_packages_output(packages_output: &str) -> Vec<Package> {
+    let mut packages = Vec::new();
+
+    for line in packages_output.lines() {
+        if line.starts_with("package:") {
+            let package_name = line.replace("package:", "").trim().to_string();
+
+            if package_name.is_empty() {
+                continue;
+            }
+
+            let display_name = package_name.clone();
+
+            packages.push(Package {
+                name: display_name,
+                bundle_id: package_name,
+            });
+        }
+    }
+
+    packages
+}
+
+fn adb_find_database_args(
+    device_id: &str,
+    package_name: &str,
+    location: &str,
+    admin_required: bool,
+) -> Vec<String> {
+    let path = format!("{}{}/", location, package_name);
+
+    if admin_required {
+        vec![
+            "-s".to_string(),
+            device_id.to_string(),
+            "shell".to_string(),
+            "run-as".to_string(),
+            package_name.to_string(),
+            "find".to_string(),
+            path,
+            "-name".to_string(),
+            "*.db".to_string(),
+            "-o".to_string(),
+            "-name".to_string(),
+            "*.sqlite".to_string(),
+            "-o".to_string(),
+            "-name".to_string(),
+            "*.sqlite3".to_string(),
+        ]
+    } else {
+        vec![
+            "-s".to_string(),
+            device_id.to_string(),
+            "shell".to_string(),
+            "find".to_string(),
+            path,
+            "-name".to_string(),
+            "*.db".to_string(),
+            "-o".to_string(),
+            "-name".to_string(),
+            "*.sqlite".to_string(),
+            "-o".to_string(),
+            "-name".to_string(),
+            "*.sqlite3".to_string(),
+        ]
+    }
+}
+
+async fn discover_android_database_candidates_with<F, Fut>(
+    device_id: &str,
+    package_name: &str,
+    mut execute: F,
+) -> Vec<(String, bool, String)>
+where
+    F: FnMut(Vec<String>) -> Fut,
+    Fut: Future<Output = Result<std::process::Output, Box<dyn std::error::Error + Send + Sync>>>,
+{
+    let locations = vec![
+        ("/data/data/", true),
+        ("/sdcard/Android/data/", false),
+        ("/storage/emulated/0/Android/data/", false),
+    ];
+
+    for (location, admin_required) in locations {
+        let args = adb_find_database_args(device_id, package_name, location, admin_required);
+        let output = execute(args).await;
+
+        if let Ok(result) = output {
+            if result.status.success() {
+                let files_output = String::from_utf8_lossy(&result.stdout);
+                let found_files: Vec<(String, bool, String)> = files_output
+                    .lines()
+                    .map(str::trim)
+                    .filter(|line| !line.is_empty())
+                    .map(|line| (line.to_string(), admin_required, location.to_string()))
+                    .collect();
+
+                if !found_files.is_empty() {
+                    log::info!(
+                        "Found {} database files in {}, skipping other locations",
+                        found_files.len(),
+                        location
+                    );
+                    return found_files;
+                }
+            }
+        }
+    }
+
+    Vec::new()
+}
+
+async fn adb_get_devices_with<F, Fut>(execute: F) -> DeviceResponse<Vec<Device>>
+where
+    F: FnOnce(Vec<String>) -> Fut,
+    Fut: Future<Output = Result<std::process::Output, Box<dyn std::error::Error + Send + Sync>>>,
+{
+    let args = vec!["devices".to_string(), "-l".to_string()];
+
+    let output = match execute(args).await {
+        Ok(output) => output,
+        Err(e) => {
+            return DeviceResponse {
+                success: false,
+                data: None,
+                error: Some(format!(
+                    "Failed to execute adb command: {}. Make sure Android SDK is installed and ADB is in your PATH.",
+                    e
+                )),
+            };
+        }
+    };
+
+    if output.status.success() {
+        let devices_output = String::from_utf8_lossy(&output.stdout);
+        log::info!("ADB devices output: {}", devices_output);
+        let devices = parse_adb_devices_output(&devices_output);
+
+        log::info!("Total Android devices found: {}", devices.len());
+
+        DeviceResponse {
+            success: true,
+            data: Some(devices),
+            error: None,
+        }
+    } else {
+        let error_output = String::from_utf8_lossy(&output.stderr);
+        DeviceResponse {
+            success: false,
+            data: None,
+            error: Some(error_output.to_string()),
+        }
+    }
+}
+
+async fn adb_get_packages_with<F, Fut>(
+    device_id: &str,
+    execute: F,
+) -> DeviceResponse<Vec<Package>>
+where
+    F: FnOnce(Vec<String>) -> Fut,
+    Fut: Future<Output = Result<std::process::Output, Box<dyn std::error::Error + Send + Sync>>>,
+{
+    let args = vec![
+        "-s".to_string(),
+        device_id.to_string(),
+        "shell".to_string(),
+        "pm".to_string(),
+        "list".to_string(),
+        "packages".to_string(),
+        "-3".to_string(),
+    ];
+
+    let output = match execute(args).await {
+        Ok(output) => output,
+        Err(e) => {
+            return DeviceResponse {
+                success: false,
+                data: None,
+                error: Some(format!(
+                    "Failed to execute adb command: {}. Make sure the device is connected and ADB is working.",
+                    e
+                )),
+            };
+        }
+    };
+
+    if output.status.success() {
+        let packages_output = String::from_utf8_lossy(&output.stdout);
+        let packages = parse_adb_packages_output(&packages_output);
+
+        DeviceResponse {
+            success: true,
+            data: Some(packages),
+            error: None,
+        }
+    } else {
+        let error_output = String::from_utf8_lossy(&output.stderr);
+        DeviceResponse {
+            success: false,
+            data: None,
+            error: Some(error_output.to_string()),
+        }
+    }
+}
 
 // Pull Android database file to local temp directory
 async fn pull_android_db_file(
@@ -205,127 +459,27 @@ async fn push_android_db_file(
 #[tauri::command]
 pub async fn adb_get_devices(_app_handle: tauri::AppHandle) -> Result<DeviceResponse<Vec<Device>>, String> {
     log::info!("Getting Android devices");
-    
-    let output = match execute_adb_command(&["devices", "-l"]).await {
-        Ok(output) => output,
-        Err(e) => {
-            return Ok(DeviceResponse {
-                success: false,
-                data: None,
-                error: Some(format!("Failed to execute adb command: {}. Make sure Android SDK is installed and ADB is in your PATH.", e)),
-            });
-        }
-    };
-    
-    if output.status.success() {
-        let devices_output = String::from_utf8_lossy(&output.stdout);
-        log::info!("ADB devices output: {}", devices_output);
-        let mut devices = Vec::new();
-        
-        for line in devices_output.lines().skip(1) {
-            let trimmed_line = line.trim();
-            if trimmed_line.is_empty() {
-                continue;
-            }
-            
-            let parts: Vec<&str> = trimmed_line.split_whitespace().collect();
-            log::info!("Parsing line: '{}', parts: {:?}", trimmed_line, parts);
-            
-            if parts.len() >= 2 && parts[1] == "device" {
-                let device_id = parts[0].to_string();
-                let mut model = "Unknown".to_string();
-                let mut device_name = device_id.clone();
-                
-                let is_physical_device = trimmed_line.contains("usb:");
-                let description = if is_physical_device {
-                    "Android device".to_string()
-                } else {
-                    "Android emulator".to_string()
-                };
-                
-                for part in &parts[2..] {
-                    if part.starts_with("model:") {
-                        model = part.replace("model:", "");
-                    } else if part.starts_with("device:") {
-                        device_name = part.replace("device:", "");
-                    }
-                }
-                
-                log::info!("Found device: id={}, name={}, model={}", device_id, device_name, model);
-                
-                devices.push(Device {
-                    id: device_id,
-                    name: device_name,
-                    model,
-                    device_type: "android".to_string(),
-                    description,
-                });
-            }
-        }
-        
-        log::info!("Total Android devices found: {}", devices.len());
-        
-        Ok(DeviceResponse {
-            success: true,
-            data: Some(devices),
-            error: None,
+
+    Ok(
+        adb_get_devices_with(|args| async move {
+            let arg_refs: Vec<&str> = args.iter().map(String::as_str).collect();
+            execute_adb_command(&arg_refs).await
         })
-    } else {
-        let error_output = String::from_utf8_lossy(&output.stderr);
-        Ok(DeviceResponse {
-            success: false,
-            data: None,
-            error: Some(error_output.to_string()),
-        })
-    }
+        .await,
+    )
 }
 
 #[tauri::command]
 pub async fn adb_get_packages(_app_handle: tauri::AppHandle, device_id: String) -> Result<DeviceResponse<Vec<Package>>, String> {
     log::info!("Getting packages for device: {}", device_id);
-    
-    let output = match execute_adb_command(&["-s", &device_id, "shell", "pm", "list", "packages", "-3"]).await {
-        Ok(output) => output,
-        Err(e) => {
-            return Ok(DeviceResponse {
-                success: false,
-                data: None,
-                error: Some(format!("Failed to execute adb command: {}. Make sure the device is connected and ADB is working.", e)),
-            });
-        }
-    };
-    
-    if output.status.success() {
-        let packages_output = String::from_utf8_lossy(&output.stdout);
-        let mut packages = Vec::new();
-        
-        for line in packages_output.lines() {
-            if line.starts_with("package:") {
-                let package_name = line.replace("package:", "").trim().to_string();
-                
-                // Get app name using dumpsys (simplified version)
-                let display_name = package_name.clone(); // For now, use package name as display name
-                
-                packages.push(Package {
-                    name: display_name,
-                    bundle_id: package_name,
-                });
-            }
-        }
-        
-        Ok(DeviceResponse {
-            success: true,
-            data: Some(packages),
-            error: None,
+
+    Ok(
+        adb_get_packages_with(&device_id, |args| async move {
+            let arg_refs: Vec<&str> = args.iter().map(String::as_str).collect();
+            execute_adb_command(&arg_refs).await
         })
-    } else {
-        let error_output = String::from_utf8_lossy(&output.stderr);
-        Ok(DeviceResponse {
-            success: false,
-            data: None,
-            error: Some(error_output.to_string()),
-        })
-    }
+        .await,
+    )
 }
 
 #[tauri::command]
@@ -336,92 +490,57 @@ pub async fn adb_get_android_database_files(
 ) -> Result<DeviceResponse<Vec<DatabaseFile>>, String> {
     log::info!("Getting Android database files for device: {} package: {}", device_id, package_name);
     
-    // Force clean temp directory before pulling to avoid stale data
-    if let Err(e) = force_clean_temp_dir() {
-        error!("Failed to force clean temp directory: {}", e);
+    // Preserve active temp DB files so fast table selection does not race with
+    // a background Android rescan deleting the currently selected file.
+    if let Err(e) = clean_temp_dir() {
+        error!("Failed to clean temp directory: {}", e);
         // Continue anyway, but log the error
     } else {
-        info!("✅ Successfully force cleaned temp directory before database pull");
+        info!("✅ Successfully cleaned old temp files before Android database pull");
     }
     
     let mut database_files = Vec::new();
-    
-    // Search in multiple locations with priority order
-    // Priority: /data/data/ > /sdcard/Android/data/ > /storage/emulated/0/Android/data/
-    let locations = vec![
-        ("/data/data/", true),
-        ("/sdcard/Android/data/", false),
-        ("/storage/emulated/0/Android/data/", false),
-    ];
-    
-    for (location, admin_required) in locations {
-        let path = format!("{}{}/", location, package_name);
-        
-        let output = if admin_required {
-            execute_adb_command(&["-s", &device_id, "shell", "run-as", &package_name, "find", &path, "-name", "*.db", "-o", "-name", "*.sqlite", "-o", "-name", "*.sqlite3"]).await
-        } else {
-            execute_adb_command(&["-s", &device_id, "shell", "find", &path, "-name", "*.db", "-o", "-name", "*.sqlite", "-o", "-name", "*.sqlite3"]).await
-        };
-        
-        if let Ok(result) = output {
-            if result.status.success() {
-                let files_output = String::from_utf8_lossy(&result.stdout);
-                let mut found_files = Vec::new();
-                
-                for file_path in files_output.lines() {
-                    let file_path = file_path.trim();
-                    if !file_path.is_empty() {
-                        found_files.push((file_path.to_string(), admin_required));
-                    }
-                }
-                
-                // If files found in this location, process them and skip remaining locations
-                if !found_files.is_empty() {
-                    log::info!("Found {} database files in {}, skipping other locations", found_files.len(), location);
-                    
-                    // Pull each found database file to local temp directory
-                    for (file_path, admin_access) in found_files {
-                        match pull_android_db_file(&device_id, &package_name, &file_path, admin_access).await {
-                            Ok(local_path) => {
-                                let filename = std::path::Path::new(&file_path)
-                                    .file_name()
-                                    .and_then(|n| n.to_str())
-                                    .unwrap_or("unknown")
-                                    .to_string();
-                                
-                                database_files.push(DatabaseFile {
-                                    path: local_path, // Use local path instead of remote path
-                                    package_name: package_name.clone(),
-                                    filename,
-                                    location: location.to_string(),
-                                    remote_path: Some(file_path),
-                                    device_type: "android".to_string(),
-                                });
-                            }
-                            Err(e) => {
-                                error!("Failed to pull database file {}: {}", file_path, e);
-                                // Still add the file with remote path for fallback
-                                let filename = std::path::Path::new(&file_path)
-                                    .file_name()
-                                    .and_then(|n| n.to_str())
-                                    .unwrap_or("unknown")
-                                    .to_string();
-                                
-                                database_files.push(DatabaseFile {
-                                    path: file_path.clone(),
-                                    package_name: package_name.clone(),
-                                    filename,
-                                    location: location.to_string(),
-                                    remote_path: Some(file_path),
-                                    device_type: "android".to_string(),
-                                });
-                            }
-                        }
-                    }
-                    
-                    // Break out of the loop since we found files in this location
-                    break;
-                }
+
+    let found_files = discover_android_database_candidates_with(&device_id, &package_name, |args| async move {
+        let arg_refs: Vec<&str> = args.iter().map(String::as_str).collect();
+        execute_adb_command(&arg_refs).await
+    })
+    .await;
+
+    for (file_path, admin_access, location) in found_files {
+        match pull_android_db_file(&device_id, &package_name, &file_path, admin_access).await {
+            Ok(local_path) => {
+                let filename = std::path::Path::new(&file_path)
+                    .file_name()
+                    .and_then(|n| n.to_str())
+                    .unwrap_or("unknown")
+                    .to_string();
+
+                database_files.push(DatabaseFile {
+                    path: local_path,
+                    package_name: package_name.clone(),
+                    filename,
+                    location,
+                    remote_path: Some(file_path),
+                    device_type: "android".to_string(),
+                });
+            }
+            Err(e) => {
+                error!("Failed to pull database file {}: {}", file_path, e);
+                let filename = std::path::Path::new(&file_path)
+                    .file_name()
+                    .and_then(|n| n.to_str())
+                    .unwrap_or("unknown")
+                    .to_string();
+
+                database_files.push(DatabaseFile {
+                    path: file_path.clone(),
+                    package_name: package_name.clone(),
+                    filename,
+                    location,
+                    remote_path: Some(file_path),
+                    device_type: "android".to_string(),
+                });
             }
         }
     }
@@ -570,7 +689,20 @@ pub async fn adb_get_device_info(device_id: String) -> Result<DeviceResponse<std
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::cell::RefCell;
+    use std::rc::Rc;
+    #[cfg(unix)]
+    use std::os::unix::process::ExitStatusExt;
     use tempfile::TempDir;
+
+    #[cfg(unix)]
+    fn fake_output(code: i32, stdout: &str, stderr: &str) -> std::process::Output {
+        std::process::Output {
+            status: std::process::ExitStatus::from_raw(code),
+            stdout: stdout.as_bytes().to_vec(),
+            stderr: stderr.as_bytes().to_vec(),
+        }
+    }
 
     #[tokio::test]
     async fn test_pull_android_db_file_paths() {
@@ -802,31 +934,274 @@ mod tests {
     }
 
     #[test]
-    fn test_multiple_devices_parsing() {
-        // Test parsing multiple device entries
-        let device_output = "emulator-5554\tdevice\nABCD1234\tdevice\noffline-device\toffline\n";
-        let lines: Vec<&str> = device_output.lines().collect();
-        
-        assert_eq!(lines.len(), 3);
-        
-        // Test each line format
-        for line in lines {
-            let parts: Vec<&str> = line.split('\t').collect();
-            assert_eq!(parts.len(), 2);
-            assert!(!parts[0].is_empty()); // Device ID
-            assert!(!parts[1].is_empty()); // Status
-        }
+    fn test_parse_adb_devices_output_filters_offline_and_extracts_metadata() {
+        let device_output = "\
+List of devices attached
+emulator-5554 device product:sdk_gphone64_arm64 model:sdk_gphone64_arm64 device:emu64a transport_id:1
+R5CW123ABC device usb:1-1 product:dm3q model:SM_S918B device:dm3q transport_id:2
+offline-device offline transport_id:3
+";
+
+        let devices = parse_adb_devices_output(device_output);
+
+        assert_eq!(devices.len(), 2);
+        assert_eq!(devices[0].id, "emulator-5554");
+        assert_eq!(devices[0].name, "emu64a");
+        assert_eq!(devices[0].model, "sdk_gphone64_arm64");
+        assert_eq!(devices[0].description, "Android emulator");
+
+        assert_eq!(devices[1].id, "R5CW123ABC");
+        assert_eq!(devices[1].name, "dm3q");
+        assert_eq!(devices[1].model, "SM_S918B");
+        assert_eq!(devices[1].description, "Android device");
+    }
+
+    #[tokio::test]
+    #[cfg(unix)]
+    async fn test_adb_get_devices_with_maps_successful_execution() {
+        let response = adb_get_devices_with(|args| async move {
+            assert_eq!(args, vec!["devices", "-l"]);
+
+            Ok(fake_output(
+                0,
+                "List of devices attached\nemulator-5554 device product:sdk model:Pixel_8 device:husky transport_id:1\n",
+                "",
+            ))
+        })
+        .await;
+
+        assert!(response.success);
+        let devices = response.data.expect("devices should be present");
+        assert_eq!(devices.len(), 1);
+        assert_eq!(devices[0].id, "emulator-5554");
+        assert_eq!(devices[0].name, "husky");
+    }
+
+    #[tokio::test]
+    async fn test_adb_get_devices_with_maps_launch_failure() {
+        let response = adb_get_devices_with(|_args| async move {
+            Err::<std::process::Output, _>("adb missing".into())
+        })
+        .await;
+
+        assert!(!response.success);
+        assert!(response.data.is_none());
+        assert!(
+            response
+                .error
+                .as_deref()
+                .unwrap_or("")
+                .contains("Make sure Android SDK is installed and ADB is in your PATH.")
+        );
+    }
+
+    #[tokio::test]
+    #[cfg(unix)]
+    async fn test_adb_get_devices_with_maps_non_zero_exit_to_error() {
+        let response = adb_get_devices_with(|_args| async move {
+            Ok(fake_output(1, "", "adb server unavailable"))
+        })
+        .await;
+
+        assert!(!response.success);
+        assert!(response.data.is_none());
+        assert_eq!(response.error.as_deref(), Some("adb server unavailable"));
     }
 
     #[test]
-    fn test_package_parsing() {
-        // Test package name extraction
-        let package_line = "package:com.example.app=com.example.app.MainActivity";
-        assert!(package_line.starts_with("package:"));
-        
-        let package_part = package_line.strip_prefix("package:").unwrap();
-        let package_name = package_part.split('=').next().unwrap();
-        assert_eq!(package_name, "com.example.app");
+    fn test_parse_adb_packages_output_keeps_package_ids_only() {
+        let packages_output = "\
+package:com.example.todo
+package:com.example.weather
+garbage line
+package:
+";
+
+        let packages = parse_adb_packages_output(packages_output);
+
+        assert_eq!(packages.len(), 2);
+        assert_eq!(packages[0].bundle_id, "com.example.todo");
+        assert_eq!(packages[0].name, "com.example.todo");
+        assert_eq!(packages[1].bundle_id, "com.example.weather");
+        assert_eq!(packages[1].name, "com.example.weather");
+    }
+
+    #[test]
+    fn test_adb_find_database_args_uses_run_as_for_private_storage() {
+        let args = adb_find_database_args("device-1", "com.example.app", "/data/data/", true);
+
+        assert_eq!(
+            args,
+            vec![
+                "-s",
+                "device-1",
+                "shell",
+                "run-as",
+                "com.example.app",
+                "find",
+                "/data/data/com.example.app/",
+                "-name",
+                "*.db",
+                "-o",
+                "-name",
+                "*.sqlite",
+                "-o",
+                "-name",
+                "*.sqlite3",
+            ]
+        );
+    }
+
+    #[test]
+    fn test_adb_find_database_args_uses_plain_find_for_shared_storage() {
+        let args = adb_find_database_args("device-1", "com.example.app", "/sdcard/Android/data/", false);
+
+        assert_eq!(
+            args,
+            vec![
+                "-s",
+                "device-1",
+                "shell",
+                "find",
+                "/sdcard/Android/data/com.example.app/",
+                "-name",
+                "*.db",
+                "-o",
+                "-name",
+                "*.sqlite",
+                "-o",
+                "-name",
+                "*.sqlite3",
+            ]
+        );
+    }
+
+    #[tokio::test]
+    #[cfg(unix)]
+    async fn test_discover_android_database_candidates_uses_first_non_empty_location() {
+        let calls = Rc::new(RefCell::new(Vec::<Vec<String>>::new()));
+        let captured_calls = Rc::clone(&calls);
+
+        let found = discover_android_database_candidates_with(
+            "device-1",
+            "com.example.app",
+            move |args| {
+                captured_calls.borrow_mut().push(args.clone());
+                async move {
+                    let target_path = args.iter().find(|arg| arg.starts_with('/')).cloned().unwrap_or_default();
+
+                    if target_path == "/data/data/com.example.app/" {
+                        Ok(fake_output(0, "", ""))
+                    } else if target_path == "/sdcard/Android/data/com.example.app/" {
+                        Ok(fake_output(0, "/sdcard/Android/data/com.example.app/files/main.db\n", ""))
+                    } else {
+                        Ok(fake_output(0, "/storage/emulated/0/Android/data/com.example.app/files/fallback.db\n", ""))
+                    }
+                }
+            },
+        )
+        .await;
+
+        let calls = calls.borrow();
+        assert_eq!(calls.len(), 2);
+        assert!(calls[0].contains(&"run-as".to_string()));
+        assert_eq!(calls[1][3], "find");
+        assert_eq!(found.len(), 1);
+        assert_eq!(found[0].0, "/sdcard/Android/data/com.example.app/files/main.db");
+        assert!(!found[0].1);
+        assert_eq!(found[0].2, "/sdcard/Android/data/");
+    }
+
+    #[tokio::test]
+    #[cfg(unix)]
+    async fn test_discover_android_database_candidates_stops_after_private_hit() {
+        let calls = Rc::new(RefCell::new(Vec::<Vec<String>>::new()));
+        let captured_calls = Rc::clone(&calls);
+
+        let found = discover_android_database_candidates_with(
+            "device-1",
+            "com.example.app",
+            move |args| {
+                captured_calls.borrow_mut().push(args.clone());
+                async move {
+                    Ok(fake_output(
+                        0,
+                        "/data/data/com.example.app/databases/internal.db\n",
+                        "",
+                    ))
+                }
+            },
+        )
+        .await;
+
+        assert_eq!(calls.borrow().len(), 1);
+        assert_eq!(found.len(), 1);
+        assert_eq!(found[0].0, "/data/data/com.example.app/databases/internal.db");
+        assert!(found[0].1);
+        assert_eq!(found[0].2, "/data/data/");
+    }
+
+    #[tokio::test]
+    #[cfg(unix)]
+    async fn test_adb_get_packages_with_maps_successful_execution() {
+        let response = adb_get_packages_with("emulator-5554", |args| async move {
+            assert_eq!(
+                args,
+                vec![
+                    "-s",
+                    "emulator-5554",
+                    "shell",
+                    "pm",
+                    "list",
+                    "packages",
+                    "-3",
+                ]
+            );
+
+            Ok(fake_output(
+                0,
+                "package:com.example.todo\npackage:com.example.weather\n",
+                "",
+            ))
+        })
+        .await;
+
+        assert!(response.success);
+        let packages = response.data.expect("packages should be present");
+        assert_eq!(packages.len(), 2);
+        assert_eq!(packages[0].bundle_id, "com.example.todo");
+        assert_eq!(packages[1].bundle_id, "com.example.weather");
+    }
+
+    #[tokio::test]
+    async fn test_adb_get_packages_with_maps_launch_failure() {
+        let response = adb_get_packages_with("device-1", |_args| async move {
+            Err::<std::process::Output, _>("adb missing".into())
+        })
+        .await;
+
+        assert!(!response.success);
+        assert!(response.data.is_none());
+        assert!(
+            response
+                .error
+                .as_deref()
+                .unwrap_or("")
+                .contains("Make sure the device is connected and ADB is working.")
+        );
+    }
+
+    #[tokio::test]
+    #[cfg(unix)]
+    async fn test_adb_get_packages_with_maps_non_zero_exit_to_error() {
+        let response = adb_get_packages_with("device-1", |_args| async move {
+            Ok(fake_output(1, "", "permission denied"))
+        })
+        .await;
+
+        assert!(!response.success);
+        assert!(response.data.is_none());
+        assert_eq!(response.error.as_deref(), Some("permission denied"));
     }
 
     #[test]

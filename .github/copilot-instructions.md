@@ -17,8 +17,8 @@ npm run tauri:dev
 # Frontend-only development (requires mock API)
 npm run dev:renderer
 
-# Production builds with signing
-npm run tauri:build:signed  # Uses env vars from .env
+# Local production build
+npm run tauri:build
 ```
 
 ### Testing Strategy
@@ -135,10 +135,11 @@ vi.mock('ag-grid-react', () => ({ AgGridReact: MockAgGridReact }))
 
 ### Environment Variables (.env)
 ```bash
-APPLE_SIGNING_IDENTITY="Developer ID Application: ..."
 VITE_SENTRY_DSN="https://..."
 VITE_POSTHOG_API_KEY="phc_..."
 ```
+
+Release signing secrets live in GitHub Actions. The active workflow uses `TAURI_SIGNING_PRIVATE_KEY`, `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`, and Apple signing secrets from `.github/workflows/tauri-release.yml`.
 
 ### Pre-commit Automation
 - `.git/hooks/pre-push` wired for full test suite, now disabled

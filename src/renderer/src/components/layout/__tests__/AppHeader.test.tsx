@@ -3,6 +3,26 @@ import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { render } from '../../../test-utils/render'
 import AppHeader from '../AppHeader'
 
+vi.mock('../../common/FLSelect', () => ({
+  default: ({ label, options = [], value, onChange, isDisabled }: any) => (
+    <div data-testid={`select-${label}`} data-disabled={isDisabled ? 'true' : 'false'}>
+      <span>{label}</span>
+      <span data-testid={`value-${label}`}>{value?.label ?? value?.name ?? 'None'}</span>
+      {options.map((option: any) => (
+        <button
+          key={`${label}-${option.value ?? option.id ?? option.bundleId}`}
+          type="button"
+          data-testid={`${label}-${option.value ?? option.id ?? option.bundleId}`}
+          disabled={isDisabled}
+          onClick={() => onChange(option)}
+        >
+          {option.label ?? option.name}
+        </button>
+      ))}
+    </div>
+  ),
+}))
+
 beforeAll(() => {
   Object.defineProperty(window, 'matchMedia', {
     writable: true,
@@ -75,10 +95,6 @@ vi.mock('@renderer/store', () => ({
       setSelectedDevice: mockSetSelectedDevice,
       selectedApplication: mockSelectedApplication,
       setSelectedApplication: mockSetSelectedApplication,
-      devicesList: [],
-      setDevicesList: vi.fn(),
-      applicationsList: [],
-      setApplicationsList: vi.fn(),
     }
     return selector(state)
   },
@@ -88,8 +104,6 @@ vi.mock('@renderer/store', () => ({
       setSelectedDatabaseFile: mockSetSelectedDatabaseFile,
       selectedDatabaseTable: null,
       setSelectedDatabaseTable: mockSetSelectedDatabaseTable,
-      pulledDatabaseFilePath: '',
-      setPulledDatabaseFilePath: vi.fn(),
     }
     return selector(state)
   },
@@ -120,6 +134,16 @@ vi.mock('@renderer/ui/toaster', () => ({
   },
 }))
 
+function SelectionSnapshot() {
+  return (
+    <div>
+      <span data-testid="snapshot-device">{mockSelectedDevice?.label ?? mockSelectedDevice?.name ?? 'None'}</span>
+      <span data-testid="snapshot-app">{mockSelectedApplication?.name ?? 'None'}</span>
+      <span data-testid="snapshot-db">{mockSelectedDatabaseFile?.path ?? 'None'}</span>
+    </div>
+  )
+}
+
 describe('appHeader component', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -127,6 +151,17 @@ describe('appHeader component', () => {
     mockSelectedDevice = null
     mockSelectedApplication = null
     mockSelectedDatabaseFile = null
+
+    mockSetSelectedDevice.mockImplementation((value) => {
+      mockSelectedDevice = value
+    })
+    mockSetSelectedApplication.mockImplementation((value) => {
+      mockSelectedApplication = value
+    })
+    mockSetSelectedDatabaseFile.mockImplementation((value) => {
+      mockSelectedDatabaseFile = value
+    })
+    mockSetSelectedDatabaseTable.mockImplementation(() => {})
 
     mockGetRecentAppsForDevice.mockReturnValue([])
     vi.mocked(globalThis.window.api.getAndroidPackages).mockResolvedValue({
@@ -178,14 +213,15 @@ describe('appHeader component', () => {
   it('keeps device select disabled during initial sync', () => {
     mockDevicesHook = {
       ...mockDevicesHook,
-      data: [],
       isPending: true,
       isFetched: false,
     }
 
     render(<AppHeader />)
 
-    expect(document.querySelector('input[disabled]')).not.toBeNull()
+    expect(screen.getByTestId('select-Select Device')).toHaveAttribute('data-disabled', 'true')
+    expect(screen.getByTestId('Select Device-device1')).toBeDisabled()
+    expect(screen.getByTestId('Select Device-device2')).toBeDisabled()
   })
 
   it('refreshes devices on refresh click', async () => {
@@ -203,7 +239,12 @@ describe('appHeader component', () => {
     mockSelectedApplication = { name: 'Old App', bundleId: 'com.test.app1' }
     mockSelectedDatabaseFile = { path: '/tmp/test.db', deviceType: 'android' }
 
-    render(<AppHeader />)
+    const view = render(
+      <>
+        <AppHeader />
+        <SelectionSnapshot />
+      </>,
+    )
 
     fireEvent.click(screen.getByTestId('refresh-devices'))
 
@@ -211,15 +252,22 @@ describe('appHeader component', () => {
       expect(globalThis.window.api.getAndroidPackages).toHaveBeenCalledWith('device1')
     })
 
-    expect(globalThis.window.api.getAndroidDatabaseFiles).toHaveBeenCalledWith('device1', 'com.test.app1')
+    await waitFor(() => {
+      expect(globalThis.window.api.getAndroidDatabaseFiles).toHaveBeenCalledWith('device1', 'com.test.app1')
+    })
 
-    expect(mockSetSelectedDevice).toHaveBeenCalledWith(
-      expect.objectContaining({ id: 'device1' }),
+    view.rerender(
+      <>
+        <AppHeader />
+        <SelectionSnapshot />
+      </>,
     )
-    expect(mockSetSelectedApplication).toHaveBeenCalledWith(
-      expect.objectContaining({ bundleId: 'com.test.app1' }),
-    )
-    expect(mockSetSelectedDatabaseFile).not.toHaveBeenCalledWith(null)
+
+    expect(screen.getByTestId('value-Select Device')).toHaveTextContent('Android Device')
+    expect(screen.getByTestId('value-Select App')).toHaveTextContent('Test App 1')
+    expect(screen.getByTestId('snapshot-device')).toHaveTextContent('Android Device')
+    expect(screen.getByTestId('snapshot-app')).toHaveTextContent('Test App 1')
+    expect(screen.getByTestId('snapshot-db')).toHaveTextContent('/tmp/test.db')
   })
 
   it('clears downstream selection when refreshed app is missing', async () => {
@@ -231,7 +279,12 @@ describe('appHeader component', () => {
       packages: [{ name: 'Test App 1', bundleId: 'com.test.app1' }],
     })
 
-    render(<AppHeader />)
+    const view = render(
+      <>
+        <AppHeader />
+        <SelectionSnapshot />
+      </>,
+    )
 
     fireEvent.click(screen.getByTestId('refresh-devices'))
 
@@ -239,9 +292,48 @@ describe('appHeader component', () => {
       expect(globalThis.window.api.getAndroidPackages).toHaveBeenCalledWith('device1')
     })
 
-    expect(mockSetSelectedApplication).toHaveBeenCalledWith(null)
-    expect(mockSetSelectedDatabaseFile).toHaveBeenCalledWith(null)
-    expect(mockSetSelectedDatabaseTable).toHaveBeenCalledWith(null)
+    view.rerender(
+      <>
+        <AppHeader />
+        <SelectionSnapshot />
+      </>,
+    )
+
+    expect(screen.getByTestId('value-Select Device')).toHaveTextContent('Android Device')
+    expect(screen.getByTestId('value-Select App')).toHaveTextContent('None')
+    expect(screen.getByTestId('snapshot-app')).toHaveTextContent('None')
+    expect(screen.getByTestId('snapshot-db')).toHaveTextContent('None')
+  })
+
+  it('keeps a selected iPhone device during passive list flicker', () => {
+    mockSelectedDevice = {
+      id: 'iphone-device-1',
+      name: 'My iPhone',
+      deviceType: 'iphone-device',
+      label: 'My iPhone',
+    }
+    mockDevicesHook = {
+      ...mockDevicesHook,
+      data: [],
+    }
+
+    const view = render(
+      <>
+        <AppHeader />
+        <SelectionSnapshot />
+      </>,
+    )
+
+    view.rerender(
+      <>
+        <AppHeader />
+        <SelectionSnapshot />
+      </>,
+    )
+
+    expect(screen.getByTestId('value-Select Device')).toHaveTextContent('My iPhone')
+    expect(screen.getByTestId('snapshot-device')).toHaveTextContent('My iPhone')
+    expect(mockSetSelectedDevice).not.toHaveBeenCalledWith(null)
   })
 
   it('clears DB selection when refreshed DB file is missing', async () => {
@@ -253,7 +345,12 @@ describe('appHeader component', () => {
       files: [{ path: '/tmp/test.db', filename: 'test.db', deviceType: 'android' }],
     })
 
-    render(<AppHeader />)
+    const view = render(
+      <>
+        <AppHeader />
+        <SelectionSnapshot />
+      </>,
+    )
 
     fireEvent.click(screen.getByTestId('refresh-devices'))
 
@@ -261,7 +358,46 @@ describe('appHeader component', () => {
       expect(globalThis.window.api.getAndroidDatabaseFiles).toHaveBeenCalledWith('device1', 'com.test.app1')
     })
 
-    expect(mockSetSelectedDatabaseFile).toHaveBeenCalledWith(null)
-    expect(mockSetSelectedDatabaseTable).toHaveBeenCalledWith(null)
+    view.rerender(
+      <>
+        <AppHeader />
+        <SelectionSnapshot />
+      </>,
+    )
+
+    expect(screen.getByTestId('value-Select Device')).toHaveTextContent('Android Device')
+    expect(screen.getByTestId('value-Select App')).toHaveTextContent('Test App 1')
+    expect(screen.getByTestId('snapshot-app')).toHaveTextContent('Test App 1')
+    expect(screen.getByTestId('snapshot-db')).toHaveTextContent('None')
+  })
+
+  it('selecting a device resets the app step and enables app selection for the new device', () => {
+    mockSelectedApplication = { name: 'Stale App', bundleId: 'com.test.stale' }
+    const view = render(<AppHeader />)
+
+    fireEvent.click(screen.getByTestId('Select Device-device1'))
+
+    view.rerender(<AppHeader />)
+
+    expect(screen.getByTestId('value-Select Device')).toHaveTextContent('Android Device')
+    expect(screen.getByTestId('value-Select App')).toHaveTextContent('None')
+    expect(screen.getByTestId('select-Select App')).toHaveAttribute('data-disabled', 'false')
+    expect(mockClearTableData).toHaveBeenCalled()
+  })
+
+  it('selecting an app updates the visible app selection and records the recent app for the chosen device', () => {
+    mockSelectedDevice = { id: 'device1', name: 'Test Device 1', deviceType: 'android', label: 'Android Device' }
+    const view = render(<AppHeader />)
+
+    fireEvent.click(screen.getByTestId('Select App-com.test.app1'))
+    view.rerender(<AppHeader />)
+
+    expect(screen.getByTestId('value-Select App')).toHaveTextContent('Test App 1')
+    expect(mockClearTableData).toHaveBeenCalledTimes(1)
+    expect(mockAddRecentApp).toHaveBeenCalledWith(
+      expect.objectContaining({ bundleId: 'com.test.app1', name: 'Test App 1' }),
+      'device1',
+      'Test Device 1',
+    )
   })
 })

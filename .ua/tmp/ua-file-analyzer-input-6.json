@@ -1,0 +1,287 @@
+{
+  "projectRoot": "/Users/mykolastanislavchuk/Home/Flippio",
+  "batchFiles": [
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicesetlocation-idevicesetlocation.o",
+      "language": "o",
+      "sizeLines": 79,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicesetlocation.c",
+      "language": "c",
+      "sizeLines": 192,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicesyslog",
+      "language": "unknown",
+      "sizeLines": 267,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicesyslog-idevicesyslog.o",
+      "language": "o",
+      "sizeLines": 299,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicesyslog.c",
+      "language": "c",
+      "sizeLines": 784,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/Makefile.am",
+      "language": "am",
+      "sizeLines": 144,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/Makefile.in",
+      "language": "in",
+      "sizeLines": 1460,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/Makefile.txt",
+      "language": "txt",
+      "sizeLines": 1460,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "resources/libimobiledevice/tools/afcclient",
+      "language": "unknown",
+      "sizeLines": 242,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools/idevice_id",
+      "language": "unknown",
+      "sizeLines": 177,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools/ideviceinfo",
+      "language": "unknown",
+      "sizeLines": 171,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools/ideviceinstaller",
+      "language": "unknown",
+      "sizeLines": 163,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools/libcrypto.3.dylib",
+      "language": "dylib",
+      "sizeLines": 18092,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools/libimobiledevice-1.0.6.dylib",
+      "language": "dylib",
+      "sizeLines": 322,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools/libimobiledevice-glue-1.0.0.dylib",
+      "language": "dylib",
+      "sizeLines": 216,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools/liblzma.5.dylib",
+      "language": "dylib",
+      "sizeLines": 980,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools/libplist-2.0.4.dylib",
+      "language": "dylib",
+      "sizeLines": 349,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools/libssl.3.dylib",
+      "language": "dylib",
+      "sizeLines": 3013,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools/libusbmuxd-2.0.7.dylib",
+      "language": "dylib",
+      "sizeLines": 109,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools/libzip.5.5.dylib",
+      "language": "dylib",
+      "sizeLines": 340,
+      "fileCategory": "code"
+    },
+    {
+      "path": "resources/libimobiledevice/tools/libzstd.1.5.7.dylib",
+      "language": "dylib",
+      "sizeLines": 4743,
+      "fileCategory": "code"
+    },
+    {
+      "path": "scripts/generate-test-databases.js",
+      "language": "javascript",
+      "sizeLines": 431,
+      "fileCategory": "code"
+    },
+    {
+      "path": "scripts/update-version.js",
+      "language": "javascript",
+      "sizeLines": 279,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/build.rs",
+      "language": "rust",
+      "sizeLines": 137,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/Cargo.toml",
+      "language": "toml",
+      "sizeLines": 56,
+      "fileCategory": "config"
+    },
+    {
+      "path": "src-tauri/DEVICE_TESTS.md",
+      "language": "markdown",
+      "sizeLines": 174,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "src-tauri/icons/icon.icns",
+      "language": "icns",
+      "sizeLines": 603,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/macos-deps/afcclient",
+      "language": "unknown",
+      "sizeLines": 242,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/macos-deps/afcclient-aarch64-apple-darwin",
+      "language": "unknown",
+      "sizeLines": 242,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/macos-deps/afcclient-universal-apple-darwin",
+      "language": "unknown",
+      "sizeLines": 242,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/macos-deps/afcclient-x86_64-apple-darwin",
+      "language": "unknown",
+      "sizeLines": 242,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/macos-deps/idevice_id",
+      "language": "unknown",
+      "sizeLines": 177,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/macos-deps/idevice_id-aarch64-apple-darwin",
+      "language": "unknown",
+      "sizeLines": 177,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/macos-deps/idevice_id-universal-apple-darwin",
+      "language": "unknown",
+      "sizeLines": 177,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/macos-deps/idevice_id-x86_64-apple-darwin",
+      "language": "unknown",
+      "sizeLines": 177,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/macos-deps/ideviceinfo",
+      "language": "unknown",
+      "sizeLines": 171,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/macos-deps/ideviceinfo-aarch64-apple-darwin",
+      "language": "unknown",
+      "sizeLines": 171,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/macos-deps/ideviceinfo-universal-apple-darwin",
+      "language": "unknown",
+      "sizeLines": 171,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/macos-deps/ideviceinfo-x86_64-apple-darwin",
+      "language": "unknown",
+      "sizeLines": 171,
+      "fileCategory": "code"
+    },
+    {
+      "path": "src-tauri/macos-deps/ideviceinstaller",
+      "language": "unknown",
+      "sizeLines": 163,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "resources/libimobiledevice/tools_backup/idevicesetlocation-idevicesetlocation.o": [],
+    "resources/libimobiledevice/tools_backup/idevicesetlocation.c": [],
+    "resources/libimobiledevice/tools_backup/idevicesyslog": [],
+    "resources/libimobiledevice/tools_backup/idevicesyslog-idevicesyslog.o": [],
+    "resources/libimobiledevice/tools_backup/idevicesyslog.c": [],
+    "resources/libimobiledevice/tools_backup/Makefile.am": [],
+    "resources/libimobiledevice/tools_backup/Makefile.in": [],
+    "resources/libimobiledevice/tools_backup/Makefile.txt": [],
+    "resources/libimobiledevice/tools/afcclient": [],
+    "resources/libimobiledevice/tools/idevice_id": [],
+    "resources/libimobiledevice/tools/ideviceinfo": [],
+    "resources/libimobiledevice/tools/ideviceinstaller": [],
+    "resources/libimobiledevice/tools/libcrypto.3.dylib": [],
+    "resources/libimobiledevice/tools/libimobiledevice-1.0.6.dylib": [],
+    "resources/libimobiledevice/tools/libimobiledevice-glue-1.0.0.dylib": [],
+    "resources/libimobiledevice/tools/liblzma.5.dylib": [],
+    "resources/libimobiledevice/tools/libplist-2.0.4.dylib": [],
+    "resources/libimobiledevice/tools/libssl.3.dylib": [],
+    "resources/libimobiledevice/tools/libusbmuxd-2.0.7.dylib": [],
+    "resources/libimobiledevice/tools/libzip.5.5.dylib": [],
+    "resources/libimobiledevice/tools/libzstd.1.5.7.dylib": [],
+    "scripts/generate-test-databases.js": [],
+    "scripts/update-version.js": [],
+    "src-tauri/build.rs": [],
+    "src-tauri/Cargo.toml": [],
+    "src-tauri/DEVICE_TESTS.md": [],
+    "src-tauri/icons/icon.icns": [],
+    "src-tauri/macos-deps/afcclient": [],
+    "src-tauri/macos-deps/afcclient-aarch64-apple-darwin": [],
+    "src-tauri/macos-deps/afcclient-universal-apple-darwin": [],
+    "src-tauri/macos-deps/afcclient-x86_64-apple-darwin": [],
+    "src-tauri/macos-deps/idevice_id": [],
+    "src-tauri/macos-deps/idevice_id-aarch64-apple-darwin": [],
+    "src-tauri/macos-deps/idevice_id-universal-apple-darwin": [],
+    "src-tauri/macos-deps/idevice_id-x86_64-apple-darwin": [],
+    "src-tauri/macos-deps/ideviceinfo": [],
+    "src-tauri/macos-deps/ideviceinfo-aarch64-apple-darwin": [],
+    "src-tauri/macos-deps/ideviceinfo-universal-apple-darwin": [],
+    "src-tauri/macos-deps/ideviceinfo-x86_64-apple-darwin": [],
+    "src-tauri/macos-deps/ideviceinstaller": []
+  }
+}

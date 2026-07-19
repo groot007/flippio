@@ -6,11 +6,16 @@ import {
   Spinner,
   Text,
 } from '@chakra-ui/react'
+import {
+  clearTableContext,
+  selectDatabase,
+  selectTable,
+} from '@renderer/features/layout/selectionSession'
+import { useSelectionSessionActions } from '@renderer/features/layout/useSelectionSessionActions'
 import { useDatabaseFiles } from '@renderer/hooks/useDatabaseFiles'
 import { useDatabaseTables } from '@renderer/hooks/useDatabaseTables'
 import { useTableDataQuery } from '@renderer/hooks/useTableDataQuery'
 import { useCurrentDatabaseSelection, useCurrentDeviceSelection, useTableData } from '@renderer/store'
-import { useRowEditingStore } from '@renderer/store/useRowEditingStore'
 import { toaster } from '@renderer/ui/toaster'
 import { groupDatabaseFilesByLocation } from '@renderer/utils/databaseFileGrouping'
 import { ensureActiveDatabaseFile } from '@renderer/utils/databaseFileResolver'
@@ -21,6 +26,14 @@ import { LuDatabase, LuFilter, LuFolderOpen, LuRefreshCcw, LuTable, LuUpload, Lu
 import { CustomQueryModal } from '../data/CustomQueryModal'
 import FLSelect from './../common/FLSelect'
 
+function findMatchingDatabaseFile(currentFile, refreshedFiles) {
+  return refreshedFiles.find(file =>
+    (currentFile.remotePath && file.remotePath === currentFile.remotePath)
+    || file.path === currentFile.path
+    || file.filename === currentFile.filename,
+  ) ?? null
+}
+
 export function SubHeader() {
   const selectedDevice = useCurrentDeviceSelection(state => state.selectedDevice)
   const selectedApplication = useCurrentDeviceSelection(state => state.selectedApplication)
@@ -29,13 +42,14 @@ export function SubHeader() {
   const {
     setTableData,
     clearTableData,
+    setIsRefreshingTableData,
   } = useTableData()
-  const setSelectedRow = useRowEditingStore(state => state.setSelectedRow)
   const tableDataStore = useTableData()
   const selectedDatabaseFile = useCurrentDatabaseSelection(state => state.selectedDatabaseFile)
   const setSelectedDatabaseFile = useCurrentDatabaseSelection(state => state.setSelectedDatabaseFile)
   const selectedDatabaseTable = useCurrentDatabaseSelection(state => state.selectedDatabaseTable)
   const setSelectedDatabaseTable = useCurrentDatabaseSelection(state => state.setSelectedDatabaseTable)
+  const selectionActions = useSelectionSessionActions()
 
   const [isQueryModalOpen, setIsQueryModalOpen] = useState(false)
   const [isSettingCustomFile, setIsSettingCustomFile] = useState(false)
@@ -50,7 +64,7 @@ export function SubHeader() {
       setSelectedApplication(null)
       setSelectedDatabaseTable(null)
       clearTableData()
-      setSelectedRow(null)
+      selectionActions.setSelectedRow(null)
       
       // Step 2: Mark custom file setting as complete
       setTimeout(() => {
@@ -58,7 +72,7 @@ export function SubHeader() {
         console.log('🔧 [SubHeader] Custom file setup complete')
       }, 100)
     }
-  }, [clearTableData, isSettingCustomFile, selectedDatabaseFile, setSelectedApplication, setSelectedDatabaseTable, setSelectedDevice, setSelectedRow])
+  }, [clearTableData, isSettingCustomFile, selectedDatabaseFile, selectionActions, setSelectedApplication, setSelectedDatabaseTable, setSelectedDevice])
 
   const {
     data: databaseFiles = [],
@@ -129,29 +143,22 @@ export function SubHeader() {
       }
     }
     
-    setSelectedDatabaseFile(resolvedFile)
-    setSelectedDatabaseTable(null)
-    clearTableData()
-    setSelectedRow(null)
-  }, [clearTableData, queryClient, selectedApplication, selectedDevice, setSelectedDatabaseFile, setSelectedDatabaseTable, setSelectedRow])
+    selectDatabase({
+      databaseFile: resolvedFile,
+      actions: selectionActions,
+    })
+  }, [queryClient, selectedApplication, selectedDevice, selectionActions])
 
   const handleTableChange = useCallback((table) => {    
     console.info('CriticalPath: table selected', {
       tableName: table?.name ?? null,
       databasePath: selectedDatabaseFile?.path ?? null,
     })
-    // Clear any existing table data immediately to show loading state
-    if (table) {
-      setTableData({
-        rows: [],
-        columns: [],
-        isCustomQuery: false,
-        tableName: table.name,
-      })
-    }
-    
-    setSelectedDatabaseTable(table)
-  }, [selectedDatabaseFile?.path, setSelectedDatabaseTable, setTableData])
+    selectTable({
+      table,
+      actions: selectionActions,
+    })
+  }, [selectedDatabaseFile?.path, selectionActions])
 
   const dbFileOptions = useMemo(() => 
     groupDatabaseFilesByLocation(databaseFiles), [databaseFiles])
@@ -200,13 +207,20 @@ export function SubHeader() {
 
   useEffect(() => {
     if (!selectedDatabaseFile?.filename) {
-      setSelectedDatabaseTable(null)
-      clearTableData()
-      setSelectedRow(null)
+      clearTableContext({
+        ...selectionActions,
+        setTableData: undefined,
+      })
     }
-  }, [clearTableData, selectedDatabaseFile, setSelectedDatabaseTable, setSelectedRow])
+  }, [selectedDatabaseFile, selectionActions])
 
   const onRefreshClick = useCallback(async () => {
+    const shouldRefreshCurrentTable = !!selectedDatabaseFile?.path && !!selectedDatabaseTable?.name
+    const shouldPrioritizeSelectedIosDb = selectedDevice?.deviceType === 'iphone-device'
+      && !!selectedDevice?.id
+      && !!selectedApplication?.bundleId
+      && !!selectedDatabaseFile?.remotePath
+
     console.info('CriticalPath: database refresh started', {
       deviceId: selectedDevice?.id ?? null,
       bundleId: selectedApplication?.bundleId ?? null,
@@ -214,35 +228,139 @@ export function SubHeader() {
       tableName: selectedDatabaseTable?.name ?? null,
     })
 
-    if (selectedDevice?.deviceType === 'iphone-device') {
-      setSelectedDatabaseTable(null)
-      setSelectedDatabaseFile(null)
-      clearTableData()
-      setSelectedRow(null)
+    if (shouldRefreshCurrentTable) {
+      setIsRefreshingTableData(true)
     }
 
-    await refreshDatabase({
-      refetchDatabaseFiles,
-      refetchDatabaseTables: selectedDevice?.deviceType === 'iphone-device' ? undefined : refetchDatabaseTables,
-      refetchTable: selectedDevice?.deviceType === 'iphone-device' ? undefined : refetchTable,
-    })
-    console.info('CriticalPath: database refresh finished', {
-      databasePath: selectedDatabaseFile?.path ?? null,
-      tableName: selectedDatabaseTable?.name ?? null,
-    })
+    try {
+      if (shouldPrioritizeSelectedIosDb) {
+        const refreshResult = await window.api.refreshIOSDeviceDatabaseFile(
+          selectedDevice.id,
+          selectedApplication.bundleId,
+          selectedDatabaseFile.remotePath!,
+        )
+
+        if (!refreshResult.success || !refreshResult.file) {
+          throw new Error(refreshResult.error || 'Failed to refresh selected database file')
+        }
+
+        const refreshedSelectedDatabaseFile = refreshResult.file
+        setSelectedDatabaseFile(refreshedSelectedDatabaseFile)
+
+        await ensureActiveDatabaseFile({
+          databaseFile: refreshedSelectedDatabaseFile,
+          selectedDevice,
+          selectedApplication,
+          queryClient,
+          setSelectedDatabaseFile,
+        })
+
+        if (refetchDatabaseTables) {
+          await refetchDatabaseTables()
+        }
+
+        if (selectedDatabaseTable?.name && refetchTable) {
+          await refetchTable()
+        }
+
+        toaster.create({
+          title: 'Success',
+          description: 'Current database refreshed',
+          type: 'success',
+          duration: 3000,
+        })
+
+        void refetchDatabaseFiles().catch((error) => {
+          console.error('Error refreshing background database list:', error)
+        })
+
+        console.info('CriticalPath: database refresh finished', {
+          databasePath: refreshedSelectedDatabaseFile.path ?? null,
+          tableName: selectedDatabaseTable?.name ?? null,
+        })
+
+        return
+      }
+
+      const refreshedDatabaseFilesResult = await refreshDatabase({
+        refetchDatabaseFiles,
+        refetchDatabaseTables: selectedDevice?.deviceType === 'iphone-device' ? undefined : refetchDatabaseTables,
+        refetchTable: selectedDevice?.deviceType === 'iphone-device' ? undefined : refetchTable,
+        showSuccessToast: !shouldRefreshCurrentTable && selectedDevice?.deviceType !== 'iphone-device',
+      })
+
+      if (
+        selectedDevice?.deviceType === 'iphone-device'
+        && selectedDatabaseFile
+        && selectedApplication?.bundleId
+      ) {
+        const refreshedFiles = refreshedDatabaseFilesResult?.data ?? []
+        const matchedDatabaseFile = findMatchingDatabaseFile(selectedDatabaseFile, refreshedFiles)
+        const activeDatabaseFile = matchedDatabaseFile ?? selectedDatabaseFile
+
+        if (matchedDatabaseFile && matchedDatabaseFile !== selectedDatabaseFile) {
+          setSelectedDatabaseFile(matchedDatabaseFile)
+        }
+
+        await ensureActiveDatabaseFile({
+          databaseFile: activeDatabaseFile,
+          selectedDevice,
+          selectedApplication,
+          queryClient,
+          setSelectedDatabaseFile,
+        })
+
+        if (refetchDatabaseTables) {
+          await refetchDatabaseTables()
+        }
+
+        if (selectedDatabaseTable?.name && refetchTable) {
+          await refetchTable()
+        }
+      }
+
+      if (shouldRefreshCurrentTable) {
+        toaster.create({
+          title: 'Success',
+          description: 'Database refreshed',
+          type: 'success',
+          duration: 3000,
+        })
+      }
+
+      console.info('CriticalPath: database refresh finished', {
+        databasePath: selectedDatabaseFile?.path ?? null,
+        tableName: selectedDatabaseTable?.name ?? null,
+      })
+    }
+    catch (error) {
+      if (shouldRefreshCurrentTable) {
+        setIsRefreshingTableData(false)
+      }
+
+      console.error('CriticalPath: database refresh failed', error)
+      toaster.create({
+        title: 'Error refreshing database',
+        description: error instanceof Error ? error.message : 'Failed to refresh database',
+        type: 'error',
+        duration: 4000,
+      })
+    }
   }, [
-    clearTableData,
     refetchDatabaseFiles,
     refetchDatabaseTables,
     refetchTable,
+    queryClient,
+    selectionActions,
     selectedApplication?.bundleId,
     selectedDatabaseFile?.path,
+    selectedDatabaseFile?.remotePath,
+    selectedDatabaseFile,
     selectedDatabaseTable?.name,
     selectedDevice?.deviceType,
     selectedDevice?.id,
+    setIsRefreshingTableData,
     setSelectedDatabaseFile,
-    setSelectedDatabaseTable,
-    setSelectedRow,
   ])
 
   const isNoDB = !databaseFiles?.length && isScanComplete && selectedApplication?.bundleId && selectedDevice?.id
@@ -368,6 +486,7 @@ export function SubHeader() {
             : (
                 <Box>
                   <FLSelect
+                    testId="database-file-select"
                     label="Select Database"
                     options={dbFileOptions}
                     value={selectedDatabaseFileOption}
@@ -382,6 +501,7 @@ export function SubHeader() {
 
           <Box>
             <FLSelect
+              testId="table-select"
               label="Select Table"
               options={tableOptions}
               value={selectedDatabaseTableOption}
@@ -419,6 +539,7 @@ export function SubHeader() {
           <HStack>
             {/* Show SQL button always */}
             <Button
+              data-testid="sql-button"
               onClick={() => setIsQueryModalOpen(true)}
               variant="outline"
               size="sm"
@@ -439,6 +560,7 @@ export function SubHeader() {
             {/* Show clear (times) icon if a custom query is active */}
             {tableDataStore.tableData?.isCustomQuery && (
               <Button
+                data-testid="clear-sql-button"
                 onClick={handleClearCustomQuery}
                 variant="ghost"
                 size="sm"
@@ -460,6 +582,7 @@ export function SubHeader() {
           gap={3}
         >
           <Button
+            data-testid="open-db-button"
             onClick={handleOpenDBFile}
             variant="ghost"
             size="sm"
@@ -475,6 +598,7 @@ export function SubHeader() {
           </Button>
 
           <Button
+            data-testid="export-db-button"
             onClick={handleExportDB}
             variant="outline"
             size="sm"

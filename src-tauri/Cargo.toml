@@ -1,6 +1,6 @@
 [package]
 name = "Flippio"
-version = "0.4.4"
+version = "0.4.5"
 description = "Database viewer with device connection"
 authors = ["koliastanis"]
 edition = "2021"
@@ -17,18 +17,20 @@ name = "flippio"
 path = "src/lib.rs"
 
 [build-dependencies]
-tauri-build = { version = "2.0", features = [] }
+tauri-build = { version = "2.6.3", features = [] }
 
 [dependencies]
-tauri = { version = "2.0", features = [] }
-tauri-plugin-shell = "2.0"
-tauri-plugin-dialog = "2.0"
-tauri-plugin-fs = "2.0"
+tauri = { version = "2.11.5", features = [] }
+tauri-plugin-shell = "2.3.0"
+tauri-plugin-dialog = "2.3.0"
+tauri-plugin-fs = "2.4.0"
+tauri-plugin-wdio = "1.2.0"
+tauri-plugin-wdio-webdriver = "1.2.0"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 tokio = { version = "1", features = ["full"] }
 sqlx = { version = "0.7", features = ["runtime-tokio-rustls", "sqlite"] }
-tauri-plugin-log = "2.0"
+tauri-plugin-log = "2.6.0"
 base64 = "0.21"
 chrono = { version = "0.4", features = ["serde"] }
 simplelog = "0.12"
@@ -37,7 +39,7 @@ uuid = { version = "1.0", features = ["v4", "serde"] }
 sha2 = "0.10"
 
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
-tauri-plugin-updater = "2.0"
+tauri-plugin-updater = "2.9.0"
 
 # Test dependencies
 [dev-dependencies]

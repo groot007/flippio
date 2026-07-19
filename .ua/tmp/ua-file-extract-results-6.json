@@ -1,0 +1,2788 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 40,
+  "filesSkipped": [],
+  "results": [
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicesetlocation-idevicesetlocation.o",
+      "language": "o",
+      "fileCategory": "code",
+      "totalLines": 80,
+      "nonEmptyLines": 79,
+      "metrics": {}
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicesetlocation.c",
+      "language": "c",
+      "fileCategory": "code",
+      "totalLines": 192,
+      "nonEmptyLines": 166,
+      "functions": [
+        {
+          "name": "print_usage",
+          "startLine": 47,
+          "endLine": 66,
+          "params": [
+            "argc",
+            "argv",
+            "is_error"
+          ]
+        },
+        {
+          "name": "main",
+          "startLine": 68,
+          "endLine": 192,
+          "params": [
+            "argc",
+            "argv"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "main",
+          "line": 68,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "print_usage",
+          "callee": "strrchr",
+          "lineNumber": 49
+        },
+        {
+          "caller": "print_usage",
+          "callee": "fprintf",
+          "lineNumber": 52
+        },
+        {
+          "caller": "print_usage",
+          "callee": "fprintf",
+          "lineNumber": 53
+        },
+        {
+          "caller": "print_usage",
+          "callee": "fprintf",
+          "lineNumber": 54
+        },
+        {
+          "caller": "main",
+          "callee": "getopt_long",
+          "lineNumber": 83
+        },
+        {
+          "caller": "main",
+          "callee": "idevice_set_debug_level",
+          "lineNumber": 86
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 90
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 91
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 100
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 103
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 106
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 115
+        },
+        {
+          "caller": "main",
+          "callee": "strcmp",
+          "lineNumber": 122
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 125
+        },
+        {
+          "caller": "main",
+          "callee": "idevice_new_with_options",
+          "lineNumber": 132
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 134
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 136
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_client_new_with_handshake",
+          "lineNumber": 142
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_start_service",
+          "lineNumber": 145
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_client_free",
+          "lineNumber": 147
+        },
+        {
+          "caller": "main",
+          "callee": "idevice_free",
+          "lineNumber": 148
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 149
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_strerror",
+          "lineNumber": 149
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_client_free",
+          "lineNumber": 152
+        },
+        {
+          "caller": "main",
+          "callee": "service_client_new",
+          "lineNumber": 156
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_service_descriptor_free",
+          "lineNumber": 158
+        },
+        {
+          "caller": "main",
+          "callee": "lockdownd_client_free",
+          "lineNumber": 161
+        },
+        {
+          "caller": "main",
+          "callee": "idevice_free",
+          "lineNumber": 162
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 163
+        },
+        {
+          "caller": "main",
+          "callee": "htobe32",
+          "lineNumber": 170
+        },
+        {
+          "caller": "main",
+          "callee": "service_send",
+          "lineNumber": 171
+        },
+        {
+          "caller": "main",
+          "callee": "strlen",
+          "lineNumber": 173
+        },
+        {
+          "caller": "main",
+          "callee": "strlen",
+          "lineNumber": 173
+        },
+        {
+          "caller": "main",
+          "callee": "malloc",
+          "lineNumber": 174
+        },
+        {
+          "caller": "main",
+          "callee": "strlen",
+          "lineNumber": 176
+        },
+        {
+          "caller": "main",
+          "callee": "htobe32",
+          "lineNumber": 177
+        },
+        {
+          "caller": "main",
+          "callee": "memcpy",
+          "lineNumber": 178
+        },
+        {
+          "caller": "main",
+          "callee": "memcpy",
+          "lineNumber": 179
+        },
+        {
+          "caller": "main",
+          "callee": "strlen",
+          "lineNumber": 180
+        },
+        {
+          "caller": "main",
+          "callee": "htobe32",
+          "lineNumber": 181
+        },
+        {
+          "caller": "main",
+          "callee": "memcpy",
+          "lineNumber": 182
+        },
+        {
+          "caller": "main",
+          "callee": "memcpy",
+          "lineNumber": 183
+        },
+        {
+          "caller": "main",
+          "callee": "service_send",
+          "lineNumber": 186
+        },
+        {
+          "caller": "main",
+          "callee": "idevice_free",
+          "lineNumber": 189
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicesyslog",
+      "language": "unknown",
+      "fileCategory": "code",
+      "totalLines": 268,
+      "nonEmptyLines": 260,
+      "metrics": {}
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicesyslog-idevicesyslog.o",
+      "language": "o",
+      "fileCategory": "code",
+      "totalLines": 300,
+      "nonEmptyLines": 294,
+      "metrics": {}
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/idevicesyslog.c",
+      "language": "c",
+      "fileCategory": "code",
+      "totalLines": 784,
+      "nonEmptyLines": 720,
+      "functions": [
+        {
+          "name": "add_filter",
+          "startLine": 78,
+          "endLine": 120,
+          "params": [
+            "filterstr"
+          ]
+        },
+        {
+          "name": "find_char",
+          "startLine": 122,
+          "endLine": 128,
+          "params": [
+            "c",
+            "p",
+            "end"
+          ]
+        },
+        {
+          "name": "syslog_callback",
+          "startLine": 132,
+          "endLine": 346,
+          "params": [
+            "c",
+            "user_data"
+          ]
+        },
+        {
+          "name": "start_logging",
+          "startLine": 348,
+          "endLine": 412,
+          "params": []
+        },
+        {
+          "name": "stop_logging",
+          "startLine": 414,
+          "endLine": 427,
+          "params": []
+        },
+        {
+          "name": "device_event_cb",
+          "startLine": 429,
+          "endLine": 457,
+          "params": [
+            "event",
+            "userdata"
+          ]
+        },
+        {
+          "name": "clean_exit",
+          "startLine": 462,
+          "endLine": 466,
+          "params": [
+            "sig"
+          ]
+        },
+        {
+          "name": "print_usage",
+          "startLine": 468,
+          "endLine": 506,
+          "params": [
+            "argc",
+            "argv",
+            "is_error"
+          ]
+        },
+        {
+          "name": "main",
+          "startLine": 508,
+          "endLine": 784,
+          "params": [
+            "argc",
+            "argv"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "main",
+          "line": 508,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "add_filter",
+          "callee": "strlen",
+          "lineNumber": 80
+        },
+        {
+          "caller": "add_filter",
+          "callee": "malloc",
+          "lineNumber": 87
+        },
+        {
+          "caller": "add_filter",
+          "callee": "fprintf",
+          "lineNumber": 89
+        },
+        {
+          "caller": "add_filter",
+          "callee": "exit",
+          "lineNumber": 90
+        },
+        {
+          "caller": "add_filter",
+          "callee": "memcpy",
+          "lineNumber": 92
+        },
+        {
+          "caller": "add_filter",
+          "callee": "strtol",
+          "lineNumber": 95
+        },
+        {
+          "caller": "add_filter",
+          "callee": "realloc",
+          "lineNumber": 97
+        },
+        {
+          "caller": "add_filter",
+          "callee": "fprintf",
+          "lineNumber": 99
+        },
+        {
+          "caller": "add_filter",
+          "callee": "exit",
+          "lineNumber": 100
+        },
+        {
+          "caller": "add_filter",
+          "callee": "realloc",
+          "lineNumber": 106
+        },
+        {
+          "caller": "add_filter",
+          "callee": "fprintf",
+          "lineNumber": 108
+        },
+        {
+          "caller": "add_filter",
+          "callee": "exit",
+          "lineNumber": 109
+        },
+        {
+          "caller": "syslog_callback",
+          "callee": "realloc",
+          "lineNumber": 136
+        },
+        {
+          "caller": "syslog_callback",
+          "callee": "fprintf",
+          "lineNumber": 138
+        },
+        {
+          "caller": "syslog_callback",
+          "callee": "exit",
+          "lineNumber": 139
+        },
+        {
+          "caller": "syslog_callback",
+          "callee": "cprintf",
+          "lineNumber": 152
+        },
+        {
+          "caller": "syslog_callback",
+          "callee": "find_char",
+          "lineNumber": 163
+        },
+        {
+          "caller": "syslog_callback",
+          "callee": "strstr",
+          "lineNumber": 172
+        },
+        {
+          "caller": "syslog_callback",
+          "callee": "strstr",
+          "lineNumber": 187
+        },
+        {
+          "caller": "syslog_callback",
+          "callee": "strstr",
+          "lineNumber": 209
+        },
+        {
+          "caller": "syslog_callback",
+          "callee": "find_char",
+          "lineNumber": 224
+        },
+        {
+          "caller": "syslog_callback",
+          "callee": "find_char",
+          "lineNumber": 229
+        },
+        {
+          "caller": "syslog_callback",
+          "callee": "find_char",
+          "lineNumber": 232
+        },
+        {
+          "caller": "syslog_callback",
+          "callee": "strtol",
+          "lineNumber": 241
+        },
+        {
+          "caller": "syslog_callback",
+          "callee": "strncmp",
+          "lineNumber": 261
+        },
+        {
+          "caller": "syslog_callback",
+          "callee": "strncmp",
+          "lineNumber": 283
+        },
+        {
+          "caller": "syslog_callback",
+          "callee": "strncmp",
+          "lineNumber": 286
+        },
+        {
+          "caller": "syslog_callback",
+          "callee": "strncmp",
+          "lineNumber": 289
+        },
+        {
+          "caller": "syslog_callback",
+          "callee": "strncmp",
+          "lineNumber": 292
+        },
+        {
+          "caller": "syslog_callback",
+          "callee": "cprintf",
+          "lineNumber": 300
+        },
+        {
+          "caller": "syslog_callback",
+          "callee": "fwrite",
+          "lineNumber": 301
+        },
+        {
+          "caller": "syslog_callback",
+          "callee": "cprintf",
+          "lineNumber": 305
+        },
+        {
+          "caller": "syslog_callback",
+          "callee": "fwrite",
+          "lineNumber": 306
+        },
+        {
+          "caller": "syslog_callback",
+          "callee": "cprintf",
+          "lineNumber": 307
+        },
+        {
+          "caller": "syslog_callback",
+          "callee": "cprintf",
+          "lineNumber": 311
+        },
+        {
+          "caller": "syslog_callback",
+          "callee": "fwrite",
+          "lineNumber": 312
+        },
+        {
+          "caller": "syslog_callback",
+          "callee": "cprintf",
+          "lineNumber": 313
+        },
+        {
+          "caller": "syslog_callback",
+          "callee": "fwrite",
+          "lineNumber": 314
+        },
+        {
+          "caller": "syslog_callback",
+          "callee": "cprintf",
+          "lineNumber": 317
+        },
+        {
+          "caller": "syslog_callback",
+          "callee": "fwrite",
+          "lineNumber": 319
+        },
+        {
+          "caller": "syslog_callback",
+          "callee": "cprintf",
+          "lineNumber": 326
+        },
+        {
+          "caller": "syslog_callback",
+          "callee": "cprintf",
+          "lineNumber": 330
+        },
+        {
+          "caller": "syslog_callback",
+          "callee": "fwrite",
+          "lineNumber": 335
+        },
+        {
+          "caller": "syslog_callback",
+          "callee": "cprintf",
+          "lineNumber": 336
+        },
+        {
+          "caller": "syslog_callback",
+          "callee": "fflush",
+          "lineNumber": 337
+        },
+        {
+          "caller": "start_logging",
+          "callee": "idevice_new_with_options",
+          "lineNumber": 350
+        },
+        {
+          "caller": "start_logging",
+          "callee": "fprintf",
+          "lineNumber": 352
+        },
+        {
+          "caller": "start_logging",
+          "callee": "lockdownd_client_new_with_handshake",
+          "lineNumber": 357
+        },
+        {
+          "caller": "start_logging",
+          "callee": "fprintf",
+          "lineNumber": 359
+        },
+        {
+          "caller": "start_logging",
+          "callee": "idevice_free",
+          "lineNumber": 360
+        },
+        {
+          "caller": "start_logging",
+          "callee": "lockdownd_start_service",
+          "lineNumber": 367
+        },
+        {
+          "caller": "start_logging",
+          "callee": "fprintf",
+          "lineNumber": 369
+        },
+        {
+          "caller": "start_logging",
+          "callee": "lockdownd_start_service",
+          "lineNumber": 371
+        },
+        {
+          "caller": "start_logging",
+          "callee": "sleep",
+          "lineNumber": 375
+        },
+        {
+          "caller": "start_logging",
+          "callee": "fprintf",
+          "lineNumber": 379
+        },
+        {
+          "caller": "start_logging",
+          "callee": "idevice_free",
+          "lineNumber": 380
+        },
+        {
+          "caller": "start_logging",
+          "callee": "lockdownd_client_free",
+          "lineNumber": 384
+        },
+        {
+          "caller": "start_logging",
+          "callee": "syslog_relay_client_new",
+          "lineNumber": 388
+        },
+        {
+          "caller": "start_logging",
+          "callee": "lockdownd_service_descriptor_free",
+          "lineNumber": 389
+        },
+        {
+          "caller": "start_logging",
+          "callee": "fprintf",
+          "lineNumber": 391
+        },
+        {
+          "caller": "start_logging",
+          "callee": "idevice_free",
+          "lineNumber": 392
+        },
+        {
+          "caller": "start_logging",
+          "callee": "syslog_relay_start_capture_raw",
+          "lineNumber": 398
+        },
+        {
+          "caller": "start_logging",
+          "callee": "fprintf",
+          "lineNumber": 400
+        },
+        {
+          "caller": "start_logging",
+          "callee": "syslog_relay_client_free",
+          "lineNumber": 401
+        },
+        {
+          "caller": "start_logging",
+          "callee": "idevice_free",
+          "lineNumber": 403
+        },
+        {
+          "caller": "start_logging",
+          "callee": "fprintf",
+          "lineNumber": 408
+        },
+        {
+          "caller": "start_logging",
+          "callee": "fflush",
+          "lineNumber": 409
+        },
+        {
+          "caller": "stop_logging",
+          "callee": "fflush",
+          "lineNumber": 416
+        },
+        {
+          "caller": "stop_logging",
+          "callee": "syslog_relay_client_free",
+          "lineNumber": 419
+        },
+        {
+          "caller": "stop_logging",
+          "callee": "idevice_free",
+          "lineNumber": 424
+        },
+        {
+          "caller": "device_event_cb",
+          "callee": "strdup",
+          "lineNumber": 440
+        },
+        {
+          "caller": "device_event_cb",
+          "callee": "strcmp",
+          "lineNumber": 442
+        },
+        {
+          "caller": "device_event_cb",
+          "callee": "start_logging",
+          "lineNumber": 443
+        },
+        {
+          "caller": "device_event_cb",
+          "callee": "fprintf",
+          "lineNumber": 444
+        },
+        {
+          "caller": "device_event_cb",
+          "callee": "strcmp",
+          "lineNumber": 449
+        },
+        {
+          "caller": "device_event_cb",
+          "callee": "stop_logging",
+          "lineNumber": 450
+        },
+        {
+          "caller": "device_event_cb",
+          "callee": "fprintf",
+          "lineNumber": 451
+        },
+        {
+          "caller": "clean_exit",
+          "callee": "fprintf",
+          "lineNumber": 464
+        },
+        {
+          "caller": "print_usage",
+          "callee": "strrchr",
+          "lineNumber": 470
+        },
+        {
+          "caller": "print_usage",
+          "callee": "fprintf",
+          "lineNumber": 471
+        },
+        {
+          "caller": "print_usage",
+          "callee": "fprintf",
+          "lineNumber": 472
+        },
+        {
+          "caller": "main",
+          "callee": "signal",
+          "lineNumber": 538
+        },
+        {
+          "caller": "main",
+          "callee": "signal",
+          "lineNumber": 539
+        },
+        {
+          "caller": "main",
+          "callee": "signal",
+          "lineNumber": 541
+        },
+        {
+          "caller": "main",
+          "callee": "signal",
+          "lineNumber": 542
+        },
+        {
+          "caller": "main",
+          "callee": "getopt_long",
+          "lineNumber": 545
+        },
+        {
+          "caller": "main",
+          "callee": "idevice_set_debug_level",
+          "lineNumber": 548
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 552
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 553
+        },
+        {
+          "caller": "main",
+          "callee": "free",
+          "lineNumber": 556
+        },
+        {
+          "caller": "main",
+          "callee": "strdup",
+          "lineNumber": 557
+        },
+        {
+          "caller": "main",
+          "callee": "add_filter",
+          "lineNumber": 564
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 574
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 575
+        },
+        {
+          "caller": "main",
+          "callee": "add_filter",
+          "lineNumber": 578
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 582
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 583
+        },
+        {
+          "caller": "main",
+          "callee": "realloc",
+          "lineNumber": 586
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 588
+        },
+        {
+          "caller": "main",
+          "callee": "exit",
+          "lineNumber": 589
+        },
+        {
+          "caller": "main",
+          "callee": "strdup",
+          "lineNumber": 592
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 598
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 599
+        },
+        {
+          "caller": "main",
+          "callee": "realloc",
+          "lineNumber": 602
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 604
+        },
+        {
+          "caller": "main",
+          "callee": "exit",
+          "lineNumber": 605
+        },
+        {
+          "caller": "main",
+          "callee": "strdup",
+          "lineNumber": 608
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 614
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 615
+        },
+        {
+          "caller": "main",
+          "callee": "realloc",
+          "lineNumber": 618
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 620
+        },
+        {
+          "caller": "main",
+          "callee": "exit",
+          "lineNumber": 621
+        },
+        {
+          "caller": "main",
+          "callee": "strdup",
+          "lineNumber": 624
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 638
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 641
+        },
+        {
+          "caller": "main",
+          "callee": "term_colors_set_enabled",
+          "lineNumber": 645
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 652
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 653
+        },
+        {
+          "caller": "main",
+          "callee": "freopen",
+          "lineNumber": 656
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 657
+        },
+        {
+          "caller": "main",
+          "callee": "strerror",
+          "lineNumber": 657
+        },
+        {
+          "caller": "main",
+          "callee": "term_colors_set_enabled",
+          "lineNumber": 660
+        },
+        {
+          "caller": "main",
+          "callee": "printf",
+          "lineNumber": 664
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 667
+        },
+        {
+          "caller": "main",
+          "callee": "term_colors_set_enabled",
+          "lineNumber": 673
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 677
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 678
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 683
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 684
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 688
+        },
+        {
+          "caller": "main",
+          "callee": "print_usage",
+          "lineNumber": 689
+        },
+        {
+          "caller": "main",
+          "callee": "strcmp",
+          "lineNumber": 698
+        },
+        {
+          "caller": "main",
+          "callee": "free",
+          "lineNumber": 699
+        },
+        {
+          "caller": "main",
+          "callee": "add_filter",
+          "lineNumber": 704
+        },
+        {
+          "caller": "main",
+          "callee": "add_filter",
+          "lineNumber": 708
+        },
+        {
+          "caller": "main",
+          "callee": "add_filter",
+          "lineNumber": 711
+        },
+        {
+          "caller": "main",
+          "callee": "idevice_get_device_list_extended",
+          "lineNumber": 724
+        },
+        {
+          "caller": "main",
+          "callee": "idevice_device_list_extended_free",
+          "lineNumber": 725
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 728
+        },
+        {
+          "caller": "main",
+          "callee": "fprintf",
+          "lineNumber": 732
+        },
+        {
+          "caller": "main",
+          "callee": "malloc",
+          "lineNumber": 736
+        },
+        {
+          "caller": "main",
+          "callee": "idevice_events_subscribe",
+          "lineNumber": 739
+        },
+        {
+          "caller": "main",
+          "callee": "sleep",
+          "lineNumber": 742
+        },
+        {
+          "caller": "main",
+          "callee": "idevice_events_unsubscribe",
+          "lineNumber": 744
+        },
+        {
+          "caller": "main",
+          "callee": "stop_logging",
+          "lineNumber": 745
+        },
+        {
+          "caller": "main",
+          "callee": "free",
+          "lineNumber": 750
+        },
+        {
+          "caller": "main",
+          "callee": "free",
+          "lineNumber": 752
+        },
+        {
+          "caller": "main",
+          "callee": "free",
+          "lineNumber": 755
+        },
+        {
+          "caller": "main",
+          "callee": "free",
+          "lineNumber": 760
+        },
+        {
+          "caller": "main",
+          "callee": "free",
+          "lineNumber": 762
+        },
+        {
+          "caller": "main",
+          "callee": "free",
+          "lineNumber": 767
+        },
+        {
+          "caller": "main",
+          "callee": "free",
+          "lineNumber": 769
+        },
+        {
+          "caller": "main",
+          "callee": "free",
+          "lineNumber": 774
+        },
+        {
+          "caller": "main",
+          "callee": "free",
+          "lineNumber": 776
+        },
+        {
+          "caller": "main",
+          "callee": "free",
+          "lineNumber": 779
+        },
+        {
+          "caller": "main",
+          "callee": "free",
+          "lineNumber": 781
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 9,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/Makefile.am",
+      "language": "am",
+      "fileCategory": "code",
+      "totalLines": 144,
+      "nonEmptyLines": 120,
+      "metrics": {}
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/Makefile.in",
+      "language": "in",
+      "fileCategory": "code",
+      "totalLines": 1460,
+      "nonEmptyLines": 1326,
+      "metrics": {}
+    },
+    {
+      "path": "resources/libimobiledevice/tools_backup/Makefile.txt",
+      "language": "txt",
+      "fileCategory": "docs",
+      "totalLines": 1460,
+      "nonEmptyLines": 1324,
+      "metrics": {}
+    },
+    {
+      "path": "resources/libimobiledevice/tools/afcclient",
+      "language": "unknown",
+      "fileCategory": "code",
+      "totalLines": 243,
+      "nonEmptyLines": 241,
+      "metrics": {}
+    },
+    {
+      "path": "resources/libimobiledevice/tools/idevice_id",
+      "language": "unknown",
+      "fileCategory": "code",
+      "totalLines": 178,
+      "nonEmptyLines": 175,
+      "metrics": {}
+    },
+    {
+      "path": "resources/libimobiledevice/tools/ideviceinfo",
+      "language": "unknown",
+      "fileCategory": "code",
+      "totalLines": 172,
+      "nonEmptyLines": 169,
+      "metrics": {}
+    },
+    {
+      "path": "resources/libimobiledevice/tools/ideviceinstaller",
+      "language": "unknown",
+      "fileCategory": "code",
+      "totalLines": 164,
+      "nonEmptyLines": 163,
+      "metrics": {}
+    },
+    {
+      "path": "resources/libimobiledevice/tools/libcrypto.3.dylib",
+      "language": "dylib",
+      "fileCategory": "code",
+      "totalLines": 18093,
+      "nonEmptyLines": 17998,
+      "metrics": {}
+    },
+    {
+      "path": "resources/libimobiledevice/tools/libimobiledevice-1.0.6.dylib",
+      "language": "dylib",
+      "fileCategory": "code",
+      "totalLines": 323,
+      "nonEmptyLines": 323,
+      "metrics": {}
+    },
+    {
+      "path": "resources/libimobiledevice/tools/libimobiledevice-glue-1.0.0.dylib",
+      "language": "dylib",
+      "fileCategory": "code",
+      "totalLines": 217,
+      "nonEmptyLines": 216,
+      "metrics": {}
+    },
+    {
+      "path": "resources/libimobiledevice/tools/liblzma.5.dylib",
+      "language": "dylib",
+      "fileCategory": "code",
+      "totalLines": 981,
+      "nonEmptyLines": 940,
+      "metrics": {}
+    },
+    {
+      "path": "resources/libimobiledevice/tools/libplist-2.0.4.dylib",
+      "language": "dylib",
+      "fileCategory": "code",
+      "totalLines": 350,
+      "nonEmptyLines": 347,
+      "metrics": {}
+    },
+    {
+      "path": "resources/libimobiledevice/tools/libssl.3.dylib",
+      "language": "dylib",
+      "fileCategory": "code",
+      "totalLines": 3014,
+      "nonEmptyLines": 2998,
+      "metrics": {}
+    },
+    {
+      "path": "resources/libimobiledevice/tools/libusbmuxd-2.0.7.dylib",
+      "language": "dylib",
+      "fileCategory": "code",
+      "totalLines": 110,
+      "nonEmptyLines": 110,
+      "metrics": {}
+    },
+    {
+      "path": "resources/libimobiledevice/tools/libzip.5.5.dylib",
+      "language": "dylib",
+      "fileCategory": "code",
+      "totalLines": 341,
+      "nonEmptyLines": 338,
+      "metrics": {}
+    },
+    {
+      "path": "resources/libimobiledevice/tools/libzstd.1.5.7.dylib",
+      "language": "dylib",
+      "fileCategory": "code",
+      "totalLines": 4744,
+      "nonEmptyLines": 4720,
+      "metrics": {}
+    },
+    {
+      "path": "scripts/generate-test-databases.js",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 431,
+      "nonEmptyLines": 374,
+      "functions": [
+        {
+          "name": "ensureDirectoryExists",
+          "startLine": 20,
+          "endLine": 25,
+          "params": [
+            "dirPath"
+          ]
+        },
+        {
+          "name": "createEcommerceDatabase",
+          "startLine": 27,
+          "endLine": 193,
+          "params": [
+            "dbPath"
+          ]
+        },
+        {
+          "name": "createNotesDatabase",
+          "startLine": 195,
+          "endLine": 255,
+          "params": [
+            "dbPath"
+          ]
+        },
+        {
+          "name": "createComplexTypesDatabase",
+          "startLine": 257,
+          "endLine": 360,
+          "params": [
+            "dbPath"
+          ]
+        },
+        {
+          "name": "createTestDatabases",
+          "startLine": 362,
+          "endLine": 414,
+          "params": []
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "ensureDirectoryExists",
+          "callee": "fs.existsSync",
+          "lineNumber": 21
+        },
+        {
+          "caller": "ensureDirectoryExists",
+          "callee": "fs.mkdirSync",
+          "lineNumber": 22
+        },
+        {
+          "caller": "ensureDirectoryExists",
+          "callee": "console.log",
+          "lineNumber": 23
+        },
+        {
+          "caller": "createEcommerceDatabase",
+          "callee": "console.log",
+          "lineNumber": 28
+        },
+        {
+          "caller": "createEcommerceDatabase",
+          "callee": "db.exec",
+          "lineNumber": 33
+        },
+        {
+          "caller": "createEcommerceDatabase",
+          "callee": "console.log",
+          "lineNumber": 106
+        },
+        {
+          "caller": "createEcommerceDatabase",
+          "callee": "db.prepare",
+          "lineNumber": 109
+        },
+        {
+          "caller": "createEcommerceDatabase",
+          "callee": "insertCategory.run",
+          "lineNumber": 118
+        },
+        {
+          "caller": "createEcommerceDatabase",
+          "callee": "db.prepare",
+          "lineNumber": 122
+        },
+        {
+          "caller": "createEcommerceDatabase",
+          "callee": "insertUser.run",
+          "lineNumber": 132
+        },
+        {
+          "caller": "createEcommerceDatabase",
+          "callee": "db.prepare",
+          "lineNumber": 136
+        },
+        {
+          "caller": "createEcommerceDatabase",
+          "callee": "insertProduct.run",
+          "lineNumber": 147
+        },
+        {
+          "caller": "createEcommerceDatabase",
+          "callee": "db.prepare",
+          "lineNumber": 151
+        },
+        {
+          "caller": "createEcommerceDatabase",
+          "callee": "insertOrder.run",
+          "lineNumber": 160
+        },
+        {
+          "caller": "createEcommerceDatabase",
+          "callee": "db.prepare",
+          "lineNumber": 164
+        },
+        {
+          "caller": "createEcommerceDatabase",
+          "callee": "insertOrderItem.run",
+          "lineNumber": 176
+        },
+        {
+          "caller": "createEcommerceDatabase",
+          "callee": "db.prepare",
+          "lineNumber": 180
+        },
+        {
+          "caller": "createEcommerceDatabase",
+          "callee": "insertSession.run",
+          "lineNumber": 188
+        },
+        {
+          "caller": "createEcommerceDatabase",
+          "callee": "db.close",
+          "lineNumber": 191
+        },
+        {
+          "caller": "createEcommerceDatabase",
+          "callee": "console.log",
+          "lineNumber": 192
+        },
+        {
+          "caller": "createNotesDatabase",
+          "callee": "console.log",
+          "lineNumber": 196
+        },
+        {
+          "caller": "createNotesDatabase",
+          "callee": "db.exec",
+          "lineNumber": 201
+        },
+        {
+          "caller": "createNotesDatabase",
+          "callee": "db.prepare",
+          "lineNumber": 228
+        },
+        {
+          "caller": "createNotesDatabase",
+          "callee": "insertNote.run",
+          "lineNumber": 238
+        },
+        {
+          "caller": "createNotesDatabase",
+          "callee": "db.prepare",
+          "lineNumber": 242
+        },
+        {
+          "caller": "createNotesDatabase",
+          "callee": "insertAttachment.run",
+          "lineNumber": 250
+        },
+        {
+          "caller": "createNotesDatabase",
+          "callee": "db.close",
+          "lineNumber": 253
+        },
+        {
+          "caller": "createNotesDatabase",
+          "callee": "console.log",
+          "lineNumber": 254
+        },
+        {
+          "caller": "createComplexTypesDatabase",
+          "callee": "console.log",
+          "lineNumber": 258
+        },
+        {
+          "caller": "createComplexTypesDatabase",
+          "callee": "db.exec",
+          "lineNumber": 263
+        },
+        {
+          "caller": "createComplexTypesDatabase",
+          "callee": "db.prepare",
+          "lineNumber": 294
+        },
+        {
+          "caller": "createComplexTypesDatabase",
+          "callee": "Buffer.from",
+          "lineNumber": 306
+        },
+        {
+          "caller": "createComplexTypesDatabase",
+          "callee": "'Lorem ipsum dolor sit amet, consectetur adipiscing elit. '.repeat",
+          "lineNumber": 309
+        },
+        {
+          "caller": "createComplexTypesDatabase",
+          "callee": "Buffer.from",
+          "lineNumber": 318
+        },
+        {
+          "caller": "createComplexTypesDatabase",
+          "callee": "insertMixed.run",
+          "lineNumber": 329
+        },
+        {
+          "caller": "createComplexTypesDatabase",
+          "callee": "db.prepare",
+          "lineNumber": 333
+        },
+        {
+          "caller": "createComplexTypesDatabase",
+          "callee": "'A'.repeat",
+          "lineNumber": 347
+        },
+        {
+          "caller": "createComplexTypesDatabase",
+          "callee": "insertEdge.run",
+          "lineNumber": 355
+        },
+        {
+          "caller": "createComplexTypesDatabase",
+          "callee": "db.close",
+          "lineNumber": 358
+        },
+        {
+          "caller": "createComplexTypesDatabase",
+          "callee": "console.log",
+          "lineNumber": 359
+        },
+        {
+          "caller": "createTestDatabases",
+          "callee": "console.log",
+          "lineNumber": 363
+        },
+        {
+          "caller": "createTestDatabases",
+          "callee": "ensureDirectoryExists",
+          "lineNumber": 366
+        },
+        {
+          "caller": "createTestDatabases",
+          "callee": "ensureDirectoryExists",
+          "lineNumber": 367
+        },
+        {
+          "caller": "createTestDatabases",
+          "callee": "path.join",
+          "lineNumber": 372
+        },
+        {
+          "caller": "createTestDatabases",
+          "callee": "path.join",
+          "lineNumber": 373
+        },
+        {
+          "caller": "createTestDatabases",
+          "callee": "path.join",
+          "lineNumber": 374
+        },
+        {
+          "caller": "createTestDatabases",
+          "callee": "path.join",
+          "lineNumber": 375
+        },
+        {
+          "caller": "createTestDatabases",
+          "callee": "path.join",
+          "lineNumber": 376
+        },
+        {
+          "caller": "createTestDatabases",
+          "callee": "fs.existsSync",
+          "lineNumber": 380
+        },
+        {
+          "caller": "createTestDatabases",
+          "callee": "fs.unlinkSync",
+          "lineNumber": 381
+        },
+        {
+          "caller": "createTestDatabases",
+          "callee": "console.log",
+          "lineNumber": 382
+        },
+        {
+          "caller": "createTestDatabases",
+          "callee": "path.basename",
+          "lineNumber": 382
+        },
+        {
+          "caller": "createTestDatabases",
+          "callee": "createEcommerceDatabase",
+          "lineNumber": 387
+        },
+        {
+          "caller": "createTestDatabases",
+          "callee": "path.join",
+          "lineNumber": 387
+        },
+        {
+          "caller": "createTestDatabases",
+          "callee": "createNotesDatabase",
+          "lineNumber": 388
+        },
+        {
+          "caller": "createTestDatabases",
+          "callee": "path.join",
+          "lineNumber": 388
+        },
+        {
+          "caller": "createTestDatabases",
+          "callee": "createComplexTypesDatabase",
+          "lineNumber": 389
+        },
+        {
+          "caller": "createTestDatabases",
+          "callee": "path.join",
+          "lineNumber": 389
+        },
+        {
+          "caller": "createTestDatabases",
+          "callee": "createEcommerceDatabase",
+          "lineNumber": 392
+        },
+        {
+          "caller": "createTestDatabases",
+          "callee": "path.join",
+          "lineNumber": 392
+        },
+        {
+          "caller": "createTestDatabases",
+          "callee": "createNotesDatabase",
+          "lineNumber": 393
+        },
+        {
+          "caller": "createTestDatabases",
+          "callee": "path.join",
+          "lineNumber": 393
+        },
+        {
+          "caller": "createTestDatabases",
+          "callee": "console.log",
+          "lineNumber": 395
+        },
+        {
+          "caller": "createTestDatabases",
+          "callee": "console.log",
+          "lineNumber": 396
+        },
+        {
+          "caller": "createTestDatabases",
+          "callee": "console.log",
+          "lineNumber": 397
+        },
+        {
+          "caller": "createTestDatabases",
+          "callee": "console.log",
+          "lineNumber": 400
+        },
+        {
+          "caller": "createTestDatabases",
+          "callee": "fs.readdirSync",
+          "lineNumber": 401
+        },
+        {
+          "caller": "createTestDatabases",
+          "callee": "testFiles.forEach",
+          "lineNumber": 402
+        },
+        {
+          "caller": "createTestDatabases",
+          "callee": "file.endsWith",
+          "lineNumber": 403
+        },
+        {
+          "caller": "createTestDatabases",
+          "callee": "path.join",
+          "lineNumber": 404
+        },
+        {
+          "caller": "createTestDatabases",
+          "callee": "fs.statSync",
+          "lineNumber": 405
+        },
+        {
+          "caller": "createTestDatabases",
+          "callee": "console.log",
+          "lineNumber": 406
+        },
+        {
+          "caller": "createTestDatabases",
+          "callee": "Math.round",
+          "lineNumber": 406
+        },
+        {
+          "caller": "createTestDatabases",
+          "callee": "console.error",
+          "lineNumber": 411
+        },
+        {
+          "caller": "createTestDatabases",
+          "callee": "process.exit",
+          "lineNumber": 412
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 5,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "scripts/update-version.js",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 279,
+      "nonEmptyLines": 238,
+      "functions": [
+        {
+          "name": "getCurrentVersion",
+          "startLine": 40,
+          "endLine": 55,
+          "params": [
+            "filePath",
+            "updateFunction"
+          ]
+        },
+        {
+          "name": "main",
+          "startLine": 57,
+          "endLine": 147,
+          "params": []
+        },
+        {
+          "name": "validateChangelogVersionAvailable",
+          "startLine": 149,
+          "endLine": 158,
+          "params": [
+            "version"
+          ]
+        },
+        {
+          "name": "updatePackageJson",
+          "startLine": 163,
+          "endLine": 172,
+          "params": [
+            "filePath",
+            "version"
+          ]
+        },
+        {
+          "name": "updateTauriConfig",
+          "startLine": 177,
+          "endLine": 186,
+          "params": [
+            "filePath",
+            "version"
+          ]
+        },
+        {
+          "name": "updateCargoToml",
+          "startLine": 191,
+          "endLine": 206,
+          "params": [
+            "filePath",
+            "version"
+          ]
+        },
+        {
+          "name": "getChangelogEntry",
+          "startLine": 208,
+          "endLine": 243,
+          "params": [
+            "version",
+            "dryRun"
+          ]
+        },
+        {
+          "name": "updateChangelog",
+          "startLine": 245,
+          "endLine": 268,
+          "params": [
+            "filePath",
+            "version",
+            "entry"
+          ]
+        },
+        {
+          "name": "hasChangelogSection",
+          "startLine": 270,
+          "endLine": 274,
+          "params": [
+            "content",
+            "version"
+          ]
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "getCurrentVersion",
+          "callee": "JSON.parse",
+          "lineNumber": 42
+        },
+        {
+          "caller": "getCurrentVersion",
+          "callee": "fs.readFileSync",
+          "lineNumber": 42
+        },
+        {
+          "caller": "getCurrentVersion",
+          "callee": "JSON.parse",
+          "lineNumber": 46
+        },
+        {
+          "caller": "getCurrentVersion",
+          "callee": "fs.readFileSync",
+          "lineNumber": 46
+        },
+        {
+          "caller": "getCurrentVersion",
+          "callee": "fs.readFileSync",
+          "lineNumber": 50
+        },
+        {
+          "caller": "getCurrentVersion",
+          "callee": "content.match",
+          "lineNumber": 51
+        },
+        {
+          "caller": "main",
+          "callee": "validateChangelogVersionAvailable",
+          "lineNumber": 58
+        },
+        {
+          "caller": "main",
+          "callee": "path.join",
+          "lineNumber": 63
+        },
+        {
+          "caller": "main",
+          "callee": "path.join",
+          "lineNumber": 68
+        },
+        {
+          "caller": "main",
+          "callee": "path.join",
+          "lineNumber": 73
+        },
+        {
+          "caller": "main",
+          "callee": "path.join",
+          "lineNumber": 78
+        },
+        {
+          "caller": "main",
+          "callee": "fs.existsSync",
+          "lineNumber": 90
+        },
+        {
+          "caller": "main",
+          "callee": "console.log",
+          "lineNumber": 91
+        },
+        {
+          "caller": "main",
+          "callee": "file.update",
+          "lineNumber": 93
+        },
+        {
+          "caller": "main",
+          "callee": "getCurrentVersion",
+          "lineNumber": 98
+        },
+        {
+          "caller": "main",
+          "callee": "console.log",
+          "lineNumber": 99
+        },
+        {
+          "caller": "main",
+          "callee": "console.log",
+          "lineNumber": 102
+        },
+        {
+          "caller": "main",
+          "callee": "console.log",
+          "lineNumber": 106
+        },
+        {
+          "caller": "main",
+          "callee": "console.log",
+          "lineNumber": 109
+        },
+        {
+          "caller": "main",
+          "callee": "console.error",
+          "lineNumber": 114
+        },
+        {
+          "caller": "main",
+          "callee": "errors.push",
+          "lineNumber": 115
+        },
+        {
+          "caller": "main",
+          "callee": "console.log",
+          "lineNumber": 121
+        },
+        {
+          "caller": "main",
+          "callee": "getChangelogEntry",
+          "lineNumber": 122
+        },
+        {
+          "caller": "main",
+          "callee": "updateChangelog",
+          "lineNumber": 124
+        },
+        {
+          "caller": "main",
+          "callee": "console.log",
+          "lineNumber": 127
+        },
+        {
+          "caller": "main",
+          "callee": "console.log",
+          "lineNumber": 130
+        },
+        {
+          "caller": "main",
+          "callee": "console.error",
+          "lineNumber": 134
+        },
+        {
+          "caller": "main",
+          "callee": "errors.push",
+          "lineNumber": 135
+        },
+        {
+          "caller": "main",
+          "callee": "console.log",
+          "lineNumber": 140
+        },
+        {
+          "caller": "main",
+          "callee": "console.log",
+          "lineNumber": 141
+        },
+        {
+          "caller": "main",
+          "callee": "console.log",
+          "lineNumber": 143
+        },
+        {
+          "caller": "main",
+          "callee": "errors.forEach",
+          "lineNumber": 144
+        },
+        {
+          "caller": "main",
+          "callee": "console.log",
+          "lineNumber": 144
+        },
+        {
+          "caller": "validateChangelogVersionAvailable",
+          "callee": "fs.existsSync",
+          "lineNumber": 150
+        },
+        {
+          "caller": "validateChangelogVersionAvailable",
+          "callee": "fs.readFileSync",
+          "lineNumber": 154
+        },
+        {
+          "caller": "validateChangelogVersionAvailable",
+          "callee": "hasChangelogSection",
+          "lineNumber": 155
+        },
+        {
+          "caller": "updatePackageJson",
+          "callee": "fs.readFileSync",
+          "lineNumber": 164
+        },
+        {
+          "caller": "updatePackageJson",
+          "callee": "JSON.parse",
+          "lineNumber": 165
+        },
+        {
+          "caller": "updatePackageJson",
+          "callee": "fs.writeFileSync",
+          "lineNumber": 170
+        },
+        {
+          "caller": "updatePackageJson",
+          "callee": "JSON.stringify",
+          "lineNumber": 170
+        },
+        {
+          "caller": "updatePackageJson",
+          "callee": "console.log",
+          "lineNumber": 171
+        },
+        {
+          "caller": "updateTauriConfig",
+          "callee": "fs.readFileSync",
+          "lineNumber": 178
+        },
+        {
+          "caller": "updateTauriConfig",
+          "callee": "JSON.parse",
+          "lineNumber": 179
+        },
+        {
+          "caller": "updateTauriConfig",
+          "callee": "fs.writeFileSync",
+          "lineNumber": 184
+        },
+        {
+          "caller": "updateTauriConfig",
+          "callee": "JSON.stringify",
+          "lineNumber": 184
+        },
+        {
+          "caller": "updateTauriConfig",
+          "callee": "console.log",
+          "lineNumber": 185
+        },
+        {
+          "caller": "updateCargoToml",
+          "callee": "fs.readFileSync",
+          "lineNumber": 192
+        },
+        {
+          "caller": "updateCargoToml",
+          "callee": "content.match",
+          "lineNumber": 195
+        },
+        {
+          "caller": "updateCargoToml",
+          "callee": "content.replace",
+          "lineNumber": 199
+        },
+        {
+          "caller": "updateCargoToml",
+          "callee": "fs.writeFileSync",
+          "lineNumber": 204
+        },
+        {
+          "caller": "updateCargoToml",
+          "callee": "console.log",
+          "lineNumber": 205
+        },
+        {
+          "caller": "getChangelogEntry",
+          "callee": "console.log",
+          "lineNumber": 209
+        },
+        {
+          "caller": "getChangelogEntry",
+          "callee": "console.log",
+          "lineNumber": 210
+        },
+        {
+          "caller": "getChangelogEntry",
+          "callee": "console.log",
+          "lineNumber": 213
+        },
+        {
+          "caller": "getChangelogEntry",
+          "callee": "readline.createInterface",
+          "lineNumber": 216
+        },
+        {
+          "caller": "getChangelogEntry",
+          "callee": "rl.question",
+          "lineNumber": 225
+        },
+        {
+          "caller": "getChangelogEntry",
+          "callee": "line.trim",
+          "lineNumber": 226
+        },
+        {
+          "caller": "getChangelogEntry",
+          "callee": "lines.push",
+          "lineNumber": 229
+        },
+        {
+          "caller": "getChangelogEntry",
+          "callee": "rl.close",
+          "lineNumber": 233
+        },
+        {
+          "caller": "getChangelogEntry",
+          "callee": "console.log",
+          "lineNumber": 237
+        },
+        {
+          "caller": "getChangelogEntry",
+          "callee": "console.log",
+          "lineNumber": 241
+        },
+        {
+          "caller": "getChangelogEntry",
+          "callee": "lines.join",
+          "lineNumber": 242
+        },
+        {
+          "caller": "updateChangelog",
+          "callee": "fs.readFileSync",
+          "lineNumber": 246
+        },
+        {
+          "caller": "updateChangelog",
+          "callee": "hasChangelogSection",
+          "lineNumber": 248
+        },
+        {
+          "caller": "updateChangelog",
+          "callee": "entry.trim",
+          "lineNumber": 252
+        },
+        {
+          "caller": "updateChangelog",
+          "callee": "content.indexOf",
+          "lineNumber": 254
+        },
+        {
+          "caller": "updateChangelog",
+          "callee": "content.indexOf",
+          "lineNumber": 260
+        },
+        {
+          "caller": "updateChangelog",
+          "callee": "content.slice",
+          "lineNumber": 265
+        },
+        {
+          "caller": "updateChangelog",
+          "callee": "content.slice",
+          "lineNumber": 265
+        },
+        {
+          "caller": "updateChangelog",
+          "callee": "fs.writeFileSync",
+          "lineNumber": 266
+        },
+        {
+          "caller": "updateChangelog",
+          "callee": "console.log",
+          "lineNumber": 267
+        },
+        {
+          "caller": "hasChangelogSection",
+          "callee": "version.replace",
+          "lineNumber": 271
+        },
+        {
+          "caller": "hasChangelogSection",
+          "callee": "headingRegex.test",
+          "lineNumber": 273
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 9,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src-tauri/build.rs",
+      "language": "rust",
+      "fileCategory": "code",
+      "totalLines": 137,
+      "nonEmptyLines": 115,
+      "functions": [
+        {
+          "name": "main",
+          "startLine": 5,
+          "endLine": 27,
+          "params": []
+        },
+        {
+          "name": "relocate_binaries",
+          "startLine": 29,
+          "endLine": 102,
+          "params": [
+            "app_path"
+          ]
+        },
+        {
+          "name": "copy_file",
+          "startLine": 104,
+          "endLine": 110,
+          "params": [
+            "source",
+            "dest"
+          ]
+        },
+        {
+          "name": "cleanup_resources",
+          "startLine": 112,
+          "endLine": 137,
+          "params": [
+            "contents_path"
+          ]
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "main",
+          "callee": "tauri_build::build",
+          "lineNumber": 7
+        },
+        {
+          "caller": "main",
+          "callee": "env::var",
+          "lineNumber": 12
+        },
+        {
+          "caller": "main",
+          "callee": "PathBuf::from",
+          "lineNumber": 13
+        },
+        {
+          "caller": "main",
+          "callee": "app_path.exists",
+          "lineNumber": 15
+        },
+        {
+          "caller": "main",
+          "callee": "app_path.extension().map_or",
+          "lineNumber": 15
+        },
+        {
+          "caller": "main",
+          "callee": "app_path.extension",
+          "lineNumber": 15
+        },
+        {
+          "caller": "main",
+          "callee": "relocate_binaries",
+          "lineNumber": 18
+        },
+        {
+          "caller": "relocate_binaries",
+          "callee": "app_path.join",
+          "lineNumber": 30
+        },
+        {
+          "caller": "relocate_binaries",
+          "callee": "contents_path.join",
+          "lineNumber": 31
+        },
+        {
+          "caller": "relocate_binaries",
+          "callee": "contents_path.join",
+          "lineNumber": 32
+        },
+        {
+          "caller": "relocate_binaries",
+          "callee": "fs::create_dir_all",
+          "lineNumber": 35
+        },
+        {
+          "caller": "relocate_binaries",
+          "callee": "fs::create_dir_all",
+          "lineNumber": 36
+        },
+        {
+          "caller": "relocate_binaries",
+          "callee": "env::var",
+          "lineNumber": 39
+        },
+        {
+          "caller": "relocate_binaries",
+          "callee": "Path::new(&manifest_dir).parent().unwrap",
+          "lineNumber": 40
+        },
+        {
+          "caller": "relocate_binaries",
+          "callee": "Path::new(&manifest_dir).parent",
+          "lineNumber": 40
+        },
+        {
+          "caller": "relocate_binaries",
+          "callee": "Path::new",
+          "lineNumber": 40
+        },
+        {
+          "caller": "relocate_binaries",
+          "callee": "project_root.join",
+          "lineNumber": 41
+        },
+        {
+          "caller": "relocate_binaries",
+          "callee": "project_root.join",
+          "lineNumber": 42
+        },
+        {
+          "caller": "relocate_binaries",
+          "callee": "libs_source.join",
+          "lineNumber": 66
+        },
+        {
+          "caller": "relocate_binaries",
+          "callee": "frameworks_path.join",
+          "lineNumber": 67
+        },
+        {
+          "caller": "relocate_binaries",
+          "callee": "source.exists",
+          "lineNumber": 69
+        },
+        {
+          "caller": "relocate_binaries",
+          "callee": "copy_file",
+          "lineNumber": 70
+        },
+        {
+          "caller": "relocate_binaries",
+          "callee": "tools_source.join",
+          "lineNumber": 79
+        },
+        {
+          "caller": "relocate_binaries",
+          "callee": "macos_path.join",
+          "lineNumber": 80
+        },
+        {
+          "caller": "relocate_binaries",
+          "callee": "source.exists",
+          "lineNumber": 82
+        },
+        {
+          "caller": "relocate_binaries",
+          "callee": "copy_file",
+          "lineNumber": 83
+        },
+        {
+          "caller": "relocate_binaries",
+          "callee": "fs::metadata(&dest)?.permissions",
+          "lineNumber": 88
+        },
+        {
+          "caller": "relocate_binaries",
+          "callee": "fs::metadata",
+          "lineNumber": 88
+        },
+        {
+          "caller": "relocate_binaries",
+          "callee": "perms.set_mode",
+          "lineNumber": 89
+        },
+        {
+          "caller": "relocate_binaries",
+          "callee": "fs::set_permissions",
+          "lineNumber": 90
+        },
+        {
+          "caller": "relocate_binaries",
+          "callee": "cleanup_resources",
+          "lineNumber": 99
+        },
+        {
+          "caller": "relocate_binaries",
+          "callee": "Ok",
+          "lineNumber": 101
+        },
+        {
+          "caller": "copy_file",
+          "callee": "dest.exists",
+          "lineNumber": 105
+        },
+        {
+          "caller": "copy_file",
+          "callee": "fs::remove_file",
+          "lineNumber": 106
+        },
+        {
+          "caller": "copy_file",
+          "callee": "fs::copy",
+          "lineNumber": 108
+        },
+        {
+          "caller": "copy_file",
+          "callee": "Ok",
+          "lineNumber": 109
+        },
+        {
+          "caller": "cleanup_resources",
+          "callee": "contents_path.join",
+          "lineNumber": 114
+        },
+        {
+          "caller": "cleanup_resources",
+          "callee": "resources_path.exists",
+          "lineNumber": 116
+        },
+        {
+          "caller": "cleanup_resources",
+          "callee": "Ok",
+          "lineNumber": 117
+        },
+        {
+          "caller": "cleanup_resources",
+          "callee": "resources_path.join",
+          "lineNumber": 122
+        },
+        {
+          "caller": "cleanup_resources",
+          "callee": "resources_path.join",
+          "lineNumber": 123
+        },
+        {
+          "caller": "cleanup_resources",
+          "callee": "resources_path.join",
+          "lineNumber": 124
+        },
+        {
+          "caller": "cleanup_resources",
+          "callee": "path.exists",
+          "lineNumber": 128
+        },
+        {
+          "caller": "cleanup_resources",
+          "callee": "fs::remove_dir_all(path).unwrap_or_else",
+          "lineNumber": 130
+        },
+        {
+          "caller": "cleanup_resources",
+          "callee": "fs::remove_dir_all",
+          "lineNumber": 130
+        },
+        {
+          "caller": "cleanup_resources",
+          "callee": "Ok",
+          "lineNumber": 136
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 4,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src-tauri/Cargo.toml",
+      "language": "toml",
+      "fileCategory": "config",
+      "totalLines": 56,
+      "nonEmptyLines": 49,
+      "sections": [
+        {
+          "heading": "package",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "[[bin]]",
+          "level": 1,
+          "line": 11
+        },
+        {
+          "heading": "lib",
+          "level": 1,
+          "line": 15
+        },
+        {
+          "heading": "build-dependencies",
+          "level": 1,
+          "line": 19
+        },
+        {
+          "heading": "dependencies",
+          "level": 1,
+          "line": 22
+        },
+        {
+          "heading": "target.'cfg(not(any(target_os = \"android\", target_os = \"ios\")))'.dependencies",
+          "level": 3,
+          "line": 39
+        },
+        {
+          "heading": "dev-dependencies",
+          "level": 1,
+          "line": 43
+        },
+        {
+          "heading": "features",
+          "level": 1,
+          "line": 54
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 8
+      }
+    },
+    {
+      "path": "src-tauri/DEVICE_TESTS.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 174,
+      "nonEmptyLines": 139,
+      "sections": [
+        {
+          "heading": "iOS Device and ADB Testing Implementation",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Overview",
+          "level": 2,
+          "line": 3
+        },
+        {
+          "heading": "Test Coverage Summary",
+          "level": 2,
+          "line": 6
+        },
+        {
+          "heading": "✅ **Total Tests: 109**",
+          "level": 3,
+          "line": 8
+        },
+        {
+          "heading": "🍎 **iOS Device Tests (42 tests)**",
+          "level": 3,
+          "line": 13
+        },
+        {
+          "heading": "Core iOS Functionality",
+          "level": 4,
+          "line": 15
+        },
+        {
+          "heading": "iOS-Specific Test Areas",
+          "level": 4,
+          "line": 22
+        },
+        {
+          "heading": "🤖 **Android ADB Tests (43 tests)**",
+          "level": 3,
+          "line": 29
+        },
+        {
+          "heading": "Core ADB Functionality",
+          "level": 4,
+          "line": 31
+        },
+        {
+          "heading": "Android-Specific Test Areas",
+          "level": 4,
+          "line": 38
+        },
+        {
+          "heading": "🔄 **Cross-Platform Tests (24 tests)**",
+          "level": 3,
+          "line": 45
+        },
+        {
+          "heading": "Multi-Platform Scenarios",
+          "level": 4,
+          "line": 47
+        },
+        {
+          "heading": "Critical Test Categories",
+          "level": 2,
+          "line": 54
+        },
+        {
+          "heading": "🔧 **Tool Validation Tests**",
+          "level": 3,
+          "line": 56
+        },
+        {
+          "heading": "📱 **Device Connection Tests**",
+          "level": 3,
+          "line": 69
+        },
+        {
+          "heading": "🗃️ **Database File Operations**",
+          "level": 3,
+          "line": 81
+        },
+        {
+          "heading": "🔐 **Data Integrity Tests**",
+          "level": 3,
+          "line": 93
+        },
+        {
+          "heading": "Test Methodology",
+          "level": 2,
+          "line": 106
+        },
+        {
+          "heading": "🧪 **Unit Testing Strategy**",
+          "level": 3,
+          "line": 108
+        },
+        {
+          "heading": "🔗 **Integration Testing Strategy**",
+          "level": 3,
+          "line": 114
+        },
+        {
+          "heading": "🎯 **User-Critical Scenarios**",
+          "level": 3,
+          "line": 120
+        },
+        {
+          "heading": "Key Testing Insights",
+          "level": 2,
+          "line": 126
+        },
+        {
+          "heading": "✅ **Reliability Assurance**",
+          "level": 3,
+          "line": 128
+        },
+        {
+          "heading": "🚨 **Critical Path Coverage**",
+          "level": 3,
+          "line": 134
+        },
+        {
+          "heading": "🔍 **Edge Case Handling**",
+          "level": 3,
+          "line": 140
+        },
+        {
+          "heading": "Run Tests",
+          "level": 2,
+          "line": 146
+        },
+        {
+          "heading": "Test Results",
+          "level": 2,
+          "line": 164
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 27
+      }
+    },
+    {
+      "path": "src-tauri/icons/icon.icns",
+      "language": "icns",
+      "fileCategory": "code",
+      "totalLines": 604,
+      "nonEmptyLines": 602,
+      "metrics": {}
+    },
+    {
+      "path": "src-tauri/macos-deps/afcclient",
+      "language": "unknown",
+      "fileCategory": "code",
+      "totalLines": 243,
+      "nonEmptyLines": 241,
+      "metrics": {}
+    },
+    {
+      "path": "src-tauri/macos-deps/afcclient-aarch64-apple-darwin",
+      "language": "unknown",
+      "fileCategory": "code",
+      "totalLines": 243,
+      "nonEmptyLines": 241,
+      "metrics": {}
+    },
+    {
+      "path": "src-tauri/macos-deps/afcclient-universal-apple-darwin",
+      "language": "unknown",
+      "fileCategory": "code",
+      "totalLines": 243,
+      "nonEmptyLines": 241,
+      "metrics": {}
+    },
+    {
+      "path": "src-tauri/macos-deps/afcclient-x86_64-apple-darwin",
+      "language": "unknown",
+      "fileCategory": "code",
+      "totalLines": 243,
+      "nonEmptyLines": 241,
+      "metrics": {}
+    },
+    {
+      "path": "src-tauri/macos-deps/idevice_id",
+      "language": "unknown",
+      "fileCategory": "code",
+      "totalLines": 178,
+      "nonEmptyLines": 175,
+      "metrics": {}
+    },
+    {
+      "path": "src-tauri/macos-deps/idevice_id-aarch64-apple-darwin",
+      "language": "unknown",
+      "fileCategory": "code",
+      "totalLines": 178,
+      "nonEmptyLines": 175,
+      "metrics": {}
+    },
+    {
+      "path": "src-tauri/macos-deps/idevice_id-universal-apple-darwin",
+      "language": "unknown",
+      "fileCategory": "code",
+      "totalLines": 178,
+      "nonEmptyLines": 175,
+      "metrics": {}
+    },
+    {
+      "path": "src-tauri/macos-deps/idevice_id-x86_64-apple-darwin",
+      "language": "unknown",
+      "fileCategory": "code",
+      "totalLines": 178,
+      "nonEmptyLines": 175,
+      "metrics": {}
+    },
+    {
+      "path": "src-tauri/macos-deps/ideviceinfo",
+      "language": "unknown",
+      "fileCategory": "code",
+      "totalLines": 172,
+      "nonEmptyLines": 169,
+      "metrics": {}
+    },
+    {
+      "path": "src-tauri/macos-deps/ideviceinfo-aarch64-apple-darwin",
+      "language": "unknown",
+      "fileCategory": "code",
+      "totalLines": 172,
+      "nonEmptyLines": 169,
+      "metrics": {}
+    },
+    {
+      "path": "src-tauri/macos-deps/ideviceinfo-universal-apple-darwin",
+      "language": "unknown",
+      "fileCategory": "code",
+      "totalLines": 172,
+      "nonEmptyLines": 169,
+      "metrics": {}
+    },
+    {
+      "path": "src-tauri/macos-deps/ideviceinfo-x86_64-apple-darwin",
+      "language": "unknown",
+      "fileCategory": "code",
+      "totalLines": 172,
+      "nonEmptyLines": 169,
+      "metrics": {}
+    },
+    {
+      "path": "src-tauri/macos-deps/ideviceinstaller",
+      "language": "unknown",
+      "fileCategory": "code",
+      "totalLines": 164,
+      "nonEmptyLines": 163,
+      "metrics": {}
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 {
   "productName": "Flippio",
-  "version": "0.4.4",
+  "version": "0.4.5",
   "identifier": "com.flippio.app",
   "build": {
     "beforeDevCommand": "npm run dev:renderer",
@@ -9,6 +9,7 @@
     "frontendDist": "../src/renderer/dist"
   },
   "app": {
+    "withGlobalTauri": true,
     "security": {
       "csp": null,
       "capabilities": [
@@ -30,6 +31,7 @@
             "fs:default",
             "dialog:default",
             "log:default",
+            "wdio:default",
             "updater:default"
           ]
         }

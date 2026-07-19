@@ -1,0 +1,4547 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 40,
+  "filesSkipped": [],
+  "results": [
+    {
+      "path": "src-tauri/src/commands/device/types.rs",
+      "language": "rust",
+      "fileCategory": "code",
+      "totalLines": 56,
+      "nonEmptyLines": 50,
+      "classes": [
+        {
+          "name": "DatabaseFileMetadata",
+          "startLine": 5,
+          "endLine": 10,
+          "methods": [],
+          "properties": [
+            "device_id",
+            "package_name",
+            "remote_path",
+            "timestamp"
+          ]
+        },
+        {
+          "name": "DeviceResponse",
+          "startLine": 13,
+          "endLine": 17,
+          "methods": [],
+          "properties": [
+            "success",
+            "data",
+            "error"
+          ]
+        },
+        {
+          "name": "Device",
+          "startLine": 20,
+          "endLine": 27,
+          "methods": [],
+          "properties": [
+            "id",
+            "name",
+            "model",
+            "device_type",
+            "description"
+          ]
+        },
+        {
+          "name": "Package",
+          "startLine": 30,
+          "endLine": 34,
+          "methods": [],
+          "properties": [
+            "name",
+            "bundle_id"
+          ]
+        },
+        {
+          "name": "DatabaseFile",
+          "startLine": 37,
+          "endLine": 47,
+          "methods": [],
+          "properties": [
+            "path",
+            "package_name",
+            "filename",
+            "location",
+            "remote_path",
+            "device_type"
+          ]
+        },
+        {
+          "name": "VirtualDevice",
+          "startLine": 50,
+          "endLine": 56,
+          "methods": [],
+          "properties": [
+            "id",
+            "name",
+            "model",
+            "platform",
+            "state"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "DatabaseFileMetadata",
+          "line": 5,
+          "isDefault": false
+        },
+        {
+          "name": "DeviceResponse",
+          "line": 13,
+          "isDefault": false
+        },
+        {
+          "name": "Device",
+          "line": 20,
+          "isDefault": false
+        },
+        {
+          "name": "Package",
+          "line": 30,
+          "isDefault": false
+        },
+        {
+          "name": "DatabaseFile",
+          "line": 37,
+          "isDefault": false
+        },
+        {
+          "name": "VirtualDevice",
+          "line": 50,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 6,
+        "functionCount": 0,
+        "classCount": 6
+      }
+    },
+    {
+      "path": "src-tauri/src/commands/device/virtual_device.rs",
+      "language": "rust",
+      "fileCategory": "code",
+      "totalLines": 231,
+      "nonEmptyLines": 205,
+      "functions": [
+        {
+          "name": "get_android_emulators",
+          "startLine": 6,
+          "endLine": 112,
+          "params": [
+            "app_handle"
+          ]
+        },
+        {
+          "name": "get_ios_simulators",
+          "startLine": 115,
+          "endLine": 165,
+          "params": [
+            "app_handle"
+          ]
+        },
+        {
+          "name": "launch_android_emulator",
+          "startLine": 168,
+          "endLine": 190,
+          "params": [
+            "app_handle",
+            "emulator_id"
+          ]
+        },
+        {
+          "name": "launch_ios_simulator",
+          "startLine": 193,
+          "endLine": 231,
+          "params": [
+            "app_handle",
+            "simulator_id"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "get_android_emulators",
+          "line": 6,
+          "isDefault": false
+        },
+        {
+          "name": "get_ios_simulators",
+          "line": 115,
+          "isDefault": false
+        },
+        {
+          "name": "launch_android_emulator",
+          "line": 168,
+          "isDefault": false
+        },
+        {
+          "name": "launch_ios_simulator",
+          "line": 193,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "get_android_emulators",
+          "callee": "find_android_emulator_path",
+          "lineNumber": 9
+        },
+        {
+          "caller": "get_android_emulators",
+          "callee": "get_adb_path",
+          "lineNumber": 10
+        },
+        {
+          "caller": "get_android_emulators",
+          "callee": "app_handle.shell",
+          "lineNumber": 11
+        },
+        {
+          "caller": "get_android_emulators",
+          "callee": "shell.command(&emulator_path)\n        .args([\"-list-avds\"])\n        .output()\n        .await.map_err",
+          "lineNumber": 14
+        },
+        {
+          "caller": "get_android_emulators",
+          "callee": "shell.command(&emulator_path)\n        .args([\"-list-avds\"]).output",
+          "lineNumber": 14
+        },
+        {
+          "caller": "get_android_emulators",
+          "callee": "shell.command(&emulator_path).args",
+          "lineNumber": 14
+        },
+        {
+          "caller": "get_android_emulators",
+          "callee": "shell.command",
+          "lineNumber": 14
+        },
+        {
+          "caller": "get_android_emulators",
+          "callee": "avd_list_output.status.success",
+          "lineNumber": 20
+        },
+        {
+          "caller": "get_android_emulators",
+          "callee": "Err",
+          "lineNumber": 21
+        },
+        {
+          "caller": "get_android_emulators",
+          "callee": "\"Failed to get list of Android Virtual Devices (AVDs).\".into",
+          "lineNumber": 21
+        },
+        {
+          "caller": "get_android_emulators",
+          "callee": "String::from_utf8_lossy(&avd_list_output.stdout)\n        .lines()\n        .map(|line| line.trim().to_string())\n        .filter(|s| !s.is_empty()).collect",
+          "lineNumber": 24
+        },
+        {
+          "caller": "get_android_emulators",
+          "callee": "String::from_utf8_lossy(&avd_list_output.stdout)\n        .lines()\n        .map(|line| line.trim().to_string()).filter",
+          "lineNumber": 24
+        },
+        {
+          "caller": "get_android_emulators",
+          "callee": "String::from_utf8_lossy(&avd_list_output.stdout)\n        .lines().map",
+          "lineNumber": 24
+        },
+        {
+          "caller": "get_android_emulators",
+          "callee": "String::from_utf8_lossy(&avd_list_output.stdout).lines",
+          "lineNumber": 24
+        },
+        {
+          "caller": "get_android_emulators",
+          "callee": "String::from_utf8_lossy",
+          "lineNumber": 24
+        },
+        {
+          "caller": "get_android_emulators",
+          "callee": "line.trim().to_string",
+          "lineNumber": 26
+        },
+        {
+          "caller": "get_android_emulators",
+          "callee": "line.trim",
+          "lineNumber": 26
+        },
+        {
+          "caller": "get_android_emulators",
+          "callee": "s.is_empty",
+          "lineNumber": 27
+        },
+        {
+          "caller": "get_android_emulators",
+          "callee": "shell.command(&adb_path)\n        .args([\"devices\"]).output",
+          "lineNumber": 31
+        },
+        {
+          "caller": "get_android_emulators",
+          "callee": "shell.command(&adb_path).args",
+          "lineNumber": 31
+        },
+        {
+          "caller": "get_android_emulators",
+          "callee": "shell.command",
+          "lineNumber": 31
+        },
+        {
+          "caller": "get_android_emulators",
+          "callee": "output.status.success",
+          "lineNumber": 37
+        },
+        {
+          "caller": "get_android_emulators",
+          "callee": "String::from_utf8_lossy(&output.stdout)\n                .lines()\n                .skip(1)\n                .filter_map(|line| {\n                    let parts: Vec<&str> = line.split_whitespace().collect();\n                    if parts.len() >= 2 && parts[0].starts_with(\"emulator-\") && parts[1] == \"device\" {\n                        Some(parts[0].to_string())\n                    } else {\n                        None\n                    }\n                }).collect",
+          "lineNumber": 38
+        },
+        {
+          "caller": "get_android_emulators",
+          "callee": "String::from_utf8_lossy(&output.stdout)\n                .lines()\n                .skip(1).filter_map",
+          "lineNumber": 38
+        },
+        {
+          "caller": "get_android_emulators",
+          "callee": "String::from_utf8_lossy(&output.stdout)\n                .lines().skip",
+          "lineNumber": 38
+        },
+        {
+          "caller": "get_android_emulators",
+          "callee": "String::from_utf8_lossy(&output.stdout).lines",
+          "lineNumber": 38
+        },
+        {
+          "caller": "get_android_emulators",
+          "callee": "String::from_utf8_lossy",
+          "lineNumber": 38
+        },
+        {
+          "caller": "get_android_emulators",
+          "callee": "line.split_whitespace().collect",
+          "lineNumber": 42
+        },
+        {
+          "caller": "get_android_emulators",
+          "callee": "line.split_whitespace",
+          "lineNumber": 42
+        },
+        {
+          "caller": "get_android_emulators",
+          "callee": "parts.len",
+          "lineNumber": 43
+        },
+        {
+          "caller": "get_android_emulators",
+          "callee": "parts[0].starts_with",
+          "lineNumber": 43
+        },
+        {
+          "caller": "get_android_emulators",
+          "callee": "Some",
+          "lineNumber": 44
+        },
+        {
+          "caller": "get_android_emulators",
+          "callee": "parts[0].to_string",
+          "lineNumber": 44
+        },
+        {
+          "caller": "get_android_emulators",
+          "callee": "Vec::new",
+          "lineNumber": 51
+        },
+        {
+          "caller": "get_android_emulators",
+          "callee": "Vec::new",
+          "lineNumber": 54
+        },
+        {
+          "caller": "get_android_emulators",
+          "callee": "std::collections::HashSet::new",
+          "lineNumber": 58
+        },
+        {
+          "caller": "get_android_emulators",
+          "callee": "shell.command(&adb_path)\n            .args([\"-s\", port, \"emu\", \"avd\", \"name\"]).output",
+          "lineNumber": 62
+        },
+        {
+          "caller": "get_android_emulators",
+          "callee": "shell.command(&adb_path).args",
+          "lineNumber": 62
+        },
+        {
+          "caller": "get_android_emulators",
+          "callee": "shell.command",
+          "lineNumber": 62
+        },
+        {
+          "caller": "get_android_emulators",
+          "callee": "output.status.success",
+          "lineNumber": 69
+        },
+        {
+          "caller": "get_android_emulators",
+          "callee": "String::from_utf8_lossy",
+          "lineNumber": 70
+        },
+        {
+          "caller": "get_android_emulators",
+          "callee": "output_text.lines().next().unwrap_or(\"\").trim().to_string",
+          "lineNumber": 72
+        },
+        {
+          "caller": "get_android_emulators",
+          "callee": "output_text.lines().next().unwrap_or(\"\").trim",
+          "lineNumber": 72
+        },
+        {
+          "caller": "get_android_emulators",
+          "callee": "output_text.lines().next().unwrap_or",
+          "lineNumber": 72
+        },
+        {
+          "caller": "get_android_emulators",
+          "callee": "output_text.lines().next",
+          "lineNumber": 72
+        },
+        {
+          "caller": "get_android_emulators",
+          "callee": "output_text.lines",
+          "lineNumber": 72
+        },
+        {
+          "caller": "get_android_emulators",
+          "callee": "name.is_empty",
+          "lineNumber": 74
+        },
+        {
+          "caller": "get_android_emulators",
+          "callee": "running_avds.insert",
+          "lineNumber": 75
+        },
+        {
+          "caller": "get_android_emulators",
+          "callee": "String::from_utf8_lossy",
+          "lineNumber": 78
+        },
+        {
+          "caller": "get_android_emulators",
+          "callee": "all_avds\n        .into_iter()\n        .map(|avd| VirtualDevice {\n            id: avd.clone(),\n            name: avd.clone(),\n            platform: \"android\".to_string(),\n            model: Some(avd.clone()),\n            state: Some(if running_avds.contains(&avd) {\n                \"running\".to_string()\n            } else {\n                \"stopped\".to_string()\n            }),\n        }).collect",
+          "lineNumber": 92
+        },
+        {
+          "caller": "get_android_emulators",
+          "callee": "all_avds\n        .into_iter().map",
+          "lineNumber": 92
+        },
+        {
+          "caller": "get_android_emulators",
+          "callee": "all_avds.into_iter",
+          "lineNumber": 92
+        },
+        {
+          "caller": "get_android_emulators",
+          "callee": "avd.clone",
+          "lineNumber": 95
+        },
+        {
+          "caller": "get_android_emulators",
+          "callee": "avd.clone",
+          "lineNumber": 96
+        },
+        {
+          "caller": "get_android_emulators",
+          "callee": "\"android\".to_string",
+          "lineNumber": 97
+        },
+        {
+          "caller": "get_android_emulators",
+          "callee": "Some",
+          "lineNumber": 98
+        },
+        {
+          "caller": "get_android_emulators",
+          "callee": "avd.clone",
+          "lineNumber": 98
+        },
+        {
+          "caller": "get_android_emulators",
+          "callee": "Some",
+          "lineNumber": 99
+        },
+        {
+          "caller": "get_android_emulators",
+          "callee": "running_avds.contains",
+          "lineNumber": 99
+        },
+        {
+          "caller": "get_android_emulators",
+          "callee": "\"running\".to_string",
+          "lineNumber": 100
+        },
+        {
+          "caller": "get_android_emulators",
+          "callee": "\"stopped\".to_string",
+          "lineNumber": 102
+        },
+        {
+          "caller": "get_android_emulators",
+          "callee": "Ok",
+          "lineNumber": 107
+        },
+        {
+          "caller": "get_android_emulators",
+          "callee": "Some",
+          "lineNumber": 109
+        },
+        {
+          "caller": "get_ios_simulators",
+          "callee": "app_handle.shell",
+          "lineNumber": 118
+        },
+        {
+          "caller": "get_ios_simulators",
+          "callee": "shell.command(\"xcrun\")\n        .args([\"simctl\", \"list\", \"devices\", \"available\", \"--json\"])\n        .output()\n        .await.map_err",
+          "lineNumber": 119
+        },
+        {
+          "caller": "get_ios_simulators",
+          "callee": "shell.command(\"xcrun\")\n        .args([\"simctl\", \"list\", \"devices\", \"available\", \"--json\"]).output",
+          "lineNumber": 119
+        },
+        {
+          "caller": "get_ios_simulators",
+          "callee": "shell.command(\"xcrun\").args",
+          "lineNumber": 119
+        },
+        {
+          "caller": "get_ios_simulators",
+          "callee": "shell.command",
+          "lineNumber": 119
+        },
+        {
+          "caller": "get_ios_simulators",
+          "callee": "output.status.success",
+          "lineNumber": 125
+        },
+        {
+          "caller": "get_ios_simulators",
+          "callee": "String::from_utf8_lossy",
+          "lineNumber": 126
+        },
+        {
+          "caller": "get_ios_simulators",
+          "callee": "Vec::new",
+          "lineNumber": 127
+        },
+        {
+          "caller": "get_ios_simulators",
+          "callee": "serde_json::from_str::<serde_json::Value>",
+          "lineNumber": 129
+        },
+        {
+          "caller": "get_ios_simulators",
+          "callee": "json.get(\"devices\").and_then",
+          "lineNumber": 130
+        },
+        {
+          "caller": "get_ios_simulators",
+          "callee": "json.get",
+          "lineNumber": 130
+        },
+        {
+          "caller": "get_ios_simulators",
+          "callee": "d.as_object",
+          "lineNumber": 130
+        },
+        {
+          "caller": "get_ios_simulators",
+          "callee": "device_list.as_array",
+          "lineNumber": 132
+        },
+        {
+          "caller": "get_ios_simulators",
+          "callee": "device.get(\"name\").and_then",
+          "lineNumber": 135
+        },
+        {
+          "caller": "get_ios_simulators",
+          "callee": "device.get",
+          "lineNumber": 135
+        },
+        {
+          "caller": "get_ios_simulators",
+          "callee": "n.as_str",
+          "lineNumber": 135
+        },
+        {
+          "caller": "get_ios_simulators",
+          "callee": "device.get(\"udid\").and_then",
+          "lineNumber": 136
+        },
+        {
+          "caller": "get_ios_simulators",
+          "callee": "device.get",
+          "lineNumber": 136
+        },
+        {
+          "caller": "get_ios_simulators",
+          "callee": "u.as_str",
+          "lineNumber": 136
+        },
+        {
+          "caller": "get_ios_simulators",
+          "callee": "device.get(\"state\").and_then",
+          "lineNumber": 137
+        },
+        {
+          "caller": "get_ios_simulators",
+          "callee": "device.get",
+          "lineNumber": 137
+        },
+        {
+          "caller": "get_ios_simulators",
+          "callee": "s.as_str",
+          "lineNumber": 137
+        },
+        {
+          "caller": "get_ios_simulators",
+          "callee": "simulators.push",
+          "lineNumber": 139
+        },
+        {
+          "caller": "get_ios_simulators",
+          "callee": "udid.to_string",
+          "lineNumber": 140
+        },
+        {
+          "caller": "get_ios_simulators",
+          "callee": "Some",
+          "lineNumber": 142
+        },
+        {
+          "caller": "get_ios_simulators",
+          "callee": "name.to_string",
+          "lineNumber": 142
+        },
+        {
+          "caller": "get_ios_simulators",
+          "callee": "\"ios\".to_string",
+          "lineNumber": 143
+        },
+        {
+          "caller": "get_ios_simulators",
+          "callee": "Some",
+          "lineNumber": 144
+        },
+        {
+          "caller": "get_ios_simulators",
+          "callee": "state.to_string",
+          "lineNumber": 144
+        },
+        {
+          "caller": "get_ios_simulators",
+          "callee": "Ok",
+          "lineNumber": 153
+        },
+        {
+          "caller": "get_ios_simulators",
+          "callee": "Some",
+          "lineNumber": 155
+        },
+        {
+          "caller": "get_ios_simulators",
+          "callee": "Ok",
+          "lineNumber": 159
+        },
+        {
+          "caller": "get_ios_simulators",
+          "callee": "Some",
+          "lineNumber": 161
+        },
+        {
+          "caller": "get_ios_simulators",
+          "callee": "Vec::new",
+          "lineNumber": 161
+        },
+        {
+          "caller": "launch_android_emulator",
+          "callee": "find_android_emulator_path",
+          "lineNumber": 171
+        },
+        {
+          "caller": "launch_android_emulator",
+          "callee": "app_handle.shell",
+          "lineNumber": 172
+        },
+        {
+          "caller": "launch_android_emulator",
+          "callee": "shell.command(&emulator_path).args",
+          "lineNumber": 175
+        },
+        {
+          "caller": "launch_android_emulator",
+          "callee": "shell.command",
+          "lineNumber": 175
+        },
+        {
+          "caller": "launch_android_emulator",
+          "callee": "command.spawn",
+          "lineNumber": 178
+        },
+        {
+          "caller": "launch_android_emulator",
+          "callee": "Ok",
+          "lineNumber": 179
+        },
+        {
+          "caller": "launch_android_emulator",
+          "callee": "Some",
+          "lineNumber": 181
+        },
+        {
+          "caller": "launch_android_emulator",
+          "callee": "Ok",
+          "lineNumber": 184
+        },
+        {
+          "caller": "launch_android_emulator",
+          "callee": "Some",
+          "lineNumber": 187
+        },
+        {
+          "caller": "launch_ios_simulator",
+          "callee": "app_handle.shell",
+          "lineNumber": 196
+        },
+        {
+          "caller": "launch_ios_simulator",
+          "callee": "shell.command(\"xcrun\")\n        .args([\"simctl\", \"boot\", &simulator_id]).output",
+          "lineNumber": 197
+        },
+        {
+          "caller": "launch_ios_simulator",
+          "callee": "shell.command(\"xcrun\").args",
+          "lineNumber": 197
+        },
+        {
+          "caller": "launch_ios_simulator",
+          "callee": "shell.command",
+          "lineNumber": 197
+        },
+        {
+          "caller": "launch_ios_simulator",
+          "callee": "result.status.success",
+          "lineNumber": 204
+        },
+        {
+          "caller": "launch_ios_simulator",
+          "callee": "String::from_utf8_lossy(&result.stderr).contains",
+          "lineNumber": 204
+        },
+        {
+          "caller": "launch_ios_simulator",
+          "callee": "String::from_utf8_lossy",
+          "lineNumber": 204
+        },
+        {
+          "caller": "launch_ios_simulator",
+          "callee": "shell.command(\"open\")\n                    .args([\"-a\", \"Simulator\"]).output",
+          "lineNumber": 206
+        },
+        {
+          "caller": "launch_ios_simulator",
+          "callee": "shell.command(\"open\").args",
+          "lineNumber": 206
+        },
+        {
+          "caller": "launch_ios_simulator",
+          "callee": "shell.command",
+          "lineNumber": 206
+        },
+        {
+          "caller": "launch_ios_simulator",
+          "callee": "Ok",
+          "lineNumber": 211
+        },
+        {
+          "caller": "launch_ios_simulator",
+          "callee": "Some",
+          "lineNumber": 213
+        },
+        {
+          "caller": "launch_ios_simulator",
+          "callee": "String::from_utf8_lossy",
+          "lineNumber": 217
+        },
+        {
+          "caller": "launch_ios_simulator",
+          "callee": "Ok",
+          "lineNumber": 218
+        },
+        {
+          "caller": "launch_ios_simulator",
+          "callee": "Some",
+          "lineNumber": 221
+        },
+        {
+          "caller": "launch_ios_simulator",
+          "callee": "Ok",
+          "lineNumber": 225
+        },
+        {
+          "caller": "launch_ios_simulator",
+          "callee": "Some",
+          "lineNumber": 228
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 4,
+        "functionCount": 4,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src-tauri/src/commands/mod.rs",
+      "language": "rust",
+      "fileCategory": "code",
+      "totalLines": 5,
+      "nonEmptyLines": 5,
+      "metrics": {
+        "importCount": 4,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src-tauri/src/commands/updater.rs",
+      "language": "rust",
+      "fileCategory": "code",
+      "totalLines": 190,
+      "nonEmptyLines": 178,
+      "functions": [
+        {
+          "name": "is_missing_update_artifact_error",
+          "startLine": 24,
+          "endLine": 30,
+          "params": [
+            "error"
+          ]
+        },
+        {
+          "name": "check_for_updates",
+          "startLine": 33,
+          "endLine": 120,
+          "params": [
+            "app_handle"
+          ]
+        },
+        {
+          "name": "download_and_install_update",
+          "startLine": 123,
+          "endLine": 190,
+          "params": [
+            "app_handle"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "UpdateInfo",
+          "startLine": 10,
+          "endLine": 15,
+          "methods": [],
+          "properties": [
+            "available",
+            "version",
+            "notes",
+            "date"
+          ]
+        },
+        {
+          "name": "UpdateResponse",
+          "startLine": 18,
+          "endLine": 22,
+          "methods": [],
+          "properties": [
+            "success",
+            "data",
+            "error"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "UpdateInfo",
+          "line": 10,
+          "isDefault": false
+        },
+        {
+          "name": "UpdateResponse",
+          "line": 18,
+          "isDefault": false
+        },
+        {
+          "name": "check_for_updates",
+          "line": 33,
+          "isDefault": false
+        },
+        {
+          "name": "download_and_install_update",
+          "line": 123,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "is_missing_update_artifact_error",
+          "callee": "error.to_lowercase",
+          "lineNumber": 25
+        },
+        {
+          "caller": "is_missing_update_artifact_error",
+          "callee": "lower.contains",
+          "lineNumber": 26
+        },
+        {
+          "caller": "is_missing_update_artifact_error",
+          "callee": "lower.contains",
+          "lineNumber": 26
+        },
+        {
+          "caller": "is_missing_update_artifact_error",
+          "callee": "lower.contains",
+          "lineNumber": 27
+        },
+        {
+          "caller": "is_missing_update_artifact_error",
+          "callee": "lower.contains",
+          "lineNumber": 28
+        },
+        {
+          "caller": "is_missing_update_artifact_error",
+          "callee": "lower.contains",
+          "lineNumber": 29
+        },
+        {
+          "caller": "check_for_updates",
+          "callee": "app_handle.updater",
+          "lineNumber": 38
+        },
+        {
+          "caller": "check_for_updates",
+          "callee": "updater.check",
+          "lineNumber": 40
+        },
+        {
+          "caller": "check_for_updates",
+          "callee": "Ok",
+          "lineNumber": 43
+        },
+        {
+          "caller": "check_for_updates",
+          "callee": "Some",
+          "lineNumber": 45
+        },
+        {
+          "caller": "check_for_updates",
+          "callee": "Some",
+          "lineNumber": 47
+        },
+        {
+          "caller": "check_for_updates",
+          "callee": "update.version.clone",
+          "lineNumber": 47
+        },
+        {
+          "caller": "check_for_updates",
+          "callee": "update.body.clone",
+          "lineNumber": 48
+        },
+        {
+          "caller": "check_for_updates",
+          "callee": "update.date.map",
+          "lineNumber": 49
+        },
+        {
+          "caller": "check_for_updates",
+          "callee": "d.to_string",
+          "lineNumber": 49
+        },
+        {
+          "caller": "check_for_updates",
+          "callee": "Ok",
+          "lineNumber": 56
+        },
+        {
+          "caller": "check_for_updates",
+          "callee": "Some",
+          "lineNumber": 58
+        },
+        {
+          "caller": "check_for_updates",
+          "callee": "e.to_string",
+          "lineNumber": 68
+        },
+        {
+          "caller": "check_for_updates",
+          "callee": "is_missing_update_artifact_error",
+          "lineNumber": 69
+        },
+        {
+          "caller": "check_for_updates",
+          "callee": "Ok",
+          "lineNumber": 74
+        },
+        {
+          "caller": "check_for_updates",
+          "callee": "Some",
+          "lineNumber": 76
+        },
+        {
+          "caller": "check_for_updates",
+          "callee": "Ok",
+          "lineNumber": 86
+        },
+        {
+          "caller": "check_for_updates",
+          "callee": "Some",
+          "lineNumber": 89
+        },
+        {
+          "caller": "check_for_updates",
+          "callee": "Ok",
+          "lineNumber": 97
+        },
+        {
+          "caller": "check_for_updates",
+          "callee": "Some",
+          "lineNumber": 100
+        },
+        {
+          "caller": "check_for_updates",
+          "callee": "Ok",
+          "lineNumber": 109
+        },
+        {
+          "caller": "check_for_updates",
+          "callee": "Some",
+          "lineNumber": 111
+        },
+        {
+          "caller": "download_and_install_update",
+          "callee": "app_handle.updater",
+          "lineNumber": 128
+        },
+        {
+          "caller": "download_and_install_update",
+          "callee": "updater.check",
+          "lineNumber": 130
+        },
+        {
+          "caller": "download_and_install_update",
+          "callee": "update.download_and_install",
+          "lineNumber": 134
+        },
+        {
+          "caller": "download_and_install_update",
+          "callee": "app_handle.restart",
+          "lineNumber": 141
+        },
+        {
+          "caller": "download_and_install_update",
+          "callee": "Ok",
+          "lineNumber": 145
+        },
+        {
+          "caller": "download_and_install_update",
+          "callee": "Some",
+          "lineNumber": 148
+        },
+        {
+          "caller": "download_and_install_update",
+          "callee": "Ok",
+          "lineNumber": 154
+        },
+        {
+          "caller": "download_and_install_update",
+          "callee": "Some",
+          "lineNumber": 157
+        },
+        {
+          "caller": "download_and_install_update",
+          "callee": "\"No update available\".to_string",
+          "lineNumber": 157
+        },
+        {
+          "caller": "download_and_install_update",
+          "callee": "Ok",
+          "lineNumber": 162
+        },
+        {
+          "caller": "download_and_install_update",
+          "callee": "Some",
+          "lineNumber": 165
+        },
+        {
+          "caller": "download_and_install_update",
+          "callee": "Ok",
+          "lineNumber": 172
+        },
+        {
+          "caller": "download_and_install_update",
+          "callee": "Some",
+          "lineNumber": 175
+        },
+        {
+          "caller": "download_and_install_update",
+          "callee": "Ok",
+          "lineNumber": 184
+        },
+        {
+          "caller": "download_and_install_update",
+          "callee": "Some",
+          "lineNumber": 187
+        },
+        {
+          "caller": "download_and_install_update",
+          "callee": "\"Auto-updates not supported on mobile platforms\".to_string",
+          "lineNumber": 187
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 4,
+        "functionCount": 3,
+        "classCount": 2
+      }
+    },
+    {
+      "path": "src-tauri/src/lib.rs",
+      "language": "rust",
+      "fileCategory": "code",
+      "totalLines": 34,
+      "nonEmptyLines": 28,
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src-tauri/src/main.rs",
+      "language": "rust",
+      "fileCategory": "code",
+      "totalLines": 151,
+      "nonEmptyLines": 143,
+      "functions": [
+        {
+          "name": "run",
+          "startLine": 13,
+          "endLine": 147,
+          "params": []
+        },
+        {
+          "name": "main",
+          "startLine": 149,
+          "endLine": 151,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "run",
+          "line": 13,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "run",
+          "callee": "Arc::new",
+          "lineNumber": 15
+        },
+        {
+          "caller": "run",
+          "callee": "RwLock::new",
+          "lineNumber": 15
+        },
+        {
+          "caller": "run",
+          "callee": "DatabaseConnectionManager::with_config",
+          "lineNumber": 16
+        },
+        {
+          "caller": "run",
+          "callee": "ConnectionConfig::with_cache_disabled",
+          "lineNumber": 16
+        },
+        {
+          "caller": "run",
+          "callee": "connection_manager.get_cache",
+          "lineNumber": 17
+        },
+        {
+          "caller": "run",
+          "callee": "ChangeHistoryManager::new",
+          "lineNumber": 20
+        },
+        {
+          "caller": "run",
+          "callee": "tauri::Builder::default()\n        .plugin(\n            tauri_plugin_log::Builder::new()\n                .clear_targets()\n                .format(|out, message, record| {\n                    let timestamp = chrono::Utc::now().to_rfc3339_opts(SecondsFormat::Millis, true);\n                    let source = if record.target().starts_with(WEBVIEW_TARGET) {\n                        \"🖥 frontend\"\n                    } else {\n                        \"⚙ backend\"\n                    };\n                    out.finish(format_args!(\n                        \"{} [{}] [{}] {}\",\n                        timestamp,\n                        record.level(),\n                        source,\n                        message\n                    ))\n                })\n                .timezone_strategy(TimezoneStrategy::UseUtc)\n                .rotation_strategy(RotationStrategy::KeepSome(10))\n                .target(Target::new(TargetKind::Stdout))\n                .target(\n                    Target::new(TargetKind::LogDir {\n                        file_name: Some(\"frontend\".into()),\n                    })\n                    .filter(|metadata| metadata.target().starts_with(WEBVIEW_TARGET)),\n                )\n                .target(\n                    Target::new(TargetKind::LogDir {\n                        file_name: Some(\"backend\".into()),\n                    })\n                    .filter(|metadata| !metadata.target().starts_with(WEBVIEW_TARGET)),\n                )\n                .build(),\n        )\n        .manage(db_pool)\n        .manage(db_cache)\n        .manage(change_history_manager)\n        .setup(|_app| {\n            // Start background cleanup task after Tauri runtime is initialized\n            let connection_manager = DatabaseConnectionManager::with_config(ConnectionConfig::with_cache_disabled());\n            tauri::async_runtime::spawn(async move {\n                connection_manager.start_cleanup_task().await;\n            });\n            Ok(())\n        })\n        .plugin(tauri_plugin_dialog::init())\n        .plugin(tauri_plugin_fs::init()).plugin",
+          "lineNumber": 22
+        },
+        {
+          "caller": "run",
+          "callee": "tauri::Builder::default()\n        .plugin(\n            tauri_plugin_log::Builder::new()\n                .clear_targets()\n                .format(|out, message, record| {\n                    let timestamp = chrono::Utc::now().to_rfc3339_opts(SecondsFormat::Millis, true);\n                    let source = if record.target().starts_with(WEBVIEW_TARGET) {\n                        \"🖥 frontend\"\n                    } else {\n                        \"⚙ backend\"\n                    };\n                    out.finish(format_args!(\n                        \"{} [{}] [{}] {}\",\n                        timestamp,\n                        record.level(),\n                        source,\n                        message\n                    ))\n                })\n                .timezone_strategy(TimezoneStrategy::UseUtc)\n                .rotation_strategy(RotationStrategy::KeepSome(10))\n                .target(Target::new(TargetKind::Stdout))\n                .target(\n                    Target::new(TargetKind::LogDir {\n                        file_name: Some(\"frontend\".into()),\n                    })\n                    .filter(|metadata| metadata.target().starts_with(WEBVIEW_TARGET)),\n                )\n                .target(\n                    Target::new(TargetKind::LogDir {\n                        file_name: Some(\"backend\".into()),\n                    })\n                    .filter(|metadata| !metadata.target().starts_with(WEBVIEW_TARGET)),\n                )\n                .build(),\n        )\n        .manage(db_pool)\n        .manage(db_cache)\n        .manage(change_history_manager)\n        .setup(|_app| {\n            // Start background cleanup task after Tauri runtime is initialized\n            let connection_manager = DatabaseConnectionManager::with_config(ConnectionConfig::with_cache_disabled());\n            tauri::async_runtime::spawn(async move {\n                connection_manager.start_cleanup_task().await;\n            });\n            Ok(())\n        })\n        .plugin(tauri_plugin_dialog::init()).plugin",
+          "lineNumber": 22
+        },
+        {
+          "caller": "run",
+          "callee": "tauri::Builder::default()\n        .plugin(\n            tauri_plugin_log::Builder::new()\n                .clear_targets()\n                .format(|out, message, record| {\n                    let timestamp = chrono::Utc::now().to_rfc3339_opts(SecondsFormat::Millis, true);\n                    let source = if record.target().starts_with(WEBVIEW_TARGET) {\n                        \"🖥 frontend\"\n                    } else {\n                        \"⚙ backend\"\n                    };\n                    out.finish(format_args!(\n                        \"{} [{}] [{}] {}\",\n                        timestamp,\n                        record.level(),\n                        source,\n                        message\n                    ))\n                })\n                .timezone_strategy(TimezoneStrategy::UseUtc)\n                .rotation_strategy(RotationStrategy::KeepSome(10))\n                .target(Target::new(TargetKind::Stdout))\n                .target(\n                    Target::new(TargetKind::LogDir {\n                        file_name: Some(\"frontend\".into()),\n                    })\n                    .filter(|metadata| metadata.target().starts_with(WEBVIEW_TARGET)),\n                )\n                .target(\n                    Target::new(TargetKind::LogDir {\n                        file_name: Some(\"backend\".into()),\n                    })\n                    .filter(|metadata| !metadata.target().starts_with(WEBVIEW_TARGET)),\n                )\n                .build(),\n        )\n        .manage(db_pool)\n        .manage(db_cache)\n        .manage(change_history_manager)\n        .setup(|_app| {\n            // Start background cleanup task after Tauri runtime is initialized\n            let connection_manager = DatabaseConnectionManager::with_config(ConnectionConfig::with_cache_disabled());\n            tauri::async_runtime::spawn(async move {\n                connection_manager.start_cleanup_task().await;\n            });\n            Ok(())\n        }).plugin",
+          "lineNumber": 22
+        },
+        {
+          "caller": "run",
+          "callee": "tauri::Builder::default()\n        .plugin(\n            tauri_plugin_log::Builder::new()\n                .clear_targets()\n                .format(|out, message, record| {\n                    let timestamp = chrono::Utc::now().to_rfc3339_opts(SecondsFormat::Millis, true);\n                    let source = if record.target().starts_with(WEBVIEW_TARGET) {\n                        \"🖥 frontend\"\n                    } else {\n                        \"⚙ backend\"\n                    };\n                    out.finish(format_args!(\n                        \"{} [{}] [{}] {}\",\n                        timestamp,\n                        record.level(),\n                        source,\n                        message\n                    ))\n                })\n                .timezone_strategy(TimezoneStrategy::UseUtc)\n                .rotation_strategy(RotationStrategy::KeepSome(10))\n                .target(Target::new(TargetKind::Stdout))\n                .target(\n                    Target::new(TargetKind::LogDir {\n                        file_name: Some(\"frontend\".into()),\n                    })\n                    .filter(|metadata| metadata.target().starts_with(WEBVIEW_TARGET)),\n                )\n                .target(\n                    Target::new(TargetKind::LogDir {\n                        file_name: Some(\"backend\".into()),\n                    })\n                    .filter(|metadata| !metadata.target().starts_with(WEBVIEW_TARGET)),\n                )\n                .build(),\n        )\n        .manage(db_pool)\n        .manage(db_cache)\n        .manage(change_history_manager).setup",
+          "lineNumber": 22
+        },
+        {
+          "caller": "run",
+          "callee": "tauri::Builder::default()\n        .plugin(\n            tauri_plugin_log::Builder::new()\n                .clear_targets()\n                .format(|out, message, record| {\n                    let timestamp = chrono::Utc::now().to_rfc3339_opts(SecondsFormat::Millis, true);\n                    let source = if record.target().starts_with(WEBVIEW_TARGET) {\n                        \"🖥 frontend\"\n                    } else {\n                        \"⚙ backend\"\n                    };\n                    out.finish(format_args!(\n                        \"{} [{}] [{}] {}\",\n                        timestamp,\n                        record.level(),\n                        source,\n                        message\n                    ))\n                })\n                .timezone_strategy(TimezoneStrategy::UseUtc)\n                .rotation_strategy(RotationStrategy::KeepSome(10))\n                .target(Target::new(TargetKind::Stdout))\n                .target(\n                    Target::new(TargetKind::LogDir {\n                        file_name: Some(\"frontend\".into()),\n                    })\n                    .filter(|metadata| metadata.target().starts_with(WEBVIEW_TARGET)),\n                )\n                .target(\n                    Target::new(TargetKind::LogDir {\n                        file_name: Some(\"backend\".into()),\n                    })\n                    .filter(|metadata| !metadata.target().starts_with(WEBVIEW_TARGET)),\n                )\n                .build(),\n        )\n        .manage(db_pool)\n        .manage(db_cache).manage",
+          "lineNumber": 22
+        },
+        {
+          "caller": "run",
+          "callee": "tauri::Builder::default()\n        .plugin(\n            tauri_plugin_log::Builder::new()\n                .clear_targets()\n                .format(|out, message, record| {\n                    let timestamp = chrono::Utc::now().to_rfc3339_opts(SecondsFormat::Millis, true);\n                    let source = if record.target().starts_with(WEBVIEW_TARGET) {\n                        \"🖥 frontend\"\n                    } else {\n                        \"⚙ backend\"\n                    };\n                    out.finish(format_args!(\n                        \"{} [{}] [{}] {}\",\n                        timestamp,\n                        record.level(),\n                        source,\n                        message\n                    ))\n                })\n                .timezone_strategy(TimezoneStrategy::UseUtc)\n                .rotation_strategy(RotationStrategy::KeepSome(10))\n                .target(Target::new(TargetKind::Stdout))\n                .target(\n                    Target::new(TargetKind::LogDir {\n                        file_name: Some(\"frontend\".into()),\n                    })\n                    .filter(|metadata| metadata.target().starts_with(WEBVIEW_TARGET)),\n                )\n                .target(\n                    Target::new(TargetKind::LogDir {\n                        file_name: Some(\"backend\".into()),\n                    })\n                    .filter(|metadata| !metadata.target().starts_with(WEBVIEW_TARGET)),\n                )\n                .build(),\n        )\n        .manage(db_pool).manage",
+          "lineNumber": 22
+        },
+        {
+          "caller": "run",
+          "callee": "tauri::Builder::default()\n        .plugin(\n            tauri_plugin_log::Builder::new()\n                .clear_targets()\n                .format(|out, message, record| {\n                    let timestamp = chrono::Utc::now().to_rfc3339_opts(SecondsFormat::Millis, true);\n                    let source = if record.target().starts_with(WEBVIEW_TARGET) {\n                        \"🖥 frontend\"\n                    } else {\n                        \"⚙ backend\"\n                    };\n                    out.finish(format_args!(\n                        \"{} [{}] [{}] {}\",\n                        timestamp,\n                        record.level(),\n                        source,\n                        message\n                    ))\n                })\n                .timezone_strategy(TimezoneStrategy::UseUtc)\n                .rotation_strategy(RotationStrategy::KeepSome(10))\n                .target(Target::new(TargetKind::Stdout))\n                .target(\n                    Target::new(TargetKind::LogDir {\n                        file_name: Some(\"frontend\".into()),\n                    })\n                    .filter(|metadata| metadata.target().starts_with(WEBVIEW_TARGET)),\n                )\n                .target(\n                    Target::new(TargetKind::LogDir {\n                        file_name: Some(\"backend\".into()),\n                    })\n                    .filter(|metadata| !metadata.target().starts_with(WEBVIEW_TARGET)),\n                )\n                .build(),\n        ).manage",
+          "lineNumber": 22
+        },
+        {
+          "caller": "run",
+          "callee": "tauri::Builder::default().plugin",
+          "lineNumber": 22
+        },
+        {
+          "caller": "run",
+          "callee": "tauri::Builder::default",
+          "lineNumber": 22
+        },
+        {
+          "caller": "run",
+          "callee": "tauri_plugin_log::Builder::new()\n                .clear_targets()\n                .format(|out, message, record| {\n                    let timestamp = chrono::Utc::now().to_rfc3339_opts(SecondsFormat::Millis, true);\n                    let source = if record.target().starts_with(WEBVIEW_TARGET) {\n                        \"🖥 frontend\"\n                    } else {\n                        \"⚙ backend\"\n                    };\n                    out.finish(format_args!(\n                        \"{} [{}] [{}] {}\",\n                        timestamp,\n                        record.level(),\n                        source,\n                        message\n                    ))\n                })\n                .timezone_strategy(TimezoneStrategy::UseUtc)\n                .rotation_strategy(RotationStrategy::KeepSome(10))\n                .target(Target::new(TargetKind::Stdout))\n                .target(\n                    Target::new(TargetKind::LogDir {\n                        file_name: Some(\"frontend\".into()),\n                    })\n                    .filter(|metadata| metadata.target().starts_with(WEBVIEW_TARGET)),\n                )\n                .target(\n                    Target::new(TargetKind::LogDir {\n                        file_name: Some(\"backend\".into()),\n                    })\n                    .filter(|metadata| !metadata.target().starts_with(WEBVIEW_TARGET)),\n                ).build",
+          "lineNumber": 24
+        },
+        {
+          "caller": "run",
+          "callee": "tauri_plugin_log::Builder::new()\n                .clear_targets()\n                .format(|out, message, record| {\n                    let timestamp = chrono::Utc::now().to_rfc3339_opts(SecondsFormat::Millis, true);\n                    let source = if record.target().starts_with(WEBVIEW_TARGET) {\n                        \"🖥 frontend\"\n                    } else {\n                        \"⚙ backend\"\n                    };\n                    out.finish(format_args!(\n                        \"{} [{}] [{}] {}\",\n                        timestamp,\n                        record.level(),\n                        source,\n                        message\n                    ))\n                })\n                .timezone_strategy(TimezoneStrategy::UseUtc)\n                .rotation_strategy(RotationStrategy::KeepSome(10))\n                .target(Target::new(TargetKind::Stdout))\n                .target(\n                    Target::new(TargetKind::LogDir {\n                        file_name: Some(\"frontend\".into()),\n                    })\n                    .filter(|metadata| metadata.target().starts_with(WEBVIEW_TARGET)),\n                ).target",
+          "lineNumber": 24
+        },
+        {
+          "caller": "run",
+          "callee": "tauri_plugin_log::Builder::new()\n                .clear_targets()\n                .format(|out, message, record| {\n                    let timestamp = chrono::Utc::now().to_rfc3339_opts(SecondsFormat::Millis, true);\n                    let source = if record.target().starts_with(WEBVIEW_TARGET) {\n                        \"🖥 frontend\"\n                    } else {\n                        \"⚙ backend\"\n                    };\n                    out.finish(format_args!(\n                        \"{} [{}] [{}] {}\",\n                        timestamp,\n                        record.level(),\n                        source,\n                        message\n                    ))\n                })\n                .timezone_strategy(TimezoneStrategy::UseUtc)\n                .rotation_strategy(RotationStrategy::KeepSome(10))\n                .target(Target::new(TargetKind::Stdout)).target",
+          "lineNumber": 24
+        },
+        {
+          "caller": "run",
+          "callee": "tauri_plugin_log::Builder::new()\n                .clear_targets()\n                .format(|out, message, record| {\n                    let timestamp = chrono::Utc::now().to_rfc3339_opts(SecondsFormat::Millis, true);\n                    let source = if record.target().starts_with(WEBVIEW_TARGET) {\n                        \"🖥 frontend\"\n                    } else {\n                        \"⚙ backend\"\n                    };\n                    out.finish(format_args!(\n                        \"{} [{}] [{}] {}\",\n                        timestamp,\n                        record.level(),\n                        source,\n                        message\n                    ))\n                })\n                .timezone_strategy(TimezoneStrategy::UseUtc)\n                .rotation_strategy(RotationStrategy::KeepSome(10)).target",
+          "lineNumber": 24
+        },
+        {
+          "caller": "run",
+          "callee": "tauri_plugin_log::Builder::new()\n                .clear_targets()\n                .format(|out, message, record| {\n                    let timestamp = chrono::Utc::now().to_rfc3339_opts(SecondsFormat::Millis, true);\n                    let source = if record.target().starts_with(WEBVIEW_TARGET) {\n                        \"🖥 frontend\"\n                    } else {\n                        \"⚙ backend\"\n                    };\n                    out.finish(format_args!(\n                        \"{} [{}] [{}] {}\",\n                        timestamp,\n                        record.level(),\n                        source,\n                        message\n                    ))\n                })\n                .timezone_strategy(TimezoneStrategy::UseUtc).rotation_strategy",
+          "lineNumber": 24
+        },
+        {
+          "caller": "run",
+          "callee": "tauri_plugin_log::Builder::new()\n                .clear_targets()\n                .format(|out, message, record| {\n                    let timestamp = chrono::Utc::now().to_rfc3339_opts(SecondsFormat::Millis, true);\n                    let source = if record.target().starts_with(WEBVIEW_TARGET) {\n                        \"🖥 frontend\"\n                    } else {\n                        \"⚙ backend\"\n                    };\n                    out.finish(format_args!(\n                        \"{} [{}] [{}] {}\",\n                        timestamp,\n                        record.level(),\n                        source,\n                        message\n                    ))\n                }).timezone_strategy",
+          "lineNumber": 24
+        },
+        {
+          "caller": "run",
+          "callee": "tauri_plugin_log::Builder::new()\n                .clear_targets().format",
+          "lineNumber": 24
+        },
+        {
+          "caller": "run",
+          "callee": "tauri_plugin_log::Builder::new().clear_targets",
+          "lineNumber": 24
+        },
+        {
+          "caller": "run",
+          "callee": "tauri_plugin_log::Builder::new",
+          "lineNumber": 24
+        },
+        {
+          "caller": "run",
+          "callee": "chrono::Utc::now().to_rfc3339_opts",
+          "lineNumber": 27
+        },
+        {
+          "caller": "run",
+          "callee": "chrono::Utc::now",
+          "lineNumber": 27
+        },
+        {
+          "caller": "run",
+          "callee": "record.target().starts_with",
+          "lineNumber": 28
+        },
+        {
+          "caller": "run",
+          "callee": "record.target",
+          "lineNumber": 28
+        },
+        {
+          "caller": "run",
+          "callee": "out.finish",
+          "lineNumber": 33
+        },
+        {
+          "caller": "run",
+          "callee": "RotationStrategy::KeepSome",
+          "lineNumber": 42
+        },
+        {
+          "caller": "run",
+          "callee": "Target::new",
+          "lineNumber": 43
+        },
+        {
+          "caller": "run",
+          "callee": "Target::new(TargetKind::LogDir {\n                        file_name: Some(\"frontend\".into()),\n                    }).filter",
+          "lineNumber": 45
+        },
+        {
+          "caller": "run",
+          "callee": "Target::new",
+          "lineNumber": 45
+        },
+        {
+          "caller": "run",
+          "callee": "Some",
+          "lineNumber": 46
+        },
+        {
+          "caller": "run",
+          "callee": "\"frontend\".into",
+          "lineNumber": 46
+        },
+        {
+          "caller": "run",
+          "callee": "metadata.target().starts_with",
+          "lineNumber": 48
+        },
+        {
+          "caller": "run",
+          "callee": "metadata.target",
+          "lineNumber": 48
+        },
+        {
+          "caller": "run",
+          "callee": "Target::new(TargetKind::LogDir {\n                        file_name: Some(\"backend\".into()),\n                    }).filter",
+          "lineNumber": 51
+        },
+        {
+          "caller": "run",
+          "callee": "Target::new",
+          "lineNumber": 51
+        },
+        {
+          "caller": "run",
+          "callee": "Some",
+          "lineNumber": 52
+        },
+        {
+          "caller": "run",
+          "callee": "\"backend\".into",
+          "lineNumber": 52
+        },
+        {
+          "caller": "run",
+          "callee": "metadata.target().starts_with",
+          "lineNumber": 54
+        },
+        {
+          "caller": "run",
+          "callee": "metadata.target",
+          "lineNumber": 54
+        },
+        {
+          "caller": "run",
+          "callee": "DatabaseConnectionManager::with_config",
+          "lineNumber": 63
+        },
+        {
+          "caller": "run",
+          "callee": "ConnectionConfig::with_cache_disabled",
+          "lineNumber": 63
+        },
+        {
+          "caller": "run",
+          "callee": "tauri::async_runtime::spawn",
+          "lineNumber": 64
+        },
+        {
+          "caller": "run",
+          "callee": "connection_manager.start_cleanup_task",
+          "lineNumber": 65
+        },
+        {
+          "caller": "run",
+          "callee": "Ok",
+          "lineNumber": 67
+        },
+        {
+          "caller": "run",
+          "callee": "tauri_plugin_dialog::init",
+          "lineNumber": 69
+        },
+        {
+          "caller": "run",
+          "callee": "tauri_plugin_fs::init",
+          "lineNumber": 70
+        },
+        {
+          "caller": "run",
+          "callee": "tauri_plugin_shell::init",
+          "lineNumber": 71
+        },
+        {
+          "caller": "run",
+          "callee": "builder.plugin",
+          "lineNumber": 76
+        },
+        {
+          "caller": "run",
+          "callee": "tauri_plugin_updater::Builder::new().build",
+          "lineNumber": 76
+        },
+        {
+          "caller": "run",
+          "callee": "tauri_plugin_updater::Builder::new",
+          "lineNumber": 76
+        },
+        {
+          "caller": "run",
+          "callee": "builder\n        .invoke_handler(tauri::generate_handler![\n            // Device commands (ADB)\n            commands::device::adb_get_devices,\n            commands::device::adb_get_packages,\n            commands::device::adb_get_android_database_files,\n            commands::device::adb_push_database_file,\n            commands::device::adb_get_device_info,\n            // Device commands (iOS)\n            commands::device::device_get_ios_devices,\n            commands::device::device_get_ios_packages,\n            commands::device::device_get_ios_device_packages,\n            commands::device::get_ios_device_database_files,\n            commands::device::cancel_ios_device_database_scan,\n            commands::device::device_check_app_existence,\n            commands::device::device_push_ios_database_file,\n            commands::device::ios_get_device_info,\n            // IOS Simulator commands\n            commands::device::get_ios_simulator_database_files,\n            commands::device::upload_simulator_ios_db_file,\n            // Virtual device commands\n            commands::device::get_android_emulators,\n            commands::device::get_ios_simulators,\n            commands::device::launch_android_emulator,\n            commands::device::launch_ios_simulator,\n            // Database commands\n            commands::database::db_open,\n            commands::database::db_get_tables,\n            commands::database::db_get_table_data,\n            commands::database::db_get_info,\n            commands::database::db_update_table_row,\n            commands::database::db_insert_table_row,\n            commands::database::db_add_new_row_with_defaults,\n            commands::database::db_delete_table_row,\n            commands::database::db_clear_table,\n            commands::database::db_execute_query,\n            commands::database::db_get_connection_stats,\n            commands::database::db_clear_cache_for_path,\n            commands::database::db_clear_all_cache,\n            commands::database::db_switch_database,\n            // Change History commands (Phase 1)\n            commands::database::change_history::commands::record_database_change_safe,\n            commands::database::change_history::commands::get_database_change_history,\n            commands::database::change_history::commands::get_last_change_time,\n            commands::database::change_history::commands::get_context_summary,\n            commands::database::change_history::commands::get_all_context_summaries,\n            commands::database::change_history::commands::clear_context_changes,\n            commands::database::change_history::commands::clear_all_change_history,\n            commands::database::change_history::commands::get_change_history_diagnostics,\n            commands::database::change_history::commands::generate_custom_file_context_key_command,\n            // Common commands (file dialogs)\n            commands::common::dialog_select_file,\n            commands::common::dialog_save_file,\n            commands::common::export_text_file,\n            commands::common::save_dropped_file,\n            commands::common::export_logs,\n            // Device helper commands\n            commands::device::helpers::touch_database_file,\n            commands::device::helpers::force_clean_temp_directory,\n            // Updater commands\n            commands::updater::check_for_updates,\n            commands::updater::download_and_install_update,\n            // iOS diagnostic commands\n            commands::device::ios::diagnostic::diagnose_ios_device,\n            commands::device::ios::diagnostic::check_ios_device_status\n        ])\n        .run(tauri::generate_context!()).expect",
+          "lineNumber": 79
+        },
+        {
+          "caller": "run",
+          "callee": "builder\n        .invoke_handler(tauri::generate_handler![\n            // Device commands (ADB)\n            commands::device::adb_get_devices,\n            commands::device::adb_get_packages,\n            commands::device::adb_get_android_database_files,\n            commands::device::adb_push_database_file,\n            commands::device::adb_get_device_info,\n            // Device commands (iOS)\n            commands::device::device_get_ios_devices,\n            commands::device::device_get_ios_packages,\n            commands::device::device_get_ios_device_packages,\n            commands::device::get_ios_device_database_files,\n            commands::device::cancel_ios_device_database_scan,\n            commands::device::device_check_app_existence,\n            commands::device::device_push_ios_database_file,\n            commands::device::ios_get_device_info,\n            // IOS Simulator commands\n            commands::device::get_ios_simulator_database_files,\n            commands::device::upload_simulator_ios_db_file,\n            // Virtual device commands\n            commands::device::get_android_emulators,\n            commands::device::get_ios_simulators,\n            commands::device::launch_android_emulator,\n            commands::device::launch_ios_simulator,\n            // Database commands\n            commands::database::db_open,\n            commands::database::db_get_tables,\n            commands::database::db_get_table_data,\n            commands::database::db_get_info,\n            commands::database::db_update_table_row,\n            commands::database::db_insert_table_row,\n            commands::database::db_add_new_row_with_defaults,\n            commands::database::db_delete_table_row,\n            commands::database::db_clear_table,\n            commands::database::db_execute_query,\n            commands::database::db_get_connection_stats,\n            commands::database::db_clear_cache_for_path,\n            commands::database::db_clear_all_cache,\n            commands::database::db_switch_database,\n            // Change History commands (Phase 1)\n            commands::database::change_history::commands::record_database_change_safe,\n            commands::database::change_history::commands::get_database_change_history,\n            commands::database::change_history::commands::get_last_change_time,\n            commands::database::change_history::commands::get_context_summary,\n            commands::database::change_history::commands::get_all_context_summaries,\n            commands::database::change_history::commands::clear_context_changes,\n            commands::database::change_history::commands::clear_all_change_history,\n            commands::database::change_history::commands::get_change_history_diagnostics,\n            commands::database::change_history::commands::generate_custom_file_context_key_command,\n            // Common commands (file dialogs)\n            commands::common::dialog_select_file,\n            commands::common::dialog_save_file,\n            commands::common::export_text_file,\n            commands::common::save_dropped_file,\n            commands::common::export_logs,\n            // Device helper commands\n            commands::device::helpers::touch_database_file,\n            commands::device::helpers::force_clean_temp_directory,\n            // Updater commands\n            commands::updater::check_for_updates,\n            commands::updater::download_and_install_update,\n            // iOS diagnostic commands\n            commands::device::ios::diagnostic::diagnose_ios_device,\n            commands::device::ios::diagnostic::check_ios_device_status\n        ]).run",
+          "lineNumber": 79
+        },
+        {
+          "caller": "run",
+          "callee": "builder.invoke_handler",
+          "lineNumber": 79
+        },
+        {
+          "caller": "main",
+          "callee": "run",
+          "lineNumber": 150
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src-tauri/tauri-ci.conf.json",
+      "language": "json",
+      "fileCategory": "config",
+      "totalLines": 66,
+      "nonEmptyLines": 66,
+      "sections": [
+        {
+          "heading": "productName",
+          "level": 1,
+          "line": 2
+        },
+        {
+          "heading": "version",
+          "level": 1,
+          "line": 3
+        },
+        {
+          "heading": "identifier",
+          "level": 1,
+          "line": 4
+        },
+        {
+          "heading": "build",
+          "level": 1,
+          "line": 5
+        },
+        {
+          "heading": "app",
+          "level": 1,
+          "line": 11
+        },
+        {
+          "heading": "bundle",
+          "level": 1,
+          "line": 51
+        },
+        {
+          "heading": "plugins",
+          "level": 1,
+          "line": 63
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 7
+      }
+    },
+    {
+      "path": "src-tauri/tauri.conf.json",
+      "language": "json",
+      "fileCategory": "config",
+      "totalLines": 95,
+      "nonEmptyLines": 95,
+      "sections": [
+        {
+          "heading": "productName",
+          "level": 1,
+          "line": 2
+        },
+        {
+          "heading": "version",
+          "level": 1,
+          "line": 3
+        },
+        {
+          "heading": "identifier",
+          "level": 1,
+          "line": 4
+        },
+        {
+          "heading": "build",
+          "level": 1,
+          "line": 5
+        },
+        {
+          "heading": "app",
+          "level": 1,
+          "line": 11
+        },
+        {
+          "heading": "bundle",
+          "level": 1,
+          "line": 52
+        },
+        {
+          "heading": "plugins",
+          "level": 1,
+          "line": 84
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 7
+      }
+    },
+    {
+      "path": "src-tauri/tests/device_integration_tests.rs",
+      "language": "rust",
+      "fileCategory": "code",
+      "totalLines": 406,
+      "nonEmptyLines": 348,
+      "callGraph": [
+        {
+          "caller": "test_ios_device_workflow_simulation",
+          "callee": "Some",
+          "lineNumber": 19
+        },
+        {
+          "caller": "test_ios_device_workflow_simulation",
+          "callee": "device_response.data.unwrap",
+          "lineNumber": 43
+        },
+        {
+          "caller": "test_ios_database_file_workflow",
+          "callee": "Some",
+          "lineNumber": 81
+        },
+        {
+          "caller": "test_ios_database_file_workflow",
+          "callee": "db_response.data.unwrap",
+          "lineNumber": 86
+        },
+        {
+          "caller": "test_ios_file_transfer_simulation",
+          "callee": "TempDir::new",
+          "lineNumber": 101
+        },
+        {
+          "caller": "test_ios_file_transfer_simulation",
+          "callee": "std::path::Path::new(remote_path)\n                .file_name()\n                .unwrap().to_string_lossy",
+          "lineNumber": 111
+        },
+        {
+          "caller": "test_ios_file_transfer_simulation",
+          "callee": "std::path::Path::new(remote_path)\n                .file_name().unwrap",
+          "lineNumber": 111
+        },
+        {
+          "caller": "test_ios_file_transfer_simulation",
+          "callee": "std::path::Path::new(remote_path).file_name",
+          "lineNumber": 111
+        },
+        {
+          "caller": "test_ios_file_transfer_simulation",
+          "callee": "std::path::Path::new",
+          "lineNumber": 111
+        },
+        {
+          "caller": "test_ios_file_transfer_simulation",
+          "callee": "temp_dir.path().join",
+          "lineNumber": 117
+        },
+        {
+          "caller": "test_ios_file_transfer_simulation",
+          "callee": "temp_dir.path",
+          "lineNumber": 117
+        },
+        {
+          "caller": "test_ios_file_transfer_simulation",
+          "callee": "fs::write",
+          "lineNumber": 118
+        },
+        {
+          "caller": "test_ios_file_transfer_simulation",
+          "callee": "fs::read_to_string",
+          "lineNumber": 125
+        },
+        {
+          "caller": "test_ios_file_transfer_simulation",
+          "callee": "Ok",
+          "lineNumber": 129
+        },
+        {
+          "caller": "test_android_database_file_workflow",
+          "callee": "Some",
+          "lineNumber": 164
+        },
+        {
+          "caller": "test_android_database_file_workflow",
+          "callee": "db_response.data.unwrap",
+          "lineNumber": 169
+        },
+        {
+          "caller": "test_adb_command_execution",
+          "callee": "execute_adb_command",
+          "lineNumber": 186
+        },
+        {
+          "caller": "test_adb_command_execution",
+          "callee": "e.to_string",
+          "lineNumber": 195
+        },
+        {
+          "caller": "test_adb_path_discovery",
+          "callee": "get_adb_path",
+          "lineNumber": 209
+        },
+        {
+          "caller": "test_android_file_transfer_simulation",
+          "callee": "TempDir::new",
+          "lineNumber": 221
+        },
+        {
+          "caller": "test_android_file_transfer_simulation",
+          "callee": "std::path::Path::new(remote_path)\n                .file_name()\n                .unwrap().to_string_lossy",
+          "lineNumber": 231
+        },
+        {
+          "caller": "test_android_file_transfer_simulation",
+          "callee": "std::path::Path::new(remote_path)\n                .file_name().unwrap",
+          "lineNumber": 231
+        },
+        {
+          "caller": "test_android_file_transfer_simulation",
+          "callee": "std::path::Path::new(remote_path).file_name",
+          "lineNumber": 231
+        },
+        {
+          "caller": "test_android_file_transfer_simulation",
+          "callee": "std::path::Path::new",
+          "lineNumber": 231
+        },
+        {
+          "caller": "test_android_file_transfer_simulation",
+          "callee": "temp_dir.path().join",
+          "lineNumber": 237
+        },
+        {
+          "caller": "test_android_file_transfer_simulation",
+          "callee": "temp_dir.path",
+          "lineNumber": 237
+        },
+        {
+          "caller": "test_android_file_transfer_simulation",
+          "callee": "fs::write",
+          "lineNumber": 238
+        },
+        {
+          "caller": "test_android_file_transfer_simulation",
+          "callee": "fs::read_to_string",
+          "lineNumber": 245
+        },
+        {
+          "caller": "test_android_file_transfer_simulation",
+          "callee": "Ok",
+          "lineNumber": 249
+        },
+        {
+          "caller": "test_mixed_device_environment",
+          "callee": "Some",
+          "lineNumber": 292
+        },
+        {
+          "caller": "test_mixed_device_environment",
+          "callee": "response.data.unwrap",
+          "lineNumber": 297
+        },
+        {
+          "caller": "test_mixed_device_environment",
+          "callee": "devices.iter().map(|d| d.device_type.as_str()).collect",
+          "lineNumber": 301
+        },
+        {
+          "caller": "test_mixed_device_environment",
+          "callee": "devices.iter().map",
+          "lineNumber": 301
+        },
+        {
+          "caller": "test_mixed_device_environment",
+          "callee": "devices.iter",
+          "lineNumber": 301
+        },
+        {
+          "caller": "test_mixed_device_environment",
+          "callee": "d.device_type.as_str",
+          "lineNumber": 301
+        },
+        {
+          "caller": "test_mixed_device_environment",
+          "callee": "device.device_type.as_str",
+          "lineNumber": 308
+        },
+        {
+          "caller": "test_error_handling_across_platforms",
+          "callee": "Some",
+          "lineNumber": 335
+        },
+        {
+          "caller": "test_error_handling_across_platforms",
+          "callee": "\"libimobiledevice tools not found\".to_string",
+          "lineNumber": 335
+        },
+        {
+          "caller": "test_error_handling_across_platforms",
+          "callee": "Some",
+          "lineNumber": 341
+        },
+        {
+          "caller": "test_error_handling_across_platforms",
+          "callee": "\"ADB not found in PATH\".to_string",
+          "lineNumber": 341
+        },
+        {
+          "caller": "test_temp_directory_management",
+          "callee": "ensure_temp_dir",
+          "lineNumber": 357
+        },
+        {
+          "caller": "test_temp_directory_management",
+          "callee": "temp_dir.join",
+          "lineNumber": 360
+        },
+        {
+          "caller": "test_temp_directory_management",
+          "callee": "temp_dir.join",
+          "lineNumber": 361
+        },
+        {
+          "caller": "test_temp_directory_management",
+          "callee": "fs::write",
+          "lineNumber": 363
+        },
+        {
+          "caller": "test_temp_directory_management",
+          "callee": "fs::write",
+          "lineNumber": 364
+        },
+        {
+          "caller": "test_temp_directory_management",
+          "callee": "fs::read_to_string",
+          "lineNumber": 371
+        },
+        {
+          "caller": "test_temp_directory_management",
+          "callee": "fs::read_to_string",
+          "lineNumber": 372
+        },
+        {
+          "caller": "test_temp_directory_management",
+          "callee": "Ok",
+          "lineNumber": 377
+        },
+        {
+          "caller": "test_concurrent_device_operations",
+          "callee": "tokio::runtime::Runtime::new().unwrap",
+          "lineNumber": 383
+        },
+        {
+          "caller": "test_concurrent_device_operations",
+          "callee": "tokio::runtime::Runtime::new",
+          "lineNumber": 383
+        },
+        {
+          "caller": "test_concurrent_device_operations",
+          "callee": "runtime.block_on",
+          "lineNumber": 385
+        },
+        {
+          "caller": "test_concurrent_device_operations",
+          "callee": "tokio::time::sleep",
+          "lineNumber": 389
+        },
+        {
+          "caller": "test_concurrent_device_operations",
+          "callee": "tokio::time::Duration::from_millis",
+          "lineNumber": 389
+        },
+        {
+          "caller": "test_concurrent_device_operations",
+          "callee": "tokio::time::sleep",
+          "lineNumber": 395
+        },
+        {
+          "caller": "test_concurrent_device_operations",
+          "callee": "tokio::time::Duration::from_millis",
+          "lineNumber": 395
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src-tauri/tests/fixtures/databases/test_complex.db",
+      "language": "db",
+      "fileCategory": "code",
+      "totalLines": 24,
+      "nonEmptyLines": 24,
+      "metrics": {}
+    },
+    {
+      "path": "src-tauri/tests/fixtures/databases/test_ecommerce.db",
+      "language": "db",
+      "fileCategory": "code",
+      "totalLines": 70,
+      "nonEmptyLines": 70,
+      "metrics": {}
+    },
+    {
+      "path": "src-tauri/tests/fixtures/databases/test_notes.db",
+      "language": "db",
+      "fileCategory": "code",
+      "totalLines": 40,
+      "nonEmptyLines": 40,
+      "metrics": {}
+    },
+    {
+      "path": "src-tauri/tests/mod.rs",
+      "language": "rust",
+      "fileCategory": "code",
+      "totalLines": 210,
+      "nonEmptyLines": 168,
+      "functions": [
+        {
+          "name": "create_integration_test_database",
+          "startLine": 10,
+          "endLine": 36,
+          "params": [
+            "db_path"
+          ]
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "create_integration_test_database",
+          "callee": "Connection::open",
+          "lineNumber": 11
+        },
+        {
+          "caller": "create_integration_test_database",
+          "callee": "conn.execute",
+          "lineNumber": 14
+        },
+        {
+          "caller": "create_integration_test_database",
+          "callee": "conn.execute",
+          "lineNumber": 25
+        },
+        {
+          "caller": "create_integration_test_database",
+          "callee": "conn.execute",
+          "lineNumber": 30
+        },
+        {
+          "caller": "create_integration_test_database",
+          "callee": "Ok",
+          "lineNumber": 35
+        },
+        {
+          "caller": "test_device_helper_functions",
+          "callee": "get_temp_dir_path",
+          "lineNumber": 65
+        },
+        {
+          "caller": "test_device_helper_functions",
+          "callee": "ensure_temp_dir",
+          "lineNumber": 69
+        },
+        {
+          "caller": "test_device_helper_functions",
+          "callee": "get_temp_dir_path",
+          "lineNumber": 73
+        },
+        {
+          "caller": "test_device_helper_functions",
+          "callee": "temp_dir.exists",
+          "lineNumber": 74
+        },
+        {
+          "caller": "test_device_helper_functions",
+          "callee": "std::fs::remove_dir_all(&temp_dir).ok",
+          "lineNumber": 75
+        },
+        {
+          "caller": "test_device_helper_functions",
+          "callee": "std::fs::remove_dir_all",
+          "lineNumber": 75
+        },
+        {
+          "caller": "test_sqlite_wal_reset_integration",
+          "callee": "TempDir::new",
+          "lineNumber": 81
+        },
+        {
+          "caller": "test_sqlite_wal_reset_integration",
+          "callee": "temp_dir.path().join",
+          "lineNumber": 82
+        },
+        {
+          "caller": "test_sqlite_wal_reset_integration",
+          "callee": "temp_dir.path",
+          "lineNumber": 82
+        },
+        {
+          "caller": "test_sqlite_wal_reset_integration",
+          "callee": "create_integration_test_database",
+          "lineNumber": 85
+        },
+        {
+          "caller": "test_sqlite_wal_reset_integration",
+          "callee": "db_path.to_str().unwrap",
+          "lineNumber": 85
+        },
+        {
+          "caller": "test_sqlite_wal_reset_integration",
+          "callee": "db_path.to_str",
+          "lineNumber": 85
+        },
+        {
+          "caller": "test_sqlite_wal_reset_integration",
+          "callee": "temp_dir.path().join",
+          "lineNumber": 88
+        },
+        {
+          "caller": "test_sqlite_wal_reset_integration",
+          "callee": "temp_dir.path",
+          "lineNumber": 88
+        },
+        {
+          "caller": "test_sqlite_wal_reset_integration",
+          "callee": "temp_dir.path().join",
+          "lineNumber": 89
+        },
+        {
+          "caller": "test_sqlite_wal_reset_integration",
+          "callee": "temp_dir.path",
+          "lineNumber": 89
+        },
+        {
+          "caller": "test_sqlite_wal_reset_integration",
+          "callee": "fs::write",
+          "lineNumber": 90
+        },
+        {
+          "caller": "test_sqlite_wal_reset_integration",
+          "callee": "fs::write",
+          "lineNumber": 91
+        },
+        {
+          "caller": "test_sqlite_wal_reset_integration",
+          "callee": "reset_sqlite_wal_mode",
+          "lineNumber": 99
+        },
+        {
+          "caller": "test_sqlite_wal_reset_integration",
+          "callee": "db_path.to_str().unwrap",
+          "lineNumber": 99
+        },
+        {
+          "caller": "test_sqlite_wal_reset_integration",
+          "callee": "db_path.to_str",
+          "lineNumber": 99
+        },
+        {
+          "caller": "test_sqlite_wal_reset_integration",
+          "callee": "Ok",
+          "lineNumber": 107
+        },
+        {
+          "caller": "test_database_connection_manager_integration",
+          "callee": "TempDir::new",
+          "lineNumber": 112
+        },
+        {
+          "caller": "test_database_connection_manager_integration",
+          "callee": "temp_dir.path().join",
+          "lineNumber": 113
+        },
+        {
+          "caller": "test_database_connection_manager_integration",
+          "callee": "temp_dir.path",
+          "lineNumber": 113
+        },
+        {
+          "caller": "test_database_connection_manager_integration",
+          "callee": "create_integration_test_database",
+          "lineNumber": 116
+        },
+        {
+          "caller": "test_database_connection_manager_integration",
+          "callee": "db_path.to_str().unwrap",
+          "lineNumber": 116
+        },
+        {
+          "caller": "test_database_connection_manager_integration",
+          "callee": "db_path.to_str",
+          "lineNumber": 116
+        },
+        {
+          "caller": "test_database_connection_manager_integration",
+          "callee": "tokio::runtime::Runtime::new",
+          "lineNumber": 119
+        },
+        {
+          "caller": "test_database_connection_manager_integration",
+          "callee": "rt.block_on",
+          "lineNumber": 120
+        },
+        {
+          "caller": "test_database_connection_manager_integration",
+          "callee": "DatabaseConnectionManager::new",
+          "lineNumber": 121
+        },
+        {
+          "caller": "test_database_connection_manager_integration",
+          "callee": "manager.get_connection",
+          "lineNumber": 124
+        },
+        {
+          "caller": "test_database_connection_manager_integration",
+          "callee": "db_path.to_str().unwrap",
+          "lineNumber": 124
+        },
+        {
+          "caller": "test_database_connection_manager_integration",
+          "callee": "db_path.to_str",
+          "lineNumber": 124
+        },
+        {
+          "caller": "test_database_connection_manager_integration",
+          "callee": "manager.close_connection",
+          "lineNumber": 128
+        },
+        {
+          "caller": "test_database_connection_manager_integration",
+          "callee": "db_path.to_str().unwrap",
+          "lineNumber": 128
+        },
+        {
+          "caller": "test_database_connection_manager_integration",
+          "callee": "db_path.to_str",
+          "lineNumber": 128
+        },
+        {
+          "caller": "test_database_connection_manager_integration",
+          "callee": "Ok",
+          "lineNumber": 131
+        },
+        {
+          "caller": "test_temp_directory_workflow",
+          "callee": "get_temp_dir_path",
+          "lineNumber": 137
+        },
+        {
+          "caller": "test_temp_directory_workflow",
+          "callee": "ensure_temp_dir",
+          "lineNumber": 141
+        },
+        {
+          "caller": "test_temp_directory_workflow",
+          "callee": "clean_temp_dir",
+          "lineNumber": 145
+        },
+        {
+          "caller": "test_temp_directory_workflow",
+          "callee": "Ok",
+          "lineNumber": 148
+        },
+        {
+          "caller": "test_multiple_database_operations",
+          "callee": "TempDir::new",
+          "lineNumber": 153
+        },
+        {
+          "caller": "test_multiple_database_operations",
+          "callee": "temp_dir.path().join",
+          "lineNumber": 154
+        },
+        {
+          "caller": "test_multiple_database_operations",
+          "callee": "temp_dir.path",
+          "lineNumber": 154
+        },
+        {
+          "caller": "test_multiple_database_operations",
+          "callee": "temp_dir.path().join",
+          "lineNumber": 155
+        },
+        {
+          "caller": "test_multiple_database_operations",
+          "callee": "temp_dir.path",
+          "lineNumber": 155
+        },
+        {
+          "caller": "test_multiple_database_operations",
+          "callee": "create_integration_test_database",
+          "lineNumber": 158
+        },
+        {
+          "caller": "test_multiple_database_operations",
+          "callee": "db1_path.to_str().unwrap",
+          "lineNumber": 158
+        },
+        {
+          "caller": "test_multiple_database_operations",
+          "callee": "db1_path.to_str",
+          "lineNumber": 158
+        },
+        {
+          "caller": "test_multiple_database_operations",
+          "callee": "create_integration_test_database",
+          "lineNumber": 159
+        },
+        {
+          "caller": "test_multiple_database_operations",
+          "callee": "db2_path.to_str().unwrap",
+          "lineNumber": 159
+        },
+        {
+          "caller": "test_multiple_database_operations",
+          "callee": "db2_path.to_str",
+          "lineNumber": 159
+        },
+        {
+          "caller": "test_multiple_database_operations",
+          "callee": "Connection::open",
+          "lineNumber": 162
+        },
+        {
+          "caller": "test_multiple_database_operations",
+          "callee": "Connection::open",
+          "lineNumber": 163
+        },
+        {
+          "caller": "test_multiple_database_operations",
+          "callee": "conn1.prepare",
+          "lineNumber": 166
+        },
+        {
+          "caller": "test_multiple_database_operations",
+          "callee": "stmt1.query_row",
+          "lineNumber": 167
+        },
+        {
+          "caller": "test_multiple_database_operations",
+          "callee": "row.get",
+          "lineNumber": 167
+        },
+        {
+          "caller": "test_multiple_database_operations",
+          "callee": "conn2.prepare",
+          "lineNumber": 170
+        },
+        {
+          "caller": "test_multiple_database_operations",
+          "callee": "stmt2.query_row",
+          "lineNumber": 171
+        },
+        {
+          "caller": "test_multiple_database_operations",
+          "callee": "row.get",
+          "lineNumber": 171
+        },
+        {
+          "caller": "test_multiple_database_operations",
+          "callee": "reset_sqlite_wal_mode",
+          "lineNumber": 175
+        },
+        {
+          "caller": "test_multiple_database_operations",
+          "callee": "db1_path.to_str().unwrap",
+          "lineNumber": 175
+        },
+        {
+          "caller": "test_multiple_database_operations",
+          "callee": "db1_path.to_str",
+          "lineNumber": 175
+        },
+        {
+          "caller": "test_multiple_database_operations",
+          "callee": "reset_sqlite_wal_mode",
+          "lineNumber": 176
+        },
+        {
+          "caller": "test_multiple_database_operations",
+          "callee": "db2_path.to_str().unwrap",
+          "lineNumber": 176
+        },
+        {
+          "caller": "test_multiple_database_operations",
+          "callee": "db2_path.to_str",
+          "lineNumber": 176
+        },
+        {
+          "caller": "test_multiple_database_operations",
+          "callee": "Ok",
+          "lineNumber": 180
+        },
+        {
+          "caller": "test_error_handling",
+          "callee": "reset_sqlite_wal_mode",
+          "lineNumber": 186
+        },
+        {
+          "caller": "test_error_handling",
+          "callee": "reset_sqlite_wal_mode",
+          "lineNumber": 191
+        },
+        {
+          "caller": "test_path_handling",
+          "callee": "get_libimobiledevice_tool_path",
+          "lineNumber": 198
+        },
+        {
+          "caller": "test_path_handling",
+          "callee": "get_libimobiledevice_tool_path",
+          "lineNumber": 203
+        },
+        {
+          "caller": "test_path_handling",
+          "callee": "get_temp_dir_path",
+          "lineNumber": 207
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/index.html",
+      "language": "html",
+      "fileCategory": "markup",
+      "totalLines": 235,
+      "nonEmptyLines": 205,
+      "metrics": {}
+    },
+    {
+      "path": "src/renderer/package.json",
+      "language": "json",
+      "fileCategory": "config",
+      "totalLines": 11,
+      "nonEmptyLines": 11,
+      "sections": [
+        {
+          "heading": "name",
+          "level": 1,
+          "line": 2
+        },
+        {
+          "heading": "type",
+          "level": 1,
+          "line": 3
+        },
+        {
+          "heading": "version",
+          "level": 1,
+          "line": 4
+        },
+        {
+          "heading": "private",
+          "level": 1,
+          "line": 5
+        },
+        {
+          "heading": "scripts",
+          "level": 1,
+          "line": 6
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 5
+      }
+    },
+    {
+      "path": "src/renderer/src/__tests__/integration/component-integration.test.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 304,
+      "nonEmptyLines": 266,
+      "functions": [
+        {
+          "name": "resetStores",
+          "startLine": 134,
+          "endLine": 157,
+          "params": []
+        },
+        {
+          "name": "selectFullContext",
+          "startLine": 159,
+          "endLine": 172,
+          "params": []
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "resetStores",
+          "callee": "useCurrentDeviceSelection.setState",
+          "lineNumber": 135
+        },
+        {
+          "caller": "resetStores",
+          "callee": "useCurrentDatabaseSelection.setState",
+          "lineNumber": 142
+        },
+        {
+          "caller": "resetStores",
+          "callee": "useTableData.setState",
+          "lineNumber": 150
+        },
+        {
+          "caller": "resetStores",
+          "callee": "useRowEditingStore.setState",
+          "lineNumber": 154
+        },
+        {
+          "caller": "selectFullContext",
+          "callee": "act",
+          "lineNumber": 160
+        },
+        {
+          "caller": "selectFullContext",
+          "callee": "useCurrentDeviceSelection.getState().setSelectedDevice",
+          "lineNumber": 161
+        },
+        {
+          "caller": "selectFullContext",
+          "callee": "useCurrentDeviceSelection.getState",
+          "lineNumber": 161
+        },
+        {
+          "caller": "selectFullContext",
+          "callee": "useCurrentDeviceSelection.getState().setSelectedApplication",
+          "lineNumber": 165
+        },
+        {
+          "caller": "selectFullContext",
+          "callee": "useCurrentDeviceSelection.getState",
+          "lineNumber": 165
+        },
+        {
+          "caller": "selectFullContext",
+          "callee": "useCurrentDatabaseSelection.getState().setSelectedDatabaseFile",
+          "lineNumber": 166
+        },
+        {
+          "caller": "selectFullContext",
+          "callee": "useCurrentDatabaseSelection.getState",
+          "lineNumber": 166
+        },
+        {
+          "caller": "selectFullContext",
+          "callee": "useCurrentDatabaseSelection.getState().setSelectedDatabaseTable",
+          "lineNumber": 167
+        },
+        {
+          "caller": "selectFullContext",
+          "callee": "useCurrentDatabaseSelection.getState",
+          "lineNumber": 167
+        }
+      ],
+      "metrics": {
+        "importCount": 4,
+        "exportCount": 0,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/src/__tests__/integration/main-user-flow.test.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 297,
+      "nonEmptyLines": 266,
+      "functions": [
+        {
+          "name": "resetStores",
+          "startLine": 133,
+          "endLine": 156,
+          "params": []
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "resetStores",
+          "callee": "useCurrentDeviceSelection.setState",
+          "lineNumber": 134
+        },
+        {
+          "caller": "resetStores",
+          "callee": "useCurrentDatabaseSelection.setState",
+          "lineNumber": 141
+        },
+        {
+          "caller": "resetStores",
+          "callee": "useTableData.setState",
+          "lineNumber": 149
+        },
+        {
+          "caller": "resetStores",
+          "callee": "useRowEditingStore.setState",
+          "lineNumber": 153
+        }
+      ],
+      "metrics": {
+        "importCount": 4,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/src/__tests__/tauri-api-basic.test.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 32,
+      "nonEmptyLines": 24,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/src/__tests__/tauri-api-comprehensive.test.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 879,
+      "nonEmptyLines": 706,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/src/__tests__/user-workflow-integration.test.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 340,
+      "nonEmptyLines": 279,
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/src/__tests__/utils-case-transformer.test.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 332,
+      "nonEmptyLines": 280,
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/src/__tests__/utils-common.test.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 282,
+      "nonEmptyLines": 236,
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/src/__tests__/utils-database.test.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 367,
+      "nonEmptyLines": 316,
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/src/__tests__/utils-type-validation.test.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 482,
+      "nonEmptyLines": 406,
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/src/App.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 49,
+      "nonEmptyLines": 41,
+      "functions": [
+        {
+          "name": "App",
+          "startLine": 38,
+          "endLine": 47,
+          "params": []
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "g",
+          "callee": "e.split",
+          "lineNumber": 12
+        },
+        {
+          "caller": "g",
+          "callee": "t.push",
+          "lineNumber": 12
+        },
+        {
+          "caller": "g",
+          "callee": "[e].concat",
+          "lineNumber": 12
+        },
+        {
+          "caller": "g",
+          "callee": "Array.prototype.slice.call",
+          "lineNumber": 12
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/src/assets/base.css",
+      "language": "css",
+      "fileCategory": "markup",
+      "totalLines": 45,
+      "nonEmptyLines": 41,
+      "metrics": {}
+    },
+    {
+      "path": "src/renderer/src/assets/main.css",
+      "language": "css",
+      "fileCategory": "markup",
+      "totalLines": 98,
+      "nonEmptyLines": 83,
+      "metrics": {}
+    },
+    {
+      "path": "src/renderer/src/components/__tests__/SidePanel.test.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 184,
+      "nonEmptyLines": 164,
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/src/components/ChangeHistory/ChangeHistoryIndicator.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 82,
+      "nonEmptyLines": 75,
+      "functions": [
+        {
+          "name": "ChangeHistoryIndicator",
+          "startLine": 15,
+          "endLine": 82,
+          "params": [
+            "{\n  size = 'sm',\n  label,\n  labelFontSize = '12px',\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "ChangeHistoryIndicator",
+          "line": 15,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "ChangeHistoryIndicator",
+          "callee": "useState",
+          "lineNumber": 20
+        },
+        {
+          "caller": "ChangeHistoryIndicator",
+          "callee": "useChangeHistory",
+          "lineNumber": 21
+        },
+        {
+          "caller": "ChangeHistoryIndicator",
+          "callee": "formatDistanceToNow",
+          "lineNumber": 34
+        },
+        {
+          "caller": "ChangeHistoryIndicator",
+          "callee": "setIsOpen",
+          "lineNumber": 49
+        },
+        {
+          "caller": "ChangeHistoryIndicator",
+          "callee": "setIsOpen",
+          "lineNumber": 78
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/src/components/ChangeHistory/ChangeHistoryPanel.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 328,
+      "nonEmptyLines": 304,
+      "functions": [
+        {
+          "name": "ChangeHistoryPanel",
+          "startLine": 28,
+          "endLine": 328,
+          "params": [
+            "{ isOpen, onClose }"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "ChangeHistoryPanel",
+          "line": 28,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "ChangeHistoryPanel",
+          "callee": "useColorMode",
+          "lineNumber": 29
+        },
+        {
+          "caller": "ChangeHistoryPanel",
+          "callee": "useState",
+          "lineNumber": 31
+        },
+        {
+          "caller": "ChangeHistoryPanel",
+          "callee": "useQueryClient",
+          "lineNumber": 32
+        },
+        {
+          "caller": "ChangeHistoryPanel",
+          "callee": "useCurrentDeviceSelection",
+          "lineNumber": 34
+        },
+        {
+          "caller": "ChangeHistoryPanel",
+          "callee": "useCurrentDatabaseSelection",
+          "lineNumber": 35
+        },
+        {
+          "caller": "ChangeHistoryPanel",
+          "callee": "useChangeHistory",
+          "lineNumber": 42
+        },
+        {
+          "caller": "ChangeHistoryPanel",
+          "callee": "useClearAllChangeHistoryMutation",
+          "lineNumber": 44
+        },
+        {
+          "caller": "handleClearHistory",
+          "callee": "console.log",
+          "lineNumber": 48
+        },
+        {
+          "caller": "handleClearHistory",
+          "callee": "queryClient.setQueryData",
+          "lineNumber": 55
+        },
+        {
+          "caller": "handleClearHistory",
+          "callee": "clearHistoryMutation.mutateAsync",
+          "lineNumber": 58
+        },
+        {
+          "caller": "handleClearHistory",
+          "callee": "queryClient.removeQueries",
+          "lineNumber": 61
+        },
+        {
+          "caller": "handleClearHistory",
+          "callee": "queryClient.setQueryData",
+          "lineNumber": 65
+        },
+        {
+          "caller": "handleClearHistory",
+          "callee": "refetch",
+          "lineNumber": 68
+        },
+        {
+          "caller": "handleClearHistory",
+          "callee": "console.error",
+          "lineNumber": 71
+        },
+        {
+          "caller": "handleRefresh",
+          "callee": "console.log",
+          "lineNumber": 76
+        },
+        {
+          "caller": "handleRefresh",
+          "callee": "console.log",
+          "lineNumber": 78
+        },
+        {
+          "caller": "handleRefresh",
+          "callee": "refetch",
+          "lineNumber": 79
+        },
+        {
+          "caller": "handleRefresh",
+          "callee": "console.log",
+          "lineNumber": 80
+        },
+        {
+          "caller": "handleRefresh",
+          "callee": "console.error",
+          "lineNumber": 83
+        },
+        {
+          "caller": "ChangeHistoryPanel",
+          "callee": "onClose",
+          "lineNumber": 88
+        },
+        {
+          "caller": "ChangeHistoryPanel",
+          "callee": "[...changes].reverse().map",
+          "lineNumber": 202
+        },
+        {
+          "caller": "ChangeHistoryPanel",
+          "callee": "[...changes].reverse",
+          "lineNumber": 202
+        },
+        {
+          "caller": "ChangeHistoryPanel",
+          "callee": "getOperationTypeString",
+          "lineNumber": 203
+        },
+        {
+          "caller": "ChangeHistoryPanel",
+          "callee": "setSelectedChange",
+          "lineNumber": 209
+        },
+        {
+          "caller": "ChangeHistoryPanel",
+          "callee": "getOperationBadgeColor",
+          "lineNumber": 221
+        },
+        {
+          "caller": "ChangeHistoryPanel",
+          "callee": "getOperationTextColor",
+          "lineNumber": 222
+        },
+        {
+          "caller": "ChangeHistoryPanel",
+          "callee": "formatOperationType",
+          "lineNumber": 226
+        },
+        {
+          "caller": "ChangeHistoryPanel",
+          "callee": "formatDistanceToNow",
+          "lineNumber": 230
+        },
+        {
+          "caller": "ChangeHistoryPanel",
+          "callee": "change.changes.map",
+          "lineNumber": 261
+        },
+        {
+          "caller": "ChangeHistoryPanel",
+          "callee": "String",
+          "lineNumber": 271
+        },
+        {
+          "caller": "ChangeHistoryPanel",
+          "callee": "String",
+          "lineNumber": 276
+        }
+      ],
+      "metrics": {
+        "importCount": 6,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/src/components/ChangeHistory/index.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 2,
+      "nonEmptyLines": 2,
+      "exports": [
+        {
+          "name": "ChangeHistoryIndicator",
+          "line": 1,
+          "isDefault": false
+        },
+        {
+          "name": "ChangeHistoryPanel",
+          "line": 2,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 2,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/src/components/common/DeviceInfoModal.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 194,
+      "nonEmptyLines": 176,
+      "functions": [
+        {
+          "name": "DeviceInfoModal",
+          "startLine": 24,
+          "endLine": 194,
+          "params": [
+            "{ \n  isOpen, \n  onClose, \n  deviceId, \n  deviceType, \n  deviceName, \n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "DeviceInfoModal",
+          "line": 24,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "DeviceInfoModal",
+          "callee": "useState",
+          "lineNumber": 31
+        },
+        {
+          "caller": "DeviceInfoModal",
+          "callee": "useState",
+          "lineNumber": 32
+        },
+        {
+          "caller": "DeviceInfoModal",
+          "callee": "useState",
+          "lineNumber": 33
+        },
+        {
+          "caller": "DeviceInfoModal",
+          "callee": "useEffect",
+          "lineNumber": 35
+        },
+        {
+          "caller": "DeviceInfoModal",
+          "callee": "fetchDeviceInfo",
+          "lineNumber": 37
+        },
+        {
+          "caller": "fetchDeviceInfo",
+          "callee": "setLoading",
+          "lineNumber": 42
+        },
+        {
+          "caller": "fetchDeviceInfo",
+          "callee": "setError",
+          "lineNumber": 43
+        },
+        {
+          "caller": "fetchDeviceInfo",
+          "callee": "setDeviceInfo",
+          "lineNumber": 44
+        },
+        {
+          "caller": "fetchDeviceInfo",
+          "callee": "deviceType.includes",
+          "lineNumber": 49
+        },
+        {
+          "caller": "fetchDeviceInfo",
+          "callee": "deviceType.includes",
+          "lineNumber": 50
+        },
+        {
+          "caller": "fetchDeviceInfo",
+          "callee": "console.log",
+          "lineNumber": 52
+        },
+        {
+          "caller": "fetchDeviceInfo",
+          "callee": "deviceType.includes",
+          "lineNumber": 60
+        },
+        {
+          "caller": "fetchDeviceInfo",
+          "callee": "deviceType.includes",
+          "lineNumber": 62
+        },
+        {
+          "caller": "fetchDeviceInfo",
+          "callee": "console.log",
+          "lineNumber": 69
+        },
+        {
+          "caller": "fetchDeviceInfo",
+          "callee": "(window.api as any).iosGetDeviceInfo",
+          "lineNumber": 70
+        },
+        {
+          "caller": "fetchDeviceInfo",
+          "callee": "console.log",
+          "lineNumber": 73
+        },
+        {
+          "caller": "fetchDeviceInfo",
+          "callee": "(window.api as any).adbGetDeviceInfo",
+          "lineNumber": 74
+        },
+        {
+          "caller": "fetchDeviceInfo",
+          "callee": "console.log",
+          "lineNumber": 77
+        },
+        {
+          "caller": "fetchDeviceInfo",
+          "callee": "console.log",
+          "lineNumber": 80
+        },
+        {
+          "caller": "fetchDeviceInfo",
+          "callee": "setDeviceInfo",
+          "lineNumber": 81
+        },
+        {
+          "caller": "fetchDeviceInfo",
+          "callee": "console.error",
+          "lineNumber": 85
+        },
+        {
+          "caller": "fetchDeviceInfo",
+          "callee": "setError",
+          "lineNumber": 86
+        },
+        {
+          "caller": "fetchDeviceInfo",
+          "callee": "console.error",
+          "lineNumber": 91
+        },
+        {
+          "caller": "fetchDeviceInfo",
+          "callee": "setError",
+          "lineNumber": 92
+        },
+        {
+          "caller": "fetchDeviceInfo",
+          "callee": "setLoading",
+          "lineNumber": 95
+        },
+        {
+          "caller": "getDeviceIcon",
+          "callee": "deviceType.includes",
+          "lineNumber": 103
+        },
+        {
+          "caller": "getDeviceIcon",
+          "callee": "deviceType.includes",
+          "lineNumber": 104
+        },
+        {
+          "caller": "getDeviceIcon",
+          "callee": "deviceType.includes",
+          "lineNumber": 106
+        },
+        {
+          "caller": "getDeviceIcon",
+          "callee": "deviceType.includes",
+          "lineNumber": 109
+        },
+        {
+          "caller": "getDeviceIcon",
+          "callee": "deviceType.includes",
+          "lineNumber": 109
+        },
+        {
+          "caller": "DeviceInfoModal",
+          "callee": "getDeviceIcon",
+          "lineNumber": 119
+        },
+        {
+          "caller": "DeviceInfoModal",
+          "callee": "deviceType.includes",
+          "lineNumber": 129
+        },
+        {
+          "caller": "DeviceInfoModal",
+          "callee": "deviceType.includes",
+          "lineNumber": 129
+        },
+        {
+          "caller": "DeviceInfoModal",
+          "callee": "Object.entries(deviceInfo).map",
+          "lineNumber": 156
+        },
+        {
+          "caller": "DeviceInfoModal",
+          "callee": "Object.entries",
+          "lineNumber": 156
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/src/components/common/FLModal.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 129,
+      "nonEmptyLines": 126,
+      "functions": [
+        {
+          "name": "FLModal",
+          "startLine": 14,
+          "endLine": 127,
+          "params": [
+            "{\n  isOpen,\n  body,\n  title,\n  acceptBtn,\n  onAccept,\n  rejectBtn,\n  onReject,\n  disabled = false,\n}"
+          ]
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/src/components/common/FLSelect.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 327,
+      "nonEmptyLines": 318,
+      "functions": [
+        {
+          "name": "FLSelect",
+          "startLine": 40,
+          "endLine": 325,
+          "params": [
+            "{\n  options = [],\n  value = null,\n  onChange,\n  label,\n  isDisabled = false,\n  width = '220px',\n  menuListWidth = 'auto',\n  icon = null,\n  placeholder,\n  searchable = true,\n  noOptionsMessage = 'No options available',\n  variant = 'regular',\n  showPinIcon = false,\n  menuFooter,\n}"
+          ]
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "FLSelect",
+          "callee": "e.preventDefault",
+          "lineNumber": 179
+        },
+        {
+          "caller": "FLSelect",
+          "callee": "e.stopPropagation",
+          "lineNumber": 180
+        },
+        {
+          "caller": "FLSelect",
+          "callee": "props.data.onInfoClick",
+          "lineNumber": 181
+        },
+        {
+          "caller": "FLSelect",
+          "callee": "onChange",
+          "lineNumber": 199
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/src/components/data/__tests__/DataGrid.test.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 131,
+      "nonEmptyLines": 114,
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/src/components/data/animations.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 26,
+      "nonEmptyLines": 22,
+      "exports": [
+        {
+          "name": "pulseAnimation",
+          "line": 3,
+          "isDefault": false
+        },
+        {
+          "name": "floatingAnimation",
+          "line": 9,
+          "isDefault": false
+        },
+        {
+          "name": "fadeInAnimation",
+          "line": 17,
+          "isDefault": false
+        },
+        {
+          "name": "borderFlashAnimation",
+          "line": 22,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 4,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/src/components/data/CustomQueryModal.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 87,
+      "nonEmptyLines": 75,
+      "functions": [
+        {
+          "name": "CustomQueryModal",
+          "startLine": 16,
+          "endLine": 87,
+          "params": [
+            "{ isOpen, onClose }"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "CustomQueryModal",
+          "line": 16,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "CustomQueryModal",
+          "callee": "useState",
+          "lineNumber": 17
+        },
+        {
+          "caller": "CustomQueryModal",
+          "callee": "useCurrentDatabaseSelection",
+          "lineNumber": 18
+        },
+        {
+          "caller": "CustomQueryModal",
+          "callee": "useTableData",
+          "lineNumber": 19
+        },
+        {
+          "caller": "CustomQueryModal",
+          "callee": "useChangeHistoryRefresh",
+          "lineNumber": 20
+        },
+        {
+          "caller": "handleExecute",
+          "callee": "query.trim",
+          "lineNumber": 23
+        },
+        {
+          "caller": "handleExecute",
+          "callee": "window.api.executeQuery",
+          "lineNumber": 27
+        },
+        {
+          "caller": "handleExecute",
+          "callee": "setTableData",
+          "lineNumber": 36
+        },
+        {
+          "caller": "handleExecute",
+          "callee": "query.trim().toUpperCase",
+          "lineNumber": 45
+        },
+        {
+          "caller": "handleExecute",
+          "callee": "query.trim",
+          "lineNumber": 45
+        },
+        {
+          "caller": "handleExecute",
+          "callee": "queryUpperCase.startsWith",
+          "lineNumber": 46
+        },
+        {
+          "caller": "handleExecute",
+          "callee": "queryUpperCase.startsWith",
+          "lineNumber": 46
+        },
+        {
+          "caller": "handleExecute",
+          "callee": "queryUpperCase.startsWith",
+          "lineNumber": 46
+        },
+        {
+          "caller": "handleExecute",
+          "callee": "refreshChangeHistory",
+          "lineNumber": 47
+        },
+        {
+          "caller": "handleExecute",
+          "callee": "onClose",
+          "lineNumber": 50
+        },
+        {
+          "caller": "handleExecute",
+          "callee": "console.error",
+          "lineNumber": 53
+        },
+        {
+          "caller": "handleExecute",
+          "callee": "toaster.create",
+          "lineNumber": 54
+        },
+        {
+          "caller": "CustomQueryModal",
+          "callee": "setQuery",
+          "lineNumber": 69
+        },
+        {
+          "caller": "CustomQueryModal",
+          "callee": "handleExecute",
+          "lineNumber": 78
+        },
+        {
+          "caller": "CustomQueryModal",
+          "callee": "onClose",
+          "lineNumber": 83
+        }
+      ],
+      "metrics": {
+        "importCount": 4,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/src/components/data/DataGrid.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 345,
+      "nonEmptyLines": 304,
+      "functions": [
+        {
+          "name": "CustomHeaderComponent",
+          "startLine": 23,
+          "endLine": 34,
+          "params": [
+            "props"
+          ]
+        },
+        {
+          "name": "DataGrid",
+          "startLine": 36,
+          "endLine": 345,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "CustomHeaderComponent",
+          "line": 23,
+          "isDefault": false
+        },
+        {
+          "name": "DataGrid",
+          "line": 36,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "CustomHeaderComponent",
+          "callee": "props.columnType?.toLowerCase",
+          "lineNumber": 29
+        },
+        {
+          "caller": "DataGrid",
+          "callee": "useColorMode",
+          "lineNumber": 37
+        },
+        {
+          "caller": "DataGrid",
+          "callee": "useTableData",
+          "lineNumber": 43
+        },
+        {
+          "caller": "DataGrid",
+          "callee": "useRowEditingStore",
+          "lineNumber": 44
+        },
+        {
+          "caller": "DataGrid",
+          "callee": "useCurrentDatabaseSelection",
+          "lineNumber": 45
+        },
+        {
+          "caller": "DataGrid",
+          "callee": "useCurrentDeviceSelection",
+          "lineNumber": 46
+        },
+        {
+          "caller": "DataGrid",
+          "callee": "useChangeHistoryRefresh",
+          "lineNumber": 47
+        },
+        {
+          "caller": "DataGrid",
+          "callee": "themeQuartz.withPart",
+          "lineNumber": 48
+        },
+        {
+          "caller": "DataGrid",
+          "callee": "useRef",
+          "lineNumber": 49
+        },
+        {
+          "caller": "DataGrid",
+          "callee": "useState",
+          "lineNumber": 50
+        },
+        {
+          "caller": "DataGrid",
+          "callee": "useState",
+          "lineNumber": 51
+        },
+        {
+          "caller": "DataGrid",
+          "callee": "useTableDataQuery",
+          "lineNumber": 53
+        },
+        {
+          "caller": "DataGrid",
+          "callee": "useMemo",
+          "lineNumber": 54
+        },
+        {
+          "caller": "DataGrid",
+          "callee": "useCallback",
+          "lineNumber": 75
+        },
+        {
+          "caller": "DataGrid",
+          "callee": "setIsAddingRow",
+          "lineNumber": 80
+        },
+        {
+          "caller": "DataGrid",
+          "callee": "extractContextFromState",
+          "lineNumber": 83
+        },
+        {
+          "caller": "DataGrid",
+          "callee": "window.api.addNewRowWithDefaults",
+          "lineNumber": 86
+        },
+        {
+          "caller": "DataGrid",
+          "callee": "window.api.pushDatabaseFile",
+          "lineNumber": 110
+        },
+        {
+          "caller": "DataGrid",
+          "callee": "refetchTableData",
+          "lineNumber": 120
+        },
+        {
+          "caller": "DataGrid",
+          "callee": "refreshChangeHistory",
+          "lineNumber": 121
+        },
+        {
+          "caller": "DataGrid",
+          "callee": "toaster.create",
+          "lineNumber": 123
+        },
+        {
+          "caller": "DataGrid",
+          "callee": "toaster.create",
+          "lineNumber": 131
+        },
+        {
+          "caller": "DataGrid",
+          "callee": "setIsAddingRow",
+          "lineNumber": 139
+        },
+        {
+          "caller": "DataGrid",
+          "callee": "useEffect",
+          "lineNumber": 143
+        },
+        {
+          "caller": "DataGrid",
+          "callee": "setTableData",
+          "lineNumber": 146
+        },
+        {
+          "caller": "DataGrid",
+          "callee": "setIsLoadingTableData",
+          "lineNumber": 152
+        },
+        {
+          "caller": "DataGrid",
+          "callee": "setTableData",
+          "lineNumber": 155
+        },
+        {
+          "caller": "DataGrid",
+          "callee": "setIsLoadingTableData",
+          "lineNumber": 161
+        },
+        {
+          "caller": "DataGrid",
+          "callee": "useEffect",
+          "lineNumber": 166
+        },
+        {
+          "caller": "DataGrid",
+          "callee": "gridRef.current.api.addEventListener",
+          "lineNumber": 168
+        },
+        {
+          "caller": "DataGrid",
+          "callee": "useMemo",
+          "lineNumber": 174
+        },
+        {
+          "caller": "DataGrid",
+          "callee": "tableData.columns?.map",
+          "lineNumber": 178
+        },
+        {
+          "caller": "DataGrid",
+          "callee": "useMemo",
+          "lineNumber": 194
+        },
+        {
+          "caller": "DataGrid",
+          "callee": "useCallback",
+          "lineNumber": 198
+        },
+        {
+          "caller": "DataGrid",
+          "callee": "setSelectedRow",
+          "lineNumber": 199
+        },
+        {
+          "caller": "DataGrid",
+          "callee": "useCallback",
+          "lineNumber": 205
+        },
+        {
+          "caller": "DataGrid",
+          "callee": "useCallback",
+          "lineNumber": 219
+        },
+        {
+          "caller": "DataGrid",
+          "callee": "setPageSize",
+          "lineNumber": 220
+        },
+        {
+          "caller": "DataGrid",
+          "callee": "useCallback",
+          "lineNumber": 223
+        },
+        {
+          "caller": "DataGrid",
+          "callee": "params.api.getColumns()?.map",
+          "lineNumber": 224
+        },
+        {
+          "caller": "DataGrid",
+          "callee": "params.api.getColumns",
+          "lineNumber": 224
+        },
+        {
+          "caller": "DataGrid",
+          "callee": "col.getColId",
+          "lineNumber": 224
+        },
+        {
+          "caller": "DataGrid",
+          "callee": "allColIds.forEach",
+          "lineNumber": 226
+        },
+        {
+          "caller": "DataGrid",
+          "callee": "params.api.getColumn",
+          "lineNumber": 227
+        },
+        {
+          "caller": "DataGrid",
+          "callee": "params.api.forEachNodeAfterFilterAndSort",
+          "lineNumber": 230
+        },
+        {
+          "caller": "DataGrid",
+          "callee": "rowData.push",
+          "lineNumber": 233
+        },
+        {
+          "caller": "DataGrid",
+          "callee": "String",
+          "lineNumber": 233
+        },
+        {
+          "caller": "DataGrid",
+          "callee": "Math.max",
+          "lineNumber": 240
+        },
+        {
+          "caller": "DataGrid",
+          "callee": "rowData.map",
+          "lineNumber": 240
+        },
+        {
+          "caller": "DataGrid",
+          "callee": "Math.min",
+          "lineNumber": 244
+        },
+        {
+          "caller": "DataGrid",
+          "callee": "Math.max",
+          "lineNumber": 244
+        },
+        {
+          "caller": "DataGrid",
+          "callee": "params.api.setColumnWidths",
+          "lineNumber": 246
+        },
+        {
+          "caller": "DataGrid",
+          "callee": "useEffect",
+          "lineNumber": 251
+        },
+        {
+          "caller": "DataGrid",
+          "callee": "setTimeout",
+          "lineNumber": 253
+        },
+        {
+          "caller": "DataGrid",
+          "callee": "columnsSizing",
+          "lineNumber": 255
+        },
+        {
+          "caller": "DataGrid",
+          "callee": "clearTimeout",
+          "lineNumber": 259
+        },
+        {
+          "caller": "DataGrid",
+          "callee": "String",
+          "lineNumber": 279
+        },
+        {
+          "caller": "DataGrid",
+          "callee": "e.preventDefault",
+          "lineNumber": 298
+        }
+      ],
+      "metrics": {
+        "importCount": 8,
+        "exportCount": 2,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/src/components/data/DragAndDropProvider.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 380,
+      "nonEmptyLines": 340,
+      "functions": [
+        {
+          "name": "useDragAndDrop",
+          "startLine": 18,
+          "endLine": 24,
+          "params": []
+        },
+        {
+          "name": "DragAndDropProvider",
+          "startLine": 58,
+          "endLine": 380,
+          "params": [
+            "{ children }"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "useDragAndDrop",
+          "line": 18,
+          "isDefault": false
+        },
+        {
+          "name": "DragAndDropProvider",
+          "line": 58,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "useDragAndDrop",
+          "callee": "useContext",
+          "lineNumber": 19
+        },
+        {
+          "caller": "DragAndDropProvider",
+          "callee": "useState",
+          "lineNumber": 59
+        },
+        {
+          "caller": "DragAndDropProvider",
+          "callee": "useState",
+          "lineNumber": 60
+        },
+        {
+          "caller": "DragAndDropProvider",
+          "callee": "useState",
+          "lineNumber": 61
+        },
+        {
+          "caller": "DragAndDropProvider",
+          "callee": "useRef",
+          "lineNumber": 62
+        },
+        {
+          "caller": "DragAndDropProvider",
+          "callee": "useColorMode",
+          "lineNumber": 63
+        },
+        {
+          "caller": "DragAndDropProvider",
+          "callee": "useCurrentDatabaseSelection",
+          "lineNumber": 65
+        },
+        {
+          "caller": "DragAndDropProvider",
+          "callee": "useCurrentDatabaseSelection",
+          "lineNumber": 66
+        },
+        {
+          "caller": "DragAndDropProvider",
+          "callee": "useCurrentDeviceSelection",
+          "lineNumber": 67
+        },
+        {
+          "caller": "DragAndDropProvider",
+          "callee": "useCurrentDatabaseSelection",
+          "lineNumber": 68
+        },
+        {
+          "caller": "DragAndDropProvider",
+          "callee": "useEffect",
+          "lineNumber": 71
+        },
+        {
+          "caller": "DragAndDropProvider",
+          "callee": "console.log",
+          "lineNumber": 74
+        },
+        {
+          "caller": "DragAndDropProvider",
+          "callee": "setSelectedDevice",
+          "lineNumber": 75
+        },
+        {
+          "caller": "DragAndDropProvider",
+          "callee": "setSelectedApplication",
+          "lineNumber": 76
+        },
+        {
+          "caller": "DragAndDropProvider",
+          "callee": "setTimeout",
+          "lineNumber": 79
+        },
+        {
+          "caller": "DragAndDropProvider",
+          "callee": "setIsSettingCustomFile",
+          "lineNumber": 80
+        },
+        {
+          "caller": "DragAndDropProvider",
+          "callee": "console.log",
+          "lineNumber": 81
+        },
+        {
+          "caller": "DragAndDropProvider",
+          "callee": "useCallback",
+          "lineNumber": 86
+        },
+        {
+          "caller": "DragAndDropProvider",
+          "callee": "setIsProcessingFile",
+          "lineNumber": 87
+        },
+        {
+          "caller": "DragAndDropProvider",
+          "callee": "filePath.split('/').pop",
+          "lineNumber": 96
+        },
+        {
+          "caller": "DragAndDropProvider",
+          "callee": "filePath.split",
+          "lineNumber": 96
+        },
+        {
+          "caller": "DragAndDropProvider",
+          "callee": "SUPPORTED_FILE_EXTENSIONS.some",
+          "lineNumber": 103
+        },
+        {
+          "caller": "DragAndDropProvider",
+          "callee": "filename.toLowerCase().endsWith",
+          "lineNumber": 103
+        },
+        {
+          "caller": "DragAndDropProvider",
+          "callee": "filename.toLowerCase",
+          "lineNumber": 103
+        },
+        {
+          "caller": "DragAndDropProvider",
+          "callee": "toaster.create",
+          "lineNumber": 105
+        },
+        {
+          "caller": "DragAndDropProvider",
+          "callee": "setIsProcessingFile",
+          "lineNumber": 111
+        },
+        {
+          "caller": "DragAndDropProvider",
+          "callee": "window.api.webUtils.getPathForFile",
+          "lineNumber": 115
+        },
+        {
+          "caller": "DragAndDropProvider",
+          "callee": "SUPPORTED_FILE_EXTENSIONS.some",
+          "lineNumber": 120
+        },
+        {
+          "caller": "DragAndDropProvider",
+          "callee": "filename.toLowerCase().endsWith",
+          "lineNumber": 120
+        },
+        {
+          "caller": "DragAndDropProvider",
+          "callee": "filename.toLowerCase",
+          "lineNumber": 120
+        },
+        {
+          "caller": "DragAndDropProvider",
+          "callee": "toaster.create",
+          "lineNumber": 122
+        },
+        {
+          "caller": "DragAndDropProvider",
+          "callee": "setIsProcessingFile",
+          "lineNumber": 128
+        },
+        {
+          "caller": "DragAndDropProvider",
+          "callee": "setSelectedDatabaseTable",
+          "lineNumber": 134
+        },
+        {
+          "caller": "DragAndDropProvider",
+          "callee": "setIsSettingCustomFile",
+          "lineNumber": 137
+        },
+        {
+          "caller": "DragAndDropProvider",
+          "callee": "console.log",
+          "lineNumber": 138
+        },
+        {
+          "caller": "DragAndDropProvider",
+          "callee": "setSelectedDatabaseFile",
+          "lineNumber": 140
+        },
+        {
+          "caller": "DragAndDropProvider",
+          "callee": "toaster.create",
+          "lineNumber": 149
+        },
+        {
+          "caller": "DragAndDropProvider",
+          "callee": "console.error",
+          "lineNumber": 157
+        },
+        {
+          "caller": "DragAndDropProvider",
+          "callee": "toaster.create",
+          "lineNumber": 158
+        },
+        {
+          "caller": "DragAndDropProvider",
+          "callee": "setIsProcessingFile",
+          "lineNumber": 166
+        },
+        {
+          "caller": "DragAndDropProvider",
+          "callee": "useEffect",
+          "lineNumber": 170
+        },
+        {
+          "caller": "setupFileDropListener",
+          "callee": "getCurrentWebviewWindow",
+          "lineNumber": 173
+        },
+        {
+          "caller": "setupFileDropListener",
+          "callee": "webview.onDragDropEvent",
+          "lineNumber": 174
+        },
+        {
+          "caller": "setupFileDropListener",
+          "callee": "console.log",
+          "lineNumber": 175
+        },
+        {
+          "caller": "setupFileDropListener",
+          "callee": "console.log",
+          "lineNumber": 178
+        },
+        {
+          "caller": "setupFileDropListener",
+          "callee": "setIsDragging",
+          "lineNumber": 179
+        },
+        {
+          "caller": "setupFileDropListener",
+          "callee": "console.log",
+          "lineNumber": 182
+        },
+        {
+          "caller": "setupFileDropListener",
+          "callee": "setIsDragging",
+          "lineNumber": 183
+        },
+        {
+          "caller": "setupFileDropListener",
+          "callee": "handleFile",
+          "lineNumber": 185
+        },
+        {
+          "caller": "setupFileDropListener",
+          "callee": "console.log",
+          "lineNumber": 189
+        },
+        {
+          "caller": "setupFileDropListener",
+          "callee": "setIsDragging",
+          "lineNumber": 190
+        },
+        {
+          "caller": "setupFileDropListener",
+          "callee": "console.error",
+          "lineNumber": 197
+        },
+        {
+          "caller": "DragAndDropProvider",
+          "callee": "setupFileDropListener",
+          "lineNumber": 201
+        },
+        {
+          "caller": "DragAndDropProvider",
+          "callee": "unlistenPromise?.then",
+          "lineNumber": 204
+        },
+        {
+          "caller": "DragAndDropProvider",
+          "callee": "unlisten",
+          "lineNumber": 206
+        },
+        {
+          "caller": "DragAndDropProvider",
+          "callee": "useCallback",
+          "lineNumber": 211
+        },
+        {
+          "caller": "DragAndDropProvider",
+          "callee": "e.preventDefault",
+          "lineNumber": 212
+        },
+        {
+          "caller": "DragAndDropProvider",
+          "callee": "e.stopPropagation",
+          "lineNumber": 213
+        },
+        {
+          "caller": "DragAndDropProvider",
+          "callee": "setIsDragging",
+          "lineNumber": 217
+        },
+        {
+          "caller": "DragAndDropProvider",
+          "callee": "useCallback",
+          "lineNumber": 221
+        },
+        {
+          "caller": "DragAndDropProvider",
+          "callee": "e.preventDefault",
+          "lineNumber": 222
+        },
+        {
+          "caller": "DragAndDropProvider",
+          "callee": "e.stopPropagation",
+          "lineNumber": 223
+        },
+        {
+          "caller": "DragAndDropProvider",
+          "callee": "useCallback",
+          "lineNumber": 230
+        },
+        {
+          "caller": "DragAndDropProvider",
+          "callee": "e.preventDefault",
+          "lineNumber": 231
+        },
+        {
+          "caller": "DragAndDropProvider",
+          "callee": "e.stopPropagation",
+          "lineNumber": 232
+        },
+        {
+          "caller": "DragAndDropProvider",
+          "callee": "setIsDragging",
+          "lineNumber": 236
+        },
+        {
+          "caller": "DragAndDropProvider",
+          "callee": "useCallback",
+          "lineNumber": 240
+        },
+        {
+          "caller": "DragAndDropProvider",
+          "callee": "e.preventDefault",
+          "lineNumber": 241
+        },
+        {
+          "caller": "DragAndDropProvider",
+          "callee": "e.stopPropagation",
+          "lineNumber": 242
+        },
+        {
+          "caller": "DragAndDropProvider",
+          "callee": "setIsDragging",
+          "lineNumber": 245
+        },
+        {
+          "caller": "DragAndDropProvider",
+          "callee": "handleFile",
+          "lineNumber": 248
+        },
+        {
+          "caller": "DragAndDropProvider",
+          "callee": "useEffect",
+          "lineNumber": 252
+        },
+        {
+          "caller": "DragAndDropProvider",
+          "callee": "window.addEventListener",
+          "lineNumber": 253
+        },
+        {
+          "caller": "DragAndDropProvider",
+          "callee": "window.addEventListener",
+          "lineNumber": 254
+        },
+        {
+          "caller": "DragAndDropProvider",
+          "callee": "window.addEventListener",
+          "lineNumber": 255
+        },
+        {
+          "caller": "DragAndDropProvider",
+          "callee": "window.addEventListener",
+          "lineNumber": 256
+        },
+        {
+          "caller": "DragAndDropProvider",
+          "callee": "window.removeEventListener",
+          "lineNumber": 259
+        },
+        {
+          "caller": "DragAndDropProvider",
+          "callee": "window.removeEventListener",
+          "lineNumber": 260
+        },
+        {
+          "caller": "DragAndDropProvider",
+          "callee": "window.removeEventListener",
+          "lineNumber": 261
+        },
+        {
+          "caller": "DragAndDropProvider",
+          "callee": "window.removeEventListener",
+          "lineNumber": 262
+        },
+        {
+          "caller": "DragAndDropProvider",
+          "callee": "SUPPORTED_FILE_EXTENSIONS.map",
+          "lineNumber": 360
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 2,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "src/renderer/src/components/data/TableFooter.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 342,
+      "nonEmptyLines": 305,
+      "functions": [
+        {
+          "name": "formatExportValue",
+          "startLine": 29,
+          "endLine": 39,
+          "params": [
+            "value"
+          ]
+        },
+        {
+          "name": "escapeCsvValue",
+          "startLine": 41,
+          "endLine": 47,
+          "params": [
+            "value"
+          ]
+        },
+        {
+          "name": "buildCsvContent",
+          "startLine": 49,
+          "endLine": 57,
+          "params": [
+            "columns",
+            "rows"
+          ]
+        },
+        {
+          "name": "TableFooter",
+          "startLine": 59,
+          "endLine": 342,
+          "params": [
+            "{ gridRef, totalRows, onPageSizeChange }"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "TableFooter",
+          "line": 59,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "formatExportValue",
+          "callee": "JSON.stringify",
+          "lineNumber": 35
+        },
+        {
+          "caller": "formatExportValue",
+          "callee": "String",
+          "lineNumber": 38
+        },
+        {
+          "caller": "escapeCsvValue",
+          "callee": "/[\",\\n]/.test",
+          "lineNumber": 42
+        },
+        {
+          "caller": "escapeCsvValue",
+          "callee": "value.replace",
+          "lineNumber": 43
+        },
+        {
+          "caller": "buildCsvContent",
+          "callee": "columns.map(column => escapeCsvValue(column.name)).join",
+          "lineNumber": 50
+        },
+        {
+          "caller": "buildCsvContent",
+          "callee": "columns.map",
+          "lineNumber": 50
+        },
+        {
+          "caller": "buildCsvContent",
+          "callee": "escapeCsvValue",
+          "lineNumber": 50
+        },
+        {
+          "caller": "buildCsvContent",
+          "callee": "rows.map",
+          "lineNumber": 51
+        },
+        {
+          "caller": "buildCsvContent",
+          "callee": "columns\n      .map(column => escapeCsvValue(formatExportValue(row[column.name])))\n      .join",
+          "lineNumber": 52
+        },
+        {
+          "caller": "buildCsvContent",
+          "callee": "columns\n      .map",
+          "lineNumber": 52
+        },
+        {
+          "caller": "buildCsvContent",
+          "callee": "escapeCsvValue",
+          "lineNumber": 53
+        },
+        {
+          "caller": "buildCsvContent",
+          "callee": "formatExportValue",
+          "lineNumber": 53
+        },
+        {
+          "caller": "buildCsvContent",
+          "callee": "[header, ...body].join",
+          "lineNumber": 56
+        },
+        {
+          "caller": "TableFooter",
+          "callee": "useColorMode",
+          "lineNumber": 61
+        },
+        {
+          "caller": "TableFooter",
+          "callee": "useRowEditingStore",
+          "lineNumber": 62
+        },
+        {
+          "caller": "TableFooter",
+          "callee": "useTableData",
+          "lineNumber": 63
+        },
+        {
+          "caller": "TableFooter",
+          "callee": "useState",
+          "lineNumber": 64
+        },
+        {
+          "caller": "TableFooter",
+          "callee": "useState",
+          "lineNumber": 65
+        },
+        {
+          "caller": "TableFooter",
+          "callee": "useState",
+          "lineNumber": 66
+        },
+        {
+          "caller": "TableFooter",
+          "callee": "useCurrentDeviceSelection",
+          "lineNumber": 67
+        },
+        {
+          "caller": "TableFooter",
+          "callee": "useCurrentDatabaseSelection",
+          "lineNumber": 68
+        },
+        {
+          "caller": "TableFooter",
+          "callee": "useState",
+          "lineNumber": 69
+        },
+        {
+          "caller": "TableFooter",
+          "callee": "useState",
+          "lineNumber": 70
+        },
+        {
+          "caller": "TableFooter",
+          "callee": "useEffect",
+          "lineNumber": 73
+        },
+        {
+          "caller": "handlePaginationChanged",
+          "callee": "api.paginationGetCurrentPage",
+          "lineNumber": 77
+        },
+        {
+          "caller": "handlePaginationChanged",
+          "callee": "api.paginationGetPageSize",
+          "lineNumber": 78
+        },
+        {
+          "caller": "handlePaginationChanged",
+          "callee": "api.paginationGetTotalPages",
+          "lineNumber": 79
+        },
+        {
+          "caller": "handlePaginationChanged",
+          "callee": "setCurrentPage",
+          "lineNumber": 81
+        },
+        {
+          "caller": "handlePaginationChanged",
+          "callee": "setPageSize",
+          "lineNumber": 82
+        },
+        {
+          "caller": "handlePaginationChanged",
+          "callee": "setTotalPages",
+          "lineNumber": 83
+        },
+        {
+          "caller": "TableFooter",
+          "callee": "handlePaginationChanged",
+          "lineNumber": 91
+        },
+        {
+          "caller": "TableFooter",
+          "callee": "api.addEventListener",
+          "lineNumber": 94
+        },
+        {
+          "caller": "TableFooter",
+          "callee": "gridRef.current.api.removeEventListener",
+          "lineNumber": 98
+        },
+        {
+          "caller": "TableFooter",
+          "callee": "useCallback",
+          "lineNumber": 104
+        },
+        {
+          "caller": "TableFooter",
+          "callee": "onPageSizeChange",
+          "lineNumber": 106
+        },
+        {
+          "caller": "TableFooter",
+          "callee": "useCallback",
+          "lineNumber": 110
+        },
+        {
+          "caller": "TableFooter",
+          "callee": "gridRef.current.api.paginationGoToPage",
+          "lineNumber": 112
+        },
+        {
+          "caller": "TableFooter",
+          "callee": "useClearTableMutation",
+          "lineNumber": 117
+        },
+        {
+          "caller": "TableFooter",
+          "callee": "useCallback",
+          "lineNumber": 119
+        },
+        {
+          "caller": "TableFooter",
+          "callee": "setIsLoading",
+          "lineNumber": 121
+        },
+        {
+          "caller": "TableFooter",
+          "callee": "api.setFilterModel",
+          "lineNumber": 123
+        },
+        {
+          "caller": "TableFooter",
+          "callee": "api.deselectAll",
+          "lineNumber": 124
+        },
+        {
+          "caller": "TableFooter",
+          "callee": "api.applyColumnState",
+          "lineNumber": 125
+        },
+        {
+          "caller": "TableFooter",
+          "callee": "clearTableMutation.mutateAsync",
+          "lineNumber": 128
+        },
+        {
+          "caller": "TableFooter",
+          "callee": "console.error",
+          "lineNumber": 136
+        },
+        {
+          "caller": "TableFooter",
+          "callee": "setIsLoading",
+          "lineNumber": 139
+        },
+        {
+          "caller": "TableFooter",
+          "callee": "setIsClearTableDialogOpen",
+          "lineNumber": 140
+        },
+        {
+          "caller": "TableFooter",
+          "callee": "useCallback",
+          "lineNumber": 145
+        },
+        {
+          "caller": "TableFooter",
+          "callee": "setIsClearTableDialogOpen",
+          "lineNumber": 146
+        },
+        {
+          "caller": "TableFooter",
+          "callee": "useCallback",
+          "lineNumber": 149
+        },
+        {
+          "caller": "TableFooter",
+          "callee": "toaster.create",
+          "lineNumber": 154
+        },
+        {
+          "caller": "TableFooter",
+          "callee": "(() => {\n          const filteredRows: Record<string, unknown>[] = []\n          gridRef.current.api.forEachNodeAfterFilterAndSort((node) => {\n            if (node.data) {\n              filteredRows.push(node.data)\n            }\n          })\n          return filteredRows\n        })",
+          "lineNumber": 164
+        },
+        {
+          "caller": "TableFooter",
+          "callee": "gridRef.current.api.forEachNodeAfterFilterAndSort",
+          "lineNumber": 166
+        },
+        {
+          "caller": "TableFooter",
+          "callee": "filteredRows.push",
+          "lineNumber": 168
+        },
+        {
+          "caller": "TableFooter",
+          "callee": "buildCsvContent",
+          "lineNumber": 175
+        },
+        {
+          "caller": "TableFooter",
+          "callee": "window.api.exportTextFile",
+          "lineNumber": 178
+        },
+        {
+          "caller": "TableFooter",
+          "callee": "toaster.create",
+          "lineNumber": 193
+        },
+        {
+          "caller": "getDisplayedRowRange",
+          "callee": "Math.min",
+          "lineNumber": 206
+        },
+        {
+          "caller": "TableFooter",
+          "callee": "exportRowsAsCsv",
+          "lineNumber": 260
+        },
+        {
+          "caller": "TableFooter",
+          "callee": "exportRowsAsCsv",
+          "lineNumber": 263
+        },
+        {
+          "caller": "TableFooter",
+          "callee": "pageSize.toString",
+          "lineNumber": 287
+        },
+        {
+          "caller": "TableFooter",
+          "callee": "pageSize.toString",
+          "lineNumber": 287
+        },
+        {
+          "caller": "TableFooter",
+          "callee": "handlePageSizeChange",
+          "lineNumber": 288
+        },
+        {
+          "caller": "TableFooter",
+          "callee": "Number",
+          "lineNumber": 288
+        },
+        {
+          "caller": "TableFooter",
+          "callee": "handlePageChange",
+          "lineNumber": 301
+        },
+        {
+          "caller": "TableFooter",
+          "callee": "getDisplayedRowRange",
+          "lineNumber": 309
+        },
+        {
+          "caller": "TableFooter",
+          "callee": "handlePageChange",
+          "lineNumber": 316
+        },
+        {
+          "caller": "TableFooter",
+          "callee": "setIsClearTableDialogOpen",
+          "lineNumber": 336
+        }
+      ],
+      "metrics": {
+        "importCount": 10,
+        "exportCount": 1,
+        "functionCount": 4,
+        "classCount": 0
+      }
+    }
+  ]
+}

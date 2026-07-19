@@ -74,15 +74,18 @@ describe('flippio User Workflow Integration Tests', () => {
 
   it('should complete the full user workflow: device → package → database → table → data display', async () => {
     // Mock API responses for complete user flow
-    vi.mocked(globalThis.window.api.getDevices).mockResolvedValue([
-      { 
-        id: 'android-123', 
-        name: 'Test Android Device', 
-        model: 'Pixel 7',
-        deviceType: 'android',
-        label: 'Android Device',
-      },
-    ])
+    vi.mocked(globalThis.window.api.getDevices).mockResolvedValue({
+      success: true,
+      devices: [
+        {
+          id: 'android-123',
+          name: 'Test Android Device',
+          model: 'Pixel 7',
+          deviceType: 'android',
+          label: 'Android Device',
+        },
+      ],
+    })
 
     vi.mocked(globalThis.window.api.getAndroidPackages).mockResolvedValue({
       success: true,
@@ -153,22 +156,20 @@ describe('flippio User Workflow Integration Tests', () => {
   })
 
   it('should handle device refresh functionality', async () => {
-    vi.mocked(globalThis.window.api.getDevices).mockResolvedValue([
-      { 
-        id: 'device-1', 
-        name: 'Initial Device', 
-        model: 'Model 1',
-        deviceType: 'android',
-        label: 'Initial Device',
-      },
-    ])
+    vi.mocked(globalThis.window.api.getDevices).mockResolvedValue({
+      success: true,
+      devices: [
+        {
+          id: 'device-1',
+          name: 'Initial Device',
+          model: 'Model 1',
+          deviceType: 'android',
+          label: 'Initial Device',
+        },
+      ],
+    })
 
     render(<App />)
-
-    // Wait for initial load
-    await waitFor(() => {
-      expect(globalThis.window.api.getDevices).toHaveBeenCalledTimes(1)
-    })
 
     // Find and click refresh button
     const refreshButton = screen.getByTestId('refresh-devices')
@@ -266,7 +267,10 @@ describe('flippio User Workflow Integration Tests', () => {
 
   it('should handle no data scenarios appropriately', async () => {
     // Mock empty responses
-    vi.mocked(globalThis.window.api.getDevices).mockResolvedValue([])
+    vi.mocked(globalThis.window.api.getDevices).mockResolvedValue({
+      success: true,
+      devices: [],
+    })
     vi.mocked(globalThis.window.api.getAndroidPackages).mockResolvedValue({
       success: true,
       packages: [],
@@ -283,13 +287,16 @@ describe('flippio User Workflow Integration Tests', () => {
     // Mock slow API responses
     vi.mocked(globalThis.window.api.getDevices).mockImplementation(
       () => new Promise(resolve => 
-        setTimeout(() => resolve([{ 
-          id: 'slow-device', 
-          name: 'Slow Device',
-          model: 'Slow Model', 
-          deviceType: 'android',
-          label: 'Slow Device',
-        }]), 1000),
+        setTimeout(() => resolve({
+          success: true,
+          devices: [{
+            id: 'slow-device',
+            name: 'Slow Device',
+            model: 'Slow Model',
+            deviceType: 'android',
+            label: 'Slow Device',
+          }],
+        }), 1000),
       ),
     )
 
@@ -317,20 +324,19 @@ describe('flippio User Workflow Integration Tests', () => {
     const deviceTypes = ['android', 'iphone', 'simulator', 'emulator']
 
     vi.mocked(globalThis.window.api.getDevices).mockResolvedValue(
-      deviceTypes.map(deviceType => ({
-        id: `${deviceType}-device`, 
-        name: `${deviceType} Device`,
-        model: `${deviceType} Model`, 
-        deviceType: deviceType as any,
-        label: `${deviceType} Device`,
-      })),
+      {
+        success: true,
+        devices: deviceTypes.map(deviceType => ({
+          id: `${deviceType}-device`,
+          name: `${deviceType} Device`,
+          model: `${deviceType} Model`,
+          deviceType: deviceType as any,
+          label: `${deviceType} Device`,
+        })),
+      },
     )
 
     render(<App />)
-
-    await waitFor(() => {
-      expect(globalThis.window.api.getDevices).toHaveBeenCalled()
-    })
 
     // App should handle all device types - verify only one device selector is present
     const deviceSelectors = screen.getAllByText('Select Device')

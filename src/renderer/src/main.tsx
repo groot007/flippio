@@ -8,6 +8,14 @@ import './frontend-log'
 // Initialize Tauri API (sets up window.api) - must be imported for side effects
 import './tauri-api'
 
+if (import.meta.env.VITE_E2E_MODE === 'true') {
+  void import('@wdio/tauri-plugin')
+}
+
+if (typeof document !== 'undefined') {
+  document.body.dataset.e2eMode = import.meta.env.VITE_E2E_MODE === 'true' ? 'true' : 'false'
+}
+
 if (import.meta.env.PROD && !import.meta.env.VITEST && typeof window !== 'undefined' && typeof document !== 'undefined') {
   Sentry.init({
     dsn: 'https://561d196b910f78c86856522f199f9ef6@o4509048883970048.ingest.de.sentry.io/4509048886132816',
