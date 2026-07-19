@@ -142,15 +142,9 @@ function AppHeader() {
 
     const matchedDevice = devicesList.find(device => device.id === selectedDevice.id)
 
-    // Physical iPhones can briefly disappear from tool output while package
-    // commands are in flight. Keep the current selection until an explicit
-    // manual refresh confirms it is gone.
-    if (!matchedDevice && selectedDevice.deviceType === 'iphone-device') {
-      return
-    }
-
     refreshSelectionGraph(
       {
+        allowMissingSelectedDevice: selectedDevice.deviceType === 'iphone-device',
         selectedDevice,
         matchedDevice,
         preserveDatabaseFile: selectedDatabaseFile?.deviceType === 'desktop',

@@ -175,4 +175,29 @@ describe('selectionSession', () => {
     expect(actions.clearTableData).toHaveBeenCalledTimes(1)
     expect(actions.setSelectedRow).toHaveBeenCalledWith(null)
   })
+
+  it('refreshSelectionGraph can preserve a selected device during passive list flicker', () => {
+    const actions = createActions()
+    const selectedDevice = {
+      id: 'iphone-device-1',
+      name: 'My iPhone',
+      model: 'iPhone',
+      deviceType: 'iphone-device' as const,
+    }
+
+    refreshSelectionGraph(
+      {
+        selectedDevice,
+        matchedDevice: null,
+        allowMissingSelectedDevice: true,
+      },
+      actions,
+    )
+
+    expect(actions.setSelectedDevice).not.toHaveBeenCalled()
+    expect(actions.setSelectedApplication).not.toHaveBeenCalled()
+    expect(actions.setSelectedDatabaseFile).not.toHaveBeenCalled()
+    expect(actions.clearTableData).not.toHaveBeenCalled()
+    expect(actions.setSelectedRow).not.toHaveBeenCalled()
+  })
 })

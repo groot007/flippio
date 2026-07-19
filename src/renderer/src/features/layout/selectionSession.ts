@@ -25,6 +25,7 @@ interface SelectApplicationInput {
 }
 
 interface RefreshSelectionGraphInput {
+  allowMissingSelectedDevice?: boolean
   matchedApplication?: ApplicationSelection | null
   matchedDatabaseFile?: DatabaseFile | null
   matchedDevice?: DeviceInfo | null
@@ -110,6 +111,7 @@ export function selectTable({ actions, table }: SelectTableInput) {
 
 export function refreshSelectionGraph(
   {
+    allowMissingSelectedDevice = false,
     matchedApplication,
     matchedDatabaseFile,
     matchedDevice,
@@ -121,6 +123,10 @@ export function refreshSelectionGraph(
   actions: SelectionSessionActions,
 ) {
   if (typeof matchedDevice !== 'undefined') {
+    if (selectedDevice && !matchedDevice && allowMissingSelectedDevice) {
+      return
+    }
+
     if (selectedDevice && !matchedDevice) {
       actions.setSelectedDevice(null)
       actions.setSelectedApplication(null)
