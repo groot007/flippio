@@ -60,6 +60,10 @@ If any of the above are missing, do not force this skill. Fall back to normal di
 
 - verify the required checks actually ran
 - if a required check was skipped, run it before review
+- run unit, lint, and other non-E2E checks first
+- if those checks pass, run the required E2E coverage before review
+- if unit or lint checks fail, do not continue to E2E or commit
+- if E2E fails, stop the slice and report the failure instead of moving to commit
 - record pass or fail for each command
 
 ### 4. Review Gate
@@ -79,13 +83,15 @@ If any of the above are missing, do not force this skill. Fall back to normal di
 
 ### 6. Commit Handoff
 
-- if review is `acceptable` or `acceptable with follow-ups`, invoke `structured-commit`
+- if review is `acceptable` or `acceptable with follow-ups`, and required E2E checks passed, invoke `structured-commit`
+- when the user has already explicitly asked for a commit after successful checks, use `structured-commit` to prepare the scope and then perform the commit in the same run
+- if required E2E coverage did not pass, do not prepare or perform the commit
 - prepare the commit handoff before any next-iteration question
 - do not proceed to the next slice automatically
 
 `iteration-implementer` owns the routing after review:
 
-- accepted -> structured commit handoff, then wait for user decision
+- accepted + E2E passed -> structured commit handoff, then wait for user decision unless the user already explicitly requested immediate commit on success
 - not acceptable on first try -> one retry
 - not acceptable on second try -> stop and ask the user
 
@@ -115,8 +121,10 @@ Return:
 2. checklist items completed
 3. checks run
 4. clean-context review verdict
-5. structured commit handoff or blocking findings
-6. final state:
+5. E2E status
+6. structured commit handoff, commit result, or blocking findings
+7. final state:
    - ready for commit decision
+   - committed after successful checks
    - needs one retry
    - stopped and waiting for user input
