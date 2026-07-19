@@ -8,6 +8,8 @@ use sqlx::{sqlite::SqlitePool, Column, Row, TypeInfo, ValueRef};
 use std::collections::HashMap;
 use tauri::State;
 
+const FLIPPIO_ROWID_COLUMN: &str = "__flippio_rowid";
+
 #[tauri::command]
 pub async fn db_open(
     state: State<'_, DbPool>,
@@ -188,19 +190,34 @@ pub async fn db_get_table_data(
         })
         .collect();
 
-    let data_query = format!("SELECT * FROM {}", table_name);
-    let data_rows = match sqlx::query(&data_query).fetch_all(&pool).await {
+    let data_query_with_rowid = format!("SELECT rowid AS {}, * FROM {}", FLIPPIO_ROWID_COLUMN, table_name);
+    let data_query_without_rowid = format!("SELECT * FROM {}", table_name);
+    let data_rows = match sqlx::query(&data_query_with_rowid).fetch_all(&pool).await {
         Ok(rows) => {
-            log::info!("✅ Retrieved {} rows from table '{}'", rows.len(), table_name);
+            log::info!("✅ Retrieved {} rows from table '{}' with rowid metadata", rows.len(), table_name);
             rows
         }
-        Err(e) => {
-            log::error!("❌ Error getting table data for '{}': {}", table_name, e);
-            return Ok(DbResponse {
-                success: false,
-                data: None,
-                error: Some(format!("Error getting table data: {}", e)),
-            });
+        Err(rowid_error) => {
+            log::warn!(
+                "⚠️ Failed to read rowid metadata for table '{}', falling back to plain SELECT: {}",
+                table_name,
+                rowid_error
+            );
+
+            match sqlx::query(&data_query_without_rowid).fetch_all(&pool).await {
+                Ok(rows) => {
+                    log::info!("✅ Retrieved {} rows from table '{}'", rows.len(), table_name);
+                    rows
+                }
+                Err(e) => {
+                    log::error!("❌ Error getting table data for '{}': {}", table_name, e);
+                    return Ok(DbResponse {
+                        success: false,
+                        data: None,
+                        error: Some(format!("Error getting table data: {}", e)),
+                    });
+                }
+            }
         }
     };
 

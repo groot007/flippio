@@ -292,6 +292,30 @@ Suggested direction:
 - define explicit resets and reconciliation rules
 - keep device mode differences explicit
 
+Status checklist on July 19, 2026:
+
+Done:
+
+- [x] Move desktop custom-file transition reset policy behind `selectionSession`
+- [x] Move the passive iPhone list-flicker preserve rule behind `selectionSession`
+- [x] Make `selectionSession` report selection-clear outcomes during refresh reconciliation
+- [x] Move selection identity matching behind `selectionSession`
+- [x] Move drag-and-drop desktop file entry onto the shared selection session path
+- [x] Add a shared session-state hook for header-level workflow reads
+- [x] Introduce the first explicit selection session reducer/event model behind existing helpers
+- [x] Make desktop versus device workflow mode explicit in shared session state
+- [x] Move passive `AppHeader` device and app reconciliation behind shared `selectionSession` helpers
+- [x] Move `AppHeader` manual refresh reconciliation steps behind shared `selectionSession` helpers
+- [x] Move passive `SubHeader` database and table reconciliation behind shared `selectionSession` helpers
+- [x] Add unit coverage for entering desktop mode and new session reconciliation helpers
+
+Left:
+
+- [x] Move active `SubHeader` refresh and active-file resolution policy behind shared `selectionSession` helpers
+- [x] Reduce remaining top-level component-owned workflow effects in `AppHeader.tsx` and `SubHeader.tsx`
+- [x] Define a cleaner single read/write boundary between `selectionSession` and the underlying Zustand stores
+- [x] Remove leftover duplicated selection/reset logic after the session boundary is complete
+
 ### 2. Move Component Logic Behind That Session
 
 After the session model exists:

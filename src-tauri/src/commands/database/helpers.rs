@@ -1,6 +1,7 @@
 // Database helpers - exact copy from original database.rs
 // Database helpers with safe default value generation
 
+use rusqlite::Connection;
 use std::fs;
 use std::path::Path;
 
@@ -43,6 +44,35 @@ pub fn reset_sqlite_wal_mode(db_path: &str) -> Result<(), String> {
         }
     }
     
+    Ok(())
+}
+
+pub fn prepare_sqlite_file_for_sync(db_path: &str) -> Result<(), String> {
+    let path = Path::new(db_path);
+    if !path.exists() {
+        return Err(format!("Database file does not exist: {}", db_path));
+    }
+
+    let connection = Connection::open(path)
+        .map_err(|e| format!("Failed to open database for sync preparation: {}", e))?;
+
+    connection
+        .busy_timeout(std::time::Duration::from_secs(5))
+        .map_err(|e| format!("Failed to set SQLite busy timeout: {}", e))?;
+
+    connection
+        .execute_batch(
+            "
+            PRAGMA journal_mode=DELETE;
+            PRAGMA wal_checkpoint(TRUNCATE);
+            PRAGMA optimize;
+            ",
+        )
+        .map_err(|e| format!("Failed to checkpoint SQLite file before sync: {}", e))?;
+
+    drop(connection);
+
+    reset_sqlite_wal_mode(db_path)?;
     Ok(())
 }
 
@@ -255,6 +285,31 @@ mod tests {
     fn test_get_default_value_for_type_boolean() {
         let result = get_default_value_for_type("BOOLEAN");
         assert_eq!(result, serde_json::Value::Bool(false));
+    }
+
+    #[test]
+    fn test_prepare_sqlite_file_for_sync() {
+        let temp_dir = TempDir::new().unwrap();
+        let db_path = temp_dir.path().join("sync.db");
+
+        let connection = Connection::open(&db_path).unwrap();
+        connection.pragma_update(None, "journal_mode", "WAL").unwrap();
+        connection
+            .execute("CREATE TABLE items (id INTEGER PRIMARY KEY, title TEXT NOT NULL)", [])
+            .unwrap();
+        connection
+            .execute("INSERT INTO items (title) VALUES ('hello')", [])
+            .unwrap();
+        drop(connection);
+
+        let result = prepare_sqlite_file_for_sync(db_path.to_str().unwrap());
+        assert!(result.is_ok());
+
+        let reopened = Connection::open(&db_path).unwrap();
+        let count: i64 = reopened
+            .query_row("SELECT COUNT(*) FROM items", [], |row| row.get(0))
+            .unwrap();
+        assert_eq!(count, 1);
     }
 
     #[test]

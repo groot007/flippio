@@ -20,6 +20,12 @@ declare global {
         timestamp: string
       }>
       getScenarioState: () => unknown
+      getSelectionState: () => {
+        selectedApplication: unknown
+        selectedDatabaseFile: unknown
+        selectedDatabaseTable: unknown
+        selectedDevice: unknown
+      }
       loadScenario: (scenario: unknown) => void
       emitTauriEvent: (eventName: string, payload: unknown) => void
       dropFile?: (path: string) => void

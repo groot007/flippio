@@ -7,15 +7,21 @@ import {
   Text,
 } from '@chakra-ui/react'
 import {
-  clearTableContext,
+  matchSelectedDatabaseFile,
+  matchSelectedDatabaseTable,
+  reconcileActiveDatabaseFile,
+  reconcileSelectionWithDatabaseFiles,
   selectDatabase,
+  selectDesktopDatabase,
   selectTable,
 } from '@renderer/features/layout/selectionSession'
 import { useSelectionSessionActions } from '@renderer/features/layout/useSelectionSessionActions'
+import { useSelectionSessionState } from '@renderer/features/layout/useSelectionSessionState'
+import { useSelectionSessionTableState } from '@renderer/features/layout/useSelectionSessionTableState'
+import { useSubHeaderSelectionEffects } from '@renderer/features/layout/useSubHeaderSelectionEffects'
 import { useDatabaseFiles } from '@renderer/hooks/useDatabaseFiles'
 import { useDatabaseTables } from '@renderer/hooks/useDatabaseTables'
 import { useTableDataQuery } from '@renderer/hooks/useTableDataQuery'
-import { useCurrentDatabaseSelection, useCurrentDeviceSelection, useTableData } from '@renderer/store'
 import { toaster } from '@renderer/ui/toaster'
 import { groupDatabaseFilesByLocation } from '@renderer/utils/databaseFileGrouping'
 import { ensureActiveDatabaseFile } from '@renderer/utils/databaseFileResolver'
@@ -26,53 +32,24 @@ import { LuDatabase, LuFilter, LuFolderOpen, LuRefreshCcw, LuTable, LuUpload, Lu
 import { CustomQueryModal } from '../data/CustomQueryModal'
 import FLSelect from './../common/FLSelect'
 
-function findMatchingDatabaseFile(currentFile, refreshedFiles) {
-  return refreshedFiles.find(file =>
-    (currentFile.remotePath && file.remotePath === currentFile.remotePath)
-    || file.path === currentFile.path
-    || file.filename === currentFile.filename,
-  ) ?? null
-}
-
 export function SubHeader() {
-  const selectedDevice = useCurrentDeviceSelection(state => state.selectedDevice)
-  const selectedApplication = useCurrentDeviceSelection(state => state.selectedApplication)
-  const setSelectedDevice = useCurrentDeviceSelection(state => state.setSelectedDevice)
-  const setSelectedApplication = useCurrentDeviceSelection(state => state.setSelectedApplication)
+  const {
+    isDesktopMode,
+    selectedApplication,
+    selectedDatabaseFile,
+    selectedDatabaseTable,
+    selectedDevice,
+  } = useSelectionSessionState()
   const {
     setTableData,
-    clearTableData,
+    tableData: sessionTableData,
     setIsRefreshingTableData,
-  } = useTableData()
-  const tableDataStore = useTableData()
-  const selectedDatabaseFile = useCurrentDatabaseSelection(state => state.selectedDatabaseFile)
-  const setSelectedDatabaseFile = useCurrentDatabaseSelection(state => state.setSelectedDatabaseFile)
-  const selectedDatabaseTable = useCurrentDatabaseSelection(state => state.selectedDatabaseTable)
-  const setSelectedDatabaseTable = useCurrentDatabaseSelection(state => state.setSelectedDatabaseTable)
+    setSelectedDatabaseFile,
+  } = useSelectionSessionTableState()
   const selectionActions = useSelectionSessionActions()
 
   const [isQueryModalOpen, setIsQueryModalOpen] = useState(false)
-  const [isSettingCustomFile, setIsSettingCustomFile] = useState(false)
   const queryClient = useQueryClient()
-
-  // Handle custom file setting with proper sequencing
-  useEffect(() => {
-    if (isSettingCustomFile && selectedDatabaseFile?.deviceType === 'desktop' && selectedDatabaseFile?.packageName === '') {
-      // Step 1: Custom file has been set, now clear device/application selections
-      console.log('🔧 [SubHeader] Custom file detected, clearing device/application selections')
-      setSelectedDevice(null)
-      setSelectedApplication(null)
-      setSelectedDatabaseTable(null)
-      clearTableData()
-      selectionActions.setSelectedRow(null)
-      
-      // Step 2: Mark custom file setting as complete
-      setTimeout(() => {
-        setIsSettingCustomFile(false)
-        console.log('🔧 [SubHeader] Custom file setup complete')
-      }, 100)
-    }
-  }, [clearTableData, isSettingCustomFile, selectedDatabaseFile, selectionActions, setSelectedApplication, setSelectedDatabaseTable, setSelectedDevice])
 
   const {
     data: databaseFiles = [],
@@ -82,18 +59,18 @@ export function SubHeader() {
     refetch: refetchDatabaseFiles,
   } = useDatabaseFiles(selectedDevice, selectedApplication)
 
-  const { data: tableData, refetch: refetchTable } = useTableDataQuery(selectedDatabaseTable?.name || '')
+  const { data: queriedTableData, refetch: refetchTable } = useTableDataQuery(selectedDatabaseTable?.name || '')
 
   useEffect(() => {
-    if (tableData && !tableDataStore.tableData?.isCustomQuery) {
+    if (queriedTableData && !sessionTableData?.isCustomQuery) {
       setTableData({
-        rows: tableData.rows,
-        columns: tableData.columns,
+        rows: queriedTableData.rows,
+        columns: queriedTableData.columns,
         isCustomQuery: false,
         tableName: selectedDatabaseTable?.name,
       })
     }
-  }, [tableData, selectedDatabaseTable, tableDataStore.tableData?.isCustomQuery])
+  }, [queriedTableData, selectedDatabaseTable, sessionTableData?.isCustomQuery, setTableData])
 
   const isDBPulling = !!selectedApplication?.bundleId && !!selectedDevice?.id && isFirstRoundLoading
 
@@ -145,6 +122,8 @@ export function SubHeader() {
     
     selectDatabase({
       databaseFile: resolvedFile,
+      currentApplication: selectedApplication,
+      currentDevice: selectedDevice,
       actions: selectionActions,
     })
   }, [queryClient, selectedApplication, selectedDevice, selectionActions])
@@ -155,10 +134,13 @@ export function SubHeader() {
       databasePath: selectedDatabaseFile?.path ?? null,
     })
     selectTable({
+      currentApplication: selectedApplication,
+      currentDatabaseFile: selectedDatabaseFile,
+      currentDevice: selectedDevice,
       table,
       actions: selectionActions,
     })
-  }, [selectedDatabaseFile?.path, selectionActions])
+  }, [selectedApplication, selectedDatabaseFile, selectedDevice, selectionActions])
 
   const dbFileOptions = useMemo(() => 
     groupDatabaseFilesByLocation(databaseFiles), [databaseFiles])
@@ -175,12 +157,9 @@ export function SubHeader() {
       return null
     }
 
-    return dbFileOptions
-      .flatMap(group => group.options)
-      .find(file =>
-        file.path === selectedDatabaseFile.path
-        || (selectedDatabaseFile.remotePath && file.remotePath === selectedDatabaseFile.remotePath),
-      ) ?? null
+    const flattenedDatabaseFiles = dbFileOptions.flatMap(group => group.options)
+
+    return matchSelectedDatabaseFile(flattenedDatabaseFiles, selectedDatabaseFile)
   }, [dbFileOptions, selectedDatabaseFile])
 
   const selectedDatabaseTableOption = useMemo(() => {
@@ -188,7 +167,7 @@ export function SubHeader() {
       return null
     }
 
-    return tableOptions.find(table => table.name === selectedDatabaseTable.name) ?? null
+    return matchSelectedDatabaseTable(tableOptions, selectedDatabaseTable)
   }, [selectedDatabaseTable, tableOptions])
 
   // Handler to clear custom query and show default table rows
@@ -196,23 +175,26 @@ export function SubHeader() {
     if (!selectedDatabaseTable) 
       return
     refetchTable()
-    tableDataStore.setTableData({
+    setTableData({
       rows: [],
       columns: [],
       isCustomQuery: false,
       customQuery: '',
       tableName: selectedDatabaseTable.name,
     })
-  }, [selectedDatabaseTable, tableDataStore, refetchTable])
+  }, [refetchTable, selectedDatabaseTable, setTableData])
 
-  useEffect(() => {
-    if (!selectedDatabaseFile?.filename) {
-      clearTableContext({
-        ...selectionActions,
-        setTableData: undefined,
-      })
-    }
-  }, [selectedDatabaseFile, selectionActions])
+  useSubHeaderSelectionEffects({
+    databaseFiles: dbFileOptions,
+    databaseTables: tableOptions,
+    isDatabaseFilesScanning: selectedDevice?.deviceType === 'iphone-device' && (isFirstRoundLoading || isBackgroundScanning),
+    isDesktopMode,
+    selectedApplication,
+    selectedDatabaseFile,
+    selectedDatabaseTable,
+    selectedDevice,
+    selectionActions,
+  })
 
   const onRefreshClick = useCallback(async () => {
     const shouldRefreshCurrentTable = !!selectedDatabaseFile?.path && !!selectedDatabaseTable?.name
@@ -245,10 +227,19 @@ export function SubHeader() {
         }
 
         const refreshedSelectedDatabaseFile = refreshResult.file
-        setSelectedDatabaseFile(refreshedSelectedDatabaseFile)
+        const { activeDatabaseFile } = reconcileActiveDatabaseFile(
+          {
+            databaseFile: refreshedSelectedDatabaseFile,
+            selectedApplication,
+            selectedDatabaseFile,
+            selectedDatabaseTable,
+            selectedDevice,
+          },
+          selectionActions,
+        )
 
         await ensureActiveDatabaseFile({
-          databaseFile: refreshedSelectedDatabaseFile,
+          databaseFile: activeDatabaseFile,
           selectedDevice,
           selectedApplication,
           queryClient,
@@ -295,12 +286,17 @@ export function SubHeader() {
         && selectedApplication?.bundleId
       ) {
         const refreshedFiles = refreshedDatabaseFilesResult?.data ?? []
-        const matchedDatabaseFile = findMatchingDatabaseFile(selectedDatabaseFile, refreshedFiles)
+        const { matchedDatabaseFile } = reconcileSelectionWithDatabaseFiles(
+          {
+            databaseFiles: refreshedFiles,
+            selectedApplication,
+            selectedDatabaseFile,
+            selectedDatabaseTable,
+            selectedDevice,
+          },
+          selectionActions,
+        )
         const activeDatabaseFile = matchedDatabaseFile ?? selectedDatabaseFile
-
-        if (matchedDatabaseFile && matchedDatabaseFile !== selectedDatabaseFile) {
-          setSelectedDatabaseFile(matchedDatabaseFile)
-        }
 
         await ensureActiveDatabaseFile({
           databaseFile: activeDatabaseFile,
@@ -380,25 +376,26 @@ export function SubHeader() {
     window.api.openFile().then((file) => {
       if (!file.canceled && file.filePaths.length) {
         const filePath = file.filePaths[0]
+        const desktopDatabaseFile = {
+          path: filePath,
+          filename: filePath.split('/').pop() || '',
+          deviceType: 'desktop' as const,
+          packageName: '',
+          remotePath: filePath,
+          location: filePath,
+        }
+
         console.info('CriticalPath: custom database file opened', {
           filePath,
         })
 
-        // Set custom file flag and database file
-        setIsSettingCustomFile(true)
-        console.log('🔧 [SubHeader] Setting custom file:', filePath)
-
-        setSelectedDatabaseFile({
-          path: filePath,
-          filename: filePath.split('/').pop() || '',
-          deviceType: 'desktop',
-          packageName: '',
-          remotePath: filePath,
-          location: filePath,
+        selectDesktopDatabase({
+          actions: selectionActions,
+          databaseFile: desktopDatabaseFile,
         })
       }
     })
-  }, [setSelectedDatabaseFile])
+  }, [selectionActions])
 
   const handleExportDB = useCallback(() => {
     if (!selectedDatabaseFile?.path) {
@@ -443,7 +440,7 @@ export function SubHeader() {
     )
   }, [selectedDatabaseFile])
 
-  const isTableSelectDisabled = (!selectedApplication?.bundleId && selectedDatabaseFile?.deviceType !== 'desktop') || !selectedDatabaseFile?.path || isDBPulling
+  const isTableSelectDisabled = (!selectedApplication?.bundleId && !isDesktopMode) || !selectedDatabaseFile?.path || isDBPulling
 
   return (
     <Box
@@ -468,7 +465,7 @@ export function SubHeader() {
         : null}
       <Flex justifyContent="flex-start" alignItems="center">
         <HStack gap={4}>
-          {selectedDatabaseFile?.deviceType === 'desktop'
+          {isDesktopMode
             ? (
                 <Text
                   fontSize="xs"
@@ -558,7 +555,7 @@ export function SubHeader() {
             </Button>
 
             {/* Show clear (times) icon if a custom query is active */}
-            {tableDataStore.tableData?.isCustomQuery && (
+            {sessionTableData?.isCustomQuery && (
               <Button
                 data-testid="clear-sql-button"
                 onClick={handleClearCustomQuery}

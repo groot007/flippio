@@ -1,15 +1,19 @@
 import { Box, Button, HStack, Spinner } from '@chakra-ui/react'
 import { DeviceInfoModal } from '@renderer/components/common/DeviceInfoModal'
 import {
-  refreshSelectionGraph,
+  reconcileSelectionAfterApplicationRefresh,
+  reconcileSelectionAfterDeviceRefresh,
+  reconcileSelectionWithDatabaseFiles,
   selectApplication,
   selectDevice,
 } from '@renderer/features/layout/selectionSession'
+import { useAppHeaderSelectionEffects } from '@renderer/features/layout/useAppHeaderSelectionEffects'
 import { useSelectionSessionActions } from '@renderer/features/layout/useSelectionSessionActions'
+import { useSelectionSessionState } from '@renderer/features/layout/useSelectionSessionState'
 import { fetchApplicationsForDevice, useApplications } from '@renderer/hooks/useApplications'
 import { fetchDatabaseFilesForSelection } from '@renderer/hooks/useDatabaseFiles'
 import { useDevices } from '@renderer/hooks/useDevices'
-import { useCurrentDatabaseSelection, useCurrentDeviceSelection, useRecentlyUsedApps } from '@renderer/store'
+import { useRecentlyUsedApps } from '@renderer/store'
 import { toaster } from '@renderer/ui/toaster'
 import { useQueryClient } from '@tanstack/react-query'
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -22,9 +26,12 @@ import { Settings } from './Settings'
 function AppHeader() {
   const [isVirtualDeviceModalOpen, setIsVirtualDeviceModalOpen] = useState(false)
 
-  const selectedDevice = useCurrentDeviceSelection(state => state.selectedDevice)
-  const selectedApplication = useCurrentDeviceSelection(state => state.selectedApplication)
-  const selectedDatabaseFile = useCurrentDatabaseSelection(state => state.selectedDatabaseFile)
+  const {
+    isDesktopMode,
+    selectedDevice,
+    selectedApplication,
+    selectedDatabaseFile,
+  } = useSelectionSessionState()
   const selectionActions = useSelectionSessionActions()
   
   const { addRecentApp, getRecentAppsForDevice } = useRecentlyUsedApps()
@@ -135,52 +142,17 @@ function AppHeader() {
     }
   }, [isApplicationsError, applicationsError, selectedDevice])
 
-  useEffect(() => {
-    if (!selectedDevice) {
-      return
-    }
-
-    const matchedDevice = devicesList.find(device => device.id === selectedDevice.id)
-
-    // Physical iPhones can briefly disappear from tool output while package
-    // commands are in flight. Keep the current selection until an explicit
-    // manual refresh confirms it is gone.
-    if (!matchedDevice && selectedDevice.deviceType === 'iphone-device') {
-      return
-    }
-
-    refreshSelectionGraph(
-      {
-        selectedDevice,
-        matchedDevice,
-        preserveDatabaseFile: selectedDatabaseFile?.deviceType === 'desktop',
-      },
-      selectionActions,
-    )
-  }, [devicesList, selectedDatabaseFile, selectedDevice, selectionActions])
-
-  useEffect(() => {
-    if (!selectedApplication) {
-      return
-    }
-
-    if (isLoading) {
-      return
-    }
-
-    if (isApplicationsError) {
-      return
-    }
-
-    const matchedApplication = applicationsList.find(app => app.bundleId === selectedApplication.bundleId)
-    refreshSelectionGraph(
-      {
-        selectedApplication,
-        matchedApplication,
-      },
-      selectionActions,
-    )
-  }, [applicationsList, isApplicationsError, isLoading, selectedApplication, selectionActions])
+  useAppHeaderSelectionEffects({
+    applications: applicationsList,
+    devices: devicesList,
+    isApplicationsError,
+    isDesktopMode,
+    isLoadingApplications: isLoading,
+    selectedApplication,
+    selectedDatabaseFile,
+    selectedDevice,
+    selectionActions,
+  })
 
   const handleRefreshDevices = useCallback(async () => {
     try {
@@ -190,20 +162,20 @@ function AppHeader() {
       })
       const devicesResult = await refreshDevices()
       const refreshedDevices = devicesResult.data ?? []
-      const matchedDevice = selectedDevice
-        ? refreshedDevices.find(device => device.id === selectedDevice.id) ?? null
-        : null
 
-      refreshSelectionGraph(
+      const deviceRefresh = reconcileSelectionAfterDeviceRefresh(
         {
+          allowMissingSelectedDevice: selectedDevice?.deviceType === 'iphone-device',
+          devices: refreshedDevices,
+          preserveDatabaseFile: isDesktopMode,
           selectedDevice,
-          matchedDevice,
-          preserveDatabaseFile: selectedDatabaseFile?.deviceType === 'desktop',
+          selectedApplication,
+          selectedDatabaseFile,
         },
         selectionActions,
       )
 
-      if (selectedDevice && !matchedDevice) {
+      if (deviceRefresh.refreshResult.didClearSelectedDevice) {
         toaster.create({
           title: 'Success',
           description: 'Device list refreshed',
@@ -214,47 +186,45 @@ function AppHeader() {
           },
         })
         console.info('CriticalPath: device refresh completed', {
-          deviceId: matchedDevice?.id ?? null,
+          deviceId: deviceRefresh.matchedDevice?.id ?? null,
           bundleId: selectedApplication?.bundleId ?? null,
         })
         return
       }
 
-      if (matchedDevice) {
+      if (deviceRefresh.shouldRefreshApplications && deviceRefresh.matchedDevice) {
         const applications = await queryClient.fetchQuery({
-          queryKey: ['applications', matchedDevice.id, matchedDevice.deviceType],
-          queryFn: () => fetchApplicationsForDevice(matchedDevice),
+          queryKey: ['applications', deviceRefresh.matchedDevice.id, deviceRefresh.matchedDevice.deviceType],
+          queryFn: () => fetchApplicationsForDevice(deviceRefresh.matchedDevice!),
           staleTime: 0,
         })
 
-        if (selectedApplication) {
-          const matchedApplication = applications.find(app => app.bundleId === selectedApplication.bundleId) ?? null
+        const applicationRefresh = reconcileSelectionAfterApplicationRefresh(
+          {
+            applications,
+            selectedDevice: deviceRefresh.matchedDevice,
+            selectedApplication,
+            selectedDatabaseFile,
+          },
+          selectionActions,
+        )
 
-          refreshSelectionGraph(
+        if (applicationRefresh.shouldRefreshDatabaseFiles && applicationRefresh.matchedApplication) {
+          const databaseFiles = await queryClient.fetchQuery({
+            queryKey: ['databaseFiles', deviceRefresh.matchedDevice.id, applicationRefresh.matchedApplication.bundleId],
+            queryFn: () => fetchDatabaseFilesForSelection(deviceRefresh.matchedDevice!, applicationRefresh.matchedApplication!),
+            staleTime: 0,
+          })
+
+          reconcileSelectionWithDatabaseFiles(
             {
-              selectedApplication,
-              matchedApplication,
+              databaseFiles,
+              selectedDevice: deviceRefresh.matchedDevice,
+              selectedApplication: applicationRefresh.matchedApplication,
+              selectedDatabaseFile,
             },
             selectionActions,
           )
-
-          if (matchedApplication && selectedDatabaseFile?.deviceType !== 'desktop' && selectedDatabaseFile) {
-            const databaseFiles = await queryClient.fetchQuery({
-              queryKey: ['databaseFiles', matchedDevice.id, matchedApplication.bundleId],
-              queryFn: () => fetchDatabaseFilesForSelection(matchedDevice, matchedApplication),
-              staleTime: 0,
-            })
-
-            const matchedDatabaseFile = databaseFiles.find(file => file.path === selectedDatabaseFile.path) ?? null
-
-            refreshSelectionGraph(
-              {
-                selectedDatabaseFile,
-                matchedDatabaseFile,
-              },
-              selectionActions,
-            )
-          }
         }
       }
 
@@ -268,7 +238,7 @@ function AppHeader() {
         },
       })
       console.info('CriticalPath: device refresh completed', {
-        deviceId: matchedDevice?.id ?? null,
+        deviceId: deviceRefresh.matchedDevice?.id ?? null,
         bundleId: selectedApplication?.bundleId ?? null,
       })
     }
@@ -287,6 +257,7 @@ function AppHeader() {
   }, [
     queryClient,
     refreshDevices,
+    isDesktopMode,
     selectedApplication,
     selectedDatabaseFile,
     selectedDevice,

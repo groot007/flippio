@@ -14,6 +14,31 @@ use sqlx::{Column, Row, TypeInfo, ValueRef};
 use std::collections::HashMap;
 use tauri::State;
 
+fn bind_json_values<'q>(
+    mut query_builder: sqlx::query::Query<'q, sqlx::Sqlite, sqlx::sqlite::SqliteArguments<'q>>,
+    values: &[serde_json::Value],
+) -> sqlx::query::Query<'q, sqlx::Sqlite, sqlx::sqlite::SqliteArguments<'q>> {
+    for value in values {
+        query_builder = match value {
+            serde_json::Value::String(s) => query_builder.bind(s.clone()),
+            serde_json::Value::Number(n) => {
+                if let Some(int_val) = n.as_i64() {
+                    query_builder.bind(int_val)
+                } else if let Some(float_val) = n.as_f64() {
+                    query_builder.bind(float_val)
+                } else {
+                    query_builder.bind(value.to_string())
+                }
+            }
+            serde_json::Value::Bool(b) => query_builder.bind(*b),
+            serde_json::Value::Null => query_builder.bind(None::<String>),
+            _ => query_builder.bind(value.to_string()),
+        };
+    }
+
+    query_builder
+}
+
 #[tauri::command]
 pub async fn db_update_table_row(
     state: State<'_, DbPool>,
@@ -532,12 +557,68 @@ pub async fn db_add_new_row_with_defaults(
         });
     }
     
-    // Use INSERT with DEFAULT VALUES
-    let query = format!("INSERT INTO {} DEFAULT VALUES", table_name);
+    let pragma_query = format!("PRAGMA table_info({})", table_name);
+    let schema_rows = match sqlx::query(&pragma_query).fetch_all(&pool).await {
+        Ok(rows) => rows,
+        Err(e) => {
+            log::error!("❌ Failed to read schema for INSERT DEFAULT VALUES on '{}': {}", table_name, e);
+            return Ok(DbResponse {
+                success: false,
+                data: None,
+                error: Some(format!("Error reading table schema: {}", e)),
+            });
+        }
+    };
+
+    let mut insert_columns: Vec<String> = Vec::new();
+    let mut insert_values: Vec<serde_json::Value> = Vec::new();
+
+    for row in &schema_rows {
+        let column_name = row.get::<String, _>("name");
+        let column_type = row.get::<String, _>("type");
+        let not_null = row.get::<i64, _>("notnull") != 0;
+        let primary_key = row.get::<i64, _>("pk") != 0;
+        let default_literal = row.try_get::<Option<String>, _>("dflt_value").ok().flatten();
+
+        // Let SQLite handle generated/defaulted primary keys.
+        if primary_key && default_literal.is_none() {
+            continue;
+        }
+
+        // Omit columns that already have a database default so SQLite can apply it.
+        if default_literal.is_some() {
+            continue;
+        }
+
+        // Nullable columns can be omitted and will become NULL.
+        if !not_null {
+            continue;
+        }
+
+        insert_columns.push(column_name);
+        let generated_value = crate::commands::database::helpers::get_default_value_for_type(&column_type);
+        insert_values.push(if generated_value.is_null() {
+            serde_json::Value::String(String::new())
+        } else {
+            generated_value
+        });
+    }
+
+    let query = if insert_columns.is_empty() {
+        format!("INSERT INTO {} DEFAULT VALUES", table_name)
+    } else {
+        let placeholders = vec!["?"; insert_columns.len()].join(", ");
+        format!(
+            "INSERT INTO {} ({}) VALUES ({})",
+            table_name,
+            insert_columns.join(", "),
+            placeholders
+        )
+    };
     
     log::info!("🔧 Executing INSERT DEFAULT VALUES query on database '{}': {}", db_path, query);
     
-    match sqlx::query(&query).execute(&pool).await {
+    match bind_json_values(sqlx::query(&query), &insert_values).execute(&pool).await {
         Ok(result) => {
             let row_id = result.last_insert_rowid();
             log::info!("✅ INSERT DEFAULT VALUES successful on database '{}': new row ID {}", db_path, row_id);
@@ -596,7 +677,7 @@ pub async fn db_add_new_row_with_defaults(
                         log::info!("✅ Fixed permissions, retrying INSERT DEFAULT VALUES operation");
                         
                         // Retry the operation once
-                        match sqlx::query(&query).execute(&pool).await {
+                        match bind_json_values(sqlx::query(&query), &insert_values).execute(&pool).await {
                             Ok(result) => {
                                 let row_id = result.last_insert_rowid();
                                 log::info!("✅ INSERT DEFAULT VALUES retry successful on database '{}': new row ID {}", db_path, row_id);
@@ -644,7 +725,7 @@ pub async fn db_add_new_row_with_defaults(
                                         Ok(()) => {
                                             log::info!("✅ WAL files cleared, attempting final retry");
                                             // Retry the operation once
-                                            match sqlx::query(&query).execute(&pool).await {
+                                            match bind_json_values(sqlx::query(&query), &insert_values).execute(&pool).await {
                                                 Ok(result) => {
                                                     let row_id = result.last_insert_rowid();
                                                     log::info!("✅ INSERT DEFAULT VALUES final retry successful on database '{}': new row ID {}", db_path, row_id);

@@ -62,10 +62,20 @@ async function waitForCommand(command, minimumCount = 1, timeoutMsg = `Command $
 async function buildDebugState() {
   const history = await getCommandHistory()
   const bodyText = await $('body').getText().catch(() => '')
+  const selectionState = await browser.execute(() => {
+    try {
+      const state = window.__FLIPPIO_E2E__?.getSelectionState?.() ?? null
+      return JSON.parse(JSON.stringify(state))
+    }
+    catch {
+      return null
+    }
+  })
 
   return {
     bodyText,
     commandHistory: history.map(entry => entry.command),
+    selectionState,
   }
 }
 
@@ -194,7 +204,18 @@ async function selectNthOptionByKeyboard(testId, optionIndex) {
   const select = $(`[data-testid="${testId}"]`)
   const input = $(`#${testId}`)
 
-  await select.waitForDisplayed({ timeout: DEFAULT_TIMEOUT })
+  try {
+    await select.waitForDisplayed({ timeout: DEFAULT_TIMEOUT })
+  }
+  catch {
+    const debugState = await buildDebugState()
+    throw new Error(
+      `Select "${testId}" did not display before keyboard selection\n`
+      + `History: ${debugState.commandHistory.join(', ')}\n`
+      + `Selection: ${JSON.stringify(debugState.selectionState)}\n`
+      + `Body: ${debugState.bodyText}`,
+    )
+  }
 
   if (await input.isExisting()) {
     await input.click()
@@ -226,13 +247,24 @@ async function emitTauriEvent(eventName, payload) {
 }
 
 async function simulateDroppedFile(path) {
-  await browser.waitUntil(async () => {
-    return browser.execute(() => typeof window.__FLIPPIO_E2E__?.dropFile === 'function')
-  }, {
-    timeout: DEFAULT_TIMEOUT,
-    interval: FAST_INTERVAL,
-    timeoutMsg: 'E2E drop-file hook was not registered',
-  })
+  try {
+    await browser.waitUntil(async () => {
+      return browser.execute(() => typeof window.__FLIPPIO_E2E__?.dropFile === 'function')
+    }, {
+      timeout: DEFAULT_TIMEOUT,
+      interval: FAST_INTERVAL,
+      timeoutMsg: 'E2E drop-file hook was not registered',
+    })
+  }
+  catch {
+    const debugState = await buildDebugState()
+    throw new Error(
+      `E2E drop-file hook was not registered\n`
+      + `History: ${debugState.commandHistory.join(', ')}\n`
+      + `Selection: ${JSON.stringify(debugState.selectionState)}\n`
+      + `Body: ${debugState.bodyText}`,
+    )
+  }
 
   await browser.execute((nextPath) => {
     window.__FLIPPIO_E2E__?.dropFile?.(nextPath)
@@ -240,13 +272,24 @@ async function simulateDroppedFile(path) {
 }
 
 async function waitForGridText(text, timeoutMsg = `Grid text "${text}" did not appear`) {
-  await browser.waitUntil(async () => {
-    return (await getGridText()).includes(text)
-  }, {
-    timeout: DEFAULT_TIMEOUT,
-    interval: FAST_INTERVAL,
-    timeoutMsg,
-  })
+  try {
+    await browser.waitUntil(async () => {
+      return (await getGridText()).includes(text)
+    }, {
+      timeout: DEFAULT_TIMEOUT,
+      interval: FAST_INTERVAL,
+      timeoutMsg,
+    })
+  }
+  catch {
+    const debugState = await buildDebugState()
+    throw new Error(
+      `${timeoutMsg}\n`
+      + `History: ${debugState.commandHistory.join(', ')}\n`
+      + `Selection: ${JSON.stringify(debugState.selectionState)}\n`
+      + `Body: ${debugState.bodyText}`,
+    )
+  }
 }
 
 async function getGridText() {
@@ -346,7 +389,13 @@ async function clickActionButton(options) {
     }
   }
 
-  throw new Error(options.timeoutMsg || 'Action button not found')
+  const debugState = await buildDebugState()
+  throw new Error(
+    `${options.timeoutMsg || 'Action button not found'}\n`
+    + `History: ${debugState.commandHistory.join(', ')}\n`
+    + `Selection: ${JSON.stringify(debugState.selectionState)}\n`
+    + `Body: ${debugState.bodyText}`,
+  )
 }
 
 async function clickGridCell(text) {
@@ -404,7 +453,13 @@ async function openHappyPathToGrid() {
   await selectNthOptionByKeyboard('app-select', 1)
   await waitForCommand('adb_get_android_database_files', 1, 'Database file fetch did not complete after selecting app')
   await selectNthOptionByKeyboard('database-file-select', 1)
-  await waitForCommand('db_get_tables', 1, 'Table fetch did not complete after selecting database')
+  try {
+    await waitForCommand('db_get_tables', 1, 'Table fetch did not complete after selecting database')
+  }
+  catch {
+    const debugState = await buildDebugState()
+    throw new Error(`Table fetch did not complete after selecting database\nHistory: ${debugState.commandHistory.join(', ')}\nSelection: ${JSON.stringify(debugState.selectionState)}\nBody: ${debugState.bodyText}`)
+  }
   await selectNthOptionByKeyboard('table-select', 1)
   await waitForCommand('db_get_table_data', 1, 'Table data fetch did not complete after selecting table')
 }

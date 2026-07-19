@@ -26,6 +26,7 @@ beforeAll(() => {
   })
 
   globalThis.window.api = {
+    openDatabase: vi.fn(),
     updateTableRow: vi.fn(),
     pushDatabaseFile: vi.fn(),
   } as any
@@ -80,6 +81,7 @@ vi.mock('@renderer/store', () => ({
       deviceType: 'android',
     },
     selectedDatabaseTable: { name: 'users' },
+    setSelectedDatabaseFile: vi.fn(),
   }),
 }))
 
@@ -92,6 +94,7 @@ vi.mock('@renderer/ui/toaster', () => ({
 describe('rowEditor critical path', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    vi.mocked(globalThis.window.api.openDatabase).mockResolvedValue({ success: true })
     vi.mocked(globalThis.window.api.updateTableRow).mockResolvedValue({ success: true })
     vi.mocked(globalThis.window.api.pushDatabaseFile).mockResolvedValue({ success: true })
   })

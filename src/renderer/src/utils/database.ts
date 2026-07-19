@@ -1,6 +1,4 @@
 export function buildUniqueCondition(cols: any[], rowData: any) {
-  const conditions: string[] = []
-
   // Helper function to escape SQL values
   const escapeValue = (value: any) => {
     if (value === null || value === undefined) {
@@ -16,7 +14,22 @@ export function buildUniqueCondition(cols: any[], rowData: any) {
     return `'${String(value).replace(/'/g, '\'\'')}'`
   }
 
-  // Try to find ID first for more reliable updates
+  if (rowData?.__flippio_rowid !== null && rowData?.__flippio_rowid !== undefined) {
+    return `rowid = ${escapeValue(rowData.__flippio_rowid)}`
+  }
+
+  const primaryKeyColumns = cols.filter((col: any) => col?.pk)
+  if (primaryKeyColumns.length > 0) {
+    return primaryKeyColumns.map((col: any) => {
+      const value = rowData[col.name]
+      if (value === null || value === undefined) {
+        return `${col.name} IS NULL`
+      }
+      return `${col.name} = ${escapeValue(value)}`
+    }).join(' AND ')
+  }
+
+  // Try to find ID-like fields next
   const idField = Object.keys(rowData).find(key =>
     key.toLowerCase() === 'id'
     || key.toLowerCase().endsWith('_id'),
@@ -26,26 +39,13 @@ export function buildUniqueCondition(cols: any[], rowData: any) {
     return `${idField} = ${escapeValue(rowData[idField])}`
   }
 
-  // Otherwise use all non-null fields
-  cols.forEach((col: any) => {
+  const conditions = cols.map((col: any) => {
     const value = rowData[col.name]
-    if (value !== null && value !== undefined && value !== '') {
-      conditions.push(`${col.name} = ${escapeValue(value)}`)
+    if (value === null || value === undefined) {
+      return `${col.name} IS NULL`
     }
+    return `${col.name} = ${escapeValue(value)}`
   })
-
-  // If no conditions found, try to use all fields including null ones
-  if (conditions.length === 0) {
-    cols.forEach((col: any) => {
-      const value = rowData[col.name]
-      if (value === null || value === undefined) {
-        conditions.push(`${col.name} IS NULL`)
-      }
-      else {
-        conditions.push(`${col.name} = ${escapeValue(value)}`)
-      }
-    })
-  }
 
   return conditions.join(' AND ')
 }

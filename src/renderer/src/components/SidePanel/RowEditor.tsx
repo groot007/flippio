@@ -5,6 +5,7 @@ import { useCurrentDatabaseSelection, useCurrentDeviceSelection, useTableData } 
 import { useRowEditingStore } from '@renderer/store/useRowEditingStore'
 import { toaster } from '@renderer/ui/toaster'
 import { buildUniqueCondition } from '@renderer/utils'
+import { ensureActiveDatabaseFile } from '@renderer/utils/databaseFileResolver'
 import { validateRowData } from '@renderer/utils/typeValidation'
 import { useCallback } from 'react'
 import { LuPencil, LuSave } from 'react-icons/lu'
@@ -30,7 +31,7 @@ export const RowEditor: React.FC<RowEditorProps> = ({
   const tableData = useTableData(state => state.tableData)
   const isRefreshingTableData = useTableData(state => state.isRefreshingTableData)
   const { selectedDevice, selectedApplication } = useCurrentDeviceSelection()
-  const { selectedDatabaseFile, selectedDatabaseTable } = useCurrentDatabaseSelection()
+  const { selectedDatabaseFile, selectedDatabaseTable, setSelectedDatabaseFile } = useCurrentDatabaseSelection()
   const { refetch: refetchTable } = useTableDataQuery(selectedDatabaseTable?.name || '')
   const { refreshChangeHistory } = useChangeHistoryRefresh()
   const isBusy = isLoading || isRefreshingTableData
@@ -83,12 +84,21 @@ export const RowEditor: React.FC<RowEditorProps> = ({
         selectedRow?.originalData || selectedRow?.rowData,
       )
 
+      const resolvedDatabaseFile = selectedDatabaseFile
+        ? await ensureActiveDatabaseFile({
+            databaseFile: selectedDatabaseFile,
+            selectedDevice,
+            selectedApplication,
+            setSelectedDatabaseFile,
+          })
+        : selectedDatabaseFile
+
       // Use validated and converted data
       const result = await window.api.updateTableRow(
         selectedDatabaseTable?.name || '',
         validation.convertedData || editedData,
         condition,
-        selectedDatabaseFile?.path,
+        resolvedDatabaseFile?.path,
         selectedDevice?.id,
         selectedDevice?.name,
         selectedDevice?.deviceType,
@@ -105,16 +115,16 @@ export const RowEditor: React.FC<RowEditorProps> = ({
       let pushError = ''
       
       if (
-        selectedDatabaseFile
+        resolvedDatabaseFile
         && selectedDevice
-        && selectedDatabaseFile.packageName
+        && resolvedDatabaseFile.packageName
       ) {
         const pushResult = await window.api.pushDatabaseFile(
           selectedDevice.id,
-          selectedDatabaseFile.path,
-          selectedDatabaseFile.packageName,
-          selectedDatabaseFile.remotePath || selectedDatabaseFile.path,
-          selectedDatabaseFile.deviceType,
+          resolvedDatabaseFile.path,
+          resolvedDatabaseFile.packageName,
+          resolvedDatabaseFile.remotePath || resolvedDatabaseFile.path,
+          resolvedDatabaseFile.deviceType,
         )
         
         if (!pushResult.success) {
@@ -169,7 +179,7 @@ export const RowEditor: React.FC<RowEditorProps> = ({
     finally {
       setIsLoading(false)
     }
-  }, [selectedRow, selectedDatabaseTable, editedData, tableData?.columns, setSelectedRow, setIsEditing, setIsLoading, cancelEditing])
+  }, [selectedRow, selectedDatabaseTable, editedData, tableData?.columns, setSelectedRow, setIsEditing, setIsLoading, cancelEditing, selectedDatabaseFile, selectedDevice, selectedApplication, setSelectedDatabaseFile])
 
   return (
     <>

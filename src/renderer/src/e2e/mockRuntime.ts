@@ -297,6 +297,10 @@ export function installE2EController() {
     },
     getCommandHistory: () => cloneValue(runtimeState.commandHistory),
     getScenarioState: () => cloneValue(runtimeState.scenario),
+    getSelectionState: () => cloneValue({
+      ...useCurrentDeviceSelection.getState(),
+      ...useCurrentDatabaseSelection.getState(),
+    }),
     emitTauriEvent: (eventName: string, payload: unknown) => {
       emitE2EEvent(eventName, payload)
     },

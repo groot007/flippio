@@ -14,9 +14,11 @@ import { useColorScheme } from '@/hooks/useColorScheme'
 import {
   addItem,
   buildRandomItemPayload,
+  createManagedDatabase,
   deleteItem,
   getDatabaseFixtures,
   getItems,
+  removeDatabaseFixture,
 } from '@/utils/database'
 import { ThemedText } from './ThemedText'
 import { ThemedView } from './ThemedView'
@@ -33,8 +35,10 @@ interface DatabaseItemsProps {
 export function DatabaseItems({ style }: DatabaseItemsProps) {
   const [databaseSections, setDatabaseSections] = useState<DatabaseSection[]>([])
   const [addingPath, setAddingPath] = useState<string | null>(null)
+  const [creatingDatabase, setCreatingDatabase] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [removingDatabasePath, setRemovingDatabasePath] = useState<string | null>(null)
   const colorScheme = useColorScheme()
   const isDark = colorScheme === 'dark'
   const palette = isDark
@@ -67,7 +71,7 @@ export function DatabaseItems({ style }: DatabaseItemsProps) {
 
   const fetchDatabaseSections = useCallback(async () => {
     try {
-      const fixtures = getDatabaseFixtures()
+      const fixtures = await getDatabaseFixtures()
       const sections = await Promise.all(
         fixtures.map(async fixture => ({
           fixture,
@@ -97,6 +101,21 @@ export function DatabaseItems({ style }: DatabaseItemsProps) {
     }
   }
 
+  const handleAddDatabase = async () => {
+    try {
+      setCreatingDatabase(true)
+      await createManagedDatabase()
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
+      await fetchDatabaseSections()
+    }
+    catch (error) {
+      console.error('Error creating database:', error)
+    }
+    finally {
+      setCreatingDatabase(false)
+    }
+  }
+
   const handleAddRandomRow = async (fixture: DatabaseFixture) => {
     try {
       setAddingPath(fixture.path)
@@ -116,6 +135,21 @@ export function DatabaseItems({ style }: DatabaseItemsProps) {
     }
     finally {
       setAddingPath(null)
+    }
+  }
+
+  const handleRemoveDatabase = async (fixture: DatabaseFixture) => {
+    try {
+      setRemovingDatabasePath(fixture.path)
+      await removeDatabaseFixture(fixture)
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
+      await fetchDatabaseSections()
+    }
+    catch (error) {
+      console.error('Error removing database:', error)
+    }
+    finally {
+      setRemovingDatabasePath(null)
     }
   }
 
@@ -306,6 +340,67 @@ export function DatabaseItems({ style }: DatabaseItemsProps) {
     )
   }
 
+  const AddDatabaseButton = () => (
+    <Pressable
+      style={({ pressed }) => [
+        styles.refreshButton,
+        {
+          opacity: pressed || creatingDatabase ? 0.86 : 1,
+          backgroundColor: creatingDatabase ? palette.buttonMuted : palette.button,
+        },
+      ]}
+      onPress={() => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
+        handleAddDatabase()
+      }}
+      disabled={creatingDatabase}
+    >
+      <View style={styles.refreshContent}>
+        {creatingDatabase
+          ? <ActivityIndicator color={palette.buttonText} />
+          : <FontAwesome name="database" size={18} color={palette.buttonText} />}
+        <ThemedText style={[styles.refreshLabel, { color: palette.buttonText }]}>
+          Add database
+        </ThemedText>
+      </View>
+    </Pressable>
+  )
+
+  const RemoveDatabaseButton = ({ fixture }: { fixture: DatabaseFixture }) => {
+    const isRemoving = removingDatabasePath === fixture.path
+
+    if (!fixture.removable) {
+      return null
+    }
+
+    return (
+      <Pressable
+        style={({ pressed }) => [
+          styles.removeDatabaseButton,
+          {
+            opacity: pressed || isRemoving ? 0.72 : 1,
+            borderColor: palette.danger,
+            backgroundColor: isRemoving ? palette.cardSoft : 'transparent',
+          },
+        ]}
+        onPress={() => {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
+          handleRemoveDatabase(fixture)
+        }}
+        disabled={isRemoving}
+      >
+        <View style={styles.removeDatabaseButtonContent}>
+          {isRemoving
+            ? <ActivityIndicator size="small" color={palette.danger} />
+            : <FontAwesome name="trash" size={16} color={palette.danger} />}
+          <ThemedText style={[styles.removeDatabaseButtonLabel, { color: palette.danger }]}>
+            Remove database
+          </ThemedText>
+        </View>
+      </Pressable>
+    )
+  }
+
   return (
     <ThemedView style={[styles.container, style, { backgroundColor: palette.screen }]}>
       {loading
@@ -374,6 +469,7 @@ export function DatabaseItems({ style }: DatabaseItemsProps) {
 
                     <View style={styles.sectionActions}>
                       <AddRandomRowButton fixture={fixture} />
+                      <RemoveDatabaseButton fixture={fixture} />
                     </View>
 
                     {items.length === 0
@@ -419,6 +515,7 @@ export function DatabaseItems({ style }: DatabaseItemsProps) {
             )}
 
       <View style={styles.refreshButtonWrap}>
+        <AddDatabaseButton />
         <RefreshButton />
       </View>
     </ThemedView>
@@ -484,11 +581,15 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   sectionActions: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
     marginBottom: 14,
   },
   addButton: {
     minHeight: 44,
     borderRadius: 14,
+    paddingHorizontal: 16,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -582,6 +683,7 @@ const styles = StyleSheet.create({
     left: 20,
     right: 20,
     bottom: 20,
+    gap: 12,
   },
   refreshButton: {
     minHeight: 58,
@@ -600,6 +702,23 @@ const styles = StyleSheet.create({
   },
   refreshLabel: {
     fontSize: 16,
+    fontWeight: '700',
+  },
+  removeDatabaseButton: {
+    minHeight: 44,
+    borderRadius: 14,
+    paddingHorizontal: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+  },
+  removeDatabaseButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  removeDatabaseButtonLabel: {
+    fontSize: 14,
     fontWeight: '700',
   },
   loadingText: {

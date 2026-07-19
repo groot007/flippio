@@ -5,6 +5,7 @@
 
 use super::super::types::{DeviceResponse, DatabaseFile};
 use super::super::helpers::clean_temp_dir;
+use crate::commands::database::helpers::prepare_sqlite_file_for_sync;
 use super::file_utils::{pull_ios_db_file, IosAppAccessType};
 use super::tools::get_tool_command_legacy;
 use serde::Serialize;
@@ -816,6 +817,15 @@ pub async fn device_push_ios_database_file(
         });
     }
     info!("✅ Local file exists");
+
+    if let Err(e) = prepare_sqlite_file_for_sync(&local_path) {
+        error!("❌ Failed to prepare SQLite file for sync: {}", e);
+        return Ok(DeviceResponse {
+            success: false,
+            data: None,
+            error: Some(format!("Failed to prepare SQLite file for sync: {}", e)),
+        });
+    }
     
     info!("Step 3: Validating local file content");
     // Validate that the local file is not empty and appears to be a SQLite file

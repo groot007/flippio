@@ -42,6 +42,10 @@ export function useDeleteRowMutation() {
         throw new Error(result.error || 'Failed to delete row')
       }
 
+      if ((result.data ?? result.result ?? 0) === 0) {
+        throw new Error('Delete matched 0 rows')
+      }
+
       return { selectedDatabaseFile: context.selectedDatabaseFile, selectedDatabaseTable }
     },
     successMessage: 'Row deleted',

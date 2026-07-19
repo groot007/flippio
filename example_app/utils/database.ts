@@ -22,6 +22,7 @@ export interface DatabaseFixture {
   description: string
   directory?: string
   path: string
+  removable?: boolean
 }
 
 interface RandomRowPayload {
@@ -255,6 +256,18 @@ function buildDatabasePath(databaseName: string, directory?: string) {
   return `${normalizedDirectory}${databaseName}`
 }
 
+function toFileSystemLocation(path: string) {
+  if (/^[a-zA-Z][a-zA-Z\d+.-]*:/.test(path)) {
+    return path
+  }
+
+  if (path.startsWith('/')) {
+    return `file://${path}`
+  }
+
+  return path
+}
+
 function getDefaultDatabaseFixture(): DatabaseFixture {
   return {
     databaseName: DATABASE_NAME,
@@ -322,7 +335,36 @@ function getIosFixtureDirectories() {
   return fixtures
 }
 
-export function getDatabaseFixtures(): DatabaseFixture[] {
+async function listManagedDatabaseFixtures(): Promise<DatabaseFixture[]> {
+  const directory = SQLite.defaultDatabaseDirectory
+
+  if (!directory) {
+    return []
+  }
+
+  try {
+    const entries = await FileSystem.readDirectoryAsync(toFileSystemLocation(directory))
+    const databaseNames = entries
+      .filter(name => name.endsWith('.db'))
+      .filter(name => name !== DATABASE_NAME)
+      .filter(name => name === 'Flip your DB.db' || /^Flip\.io \d+\.db$/.test(name))
+      .sort((left, right) => left.localeCompare(right, undefined, { numeric: true }))
+
+    return databaseNames.map(databaseName => ({
+      databaseName,
+      description: 'User-managed test database',
+      directory,
+      path: buildDatabasePath(databaseName, directory),
+      removable: true,
+    }))
+  }
+  catch (error) {
+    console.error('Error listing managed databases:', error)
+    return []
+  }
+}
+
+function getStaticDatabaseFixtures(): DatabaseFixture[] {
   const fixtures = [getDefaultDatabaseFixture()]
 
   if (Platform.OS === 'ios') {
@@ -343,13 +385,61 @@ export function getDatabaseFixtures(): DatabaseFixture[] {
   return fixtures
 }
 
+export async function getDatabaseFixtures(): Promise<DatabaseFixture[]> {
+  const fixtures = getStaticDatabaseFixtures()
+  const managedFixtures = await listManagedDatabaseFixtures()
+
+  return [...fixtures, ...managedFixtures]
+}
+
+async function createEmptyDatabaseFixture(databaseName: string) {
+  const db = await openDatabase(databaseName, SQLite.defaultDatabaseDirectory)
+  await ensureSchema(db)
+  await db.closeAsync()
+}
+
+export async function createManagedDatabase() {
+  const fixtures = await listManagedDatabaseFixtures()
+  const existingNames = new Set(fixtures.map(fixture => fixture.databaseName))
+
+  let databaseName = 'Flip your DB.db'
+
+  if (existingNames.has(databaseName)) {
+    let index = 2
+    while (existingNames.has(`Flip.io ${index}.db`)) {
+      index += 1
+    }
+
+    databaseName = `Flip.io ${index}.db`
+  }
+
+  await createEmptyDatabaseFixture(databaseName)
+
+  return {
+    databaseName,
+    path: buildDatabasePath(databaseName, SQLite.defaultDatabaseDirectory),
+  }
+}
+
+export async function removeDatabaseFixture(fixture: DatabaseFixture) {
+  if (!fixture.removable) {
+    throw new Error('Only managed test databases can be removed.')
+  }
+
+  await FileSystem.deleteAsync(toFileSystemLocation(fixture.path), { idempotent: true })
+  await FileSystem.deleteAsync(toFileSystemLocation(`${fixture.path}-wal`), { idempotent: true })
+  await FileSystem.deleteAsync(toFileSystemLocation(`${fixture.path}-shm`), { idempotent: true })
+}
+
 async function initIosFixtureDatabases() {
   if (Platform.OS !== 'ios') {
     return
   }
 
-  const fixtures = getDatabaseFixtures().filter(
+  const fixtures = (await getDatabaseFixtures()).filter(
     fixture => fixture.databaseName !== DATABASE_NAME,
+  ).filter(
+    fixture => !fixture.removable,
   )
 
   for (const fixture of fixtures) {
