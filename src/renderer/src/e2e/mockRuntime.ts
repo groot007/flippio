@@ -105,12 +105,26 @@ function resetEventListeners() {
   eventListeners.clear()
 }
 
+function getStorage(): Storage | null {
+  if (typeof window === 'undefined' || !('localStorage' in window)) {
+    return null
+  }
+
+  try {
+    return window.localStorage ?? null
+  }
+  catch {
+    return null
+  }
+}
+
 function readStoredScenario(): E2EScenario {
-  if (typeof window === 'undefined') {
+  const storage = getStorage()
+  if (!storage) {
     return cloneValue(bootstrapScenario)
   }
 
-  const rawScenario = window.localStorage.getItem(STORAGE_KEY)
+  const rawScenario = storage.getItem(STORAGE_KEY)
   if (!rawScenario) {
     return cloneValue(bootstrapScenario)
   }
@@ -122,17 +136,18 @@ function readStoredScenario(): E2EScenario {
     })
   }
   catch {
-    window.localStorage.removeItem(STORAGE_KEY)
+    storage.removeItem(STORAGE_KEY)
     return cloneValue(bootstrapScenario)
   }
 }
 
 function persistScenario(scenario: E2EScenario) {
-  if (typeof window === 'undefined') {
+  const storage = getStorage()
+  if (!storage) {
     return
   }
 
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(scenario))
+  storage.setItem(STORAGE_KEY, JSON.stringify(scenario))
 }
 
 function getCommandMock(command: string) {
@@ -275,9 +290,7 @@ export function installE2EController() {
     prepareScenario,
     resetScenario: () => {
       runtimeState.scenario = cloneValue(bootstrapScenario)
-      if (typeof window !== 'undefined') {
-        window.localStorage.removeItem(STORAGE_KEY)
-      }
+      getStorage()?.removeItem(STORAGE_KEY)
       resetHistory()
       resetEventListeners()
       resetRendererState()

@@ -226,6 +226,10 @@ async function invokeTauriCommand<T>(tauriCommand: string, parameters?: Record<s
     }
   }
 
+  if (typeof parameters === 'undefined') {
+    return invoke<T>(tauriCommand)
+  }
+
   return invoke<T>(tauriCommand, parameters)
 }
 
