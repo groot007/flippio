@@ -1,6 +1,6 @@
 /* global describe, it */
 
-const { browser, expect } = require('@wdio/globals')
+const { $, browser, expect } = require('@wdio/globals')
 const {
   clickActionButton,
   openHappyPathToGrid,

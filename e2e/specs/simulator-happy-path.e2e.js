@@ -1,6 +1,6 @@
 /* global describe, it */
 
-const { expect } = require('@wdio/globals')
+const { $, expect } = require('@wdio/globals')
 const {
   openSimulatorHappyPathToGrid,
   prepareScenario,

@@ -1,7 +1,7 @@
 interface:
-  display_name: "Clean Context Review"
-  short_description: "Independent clean-context refactor review"
-  default_prompt: "Use $clean-context-review to audit this iteration before we proceed."
+  display_name: Clean Context Review
+  short_description: Independent clean-context refactor review
+  default_prompt: Use $clean-context-review to audit this iteration before we proceed.
 
 policy:
   allow_implicit_invocation: true

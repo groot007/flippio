@@ -397,7 +397,7 @@ async function openHappyPathToGrid() {
   try {
     await waitForCommand('adb_get_packages', 1, 'Package fetch did not complete after selecting device')
   }
-  catch (error) {
+  catch {
     const debugState = await buildDebugState()
     throw new Error(`Package fetch did not complete after selecting device\nHistory: ${debugState.commandHistory.join(', ')}\nBody: ${debugState.bodyText}`)
   }
@@ -422,7 +422,7 @@ async function openIOSHappyPathToGrid(options = {}) {
   try {
     await waitForCommand('device_get_ios_device_packages', 1, 'iPhone app fetch did not complete')
   }
-  catch (error) {
+  catch {
     const debugState = await buildDebugState()
     throw new Error(`iPhone app fetch did not complete\nHistory: ${debugState.commandHistory.join(', ')}\nBody: ${debugState.bodyText}`)
   }

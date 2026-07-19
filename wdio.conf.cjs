@@ -1,3 +1,5 @@
+const process = require('node:process')
+
 const logLevel = process.env.WDIO_LOG_LEVEL || 'error'
 
 exports.config = {
