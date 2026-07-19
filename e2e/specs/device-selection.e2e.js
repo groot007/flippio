@@ -1,6 +1,6 @@
 /* global describe, it */
 
-const { $, expect } = require('@wdio/globals')
+const { $, browser, expect } = require('@wdio/globals')
 const {
   getCommandHistory,
   prepareScenario,
@@ -11,10 +11,16 @@ const {
 const { createAndroidDeviceSelectionScenario } = require('../helpers/scenarios.cjs')
 
 describe('Flippio E2E smoke', () => {
+  async function prepareFreshScenario(scenario) {
+    await prepareScenario(scenario)
+    await browser.refresh()
+    await waitForE2EMode('E2E mode did not reinitialize after refresh')
+  }
+
   it('loads mocked devices and unlocks app selection after selecting a device', async () => {
     await waitForE2EMode('E2E mode did not initialize')
 
-    await prepareScenario(createAndroidDeviceSelectionScenario())
+    await prepareFreshScenario(createAndroidDeviceSelectionScenario())
 
     await expect($('[data-testid="app-shell"]')).toBeExisting()
     await expect($('body')).toHaveAttribute('data-e2e-mode', 'true')

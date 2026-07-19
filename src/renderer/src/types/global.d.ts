@@ -22,6 +22,7 @@ declare global {
       getScenarioState: () => unknown
       loadScenario: (scenario: unknown) => void
       emitTauriEvent: (eventName: string, payload: unknown) => void
+      dropFile?: (path: string) => void
       prepareScenario: (scenario: unknown) => Promise<void>
       resetScenario: () => void
     }

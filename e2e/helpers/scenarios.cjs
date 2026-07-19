@@ -100,6 +100,40 @@ const DENSE_ROWS_110 = Array.from({ length: 110 }, (_, index) => ({
   name: `User ${index + 1}`,
   email: `user${index + 1}@flippio.dev`,
 }))
+const DESKTOP_DB_FILE = {
+  path: '/tmp/flippio/local.db',
+  filename: 'local.db',
+  packageName: '',
+  location: '/tmp/flippio',
+  remotePath: '/tmp/flippio/local.db',
+  deviceType: 'desktop',
+}
+
+const CUSTOM_QUERY_ROWS = [
+  { id: 99, name: 'Query User', email: 'query@flippio.dev' },
+]
+
+const SIMULATOR_DEVICE = {
+  id: 'SIM-0001',
+  name: 'iPhone 15 Simulator',
+  model: 'iPhone 15 Simulator',
+  state: 'Booted',
+  platform: 'ios',
+}
+
+const SIMULATOR_APP = {
+  bundleId: 'com.flippio.simulator',
+  name: 'Simulator Sample',
+}
+
+const SIMULATOR_DB_FILE = {
+  path: '/Users/test/Library/Developer/CoreSimulator/sample.db',
+  filename: 'sample.db',
+  packageName: 'com.flippio.simulator',
+  location: '/Users/test/Library/Developer/CoreSimulator',
+  remotePath: '/Users/test/Library/Developer/CoreSimulator/sample.db',
+  deviceType: 'simulator',
+}
 
 function response(result) {
   return { result }
@@ -451,9 +485,226 @@ function createIOSBulkAddScenario() {
   })
 }
 
+function createDesktopBaseCommands(overrides = {}) {
+  return {
+    adb_get_devices: {
+      default: successData([]),
+    },
+    device_get_ios_devices: {
+      default: successData([]),
+    },
+    get_ios_simulators: {
+      default: successData([]),
+    },
+    dialog_select_file: {
+      default: {
+        result: {
+          canceled: false,
+          file_paths: [DESKTOP_DB_FILE.path],
+        },
+      },
+    },
+    dialog_save_file: {
+      default: {
+        result: '/tmp/flippio/exported-local.db',
+      },
+    },
+    export_text_file: {
+      default: {
+        result: '/tmp/flippio/exported-users.csv',
+      },
+    },
+    db_open: {
+      default: successData(DESKTOP_DB_FILE.path),
+    },
+    db_switch_database: {
+      default: successData(true),
+    },
+    db_get_tables: {
+      default: successData([{ name: 'users' }]),
+    },
+    db_get_table_data: {
+      default: tableDataResult(INITIAL_ROWS),
+    },
+    db_execute_query: {
+      default: successData({
+        columns: TABLE_COLUMNS,
+        rows: CUSTOM_QUERY_ROWS,
+      }),
+    },
+    get_database_change_history: {
+      default: successData([]),
+    },
+    clear_all_change_history: {
+      default: successData(true),
+    },
+    ...clone(overrides),
+  }
+}
+
+function createDesktopScenario(name, overrides = {}) {
+  return {
+    name,
+    strict: true,
+    commands: compactRecord(createDesktopBaseCommands(overrides)),
+  }
+}
+
+function createDesktopOpenScenario() {
+  return createDesktopScenario('desktop-open')
+}
+
+function createDesktopCustomQueryScenario() {
+  return createDesktopScenario('desktop-custom-query')
+}
+
+function createDesktopExportScenario() {
+  return createDesktopScenario('desktop-export')
+}
+
+function createDesktopDragDropScenario() {
+  return createDesktopScenario('desktop-drag-drop', {
+    dialog_select_file: undefined,
+  })
+}
+
+function createSimulatorHappyPathScenario() {
+  return {
+    name: 'simulator-happy-path',
+    strict: true,
+    commands: compactRecord({
+      adb_get_devices: {
+        default: successData([]),
+      },
+      device_get_ios_devices: {
+        default: successData([]),
+      },
+      get_ios_simulators: {
+        default: successData([SIMULATOR_DEVICE]),
+      },
+      device_get_ios_packages: {
+        default: successData([SIMULATOR_APP]),
+      },
+      get_ios_simulator_database_files: {
+        default: successData([SIMULATOR_DB_FILE]),
+      },
+      db_open: {
+        default: successData(SIMULATOR_DB_FILE.path),
+      },
+      db_switch_database: {
+        default: successData(true),
+      },
+      db_get_tables: {
+        default: successData([{ name: 'users' }]),
+      },
+      db_get_table_data: {
+        default: tableDataResult(INITIAL_ROWS),
+      },
+      get_database_change_history: {
+        default: successData([]),
+      },
+    }),
+  }
+}
+
+function createAndroidRefreshPreserveScenario() {
+  return createAndroidScenario('android-refresh-preserve', {
+    adb_get_android_database_files: withQueue(
+      successData([DATABASE_FILE]),
+      [successData([DATABASE_FILE])],
+    ),
+    db_get_tables: withQueue(
+      successData([{ name: 'users' }]),
+      [successData([{ name: 'users' }])],
+    ),
+    db_get_table_data: withQueue(
+      tableDataResult(INITIAL_ROWS),
+      [tableDataResult(INITIAL_ROWS)],
+    ),
+  })
+}
+
+function createAndroidChangeHistoryScenario() {
+  const updateChange = {
+    id: 'change-1',
+    timestamp: '2026-07-19T08:00:00.000Z',
+    contextKey: 'android-context',
+    databasePath: DATABASE_FILE.path,
+    databaseFilename: DATABASE_FILE.filename,
+    tableName: 'users',
+    operationType: 'Update',
+    userContext: {
+      deviceId: DEVICE.id,
+      deviceName: DEVICE.name,
+      deviceType: DEVICE.deviceType,
+      appPackage: APPLICATION.bundleId,
+      appName: APPLICATION.name,
+      sessionId: 'session-1',
+    },
+    changes: [
+      {
+        fieldName: 'name',
+        oldValue: 'Alice',
+        newValue: 'Alicia',
+        dataType: 'TEXT',
+      },
+    ],
+    metadata: {
+      affectedRows: 1,
+      executionTimeMs: 10,
+      pullTimestamp: '2026-07-19T08:00:00.000Z',
+    },
+  }
+
+  return createAndroidScenario('android-change-history', {
+    db_get_table_data: withQueue(
+      tableDataResult(UPDATED_ROWS),
+      [tableDataResult(INITIAL_ROWS)],
+    ),
+    get_database_change_history: {
+      queue: [
+        successData([]),
+        successData([]),
+      ],
+      default: successData([updateChange]),
+    },
+  })
+}
+
+function createIOSDeleteRowScenario() {
+  return createIOSScenario('ios-delete-row', {
+    db_get_table_data: withQueue(
+      tableDataResult(DELETED_ROWS),
+      [
+        tableDataResult(INITIAL_ROWS),
+        tableDataResult(INITIAL_ROWS),
+      ],
+    ),
+    db_delete_table_row: {
+      default: successData(true),
+    },
+  })
+}
+
+function createIOSClearTableScenario() {
+  return createIOSScenario('ios-clear-table', {
+    db_get_table_data: withQueue(
+      tableDataResult(CLEARED_ROWS),
+      [
+        tableDataResult(INITIAL_ROWS),
+        tableDataResult(INITIAL_ROWS),
+      ],
+    ),
+    db_clear_table: {
+      default: successData(true),
+    },
+  })
+}
+
 module.exports = {
   APPLICATION,
   DATABASE_FILE,
+  DESKTOP_DB_FILE,
   DEVICE,
   INITIAL_ROWS,
   IOS_APP_A,
@@ -462,20 +713,31 @@ module.exports = {
   IOS_DB_B,
   IPHONE_DEVICE_A,
   IPHONE_DEVICE_B,
+  SIMULATOR_DB_FILE,
+  SIMULATOR_DEVICE,
   createAndroidAddRowScenario,
+  createAndroidChangeHistoryScenario,
   createAndroidClearTableScenario,
   createAndroidDatabaseFilesFailureScenario,
   createAndroidDeleteRowScenario,
   createAndroidDeviceSelectionScenario,
   createAndroidGridHappyPathScenario,
   createAndroidPackagesFailureScenario,
+  createAndroidRefreshPreserveScenario,
   createAndroidRowUpdateFailureScenario,
   createAndroidRowUpdateScenario,
   createAndroidTableDataFailureScenario,
   createAndroidTablesFailureScenario,
+  createDesktopCustomQueryScenario,
+  createDesktopDragDropScenario,
+  createDesktopExportScenario,
+  createDesktopOpenScenario,
   createIOSAppChangeResetScenario,
   createIOSBulkAddScenario,
+  createIOSClearTableScenario,
+  createIOSDeleteRowScenario,
   createIOSDenseHappyPathScenario,
   createIOSDeviceChangeResetScenario,
   createIOSScanRaceScenario,
+  createSimulatorHappyPathScenario,
 }

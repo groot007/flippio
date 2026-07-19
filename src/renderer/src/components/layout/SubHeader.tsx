@@ -539,6 +539,7 @@ export function SubHeader() {
           <HStack>
             {/* Show SQL button always */}
             <Button
+              data-testid="sql-button"
               onClick={() => setIsQueryModalOpen(true)}
               variant="outline"
               size="sm"
@@ -559,6 +560,7 @@ export function SubHeader() {
             {/* Show clear (times) icon if a custom query is active */}
             {tableDataStore.tableData?.isCustomQuery && (
               <Button
+                data-testid="clear-sql-button"
                 onClick={handleClearCustomQuery}
                 variant="ghost"
                 size="sm"
@@ -580,6 +582,7 @@ export function SubHeader() {
           gap={3}
         >
           <Button
+            data-testid="open-db-button"
             onClick={handleOpenDBFile}
             variant="ghost"
             size="sm"
@@ -595,6 +598,7 @@ export function SubHeader() {
           </Button>
 
           <Button
+            data-testid="export-db-button"
             onClick={handleExportDB}
             variant="outline"
             size="sm"
