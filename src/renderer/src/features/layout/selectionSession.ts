@@ -39,6 +39,11 @@ interface SelectDatabaseInput {
   databaseFile: DatabaseFile | null
 }
 
+interface SelectDesktopDatabaseInput {
+  actions: SelectionSessionActions
+  databaseFile: DatabaseFile
+}
+
 interface SelectDeviceInput {
   actions: SelectionSessionActions
   device: DeviceInfo | null
@@ -78,6 +83,13 @@ export function selectApplication({
 }
 
 export function selectDatabase({ actions, databaseFile }: SelectDatabaseInput) {
+  actions.setSelectedDatabaseFile(databaseFile)
+  clearTableContext(actions)
+}
+
+export function selectDesktopDatabase({ actions, databaseFile }: SelectDesktopDatabaseInput) {
+  actions.setSelectedDevice(null)
+  actions.setSelectedApplication(null)
   actions.setSelectedDatabaseFile(databaseFile)
   clearTableContext(actions)
 }

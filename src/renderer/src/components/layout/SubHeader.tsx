@@ -9,6 +9,7 @@ import {
 import {
   clearTableContext,
   selectDatabase,
+  selectDesktopDatabase,
   selectTable,
 } from '@renderer/features/layout/selectionSession'
 import { useSelectionSessionActions } from '@renderer/features/layout/useSelectionSessionActions'
@@ -37,42 +38,18 @@ function findMatchingDatabaseFile(currentFile, refreshedFiles) {
 export function SubHeader() {
   const selectedDevice = useCurrentDeviceSelection(state => state.selectedDevice)
   const selectedApplication = useCurrentDeviceSelection(state => state.selectedApplication)
-  const setSelectedDevice = useCurrentDeviceSelection(state => state.setSelectedDevice)
-  const setSelectedApplication = useCurrentDeviceSelection(state => state.setSelectedApplication)
   const {
     setTableData,
-    clearTableData,
     setIsRefreshingTableData,
   } = useTableData()
   const tableDataStore = useTableData()
   const selectedDatabaseFile = useCurrentDatabaseSelection(state => state.selectedDatabaseFile)
   const setSelectedDatabaseFile = useCurrentDatabaseSelection(state => state.setSelectedDatabaseFile)
   const selectedDatabaseTable = useCurrentDatabaseSelection(state => state.selectedDatabaseTable)
-  const setSelectedDatabaseTable = useCurrentDatabaseSelection(state => state.setSelectedDatabaseTable)
   const selectionActions = useSelectionSessionActions()
 
   const [isQueryModalOpen, setIsQueryModalOpen] = useState(false)
-  const [isSettingCustomFile, setIsSettingCustomFile] = useState(false)
   const queryClient = useQueryClient()
-
-  // Handle custom file setting with proper sequencing
-  useEffect(() => {
-    if (isSettingCustomFile && selectedDatabaseFile?.deviceType === 'desktop' && selectedDatabaseFile?.packageName === '') {
-      // Step 1: Custom file has been set, now clear device/application selections
-      console.log('🔧 [SubHeader] Custom file detected, clearing device/application selections')
-      setSelectedDevice(null)
-      setSelectedApplication(null)
-      setSelectedDatabaseTable(null)
-      clearTableData()
-      selectionActions.setSelectedRow(null)
-      
-      // Step 2: Mark custom file setting as complete
-      setTimeout(() => {
-        setIsSettingCustomFile(false)
-        console.log('🔧 [SubHeader] Custom file setup complete')
-      }, 100)
-    }
-  }, [clearTableData, isSettingCustomFile, selectedDatabaseFile, selectionActions, setSelectedApplication, setSelectedDatabaseTable, setSelectedDevice])
 
   const {
     data: databaseFiles = [],
@@ -380,25 +357,26 @@ export function SubHeader() {
     window.api.openFile().then((file) => {
       if (!file.canceled && file.filePaths.length) {
         const filePath = file.filePaths[0]
+        const desktopDatabaseFile = {
+          path: filePath,
+          filename: filePath.split('/').pop() || '',
+          deviceType: 'desktop' as const,
+          packageName: '',
+          remotePath: filePath,
+          location: filePath,
+        }
+
         console.info('CriticalPath: custom database file opened', {
           filePath,
         })
 
-        // Set custom file flag and database file
-        setIsSettingCustomFile(true)
-        console.log('🔧 [SubHeader] Setting custom file:', filePath)
-
-        setSelectedDatabaseFile({
-          path: filePath,
-          filename: filePath.split('/').pop() || '',
-          deviceType: 'desktop',
-          packageName: '',
-          remotePath: filePath,
-          location: filePath,
+        selectDesktopDatabase({
+          actions: selectionActions,
+          databaseFile: desktopDatabaseFile,
         })
       }
     })
-  }, [setSelectedDatabaseFile])
+  }, [selectionActions])
 
   const handleExportDB = useCallback(() => {
     if (!selectedDatabaseFile?.path) {

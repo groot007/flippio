@@ -4,6 +4,7 @@ import {
   refreshSelectionGraph,
   selectApplication,
   selectDatabase,
+  selectDesktopDatabase,
   selectDevice,
   selectTable,
 } from '../selectionSession'
@@ -72,6 +73,27 @@ describe('selectionSession', () => {
 
     selectDatabase({ actions, databaseFile })
 
+    expect(actions.setSelectedDatabaseFile).toHaveBeenCalledWith(databaseFile)
+    expect(actions.setSelectedDatabaseTable).toHaveBeenCalledWith(null)
+    expect(actions.clearTableData).toHaveBeenCalledTimes(1)
+    expect(actions.setSelectedRow).toHaveBeenCalledWith(null)
+  })
+
+  it('selectDesktopDatabase enters desktop mode and clears downstream state', () => {
+    const actions = createActions()
+    const databaseFile = {
+      filename: 'local.db',
+      location: '/tmp/local.db',
+      packageName: '',
+      path: '/tmp/local.db',
+      remotePath: '/tmp/local.db',
+      deviceType: 'desktop' as const,
+    }
+
+    selectDesktopDatabase({ actions, databaseFile })
+
+    expect(actions.setSelectedDevice).toHaveBeenCalledWith(null)
+    expect(actions.setSelectedApplication).toHaveBeenCalledWith(null)
     expect(actions.setSelectedDatabaseFile).toHaveBeenCalledWith(databaseFile)
     expect(actions.setSelectedDatabaseTable).toHaveBeenCalledWith(null)
     expect(actions.clearTableData).toHaveBeenCalledTimes(1)

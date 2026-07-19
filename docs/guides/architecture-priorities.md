@@ -292,6 +292,12 @@ Suggested direction:
 - define explicit resets and reconciliation rules
 - keep device mode differences explicit
 
+Status note on July 19, 2026:
+
+- started by moving desktop custom-file transition reset policy behind `selectionSession`
+- added unit coverage for entering desktop mode
+- broader session object or reducer work is still pending
+
 ### 2. Move Component Logic Behind That Session
 
 After the session model exists:
