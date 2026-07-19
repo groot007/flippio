@@ -62,10 +62,12 @@ async function waitForCommand(command, minimumCount = 1, timeoutMsg = `Command $
 async function buildDebugState() {
   const history = await getCommandHistory()
   const bodyText = await $('body').getText().catch(() => '')
+  const selectionState = await browser.execute(() => window.__FLIPPIO_E2E__?.getSelectionState?.() ?? null)
 
   return {
     bodyText,
     commandHistory: history.map(entry => entry.command),
+    selectionState,
   }
 }
 
@@ -404,7 +406,13 @@ async function openHappyPathToGrid() {
   await selectNthOptionByKeyboard('app-select', 1)
   await waitForCommand('adb_get_android_database_files', 1, 'Database file fetch did not complete after selecting app')
   await selectNthOptionByKeyboard('database-file-select', 1)
-  await waitForCommand('db_get_tables', 1, 'Table fetch did not complete after selecting database')
+  try {
+    await waitForCommand('db_get_tables', 1, 'Table fetch did not complete after selecting database')
+  }
+  catch {
+    const debugState = await buildDebugState()
+    throw new Error(`Table fetch did not complete after selecting database\nHistory: ${debugState.commandHistory.join(', ')}\nSelection: ${JSON.stringify(debugState.selectionState)}\nBody: ${debugState.bodyText}`)
+  }
   await selectNthOptionByKeyboard('table-select', 1)
   await waitForCommand('db_get_table_data', 1, 'Table data fetch did not complete after selecting table')
 }

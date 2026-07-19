@@ -78,11 +78,51 @@ interface RefreshSelectionGraphInput {
   selectedDevice?: DeviceInfo | null
 }
 
-interface RefreshSelectionGraphResult {
+export interface RefreshSelectionGraphResult {
   didClearSelectedApplication: boolean
   didClearSelectedDatabaseFile: boolean
   didClearSelectedDevice: boolean
   preservedMissingSelectedDevice: boolean
+}
+
+interface ReconcileSelectionWithDevicesInput {
+  allowMissingSelectedDevice?: boolean
+  devices: DeviceInfo[]
+  preserveDatabaseFile?: boolean
+  selectedApplication?: ApplicationSelection | null
+  selectedDatabaseFile?: DatabaseFile | null
+  selectedDevice?: DeviceInfo | null
+}
+
+interface ReconcileSelectionWithApplicationsInput {
+  applications: ApplicationSelection[]
+  selectedApplication?: ApplicationSelection | null
+  selectedDatabaseFile?: DatabaseFile | null
+  selectedDevice?: DeviceInfo | null
+}
+
+interface ReconcileSelectionWithDatabaseFilesInput {
+  databaseFiles: DatabaseFile[]
+  selectedApplication?: ApplicationSelection | null
+  selectedDatabaseFile?: DatabaseFile | null
+  selectedDevice?: DeviceInfo | null
+}
+
+interface ReconcileSelectionAfterDeviceRefreshResult {
+  matchedDevice: DeviceInfo | null
+  refreshResult: RefreshSelectionGraphResult
+  shouldRefreshApplications: boolean
+}
+
+interface ReconcileSelectionAfterApplicationRefreshResult {
+  matchedApplication: ApplicationSelection | null
+  refreshResult: RefreshSelectionGraphResult
+  shouldRefreshDatabaseFiles: boolean
+}
+
+interface ReconcileSelectionWithDatabaseFilesResult {
+  matchedDatabaseFile: DatabaseFile | null
+  refreshResult: RefreshSelectionGraphResult
 }
 
 interface SelectionSessionTransition {
@@ -93,6 +133,8 @@ interface SelectionSessionTransition {
 
 interface SelectDatabaseInput {
   actions: SelectionSessionActions
+  currentApplication?: ApplicationSelection | null
+  currentDevice?: DeviceInfo | null
   databaseFile: DatabaseFile | null
 }
 
@@ -108,6 +150,9 @@ interface SelectDeviceInput {
 
 interface SelectTableInput {
   actions: SelectionSessionActions
+  currentApplication?: ApplicationSelection | null
+  currentDatabaseFile?: DatabaseFile | null
+  currentDevice?: DeviceInfo | null
   table: DatabaseTable | null
 }
 
@@ -402,10 +447,18 @@ export function selectApplication({
   }
 }
 
-export function selectDatabase({ actions, databaseFile }: SelectDatabaseInput) {
+export function selectDatabase({
+  actions,
+  currentApplication,
+  currentDevice,
+  databaseFile,
+}: SelectDatabaseInput) {
   applySelectionSessionTransition(
     reduceSelectionSession(
-      createSelectionSessionState(),
+      createSelectionSessionState({
+        selectedApplication: currentApplication,
+        selectedDevice: currentDevice,
+      }),
       {
         type: 'selectDatabase',
         databaseFile,
@@ -428,10 +481,20 @@ export function selectDesktopDatabase({ actions, databaseFile }: SelectDesktopDa
   )
 }
 
-export function selectTable({ actions, table }: SelectTableInput) {
+export function selectTable({
+  actions,
+  currentApplication,
+  currentDatabaseFile,
+  currentDevice,
+  table,
+}: SelectTableInput) {
   applySelectionSessionTransition(
     reduceSelectionSession(
-      createSelectionSessionState(),
+      createSelectionSessionState({
+        selectedApplication: currentApplication,
+        selectedDatabaseFile: currentDatabaseFile,
+        selectedDevice: currentDevice,
+      }),
       {
         type: 'selectTable',
         table,
@@ -478,5 +541,142 @@ export function refreshSelectionGraph(
     didClearSelectedDatabaseFile: false,
     didClearSelectedDevice: false,
     preservedMissingSelectedDevice: false,
+  }
+}
+
+export function reconcileSelectionWithDevices(
+  {
+    allowMissingSelectedDevice = false,
+    devices,
+    preserveDatabaseFile = false,
+    selectedApplication,
+    selectedDatabaseFile,
+    selectedDevice,
+  }: ReconcileSelectionWithDevicesInput,
+  actions: SelectionSessionActions,
+): RefreshSelectionGraphResult {
+  const matchedDevice = matchSelectedDevice(devices, selectedDevice)
+
+  return refreshSelectionGraph(
+    {
+      allowMissingSelectedDevice,
+      matchedDevice,
+      preserveDatabaseFile,
+      selectedApplication,
+      selectedDatabaseFile,
+      selectedDevice,
+    },
+    actions,
+  )
+}
+
+export function reconcileSelectionWithApplications(
+  {
+    applications,
+    selectedApplication,
+    selectedDatabaseFile,
+    selectedDevice,
+  }: ReconcileSelectionWithApplicationsInput,
+  actions: SelectionSessionActions,
+): RefreshSelectionGraphResult {
+  const matchedApplication = matchSelectedApplication(applications, selectedApplication)
+
+  return refreshSelectionGraph(
+    {
+      matchedApplication,
+      selectedApplication,
+      selectedDatabaseFile,
+      selectedDevice,
+    },
+    actions,
+  )
+}
+
+export function reconcileSelectionWithDatabaseFiles(
+  {
+    databaseFiles,
+    selectedApplication,
+    selectedDatabaseFile,
+    selectedDevice,
+  }: ReconcileSelectionWithDatabaseFilesInput,
+  actions: SelectionSessionActions,
+): ReconcileSelectionWithDatabaseFilesResult {
+  const matchedDatabaseFile = matchSelectedDatabaseFile(databaseFiles, selectedDatabaseFile)
+  const refreshResult = refreshSelectionGraph(
+    {
+      matchedDatabaseFile,
+      selectedApplication,
+      selectedDatabaseFile,
+      selectedDevice,
+    },
+    actions,
+  )
+
+  return {
+    matchedDatabaseFile,
+    refreshResult,
+  }
+}
+
+export function reconcileSelectionAfterDeviceRefresh(
+  {
+    allowMissingSelectedDevice = false,
+    devices,
+    preserveDatabaseFile = false,
+    selectedApplication,
+    selectedDatabaseFile,
+    selectedDevice,
+  }: ReconcileSelectionWithDevicesInput,
+  actions: SelectionSessionActions,
+): ReconcileSelectionAfterDeviceRefreshResult {
+  const matchedDevice = matchSelectedDevice(devices, selectedDevice)
+  const refreshResult = refreshSelectionGraph(
+    {
+      allowMissingSelectedDevice,
+      matchedDevice,
+      preserveDatabaseFile,
+      selectedApplication,
+      selectedDatabaseFile,
+      selectedDevice,
+    },
+    actions,
+  )
+
+  return {
+    matchedDevice,
+    refreshResult,
+    shouldRefreshApplications: !!matchedDevice
+      && !!selectedApplication
+      && !refreshResult.didClearSelectedDevice,
+  }
+}
+
+export function reconcileSelectionAfterApplicationRefresh(
+  {
+    applications,
+    selectedApplication,
+    selectedDatabaseFile,
+    selectedDevice,
+  }: ReconcileSelectionWithApplicationsInput,
+  actions: SelectionSessionActions,
+): ReconcileSelectionAfterApplicationRefreshResult {
+  const matchedApplication = matchSelectedApplication(applications, selectedApplication)
+  const refreshResult = refreshSelectionGraph(
+    {
+      matchedApplication,
+      selectedApplication,
+      selectedDatabaseFile,
+      selectedDevice,
+    },
+    actions,
+  )
+
+  return {
+    matchedApplication,
+    refreshResult,
+    shouldRefreshDatabaseFiles: !!selectedDevice
+      && !!matchedApplication
+      && !!selectedDatabaseFile
+      && selectedDatabaseFile.deviceType !== 'desktop',
   }
 }

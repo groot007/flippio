@@ -1,10 +1,11 @@
 import { Box, Button, HStack, Spinner } from '@chakra-ui/react'
 import { DeviceInfoModal } from '@renderer/components/common/DeviceInfoModal'
 import {
-  matchSelectedApplication,
-  matchSelectedDatabaseFile,
-  matchSelectedDevice,
-  refreshSelectionGraph,
+  reconcileSelectionAfterApplicationRefresh,
+  reconcileSelectionAfterDeviceRefresh,
+  reconcileSelectionWithApplications,
+  reconcileSelectionWithDatabaseFiles,
+  reconcileSelectionWithDevices,
   selectApplication,
   selectDevice,
 } from '@renderer/features/layout/selectionSession'
@@ -147,16 +148,14 @@ function AppHeader() {
       return
     }
 
-    const matchedDevice = matchSelectedDevice(devicesList, selectedDevice)
-
-    refreshSelectionGraph(
+    reconcileSelectionWithDevices(
       {
         allowMissingSelectedDevice: selectedDevice.deviceType === 'iphone-device',
+        devices: devicesList,
+        preserveDatabaseFile: isDesktopMode,
         selectedApplication,
         selectedDatabaseFile,
         selectedDevice,
-        matchedDevice,
-        preserveDatabaseFile: isDesktopMode,
       },
       selectionActions,
     )
@@ -175,13 +174,12 @@ function AppHeader() {
       return
     }
 
-    const matchedApplication = matchSelectedApplication(applicationsList, selectedApplication)
-    refreshSelectionGraph(
+    reconcileSelectionWithApplications(
       {
+        applications: applicationsList,
         selectedDevice,
         selectedApplication,
         selectedDatabaseFile,
-        matchedApplication,
       },
       selectionActions,
     )
@@ -195,20 +193,20 @@ function AppHeader() {
       })
       const devicesResult = await refreshDevices()
       const refreshedDevices = devicesResult.data ?? []
-      const matchedDevice = matchSelectedDevice(refreshedDevices, selectedDevice)
 
-      const selectionRefreshResult = refreshSelectionGraph(
+      const deviceRefresh = reconcileSelectionAfterDeviceRefresh(
         {
+          allowMissingSelectedDevice: selectedDevice?.deviceType === 'iphone-device',
+          devices: refreshedDevices,
+          preserveDatabaseFile: isDesktopMode,
           selectedDevice,
           selectedApplication,
           selectedDatabaseFile,
-          matchedDevice,
-          preserveDatabaseFile: isDesktopMode,
         },
         selectionActions,
       )
 
-      if (selectionRefreshResult.didClearSelectedDevice) {
+      if (deviceRefresh.refreshResult.didClearSelectedDevice) {
         toaster.create({
           title: 'Success',
           description: 'Device list refreshed',
@@ -219,51 +217,45 @@ function AppHeader() {
           },
         })
         console.info('CriticalPath: device refresh completed', {
-          deviceId: matchedDevice?.id ?? null,
+          deviceId: deviceRefresh.matchedDevice?.id ?? null,
           bundleId: selectedApplication?.bundleId ?? null,
         })
         return
       }
 
-      if (matchedDevice) {
+      if (deviceRefresh.shouldRefreshApplications && deviceRefresh.matchedDevice) {
         const applications = await queryClient.fetchQuery({
-          queryKey: ['applications', matchedDevice.id, matchedDevice.deviceType],
-          queryFn: () => fetchApplicationsForDevice(matchedDevice),
+          queryKey: ['applications', deviceRefresh.matchedDevice.id, deviceRefresh.matchedDevice.deviceType],
+          queryFn: () => fetchApplicationsForDevice(deviceRefresh.matchedDevice!),
           staleTime: 0,
         })
 
-        if (selectedApplication) {
-          const matchedApplication = matchSelectedApplication(applications, selectedApplication)
+        const applicationRefresh = reconcileSelectionAfterApplicationRefresh(
+          {
+            applications,
+            selectedDevice: deviceRefresh.matchedDevice,
+            selectedApplication,
+            selectedDatabaseFile,
+          },
+          selectionActions,
+        )
 
-          refreshSelectionGraph(
+        if (applicationRefresh.shouldRefreshDatabaseFiles && applicationRefresh.matchedApplication) {
+          const databaseFiles = await queryClient.fetchQuery({
+            queryKey: ['databaseFiles', deviceRefresh.matchedDevice.id, applicationRefresh.matchedApplication.bundleId],
+            queryFn: () => fetchDatabaseFilesForSelection(deviceRefresh.matchedDevice!, applicationRefresh.matchedApplication!),
+            staleTime: 0,
+          })
+
+          reconcileSelectionWithDatabaseFiles(
             {
-              selectedDevice: matchedDevice,
-              selectedApplication,
+              databaseFiles,
+              selectedDevice: deviceRefresh.matchedDevice,
+              selectedApplication: applicationRefresh.matchedApplication,
               selectedDatabaseFile,
-              matchedApplication,
             },
             selectionActions,
           )
-
-          if (matchedApplication && !isDesktopMode && selectedDatabaseFile) {
-            const databaseFiles = await queryClient.fetchQuery({
-              queryKey: ['databaseFiles', matchedDevice.id, matchedApplication.bundleId],
-              queryFn: () => fetchDatabaseFilesForSelection(matchedDevice, matchedApplication),
-              staleTime: 0,
-            })
-
-            const matchedDatabaseFile = matchSelectedDatabaseFile(databaseFiles, selectedDatabaseFile)
-
-            refreshSelectionGraph(
-              {
-                selectedDevice: matchedDevice,
-                selectedApplication: matchedApplication,
-                selectedDatabaseFile,
-                matchedDatabaseFile,
-              },
-              selectionActions,
-            )
-          }
         }
       }
 
@@ -277,7 +269,7 @@ function AppHeader() {
         },
       })
       console.info('CriticalPath: device refresh completed', {
-        deviceId: matchedDevice?.id ?? null,
+        deviceId: deviceRefresh.matchedDevice?.id ?? null,
         bundleId: selectedApplication?.bundleId ?? null,
       })
     }

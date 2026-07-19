@@ -119,6 +119,8 @@ export function SubHeader() {
     
     selectDatabase({
       databaseFile: resolvedFile,
+      currentApplication: selectedApplication,
+      currentDevice: selectedDevice,
       actions: selectionActions,
     })
   }, [queryClient, selectedApplication, selectedDevice, selectionActions])
@@ -129,10 +131,13 @@ export function SubHeader() {
       databasePath: selectedDatabaseFile?.path ?? null,
     })
     selectTable({
+      currentApplication: selectedApplication,
+      currentDatabaseFile: selectedDatabaseFile,
+      currentDevice: selectedDevice,
       table,
       actions: selectionActions,
     })
-  }, [selectedDatabaseFile?.path, selectionActions])
+  }, [selectedApplication, selectedDatabaseFile, selectedDevice, selectionActions])
 
   const dbFileOptions = useMemo(() => 
     groupDatabaseFilesByLocation(databaseFiles), [databaseFiles])

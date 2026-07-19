@@ -4,6 +4,11 @@ import {
   matchSelectedApplication,
   matchSelectedDatabaseFile,
   matchSelectedDevice,
+  reconcileSelectionAfterApplicationRefresh,
+  reconcileSelectionAfterDeviceRefresh,
+  reconcileSelectionWithApplications,
+  reconcileSelectionWithDatabaseFiles,
+  reconcileSelectionWithDevices,
   reduceSelectionSession,
   refreshSelectionGraph,
   selectApplication,
@@ -376,5 +381,158 @@ describe('selectionSession', () => {
     expect(actions.setSelectedDatabaseFile).not.toHaveBeenCalled()
     expect(actions.clearTableData).not.toHaveBeenCalled()
     expect(actions.setSelectedRow).not.toHaveBeenCalled()
+  })
+
+  it('reconcileSelectionWithDevices applies shared device-list reconciliation policy', () => {
+    const actions = createActions()
+    const selectedDevice = {
+      id: 'iphone-device-1',
+      name: 'My iPhone',
+      model: 'iPhone',
+      deviceType: 'iphone-device' as const,
+    }
+
+    const result = reconcileSelectionWithDevices(
+      {
+        allowMissingSelectedDevice: true,
+        devices: [],
+        selectedDevice,
+      },
+      actions,
+    )
+
+    expect(result).toMatchObject({
+      didClearSelectedApplication: false,
+      didClearSelectedDatabaseFile: false,
+      didClearSelectedDevice: false,
+      preservedMissingSelectedDevice: true,
+    })
+    expect(actions.setSelectedDevice).not.toHaveBeenCalled()
+    expect(actions.clearTableData).not.toHaveBeenCalled()
+  })
+
+  it('reconcileSelectionWithApplications clears invalid app state through the shared helper', () => {
+    const actions = createActions()
+    const selectedDevice = { id: 'device-1', name: 'Phone', model: 'Pixel', deviceType: 'android' as const }
+    const selectedApplication = { bundleId: 'com.test.app', name: 'Test App' }
+    const selectedDatabaseFile = {
+      filename: 'test.db',
+      location: '/tmp/test.db',
+      packageName: 'com.test.app',
+      path: '/tmp/test.db',
+      deviceType: 'android' as const,
+    }
+
+    const result = reconcileSelectionWithApplications(
+      {
+        applications: [{ bundleId: 'com.other.app', name: 'Other App' }],
+        selectedApplication,
+        selectedDatabaseFile,
+        selectedDevice,
+      },
+      actions,
+    )
+
+    expect(result).toMatchObject({
+      didClearSelectedApplication: true,
+      didClearSelectedDatabaseFile: true,
+      didClearSelectedDevice: false,
+      preservedMissingSelectedDevice: false,
+    })
+    expect(actions.setSelectedApplication).toHaveBeenCalledWith(null)
+    expect(actions.setSelectedDatabaseFile).toHaveBeenCalledWith(null)
+    expect(actions.clearTableData).toHaveBeenCalledTimes(1)
+  })
+
+  it('reconcileSelectionAfterDeviceRefresh reports whether app refresh should continue', () => {
+    const actions = createActions()
+    const selectedDevice = { id: 'device-1', name: 'Phone', model: 'Pixel', deviceType: 'android' as const }
+    const selectedApplication = { bundleId: 'com.test.app', name: 'Test App' }
+
+    const result = reconcileSelectionAfterDeviceRefresh(
+      {
+        devices: [selectedDevice],
+        selectedDevice,
+        selectedApplication,
+      },
+      actions,
+    )
+
+    expect(result).toMatchObject({
+      matchedDevice: selectedDevice,
+      shouldRefreshApplications: true,
+    })
+    expect(result.refreshResult).toMatchObject({
+      didClearSelectedDevice: false,
+      didClearSelectedApplication: false,
+    })
+  })
+
+  it('reconcileSelectionAfterApplicationRefresh reports whether db refresh should continue', () => {
+    const actions = createActions()
+    const selectedDevice = { id: 'device-1', name: 'Phone', model: 'Pixel', deviceType: 'android' as const }
+    const selectedApplication = { bundleId: 'com.test.app', name: 'Test App' }
+    const selectedDatabaseFile = {
+      filename: 'test.db',
+      location: '/tmp/test.db',
+      packageName: 'com.test.app',
+      path: '/tmp/test.db',
+      deviceType: 'android' as const,
+    }
+
+    const result = reconcileSelectionAfterApplicationRefresh(
+      {
+        applications: [selectedApplication],
+        selectedDevice,
+        selectedApplication,
+        selectedDatabaseFile,
+      },
+      actions,
+    )
+
+    expect(result).toMatchObject({
+      matchedApplication: selectedApplication,
+      shouldRefreshDatabaseFiles: true,
+    })
+    expect(result.refreshResult).toMatchObject({
+      didClearSelectedApplication: false,
+      didClearSelectedDatabaseFile: false,
+    })
+  })
+
+  it('reconcileSelectionWithDatabaseFiles clears invalid db state through the shared helper', () => {
+    const actions = createActions()
+    const selectedDevice = { id: 'device-1', name: 'Phone', model: 'Pixel', deviceType: 'android' as const }
+    const selectedApplication = { bundleId: 'com.test.app', name: 'Test App' }
+    const selectedDatabaseFile = {
+      filename: 'missing.db',
+      location: '/tmp/missing.db',
+      packageName: 'com.test.app',
+      path: '/tmp/missing.db',
+      deviceType: 'android' as const,
+    }
+
+    const result = reconcileSelectionWithDatabaseFiles(
+      {
+        databaseFiles: [{
+          filename: 'test.db',
+          location: '/tmp/test.db',
+          packageName: 'com.test.app',
+          path: '/tmp/test.db',
+          deviceType: 'android' as const,
+        }],
+        selectedDevice,
+        selectedApplication,
+        selectedDatabaseFile,
+      },
+      actions,
+    )
+
+    expect(result.matchedDatabaseFile).toBeNull()
+    expect(result.refreshResult).toMatchObject({
+      didClearSelectedDatabaseFile: true,
+    })
+    expect(actions.setSelectedDatabaseFile).toHaveBeenCalledWith(null)
+    expect(actions.clearTableData).toHaveBeenCalledTimes(1)
   })
 })
