@@ -301,6 +301,7 @@ Status note on July 19, 2026:
 - moved drag-and-drop desktop file entry onto the shared selection session path
 - added a shared session-state hook for header-level workflow reads
 - introduced the first explicit selection session reducer/event model behind existing helpers
+- made desktop versus device workflow mode explicit in shared session state
 - added unit coverage for entering desktop mode
 - broader session object or reducer work is still pending
 

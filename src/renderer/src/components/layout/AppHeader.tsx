@@ -27,6 +27,7 @@ function AppHeader() {
   const [isVirtualDeviceModalOpen, setIsVirtualDeviceModalOpen] = useState(false)
 
   const {
+    isDesktopMode,
     selectedDevice,
     selectedApplication,
     selectedDatabaseFile,
@@ -155,11 +156,11 @@ function AppHeader() {
         selectedDatabaseFile,
         selectedDevice,
         matchedDevice,
-        preserveDatabaseFile: selectedDatabaseFile?.deviceType === 'desktop',
+        preserveDatabaseFile: isDesktopMode,
       },
       selectionActions,
     )
-  }, [devicesList, selectedDatabaseFile, selectedDevice, selectionActions])
+  }, [devicesList, isDesktopMode, selectedApplication, selectedDatabaseFile, selectedDevice, selectionActions])
 
   useEffect(() => {
     if (!selectedApplication) {
@@ -199,8 +200,10 @@ function AppHeader() {
       const selectionRefreshResult = refreshSelectionGraph(
         {
           selectedDevice,
+          selectedApplication,
+          selectedDatabaseFile,
           matchedDevice,
-          preserveDatabaseFile: selectedDatabaseFile?.deviceType === 'desktop',
+          preserveDatabaseFile: isDesktopMode,
         },
         selectionActions,
       )
@@ -242,7 +245,7 @@ function AppHeader() {
             selectionActions,
           )
 
-          if (matchedApplication && selectedDatabaseFile?.deviceType !== 'desktop' && selectedDatabaseFile) {
+          if (matchedApplication && !isDesktopMode && selectedDatabaseFile) {
             const databaseFiles = await queryClient.fetchQuery({
               queryKey: ['databaseFiles', matchedDevice.id, matchedApplication.bundleId],
               queryFn: () => fetchDatabaseFilesForSelection(matchedDevice, matchedApplication),
@@ -293,6 +296,7 @@ function AppHeader() {
   }, [
     queryClient,
     refreshDevices,
+    isDesktopMode,
     selectedApplication,
     selectedDatabaseFile,
     selectedDevice,

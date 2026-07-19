@@ -31,6 +31,7 @@ import FLSelect from './../common/FLSelect'
 
 export function SubHeader() {
   const {
+    isDesktopMode,
     selectedApplication,
     selectedDatabaseFile,
     selectedDatabaseTable,
@@ -414,7 +415,7 @@ export function SubHeader() {
     )
   }, [selectedDatabaseFile])
 
-  const isTableSelectDisabled = (!selectedApplication?.bundleId && selectedDatabaseFile?.deviceType !== 'desktop') || !selectedDatabaseFile?.path || isDBPulling
+  const isTableSelectDisabled = (!selectedApplication?.bundleId && !isDesktopMode) || !selectedDatabaseFile?.path || isDBPulling
 
   return (
     <Box
@@ -439,7 +440,7 @@ export function SubHeader() {
         : null}
       <Flex justifyContent="flex-start" alignItems="center">
         <HStack gap={4}>
-          {selectedDatabaseFile?.deviceType === 'desktop'
+          {isDesktopMode
             ? (
                 <Text
                   fontSize="xs"
