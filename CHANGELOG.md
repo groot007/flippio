@@ -7,6 +7,11 @@ For example, tag `v0.4.1` publishes the `## [0.4.1]` section as the GitHub relea
 
 ## [Unreleased]
 
+## [0.4.7]
+
+Add SQLiteCipher support with posibility to decode it with secret key
+
+
 ## [0.4.6]
 
 fix wrong refresh with device and flippio async operation
