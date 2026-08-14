@@ -7,6 +7,11 @@ For example, tag `v0.4.1` publishes the `## [0.4.1]` section as the GitHub relea
 
 ## [Unreleased]
 
+## [0.4.8]
+
+fix bug with dropdown flickering during update
+
+
 ## [0.4.7]
 
 Add SQLCipher support with the ability to unlock encrypted databases using a passphrase.
