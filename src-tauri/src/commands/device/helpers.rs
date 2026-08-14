@@ -1,8 +1,75 @@
+use super::types::DatabaseFileMetadata;
 use log::{error, info};
 use std::collections::hash_map::DefaultHasher;
 use std::fs;
 use std::hash::{Hash, Hasher};
 use std::path::{Path, PathBuf};
+
+pub fn temp_database_matches_source(
+    local_path: &Path,
+    device_id: &str,
+    package_name: &str,
+    remote_path: &str,
+) -> bool {
+    if !local_path.exists() {
+        return false;
+    }
+
+    let metadata_path = format!("{}.meta.json", local_path.display());
+    let Ok(metadata_json) = fs::read_to_string(metadata_path) else {
+        return false;
+    };
+    let Ok(metadata) = serde_json::from_str::<DatabaseFileMetadata>(&metadata_json) else {
+        return false;
+    };
+
+    metadata.device_id == device_id
+        && metadata.package_name == package_name
+        && metadata.remote_path == remote_path
+}
+
+/// Removes an incomplete transfer automatically unless it is installed successfully.
+pub struct TemporaryDownload {
+    path: Option<PathBuf>,
+}
+
+impl TemporaryDownload {
+    pub fn new(temp_dir: &Path, unique_filename: &str) -> Self {
+        Self {
+            path: Some(temp_dir.join(format!(
+                ".{}.download-{}",
+                unique_filename,
+                chrono::Utc::now().timestamp_nanos_opt().unwrap_or_default()
+            ))),
+        }
+    }
+
+    pub fn path(&self) -> &Path {
+        self.path.as_deref().expect("download path is available")
+    }
+
+    pub fn install(mut self, local_path: &Path) -> std::io::Result<()> {
+        fs::rename(self.path(), local_path)?;
+        self.path = None;
+        Ok(())
+    }
+}
+
+impl Drop for TemporaryDownload {
+    fn drop(&mut self) {
+        if let Some(path) = self.path.take() {
+            if let Err(error) = fs::remove_file(&path) {
+                if error.kind() != std::io::ErrorKind::NotFound {
+                    log::warn!(
+                        "Failed to remove incomplete database transfer {}: {}",
+                        path.display(),
+                        error
+                    );
+                }
+            }
+        }
+    }
+}
 
 // Temp directory utilities
 pub fn get_temp_dir_path() -> PathBuf {
@@ -355,6 +422,26 @@ mod tests {
     fn test_get_temp_dir_path() {
         let temp_dir = get_temp_dir_path();
         assert!(temp_dir.to_string_lossy().contains("flippio-db-temp"));
+    }
+
+    #[test]
+    fn temporary_download_removes_incomplete_transfer_on_drop(
+    ) -> Result<(), Box<dyn std::error::Error>> {
+        let test_dir = std::env::temp_dir().join(format!(
+            "flippio-download-guard-test-{}",
+            chrono::Utc::now().timestamp_nanos_opt().unwrap_or_default()
+        ));
+        fs::create_dir_all(&test_dir)?;
+
+        let download_path = {
+            let download = TemporaryDownload::new(&test_dir, "database.db");
+            fs::write(download.path(), b"partial")?;
+            download.path().to_path_buf()
+        };
+
+        assert!(!download_path.exists());
+        fs::remove_dir(&test_dir)?;
+        Ok(())
     }
 
     #[test]

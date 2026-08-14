@@ -239,6 +239,10 @@ export function SubHeader() {
       && !!selectedDevice?.id
       && !!selectedApplication?.bundleId
       && !!selectedDatabaseFile?.remotePath
+    const shouldPrioritizeSelectedAndroidDb = (selectedDevice?.deviceType === 'android' || selectedDevice?.deviceType === 'emulator')
+      && !!selectedDevice?.id
+      && !!selectedApplication?.bundleId
+      && !!selectedDatabaseFile?.remotePath
 
     console.info('CriticalPath: database refresh started', {
       deviceId: selectedDevice?.id ?? null,
@@ -252,12 +256,18 @@ export function SubHeader() {
     }
 
     try {
-      if (shouldPrioritizeSelectedIosDb) {
-        const refreshResult = await window.api.refreshIOSDeviceDatabaseFile(
-          selectedDevice.id,
-          selectedApplication.bundleId,
-          selectedDatabaseFile.remotePath!,
-        )
+      if (shouldPrioritizeSelectedIosDb || shouldPrioritizeSelectedAndroidDb) {
+        const refreshResult = shouldPrioritizeSelectedIosDb
+          ? await window.api.refreshIOSDeviceDatabaseFile(
+              selectedDevice.id,
+              selectedApplication.bundleId,
+              selectedDatabaseFile.remotePath!,
+            )
+          : await window.api.refreshAndroidDatabaseFile(
+              selectedDevice.id,
+              selectedApplication.bundleId,
+              selectedDatabaseFile.remotePath!,
+            )
 
         if (!refreshResult.success || !refreshResult.file) {
           throw new Error(refreshResult.error || 'Failed to refresh selected database file')

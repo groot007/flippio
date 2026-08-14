@@ -1,14 +1,13 @@
-# Flippio Docs
+# Flippio Documentation
 
-This directory is intentionally small and operational. The canonical coding guidance lives in `AGENTS.md`.
+Use `README.md` for product installation and troubleshooting. Use `AGENTS.md` for repository rules.
 
-## Keep These Files Current
+## Guides
 
-- `../AGENTS.md`: primary agent-facing repo contract
-- `guides/development-setup.md`: local development requirements and validation commands
-- `guides/build-and-deployment.md`: current build and release workflow
-- `guides/architecture-priorities.md`: current architecture direction and priority order
+- [Development setup](guides/development-setup.md): prerequisites, local commands, and validation
+- [Architecture priorities](guides/architecture-priorities.md): system boundaries, invariants, and current risks
+- [User flow](guides/user-flow-schema-overview.md): request flow from selection through device sync
+- [End-to-end testing](guides/e2e.md): WebdriverIO strategy, scenarios, and commands
+- [Build and deployment](guides/build-and-deployment.md): versioning, tagging, signing, and updater releases
 
-## Documentation Rule
-
-Keep only documents that help an agent or developer perform present-day work in this repository. Remove status reports, historical writeups, and speculative analysis instead of preserving them as stale context.
+Keep documentation operational and current. Replace stale plans and machine-specific links instead of preserving them as history.

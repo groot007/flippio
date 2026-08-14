@@ -1,75 +1,64 @@
 # Development Setup
 
-## Purpose
-
-Use this guide for the current local development workflow only. Architectural guidance belongs in `AGENTS.md`.
-
-## Requirements
+## Prerequisites
 
 - Node.js 20+
 - Rust stable
-- Tauri CLI v2
-- `npm install` at the repo root
+- Tauri v2 prerequisites for macOS
+- Xcode command-line tools for iOS work
+- Android SDK Platform Tools with `adb` on `PATH` for Android work
 
-Platform tools:
-
-- macOS and iOS work: Xcode command line tools, `xcrun simctl`, bundled `libimobiledevice` binaries in `src-tauri/macos-deps`
-- Android work: Android SDK platform tools with `adb` on `PATH`
-
-## Install
+Install dependencies from the repository root:
 
 ```bash
 npm install
 ```
 
-Optional local verification:
-
-```bash
-node --version
-cargo --version
-cargo tauri --version
-adb version
-xcrun simctl list devices
-```
-
-## Core Commands
+## Run and Build
 
 ```bash
 npm run tauri:dev
 npm run tauri:build
 npm run tauri:build:debug
 npm run build:renderer
-npm run test
-npm run test:rust
-npm run version:update -- 0.4.5
 ```
 
-## Focused Validation
+The Tauri configuration starts and builds the renderer automatically for desktop commands.
 
-Use the smallest relevant checks first:
+## Validation
+
+Start with changed-file and focused tests:
 
 ```bash
-npx eslint <files...>
-npm run build --prefix src/renderer
-npm test
-cargo test common --manifest-path src-tauri/Cargo.toml
+npx eslint <changed-files...>
+yarn typecheck
+yarn test <optional-filter>
+cargo test <optional-filter> --manifest-path src-tauri/Cargo.toml
 ```
 
-Broader validation:
+Full local gate:
 
 ```bash
 yarn lint
 yarn typecheck
 yarn test
 yarn test:rust
+cargo fmt --manifest-path src-tauri/Cargo.toml -- --check
+git diff --check
 ```
 
-## Test Fixtures
+Example-app tests run separately:
 
-Generate or refresh SQLite fixtures with:
+```bash
+cd example_app
+npx jest --watchAll=false --runInBand --watchman=false
+```
+
+## Fixtures and Versions
 
 ```bash
 node scripts/generate-test-databases.js
+npm run version:update -- <version>
 ```
 
-The generated databases are used by backend tests under `src-tauri/tests/fixtures/databases`.
+The version helper updates coordinated package and Tauri version files. Review every generated diff before staging it.

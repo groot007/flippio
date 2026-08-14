@@ -32,6 +32,7 @@ beforeAll(() => {
     getAndroidDatabaseFiles: vi.fn().mockResolvedValue([]),
     getIOSDeviceDatabaseFiles: vi.fn().mockResolvedValue([]),
     refreshIOSDeviceDatabaseFile: vi.fn().mockResolvedValue({ success: true, file: null }),
+    refreshAndroidDatabaseFile: vi.fn().mockResolvedValue({ success: true, file: null }),
     cancelIOSDeviceDatabaseScan: vi.fn().mockResolvedValue({ success: true }),
     getIOSSimulatorDatabaseFiles: vi.fn().mockResolvedValue([]),
     getTables: vi.fn().mockResolvedValue([]),

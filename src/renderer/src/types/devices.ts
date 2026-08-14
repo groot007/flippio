@@ -15,6 +15,7 @@ export interface ApplicationSelection {
 }
 
 export interface DatabaseFile {
+  deviceId?: string
   path: string
   filename: string
   packageName: string

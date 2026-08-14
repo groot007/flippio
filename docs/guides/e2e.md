@@ -1,74 +1,33 @@
-# End-to-End Testing Decision
+# End-to-End Testing
 
-Date: July 18, 2026
+Flippio E2E tests run the real Tauri application through WebdriverIO and `@wdio/tauri-service`. Device behavior is mocked at the Tauri command boundary so tests stay deterministic and do not require hardware.
 
-## Status
+## Commands
 
-Accepted
+```bash
+yarn test:e2e
+yarn test:e2e:clean
+yarn test:e2e:debug
+```
 
-## Decision
+The preparation step builds the renderer and Rust app with `VITE_E2E_MODE=true`.
 
-Flippio end-to-end testing will use a real Tauri application with WebdriverIO and `@wdio/tauri-service`.
+## Test Model
 
-The UI, renderer state, dialogs, selection flow, and Tauri bridge will run for real. Device-facing behavior for Android and iOS will be mocked at the Tauri command boundary.
+- Scenarios own devices, apps, database files, tables, rows, delays, failures, and command history.
+- Each test receives fresh scenario state.
+- Mock Tauri commands, not React hooks.
+- Assert both visible UI outcome and command order/arguments.
+- Cover stale, delayed, cancelled, failed, and reordered responses for selection and refresh flows.
 
-## Why
+## Priority Flows
 
-- We want real desktop-app interaction, not jsdom-only coverage.
-- We do not want phase-one E2E to depend on physical devices, emulators, ADB, or iOS tooling.
-- The highest-risk regressions are in selection-reset-refetch flow, mutation flow, and command sequencing.
-- Tauri-specific WebdriverIO support gives us command mocking and command-level inspection in the real app.
+1. App launch and device selection
+2. Device -> app -> database -> table -> rows
+3. Edit, add, delete, and clear with push-back
+4. Local file open and export
+5. Physical iOS progressive scan and refresh
+6. SQLCipher unlock success, rejection, and retry
+7. Failure recovery without stale selection
 
-## Scope Rules
-
-- Phase one is mocked E2E only.
-- Real-device automation is out of scope for now.
-- Local macOS execution comes first. CI comes later after the harness is stable.
-
-## Mocking Model
-
-- Mock at the Tauri command boundary, not at React hook level.
-- Use stateful, scenario-driven mocks.
-- Seed scenarios from real SQLite fixture databases plus small metadata overlays.
-- Give every test a fresh in-memory scenario state.
-- Record command history for assertions.
-- Support delayed, cancelled, failed, and reordered async responses for race-condition coverage.
-
-## Scenario Shape
-
-Each scenario should define enough state to drive the main user flows:
-
-- devices
-- applications by device
-- database files by device and application
-- tables by database file
-- rows by database file and table
-- behavior flags for refresh, push, failure, delay, cancellation, and replacement cases
-
-## Test Assertions
-
-Critical-path E2E tests must assert both:
-
-- visible UI outcome
-- Tauri command history, including call order and arguments
-
-## First Milestone
-
-Phase one should include only:
-
-1. WebdriverIO + Tauri E2E harness setup
-2. Test-only E2E mode and scenario engine skeleton
-3. Stable test selectors for critical controls
-4. One smoke test for mocked device selection in the real app
-
-## Planned Test Order After Phase One
-
-1. Smoke test: app launch and device selection
-2. Backbone read flow: device -> app -> database file -> table -> rows visible
-3. Edit row + push success
-4. Add row
-5. Delete row
-6. Clear table
-7. Open file from local filesystem
-8. iOS refresh and selected-file replacement edge cases
-9. Failure paths such as scan cancellation, push failure, stale selection, and empty results
+Real-device automation is a separate integration layer. Do not make the mocked E2E gate depend on ADB, simulators, or physical devices.

@@ -3,12 +3,13 @@
 //! This module handles database file operations for iOS devices including
 //! detection, pulling, and pushing of database files.
 
-use super::super::helpers::clean_temp_dir;
+use super::super::helpers::ensure_temp_dir;
 use super::super::types::{DatabaseFile, DeviceResponse};
 use super::file_utils::{pull_ios_db_file, IosAppAccessType};
 use super::tools::get_tool_command_legacy;
 use crate::commands::database::helpers::prepare_database_file_for_sync;
-use crate::commands::database::types::DbConnectionCache;
+use crate::commands::database::types::{DbConnectionCache, DbPool};
+use crate::commands::database::{has_live_cached_connection, reset_connection_for_open};
 use log::{error, info};
 use serde::Serialize;
 use std::collections::{HashMap, HashSet, VecDeque};
@@ -408,6 +409,7 @@ async fn scan_ios_library_root_direct_files(
 }
 
 async fn collect_ios_database_files(
+    db_cache: &DbConnectionCache,
     app_handle: &tauri::AppHandle,
     device_id: &str,
     package_name: &str,
@@ -434,14 +436,27 @@ async fn collect_ios_database_files(
             .to_string();
         let location = location_from_remote_path(&remote_path);
         let access_type = access_type_for_remote_path(&remote_path);
+        let reuse_existing = super::super::helpers::ensure_temp_dir()
+            .ok()
+            .and_then(|temp_dir| {
+                super::super::helpers::generate_unique_filename(&remote_path)
+                    .ok()
+                    .map(|name| temp_dir.join(name))
+            });
+        let reuse_existing = match reuse_existing {
+            Some(local_path) => {
+                has_live_cached_connection(db_cache, &local_path.to_string_lossy()).await
+            }
+            None => false,
+        };
 
         match pull_ios_db_file(
             app_handle,
             device_id,
             package_name,
             &remote_path,
-            true,
             access_type,
+            reuse_existing,
         )
         .await
         {
@@ -565,6 +580,7 @@ fn interpolate_library_path(template: &str, package_name: &str) -> String {
 #[tauri::command]
 pub async fn get_ios_device_database_files(
     app_handle: tauri::AppHandle,
+    db_cache: tauri::State<'_, DbConnectionCache>,
     device_id: String,
     package_name: String,
     scan_request_id: Option<String>,
@@ -576,7 +592,7 @@ pub async fn get_ios_device_database_files(
     info!("Step 1: Preparing temporary directory for pulled database files");
     // Preserve active temp database files so in-flight table reads do not lose
     // their local copy while a background rescan is still running.
-    if let Err(e) = clean_temp_dir() {
+    if let Err(e) = ensure_temp_dir() {
         log::warn!("❌ Failed to prepare temp directory: {}", e);
     } else {
         info!("✅ Temp directory ready for pulled database files");
@@ -606,6 +622,7 @@ pub async fn get_ios_device_database_files(
         .await;
 
     let document_files = collect_ios_database_files(
+        &db_cache,
         &app_handle,
         &device_id,
         &package_name,
@@ -660,6 +677,7 @@ pub async fn get_ios_device_database_files(
         scan_warnings.append(&mut warnings);
 
         let documents_nested_files = collect_ios_database_files(
+            &db_cache,
             &app_handle,
             &device_id,
             &package_name,
@@ -694,6 +712,7 @@ pub async fn get_ios_device_database_files(
     scan_warnings.append(&mut library_root_warnings);
 
     let library_root_files = collect_ios_database_files(
+        &db_cache,
         &app_handle,
         &device_id,
         &package_name,
@@ -746,6 +765,7 @@ pub async fn get_ios_device_database_files(
         scan_warnings.append(&mut warnings);
 
         let phase_files = collect_ios_database_files(
+            &db_cache,
             &app_handle,
             &device_id,
             &package_name,
@@ -796,6 +816,16 @@ pub async fn get_ios_device_database_files(
         }
     }
 
+    emit_ios_scan_progress(
+        &app_handle,
+        &scan_key,
+        &scan_request_id,
+        scan_generation,
+        "replace",
+        "scan-complete",
+        database_files.clone(),
+    );
+
     finish_ios_scan(&scan_key, scan_generation);
 
     Ok(DeviceResponse {
@@ -808,6 +838,8 @@ pub async fn get_ios_device_database_files(
 #[tauri::command]
 pub async fn refresh_ios_device_database_file(
     app_handle: tauri::AppHandle,
+    state: tauri::State<'_, DbPool>,
+    db_cache: tauri::State<'_, DbConnectionCache>,
     device_id: String,
     package_name: String,
     remote_path: String,
@@ -830,12 +862,13 @@ pub async fn refresh_ios_device_database_file(
         &device_id,
         &package_name,
         &remote_path,
-        true,
         access_type,
+        false,
     )
     .await
     {
         Ok(local_path) => {
+            reset_connection_for_open(&state, &db_cache, &local_path).await;
             let db_file = DatabaseFile {
                 path: local_path,
                 package_name,
