@@ -19,7 +19,7 @@ describe('Flippio E2E refresh preservation', () => {
     await waitForGridText('alice@flippio.dev', 'Initial grid rows did not render')
 
     await $('[data-testid="refresh-db"]').click()
-    await waitForCommand('adb_get_android_database_files', 2, 'Database file refresh did not complete')
+    await waitForCommand('adb_refresh_android_database_file', 1, 'Selected database refresh did not complete')
     await waitForCommand('db_get_tables', 2, 'Table refresh did not complete')
     await waitForCommand('db_get_table_data', 2, 'Table data refresh did not complete')
 
