@@ -2,8 +2,8 @@
 // Critical tests for iOS and Android device functionality
 
 use flippio::*;
-use tempfile::TempDir;
 use std::fs;
+use tempfile::TempDir;
 
 /// Test iOS device functionality integration
 #[cfg(test)]
@@ -59,11 +59,15 @@ mod ios_integration_tests {
         // Simulate iOS database file discovery
         let db_files = vec![
             DatabaseFile {
-                path: "/var/mobile/Containers/Data/Application/ABC123/Documents/database.sqlite".to_string(),
+                path: "/var/mobile/Containers/Data/Application/ABC123/Documents/database.sqlite"
+                    .to_string(),
                 package_name: "com.example.iosapp".to_string(),
                 filename: "database.sqlite".to_string(),
                 location: "Documents".to_string(),
-                remote_path: Some("/var/mobile/Containers/Data/Application/ABC123/Documents/database.sqlite".to_string()),
+                remote_path: Some(
+                    "/var/mobile/Containers/Data/Application/ABC123/Documents/database.sqlite"
+                        .to_string(),
+                ),
                 device_type: "iphone".to_string(),
             },
             DatabaseFile {
@@ -71,7 +75,9 @@ mod ios_integration_tests {
                 package_name: "com.apple.mobilesafari".to_string(),
                 filename: "cache.db".to_string(),
                 location: "Library".to_string(),
-                remote_path: Some("/var/mobile/Containers/Data/Application/DEF456/Library/cache.db".to_string()),
+                remote_path: Some(
+                    "/var/mobile/Containers/Data/Application/DEF456/Library/cache.db".to_string(),
+                ),
                 device_type: "iphone".to_string(),
             },
         ];
@@ -99,33 +105,33 @@ mod ios_integration_tests {
     fn test_ios_file_transfer_simulation() -> Result<(), Box<dyn std::error::Error>> {
         // Simulate iOS file transfer workflow
         let temp_dir = TempDir::new()?;
-        
+
         // Simulate iOS database paths
         let ios_db_paths = vec![
             "/var/mobile/Containers/Data/Application/ABC/Documents/test.sqlite",
             "/var/mobile/Applications/DEF/Library/data.db",
         ];
-        
+
         for remote_path in ios_db_paths {
             // Extract filename
             let filename = std::path::Path::new(remote_path)
                 .file_name()
                 .unwrap()
                 .to_string_lossy();
-            
+
             // Simulate local file creation
             let local_path = temp_dir.path().join(&*filename);
             fs::write(&local_path, "simulated iOS database content")?;
-            
+
             // Verify file was created
             assert!(local_path.exists());
             assert!(local_path.to_string_lossy().contains(&*filename));
-            
+
             // Verify content
             let content = fs::read_to_string(&local_path)?;
             assert!(content.contains("simulated iOS database content"));
         }
-        
+
         Ok(())
     }
 }
@@ -134,8 +140,8 @@ mod ios_integration_tests {
 #[cfg(test)]
 mod android_integration_tests {
     use super::*;
-    use flippio::commands::device::types::*;
     use flippio::commands::device::helpers::*;
+    use flippio::commands::device::types::*;
 
     #[tokio::test]
     async fn test_android_database_file_workflow() {
@@ -154,7 +160,9 @@ mod android_integration_tests {
                 package_name: "com.app".to_string(),
                 filename: "cache.sqlite".to_string(),
                 location: "external".to_string(),
-                remote_path: Some("/storage/emulated/0/Android/data/com.app/files/cache.sqlite".to_string()),
+                remote_path: Some(
+                    "/storage/emulated/0/Android/data/com.app/files/cache.sqlite".to_string(),
+                ),
                 device_type: "android".to_string(),
             },
         ];
@@ -173,8 +181,7 @@ mod android_integration_tests {
         for db_file in &db_files {
             assert_eq!(db_file.device_type, "android");
             assert!(
-                db_file.path.starts_with("/data/data/") || 
-                db_file.path.starts_with("/storage/")
+                db_file.path.starts_with("/data/data/") || db_file.path.starts_with("/storage/")
             );
             assert!(db_file.remote_path.is_some());
         }
@@ -184,7 +191,7 @@ mod android_integration_tests {
     async fn test_adb_command_execution() {
         // Test ADB command execution logic
         let result = execute_adb_command(&["devices"]).await;
-        
+
         match result {
             Ok(_output) => {
                 // Command succeeded - ADB is available and working
@@ -194,10 +201,10 @@ mod android_integration_tests {
                 // Command failed - verify it's due to ADB not being available
                 let error_msg = e.to_string();
                 assert!(
-                    error_msg.contains("No such file") ||
-                    error_msg.contains("not found") ||
-                    error_msg.contains("failed to execute") ||
-                    error_msg.contains("permission")
+                    error_msg.contains("No such file")
+                        || error_msg.contains("not found")
+                        || error_msg.contains("failed to execute")
+                        || error_msg.contains("permission")
                 );
             }
         }
@@ -207,10 +214,10 @@ mod android_integration_tests {
     fn test_adb_path_discovery() {
         // Test ADB path discovery
         let adb_path = get_adb_path();
-        
+
         assert!(!adb_path.is_empty());
         assert!(adb_path.contains("adb"));
-        
+
         // Should be either a full path or just "adb"
         assert!(adb_path.starts_with("/") || adb_path == "adb");
     }
@@ -219,36 +226,35 @@ mod android_integration_tests {
     fn test_android_file_transfer_simulation() -> Result<(), Box<dyn std::error::Error>> {
         // Simulate Android file transfer workflow
         let temp_dir = TempDir::new()?;
-        
+
         // Simulate Android database paths
         let android_db_paths = vec![
             "/data/data/com.example.app/databases/test.db",
             "/storage/emulated/0/Android/data/com.app/files/data.sqlite",
         ];
-        
+
         for remote_path in android_db_paths {
             // Extract filename
             let filename = std::path::Path::new(remote_path)
                 .file_name()
                 .unwrap()
                 .to_string_lossy();
-            
+
             // Simulate local file creation
             let local_path = temp_dir.path().join(&*filename);
             fs::write(&local_path, "simulated Android database content")?;
-            
+
             // Verify file was created
             assert!(local_path.exists());
             assert!(local_path.to_string_lossy().contains(&*filename));
-            
+
             // Verify content
             let content = fs::read_to_string(&local_path)?;
             assert!(content.contains("simulated Android database content"));
         }
-        
+
         Ok(())
     }
-
 }
 
 /// Test cross-platform device functionality
@@ -355,25 +361,25 @@ mod cross_platform_tests {
     fn test_temp_directory_management() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         // Test temp directory management for both platforms
         let temp_dir = ensure_temp_dir()?;
-        
+
         // Create mock database files for both platforms
         let ios_file = temp_dir.join("ios_database.sqlite");
         let android_file = temp_dir.join("android_database.db");
-        
+
         fs::write(&ios_file, "iOS database content")?;
         fs::write(&android_file, "Android database content")?;
-        
+
         // Verify files exist
         assert!(ios_file.exists());
         assert!(android_file.exists());
-        
+
         // Verify content
         let ios_content = fs::read_to_string(&ios_file)?;
         let android_content = fs::read_to_string(&android_file)?;
-        
+
         assert!(ios_content.contains("iOS"));
         assert!(android_content.contains("Android"));
-        
+
         Ok(())
     }
 
@@ -381,7 +387,7 @@ mod cross_platform_tests {
     fn test_concurrent_device_operations() {
         // Test that device operations can be performed concurrently
         let runtime = tokio::runtime::Runtime::new().unwrap();
-        
+
         runtime.block_on(async {
             // Simulate concurrent device operations
             let ios_task = async {
@@ -389,18 +395,18 @@ mod cross_platform_tests {
                 tokio::time::sleep(tokio::time::Duration::from_millis(10)).await;
                 "iOS operation complete"
             };
-            
+
             let android_task = async {
                 // Simulate Android device operation
                 tokio::time::sleep(tokio::time::Duration::from_millis(10)).await;
                 "Android operation complete"
             };
-            
+
             // Run operations concurrently
             let (ios_result, android_result) = tokio::join!(ios_task, android_task);
-            
+
             assert_eq!(ios_result, "iOS operation complete");
             assert_eq!(android_result, "Android operation complete");
         });
     }
-} 
+}

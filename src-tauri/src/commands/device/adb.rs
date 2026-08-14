@@ -1,12 +1,13 @@
-use super::types::*;
 use super::helpers::*;
-use crate::commands::database::helpers::prepare_sqlite_file_for_sync;
-use log::{info, error};
-use std::path::Path;
-use std::fs;
+use super::types::*;
+use crate::commands::database::helpers::prepare_database_file_for_sync;
+use crate::commands::database::types::DbConnectionCache;
 use chrono;
+use log::{error, info};
 use serde_json;
+use std::fs;
 use std::future::Future;
+use std::path::Path;
 
 fn parse_adb_devices_output(devices_output: &str) -> Vec<Device> {
     let mut devices = Vec::new();
@@ -40,7 +41,12 @@ fn parse_adb_devices_output(devices_output: &str) -> Vec<Device> {
                 }
             }
 
-            log::info!("Found device: id={}, name={}, model={}", device_id, device_name, model);
+            log::info!(
+                "Found device: id={}, name={}, model={}",
+                device_id,
+                device_name,
+                model
+            );
 
             devices.push(Device {
                 id: device_id,
@@ -210,10 +216,7 @@ where
     }
 }
 
-async fn adb_get_packages_with<F, Fut>(
-    device_id: &str,
-    execute: F,
-) -> DeviceResponse<Vec<Package>>
+async fn adb_get_packages_with<F, Fut>(device_id: &str, execute: F) -> DeviceResponse<Vec<Package>>
 where
     F: FnOnce(Vec<String>) -> Fut,
     Fut: Future<Output = Result<std::process::Output, Box<dyn std::error::Error + Send + Sync>>>,
@@ -273,42 +276,51 @@ async fn pull_android_db_file(
     info!("Package: {}", package_name);
     info!("Remote path: {}", remote_path);
     info!("Admin access: {}", admin_access);
-    
+
     let temp_dir = ensure_temp_dir()?;
     info!("Temp directory: {:?}", temp_dir);
-    
+
     // Generate unique filename to avoid conflicts when multiple files have the same name
     let unique_filename = generate_unique_filename(remote_path)?;
     let local_path = temp_dir.join(&unique_filename);
-    info!("Local path will be: {:?} (unique filename: {})", local_path, unique_filename);
-    
+    info!(
+        "Local path will be: {:?} (unique filename: {})",
+        local_path, unique_filename
+    );
+
     // Execute ADB command based on admin access
     if admin_access {
         info!("Using admin access (run-as) mode");
-        
+
         // Use shell command with redirection like in Electron
         // Important: Use exec-out with run-as and redirect to local file
         let adb_path = get_adb_path();
-        let shell_cmd = format!("{} -s {} exec-out run-as {} cat {} > \"{}\"", 
-                               adb_path, device_id, package_name, remote_path, local_path.display());
-        
+        let shell_cmd = format!(
+            "{} -s {} exec-out run-as {} cat {} > \"{}\"",
+            adb_path,
+            device_id,
+            package_name,
+            remote_path,
+            local_path.display()
+        );
+
         info!("Executing shell command: {}", shell_cmd);
-        
+
         // Use std::process::Command directly like in Electron for better compatibility
         let output = std::process::Command::new("sh")
             .arg("-c")
             .arg(&shell_cmd)
             .output()?;
-        
+
         info!("Shell command completed");
         info!("Exit status: {:?}", output.status);
-        
+
         if !output.stderr.is_empty() {
             let stderr_str = String::from_utf8_lossy(&output.stderr);
             info!("Stderr content: {}", stderr_str);
             // Note: stderr might contain non-error messages from adb
         }
-        
+
         // For exec-out with redirection, check if file was created successfully
         // rather than relying solely on exit status
         if !local_path.exists() {
@@ -316,42 +328,53 @@ async fn pull_android_db_file(
             error!("Shell command failed - file not created: {}", error_msg);
             return Err(format!("ADB exec-out failed to create file: {}", error_msg).into());
         }
-        
     } else {
         info!("Using standard pull mode");
-        
+
         // For standard access, use adb pull
-        info!("Executing: adb -s {} pull {} {}", device_id, remote_path, local_path.display());
-        
-        let output = execute_adb_command(&["-s", device_id, "pull", remote_path, &local_path.to_string_lossy()]).await?;
-        
+        info!(
+            "Executing: adb -s {} pull {} {}",
+            device_id,
+            remote_path,
+            local_path.display()
+        );
+
+        let output = execute_adb_command(&[
+            "-s",
+            device_id,
+            "pull",
+            remote_path,
+            &local_path.to_string_lossy(),
+        ])
+        .await?;
+
         info!("ADB pull command completed");
         info!("Exit status: {:?}", output.status);
         info!("Stdout: {}", String::from_utf8_lossy(&output.stdout));
-        
+
         if !output.stderr.is_empty() {
             let stderr_str = String::from_utf8_lossy(&output.stderr);
             info!("Stderr content: {}", stderr_str);
         }
-        
+
         if !output.status.success() {
             let error_msg = String::from_utf8_lossy(&output.stderr);
             error!("ADB pull failed: {}", error_msg);
             return Err(format!("ADB pull failed: {}", error_msg).into());
         }
     }
-    
+
     // Verify the file was created and has content
     match fs::metadata(&local_path) {
         Ok(metadata) => {
             info!("File successfully created: {:?}", local_path);
             info!("File size: {} bytes", metadata.len());
-            
+
             if metadata.len() == 0 {
                 error!("Created file is empty!");
                 return Err("Pulled database file is empty".into());
             }
-            
+
             // Check if it looks like a SQLite file (first 16 bytes should be SQLite header)
             if metadata.len() >= 16 {
                 match fs::File::open(&local_path) {
@@ -361,7 +384,7 @@ async fn pull_android_db_file(
                         if let Ok(_) = file.read_exact(&mut header) {
                             let header_str = String::from_utf8_lossy(&header[..15]); // First 15 bytes
                             info!("File header: {:?}", header_str);
-                            
+
                             if header_str.starts_with("SQLite format") {
                                 info!("✅ File appears to be a valid SQLite database");
                             } else {
@@ -380,7 +403,7 @@ async fn pull_android_db_file(
             return Err(format!("File was not created: {}", e).into());
         }
     }
-    
+
     // Store metadata
     let metadata = DatabaseFileMetadata {
         device_id: device_id.to_string(),
@@ -388,28 +411,30 @@ async fn pull_android_db_file(
         remote_path: remote_path.to_string(),
         timestamp: chrono::Utc::now().to_rfc3339(),
     };
-    
+
     let metadata_path = format!("{}.meta.json", local_path.display());
     let metadata_json = serde_json::to_string_pretty(&metadata)?;
     fs::write(&metadata_path, metadata_json)?;
     info!("Metadata written to: {}", metadata_path);
-    
+
     info!("=== pull_android_db_file completed successfully ===");
     Ok(local_path.to_string_lossy().to_string())
 }
 
 // Push Android database file back to device
 async fn push_android_db_file(
+    db_cache: &DbConnectionCache,
     device_id: &str,
     local_path: &str,
     package_name: &str,
     remote_path: &str,
 ) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
-    let filename = Path::new(local_path).file_name()
+    let filename = Path::new(local_path)
+        .file_name()
         .ok_or("Invalid local path")?
         .to_string_lossy();
     let tmp_path = format!("/data/local/tmp/{}", filename);
-    
+
     info!("=== Starting push_android_db_file ===");
     info!("Device ID: {}", device_id);
     info!("Local path: {}", local_path);
@@ -417,16 +442,18 @@ async fn push_android_db_file(
     info!("Remote path: {}", remote_path);
     info!("Filename: {}", filename);
 
-    prepare_sqlite_file_for_sync(local_path)
+    prepare_database_file_for_sync(db_cache, local_path)
+        .await
         .map_err(|e| format!("Failed to prepare SQLite file for sync: {}", e))?;
-    
+
     // Check if remote path is on external storage (sdcard)
     if remote_path.contains("sdcard") || remote_path.contains("external") {
         // Direct push to external storage
         info!("Pushing directly to external storage");
-        
-        let output = execute_adb_command(&["-s", device_id, "push", local_path, remote_path]).await?;
-        
+
+        let output =
+            execute_adb_command(&["-s", device_id, "push", local_path, remote_path]).await?;
+
         if !output.status.success() {
             let error_msg = String::from_utf8_lossy(&output.stderr);
             return Err(format!("ADB direct push failed: {}", error_msg).into());
@@ -434,56 +461,67 @@ async fn push_android_db_file(
     } else {
         // Push to tmp directory first
         info!("Pushing to tmp directory first");
-        
+
         let output = execute_adb_command(&["-s", device_id, "push", local_path, &tmp_path]).await?;
-        
+
         if !output.status.success() {
             let error_msg = String::from_utf8_lossy(&output.stderr);
             return Err(format!("ADB push to tmp failed: {}", error_msg).into());
         }
-        
+
         // Copy from tmp to app's data directory using run-as
         info!("Copying from tmp to app data directory");
-        
-        let output = execute_adb_command(&["-s", device_id, "shell", "run-as", package_name, "cp", &tmp_path, remote_path]).await?;
-        
+
+        let output = execute_adb_command(&[
+            "-s",
+            device_id,
+            "shell",
+            "run-as",
+            package_name,
+            "cp",
+            &tmp_path,
+            remote_path,
+        ])
+        .await?;
+
         if !output.status.success() {
             let error_msg = String::from_utf8_lossy(&output.stderr);
             return Err(format!("ADB copy from tmp failed: {}", error_msg).into());
         }
-        
+
         // Clean up temp file on device
         let _ = execute_adb_command(&["-s", device_id, "shell", "rm", &tmp_path]).await;
     }
-    
+
     info!("=== push_android_db_file completed successfully ===");
     Ok(format!("Database successfully pushed to {}", remote_path))
 }
 
 #[tauri::command]
-pub async fn adb_get_devices(_app_handle: tauri::AppHandle) -> Result<DeviceResponse<Vec<Device>>, String> {
+pub async fn adb_get_devices(
+    _app_handle: tauri::AppHandle,
+) -> Result<DeviceResponse<Vec<Device>>, String> {
     log::info!("Getting Android devices");
 
-    Ok(
-        adb_get_devices_with(|args| async move {
-            let arg_refs: Vec<&str> = args.iter().map(String::as_str).collect();
-            execute_adb_command(&arg_refs).await
-        })
-        .await,
-    )
+    Ok(adb_get_devices_with(|args| async move {
+        let arg_refs: Vec<&str> = args.iter().map(String::as_str).collect();
+        execute_adb_command(&arg_refs).await
+    })
+    .await)
 }
 
 #[tauri::command]
-pub async fn adb_get_packages(_app_handle: tauri::AppHandle, device_id: String) -> Result<DeviceResponse<Vec<Package>>, String> {
+pub async fn adb_get_packages(
+    _app_handle: tauri::AppHandle,
+    device_id: String,
+) -> Result<DeviceResponse<Vec<Package>>, String> {
     log::info!("Getting packages for device: {}", device_id);
 
-    Ok(
-        adb_get_packages_with(&device_id, |args| async move {
-            let arg_refs: Vec<&str> = args.iter().map(String::as_str).collect();
-            execute_adb_command(&arg_refs).await
-        })
-        .await,
-    )
+    Ok(adb_get_packages_with(&device_id, |args| async move {
+        let arg_refs: Vec<&str> = args.iter().map(String::as_str).collect();
+        execute_adb_command(&arg_refs).await
+    })
+    .await)
 }
 
 #[tauri::command]
@@ -492,8 +530,12 @@ pub async fn adb_get_android_database_files(
     device_id: String,
     package_name: String,
 ) -> Result<DeviceResponse<Vec<DatabaseFile>>, String> {
-    log::info!("Getting Android database files for device: {} package: {}", device_id, package_name);
-    
+    log::info!(
+        "Getting Android database files for device: {} package: {}",
+        device_id,
+        package_name
+    );
+
     // Preserve active temp DB files so fast table selection does not race with
     // a background Android rescan deleting the currently selected file.
     if let Err(e) = clean_temp_dir() {
@@ -502,14 +544,15 @@ pub async fn adb_get_android_database_files(
     } else {
         info!("✅ Successfully cleaned old temp files before Android database pull");
     }
-    
+
     let mut database_files = Vec::new();
 
-    let found_files = discover_android_database_candidates_with(&device_id, &package_name, |args| async move {
-        let arg_refs: Vec<&str> = args.iter().map(String::as_str).collect();
-        execute_adb_command(&arg_refs).await
-    })
-    .await;
+    let found_files =
+        discover_android_database_candidates_with(&device_id, &package_name, |args| async move {
+            let arg_refs: Vec<&str> = args.iter().map(String::as_str).collect();
+            execute_adb_command(&arg_refs).await
+        })
+        .await;
 
     for (file_path, admin_access, location) in found_files {
         match pull_android_db_file(&device_id, &package_name, &file_path, admin_access).await {
@@ -548,7 +591,7 @@ pub async fn adb_get_android_database_files(
             }
         }
     }
-    
+
     Ok(DeviceResponse {
         success: true,
         data: Some(database_files),
@@ -556,19 +599,30 @@ pub async fn adb_get_android_database_files(
     })
 }
 
-
-
 // Push database file back to Android device
 #[tauri::command]
 pub async fn adb_push_database_file(
+    db_cache: tauri::State<'_, DbConnectionCache>,
     device_id: String,
     local_path: String,
     package_name: String,
     remote_path: String,
 ) -> Result<DeviceResponse<String>, String> {
-    log::info!("Pushing database file {} to Android device: {}", local_path, device_id);
-    
-    match push_android_db_file(&device_id, &local_path, &package_name, &remote_path).await {
+    log::info!(
+        "Pushing database file {} to Android device: {}",
+        local_path,
+        device_id
+    );
+
+    match push_android_db_file(
+        &db_cache,
+        &device_id,
+        &local_path,
+        &package_name,
+        &remote_path,
+    )
+    .await
+    {
         Ok(message) => Ok(DeviceResponse {
             success: true,
             data: Some(message),
@@ -578,30 +632,37 @@ pub async fn adb_push_database_file(
             success: false,
             data: None,
             error: Some(format!("Failed to push database file: {}", e)),
-        })
+        }),
     }
 }
 
 // Get detailed Android device information using adb shell getprop
-async fn get_android_device_info(device_id: &str) -> Result<std::collections::HashMap<String, String>, Box<dyn std::error::Error + Send + Sync>> {
+async fn get_android_device_info(
+    device_id: &str,
+) -> Result<std::collections::HashMap<String, String>, Box<dyn std::error::Error + Send + Sync>> {
     info!("Getting Android device info for device: {}", device_id);
-    
+
     let output = execute_adb_command(&["-s", device_id, "shell", "getprop"]).await?;
-    
+
     info!("ADB getprop exit status: {:?}", output.status);
-    
+
     if !output.status.success() {
         let stderr = String::from_utf8_lossy(&output.stderr);
         error!("ADB getprop command failed. Stderr: {}", stderr);
-        return Err(format!("ADB getprop failed with exit code: {:?}. Stderr: {}", output.status.code(), stderr).into());
+        return Err(format!(
+            "ADB getprop failed with exit code: {:?}. Stderr: {}",
+            output.status.code(),
+            stderr
+        )
+        .into());
     }
-    
+
     let stdout = String::from_utf8_lossy(&output.stdout);
     info!("ADB getprop output length: {} characters", stdout.len());
-    
+
     let mut device_info = std::collections::HashMap::new();
     let mut processed_lines = 0;
-    
+
     // Parse getprop output and extract key device information
     for line in stdout.lines() {
         if line.starts_with('[') && line.contains("]: [") {
@@ -611,28 +672,45 @@ async fn get_android_device_info(device_id: &str) -> Result<std::collections::Ha
                     let value_part = &line[value_start + 4..];
                     if let Some(value_end) = value_part.rfind(']') {
                         let value = &value_part[..value_end];
-                        
+
                         // Only include relevant device info properties
                         match key {
-                            "ro.product.model" => { 
-                                device_info.insert("Device Model".to_string(), value.to_string()); 
+                            "ro.product.model" => {
+                                device_info.insert("Device Model".to_string(), value.to_string());
                                 info!("Found device model: {}", value);
-                            },
-                            "ro.product.brand" => { 
-                                device_info.insert("Brand".to_string(), value.to_string()); 
+                            }
+                            "ro.product.brand" => {
+                                device_info.insert("Brand".to_string(), value.to_string());
                                 info!("Found brand: {}", value);
-                            },
-                            "ro.product.manufacturer" => { device_info.insert("Manufacturer".to_string(), value.to_string()); },
-                            "ro.build.version.release" => { 
-                                device_info.insert("Android Version".to_string(), value.to_string()); 
+                            }
+                            "ro.product.manufacturer" => {
+                                device_info.insert("Manufacturer".to_string(), value.to_string());
+                            }
+                            "ro.build.version.release" => {
+                                device_info
+                                    .insert("Android Version".to_string(), value.to_string());
                                 info!("Found Android version: {}", value);
-                            },
-                            "ro.build.version.sdk" => { device_info.insert("SDK Version".to_string(), value.to_string()); },
-                            "ro.build.display.id" => { device_info.insert("Build ID".to_string(), value.to_string()); },
-                            "ro.product.cpu.abi" => { device_info.insert("CPU Architecture".to_string(), value.to_string()); },
-                            "ro.build.date" => { device_info.insert("Build Date".to_string(), value.to_string()); },
-                            "ro.product.device" => { device_info.insert("Device Codename".to_string(), value.to_string()); },
-                            "ro.build.version.security_patch" => { device_info.insert("Security Patch".to_string(), value.to_string()); },
+                            }
+                            "ro.build.version.sdk" => {
+                                device_info.insert("SDK Version".to_string(), value.to_string());
+                            }
+                            "ro.build.display.id" => {
+                                device_info.insert("Build ID".to_string(), value.to_string());
+                            }
+                            "ro.product.cpu.abi" => {
+                                device_info
+                                    .insert("CPU Architecture".to_string(), value.to_string());
+                            }
+                            "ro.build.date" => {
+                                device_info.insert("Build Date".to_string(), value.to_string());
+                            }
+                            "ro.product.device" => {
+                                device_info
+                                    .insert("Device Codename".to_string(), value.to_string());
+                            }
+                            "ro.build.version.security_patch" => {
+                                device_info.insert("Security Patch".to_string(), value.to_string());
+                            }
                             _ => {}
                         }
                         processed_lines += 1;
@@ -641,52 +719,63 @@ async fn get_android_device_info(device_id: &str) -> Result<std::collections::Ha
             }
         }
     }
-    
+
     info!("Processed {} lines from getprop output", processed_lines);
-    
+
     // Add device ID
     device_info.insert("Device ID".to_string(), device_id.to_string());
-    
-    info!("Successfully retrieved {} device properties", device_info.len());
-    
+
+    info!(
+        "Successfully retrieved {} device properties",
+        device_info.len()
+    );
+
     if device_info.len() <= 1 {
         // Only device ID was added, no properties found
         error!("No device properties found in getprop output");
         return Err("No device properties could be retrieved from the device".into());
     }
-    
+
     Ok(device_info)
 }
 
 // Get detailed Android device information
 #[tauri::command]
-pub async fn adb_get_device_info(device_id: String) -> Result<DeviceResponse<std::collections::HashMap<String, String>>, String> {
+pub async fn adb_get_device_info(
+    device_id: String,
+) -> Result<DeviceResponse<std::collections::HashMap<String, String>>, String> {
     log::info!("Getting device info for Android device: {}", device_id);
-    
+
     match get_android_device_info(&device_id).await {
         Ok(info) => {
-            log::info!("Successfully retrieved device info with {} properties", info.len());
+            log::info!(
+                "Successfully retrieved device info with {} properties",
+                info.len()
+            );
             Ok(DeviceResponse {
                 success: true,
                 data: Some(info),
                 error: None,
             })
-        },
+        }
         Err(e) => {
             log::error!("Failed to get device info: {}", e);
-            
+
             // Return mock data for testing if real command fails
             let mut mock_info = std::collections::HashMap::new();
             mock_info.insert("Device ID".to_string(), device_id.clone());
-            mock_info.insert("Status".to_string(), "Mock Data - Real command failed".to_string());
+            mock_info.insert(
+                "Status".to_string(),
+                "Mock Data - Real command failed".to_string(),
+            );
             mock_info.insert("Error".to_string(), format!("{}", e));
-            
+
             Ok(DeviceResponse {
                 success: true,
                 data: Some(mock_info),
                 error: Some(format!("Using mock data - real command failed: {}", e)),
             })
-        },
+        }
     }
 }
 
@@ -694,9 +783,9 @@ pub async fn adb_get_device_info(device_id: String) -> Result<DeviceResponse<std
 mod tests {
     use super::*;
     use std::cell::RefCell;
-    use std::rc::Rc;
     #[cfg(unix)]
     use std::os::unix::process::ExitStatusExt;
+    use std::rc::Rc;
     use tempfile::TempDir;
 
     #[cfg(unix)]
@@ -717,9 +806,9 @@ mod tests {
             .file_name()
             .unwrap()
             .to_string_lossy();
-        
+
         assert_eq!(filename, "test.db");
-        
+
         let local_path = temp_dir.path().join(&*filename);
         assert!(local_path.to_string_lossy().contains("test.db"));
     }
@@ -732,7 +821,7 @@ mod tests {
             remote_path: "/data/data/com.example.app/databases/test.db".to_string(),
             timestamp: "2024-01-01T12:00:00Z".to_string(),
         };
-        
+
         assert_eq!(metadata.device_id, "emulator-5554");
         assert_eq!(metadata.package_name, "com.example.app");
         assert!(metadata.remote_path.contains("test.db"));
@@ -741,22 +830,20 @@ mod tests {
 
     #[test]
     fn test_device_response_success() {
-        let devices = vec![
-            Device {
-                id: "emulator-5554".to_string(),
-                name: "Android Emulator".to_string(),
-                model: "Android SDK built for x86".to_string(),
-                device_type: "emulator".to_string(),
-                description: "Emulator device".to_string(),
-            },
-        ];
-        
+        let devices = vec![Device {
+            id: "emulator-5554".to_string(),
+            name: "Android Emulator".to_string(),
+            model: "Android SDK built for x86".to_string(),
+            device_type: "emulator".to_string(),
+            description: "Emulator device".to_string(),
+        }];
+
         let response = DeviceResponse {
             success: true,
             data: Some(devices),
             error: None,
         };
-        
+
         assert!(response.success);
         assert!(response.data.is_some());
         assert!(response.error.is_none());
@@ -770,7 +857,7 @@ mod tests {
             data: None,
             error: Some("ADB not found".to_string()),
         };
-        
+
         assert!(!response.success);
         assert!(response.data.is_none());
         assert!(response.error.is_some());
@@ -783,7 +870,7 @@ mod tests {
             name: "Example App".to_string(),
             bundle_id: "com.example.app".to_string(),
         };
-        
+
         assert_eq!(package.name, "Example App");
         assert_eq!(package.bundle_id, "com.example.app");
     }
@@ -798,7 +885,7 @@ mod tests {
             remote_path: Some("/data/data/com.example.app/databases/test.db".to_string()),
             device_type: "android".to_string(),
         };
-        
+
         assert_eq!(db_file.filename, "test.db");
         assert_eq!(db_file.package_name, "com.example.app");
         assert_eq!(db_file.device_type, "android");
@@ -819,7 +906,7 @@ mod tests {
         // Test that the command structure is correct
         let args = ["devices"];
         let result = execute_adb_command(&args).await;
-        
+
         // Command should at least attempt to execute
         // (it might fail if ADB is not installed, but the function should work)
         match result {
@@ -832,12 +919,12 @@ mod tests {
                 // Just verify the error is related to execution, not our logic
                 let error_msg = e.to_string();
                 assert!(
-                    error_msg.contains("No such file") || 
-                    error_msg.contains("not found") ||
-                    error_msg.contains("cannot run") ||
-                    error_msg.contains("failed to execute") ||
-                    error_msg.contains("access") ||
-                    error_msg.contains("permission")
+                    error_msg.contains("No such file")
+                        || error_msg.contains("not found")
+                        || error_msg.contains("cannot run")
+                        || error_msg.contains("failed to execute")
+                        || error_msg.contains("access")
+                        || error_msg.contains("permission")
                 );
             }
         }
@@ -852,17 +939,17 @@ mod tests {
             device_type: "android".to_string(),
             description: "Test Description".to_string(),
         };
-        
+
         // Test serialization
         let json = serde_json::to_string(&device)?;
         assert!(json.contains("test123"));
         assert!(json.contains("deviceType"));
-        
+
         // Test deserialization
         let deserialized: Device = serde_json::from_str(&json)?;
         assert_eq!(deserialized.id, device.id);
         assert_eq!(deserialized.device_type, device.device_type);
-        
+
         Ok(())
     }
 
@@ -872,16 +959,16 @@ mod tests {
             name: "Test Package".to_string(),
             bundle_id: "com.test.package".to_string(),
         };
-        
+
         // Test serialization
         let json = serde_json::to_string(&package)?;
         assert!(json.contains("bundleId"));
         assert!(json.contains("com.test.package"));
-        
+
         // Test deserialization
         let deserialized: Package = serde_json::from_str(&json)?;
         assert_eq!(deserialized.bundle_id, package.bundle_id);
-        
+
         Ok(())
     }
 
@@ -895,18 +982,18 @@ mod tests {
             remote_path: Some("/remote/test.db".to_string()),
             device_type: "android".to_string(),
         };
-        
+
         // Test serialization
         let json = serde_json::to_string(&db_file)?;
         assert!(json.contains("packageName"));
         assert!(json.contains("remotePath"));
         assert!(json.contains("deviceType"));
-        
+
         // Test deserialization
         let deserialized: DatabaseFile = serde_json::from_str(&json)?;
         assert_eq!(deserialized.package_name, db_file.package_name);
         assert_eq!(deserialized.device_type, db_file.device_type);
-        
+
         Ok(())
     }
 
@@ -919,21 +1006,21 @@ mod tests {
             device_type: "android".to_string(),
             description: "Desc".to_string(),
         }];
-        
+
         let response = DeviceResponse {
             success: true,
             data: Some(devices),
             error: None,
         };
-        
+
         let json = serde_json::to_string(&response)?;
         assert!(json.contains("success"));
         assert!(json.contains("data"));
-        
+
         let deserialized: DeviceResponse<Vec<Device>> = serde_json::from_str(&json)?;
         assert!(deserialized.success);
         assert!(deserialized.data.is_some());
-        
+
         Ok(())
     }
 
@@ -990,13 +1077,11 @@ offline-device offline transport_id:3
 
         assert!(!response.success);
         assert!(response.data.is_none());
-        assert!(
-            response
-                .error
-                .as_deref()
-                .unwrap_or("")
-                .contains("Make sure Android SDK is installed and ADB is in your PATH.")
-        );
+        assert!(response
+            .error
+            .as_deref()
+            .unwrap_or("")
+            .contains("Make sure Android SDK is installed and ADB is in your PATH."));
     }
 
     #[tokio::test]
@@ -1058,7 +1143,12 @@ package:
 
     #[test]
     fn test_adb_find_database_args_uses_plain_find_for_shared_storage() {
-        let args = adb_find_database_args("device-1", "com.example.app", "/sdcard/Android/data/", false);
+        let args = adb_find_database_args(
+            "device-1",
+            "com.example.app",
+            "/sdcard/Android/data/",
+            false,
+        );
 
         assert_eq!(
             args,
@@ -1086,32 +1176,44 @@ package:
         let calls = Rc::new(RefCell::new(Vec::<Vec<String>>::new()));
         let captured_calls = Rc::clone(&calls);
 
-        let found = discover_android_database_candidates_with(
-            "device-1",
-            "com.example.app",
-            move |args| {
+        let found =
+            discover_android_database_candidates_with("device-1", "com.example.app", move |args| {
                 captured_calls.borrow_mut().push(args.clone());
                 async move {
-                    let target_path = args.iter().find(|arg| arg.starts_with('/')).cloned().unwrap_or_default();
+                    let target_path = args
+                        .iter()
+                        .find(|arg| arg.starts_with('/'))
+                        .cloned()
+                        .unwrap_or_default();
 
                     if target_path == "/data/data/com.example.app/" {
                         Ok(fake_output(0, "", ""))
                     } else if target_path == "/sdcard/Android/data/com.example.app/" {
-                        Ok(fake_output(0, "/sdcard/Android/data/com.example.app/files/main.db\n", ""))
+                        Ok(fake_output(
+                            0,
+                            "/sdcard/Android/data/com.example.app/files/main.db\n",
+                            "",
+                        ))
                     } else {
-                        Ok(fake_output(0, "/storage/emulated/0/Android/data/com.example.app/files/fallback.db\n", ""))
+                        Ok(fake_output(
+                            0,
+                            "/storage/emulated/0/Android/data/com.example.app/files/fallback.db\n",
+                            "",
+                        ))
                     }
                 }
-            },
-        )
-        .await;
+            })
+            .await;
 
         let calls = calls.borrow();
         assert_eq!(calls.len(), 2);
         assert!(calls[0].contains(&"run-as".to_string()));
         assert_eq!(calls[1][3], "find");
         assert_eq!(found.len(), 1);
-        assert_eq!(found[0].0, "/sdcard/Android/data/com.example.app/files/main.db");
+        assert_eq!(
+            found[0].0,
+            "/sdcard/Android/data/com.example.app/files/main.db"
+        );
         assert!(!found[0].1);
         assert_eq!(found[0].2, "/sdcard/Android/data/");
     }
@@ -1122,10 +1224,8 @@ package:
         let calls = Rc::new(RefCell::new(Vec::<Vec<String>>::new()));
         let captured_calls = Rc::clone(&calls);
 
-        let found = discover_android_database_candidates_with(
-            "device-1",
-            "com.example.app",
-            move |args| {
+        let found =
+            discover_android_database_candidates_with("device-1", "com.example.app", move |args| {
                 captured_calls.borrow_mut().push(args.clone());
                 async move {
                     Ok(fake_output(
@@ -1134,13 +1234,15 @@ package:
                         "",
                     ))
                 }
-            },
-        )
-        .await;
+            })
+            .await;
 
         assert_eq!(calls.borrow().len(), 1);
         assert_eq!(found.len(), 1);
-        assert_eq!(found[0].0, "/data/data/com.example.app/databases/internal.db");
+        assert_eq!(
+            found[0].0,
+            "/data/data/com.example.app/databases/internal.db"
+        );
         assert!(found[0].1);
         assert_eq!(found[0].2, "/data/data/");
     }
@@ -1186,13 +1288,11 @@ package:
 
         assert!(!response.success);
         assert!(response.data.is_none());
-        assert!(
-            response
-                .error
-                .as_deref()
-                .unwrap_or("")
-                .contains("Make sure the device is connected and ADB is working.")
-        );
+        assert!(response
+            .error
+            .as_deref()
+            .unwrap_or("")
+            .contains("Make sure the device is connected and ADB is working."));
     }
 
     #[tokio::test]
@@ -1215,7 +1315,7 @@ package:
             "/data/data/com.another.app/files/database.sqlite",
             "/storage/emulated/0/Android/data/com.app/files/db.sqlite3",
         ];
-        
+
         for path in db_paths {
             // Test filename extraction
             let filename = std::path::Path::new(path)
@@ -1223,7 +1323,7 @@ package:
                 .unwrap()
                 .to_string_lossy();
             assert!(filename.contains("db") || filename.contains("sqlite"));
-            
+
             // Test package name extraction from path
             if path.contains("/data/data/") {
                 let parts: Vec<&str> = path.split('/').collect();
@@ -1244,14 +1344,14 @@ package:
             "/storage/test/file.db",
             "/complex/path/with/subdirs/database.sqlite3",
         ];
-        
+
         for remote_path in remote_paths {
             let filename = std::path::Path::new(remote_path)
                 .file_name()
                 .unwrap()
                 .to_string_lossy();
             let local_path = temp_dir.path().join(&*filename);
-            
+
             // Verify path is valid and contains expected filename
             assert!(local_path.exists() || !local_path.exists()); // Path should be valid
             assert!(local_path.to_string_lossy().contains(&*filename));
@@ -1261,7 +1361,7 @@ package:
     #[test]
     fn test_error_handling_edge_cases() {
         // Test various error scenarios
-        
+
         // Empty device ID
         let empty_device = Device {
             id: "".to_string(),
@@ -1271,14 +1371,14 @@ package:
             description: "Test".to_string(),
         };
         assert!(empty_device.id.is_empty());
-        
+
         // Invalid package name format
         let invalid_package = Package {
             name: "".to_string(),
             bundle_id: "invalid-bundle-id".to_string(),
         };
         assert!(invalid_package.name.is_empty());
-        
+
         // Database file with invalid path
         let invalid_db_file = DatabaseFile {
             path: "".to_string(),

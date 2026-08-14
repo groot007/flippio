@@ -315,6 +315,8 @@ export function DatabaseItems({ style }: DatabaseItemsProps) {
 
     return (
       <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={`Add random row to ${fixture.databaseName}`}
         style={({ pressed }) => [
           styles.addButton,
           {

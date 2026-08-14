@@ -3,7 +3,9 @@ import { keyframes } from '@emotion/react'
 import { isE2EModeEnabled } from '@renderer/e2e/mockRuntime'
 import { selectDesktopDatabase } from '@renderer/features/layout/selectionSession'
 import { useSelectionSessionActions } from '@renderer/features/layout/useSelectionSessionActions'
+import { useSqlcipherUnlock } from '@renderer/store'
 import { useColorMode } from '@renderer/ui/color-mode'
+import { ensureDatabaseUnlocked, SqlcipherKeyRequiredError } from '@renderer/utils/sqlcipher'
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow'
 import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react'
 import { LuDatabase, LuFileType, LuUpload } from 'react-icons/lu'
@@ -51,7 +53,7 @@ const borderFlashAnimation = keyframes`
   100% { border-color: var(--chakra-colors-flipioPrimary); }
 `
 
-const SUPPORTED_FILE_EXTENSIONS = ['.sqlite', '.db', '.sql', '.sqlite3', '.sqlitedb']
+const SUPPORTED_FILE_EXTENSIONS = ['.db', '.db3', '.sqlite', '.sqlite3', '.sqlitedb']
 
 interface DragAndDropProviderProps {
   children: React.ReactNode
@@ -64,6 +66,7 @@ export const DragAndDropProvider: React.FC<DragAndDropProviderProps> = ({ childr
   const { colorMode } = useColorMode()
   const isDark = colorMode === 'dark'
   const selectionActions = useSelectionSessionActions()
+  const requestSqlcipherUnlock = useSqlcipherUnlock(state => state.setRequest)
 
   const handleFile = useCallback(async (fileOrPath: File | string) => {
     setIsProcessingFile(true)
@@ -86,7 +89,7 @@ export const DragAndDropProvider: React.FC<DragAndDropProviderProps> = ({ childr
         if (!filterExt) {
           toaster.create({
             title: 'Unsupported file type',
-            description: 'Please drop SQLite database files only (.db, .sqlite, .sql)',
+            description: 'Please drop SQLite database files only (.db, .db3, .sqlite, .sqlite3, .sqlitedb)',
             type: 'warning',
             duration: 3000,
           })
@@ -103,7 +106,7 @@ export const DragAndDropProvider: React.FC<DragAndDropProviderProps> = ({ childr
         if (!filterExt) {
           toaster.create({
             title: 'Unsupported file type',
-            description: 'Please drop SQLite database files only (.db, .sqlite, .sql)',
+            description: 'Please drop SQLite database files only (.db, .db3, .sqlite, .sqlite3, .sqlitedb)',
             type: 'warning',
             duration: 3000,
           })
@@ -114,16 +117,20 @@ export const DragAndDropProvider: React.FC<DragAndDropProviderProps> = ({ childr
 
       console.log('🔧 [DragAndDrop] Setting custom file:', filePath)
 
+      const databaseFile = {
+        path: filePath,
+        filename,
+        deviceType: 'desktop' as const,
+        packageName: '',
+        remotePath: filePath,
+        location: filePath,
+      }
+
+      await ensureDatabaseUnlocked(databaseFile)
+
       selectDesktopDatabase({
         actions: selectionActions,
-        databaseFile: {
-          path: filePath,
-          filename,
-          deviceType: 'desktop',
-          packageName: '',
-          remotePath: filePath,
-          location: filePath,
-        },
+        databaseFile,
       })
       
       toaster.create({
@@ -134,6 +141,26 @@ export const DragAndDropProvider: React.FC<DragAndDropProviderProps> = ({ childr
       })
     }
     catch (error) {
+      if (error instanceof SqlcipherKeyRequiredError) {
+        requestSqlcipherUnlock({
+          databaseFile: error.databaseFile,
+          onUnlocked: async (databaseFile) => {
+            selectDesktopDatabase({
+              actions: selectionActions,
+              databaseFile,
+            })
+            toaster.create({
+              title: 'Database opened',
+              description: `Successfully opened ${databaseFile.filename}`,
+              type: 'success',
+              duration: 3000,
+            })
+          },
+        })
+        setIsProcessingFile(false)
+        return
+      }
+
       console.error('Error handling dropped file:', error)
       toaster.create({
         title: 'Error opening file',
@@ -144,7 +171,7 @@ export const DragAndDropProvider: React.FC<DragAndDropProviderProps> = ({ childr
     }
 
     setIsProcessingFile(false)
-  }, [selectionActions])
+  }, [requestSqlcipherUnlock, selectionActions])
 
   // Handle Tauri file drop events
   useEffect(() => {

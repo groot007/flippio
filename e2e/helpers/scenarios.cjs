@@ -204,7 +204,11 @@ function createAndroidBaseCommands(overrides = {}) {
       default: successData(true),
     },
     db_open: {
-      default: successData(DATABASE_FILE.path),
+      default: successData({
+        path: DATABASE_FILE.path,
+        requires_key: false,
+        encryption_state: 'plain',
+      }),
     },
     db_switch_database: {
       default: successData(true),
@@ -258,7 +262,11 @@ function createIOSBaseCommands(overrides = {}) {
       default: successData(true),
     },
     db_open: {
-      default: successData(IOS_DB_A.path),
+      default: successData({
+        path: IOS_DB_A.path,
+        requires_key: false,
+        encryption_state: 'plain',
+      }),
     },
     db_switch_database: {
       default: successData(true),

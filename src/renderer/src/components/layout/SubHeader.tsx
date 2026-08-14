@@ -22,10 +22,12 @@ import { useSubHeaderSelectionEffects } from '@renderer/features/layout/useSubHe
 import { useDatabaseFiles } from '@renderer/hooks/useDatabaseFiles'
 import { useDatabaseTables } from '@renderer/hooks/useDatabaseTables'
 import { useTableDataQuery } from '@renderer/hooks/useTableDataQuery'
+import { useSqlcipherUnlock } from '@renderer/store'
 import { toaster } from '@renderer/ui/toaster'
 import { groupDatabaseFilesByLocation } from '@renderer/utils/databaseFileGrouping'
 import { ensureActiveDatabaseFile } from '@renderer/utils/databaseFileResolver'
 import { refreshDatabase } from '@renderer/utils/databaseRefresh'
+import { ensureDatabaseUnlocked, SqlcipherKeyRequiredError } from '@renderer/utils/sqlcipher'
 import { useQueryClient } from '@tanstack/react-query'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { LuDatabase, LuFilter, LuFolderOpen, LuRefreshCcw, LuTable, LuUpload, LuX } from 'react-icons/lu'
@@ -50,6 +52,7 @@ export function SubHeader() {
 
   const [isQueryModalOpen, setIsQueryModalOpen] = useState(false)
   const queryClient = useQueryClient()
+  const requestSqlcipherUnlock = useSqlcipherUnlock(state => state.setRequest)
 
   const {
     data: databaseFiles = [],
@@ -72,7 +75,10 @@ export function SubHeader() {
     }
   }, [queriedTableData, selectedDatabaseTable, sessionTableData?.isCustomQuery, setTableData])
 
-  const isDBPulling = !!selectedApplication?.bundleId && !!selectedDevice?.id && isFirstRoundLoading
+  const isDBPulling = !!selectedApplication?.bundleId
+    && !!selectedDevice?.id
+    && isFirstRoundLoading
+    && databaseFiles.length === 0
 
   const {
     data: tablesData,
@@ -94,39 +100,70 @@ export function SubHeader() {
   const databaseTables = tablesData?.tables
 
   const handleDatabaseFileChange = useCallback(async (file) => {
-    const resolvedFile = file?.path
-      ? await ensureActiveDatabaseFile({
-          databaseFile: file,
-          selectedDevice,
-          selectedApplication,
-          queryClient,
-          setSelectedDatabaseFile: undefined,
-        })
-      : file
+    const selectResolvedDatabaseFile = async (resolvedFile: typeof file) => {
+      console.info('CriticalPath: database file selected', {
+        path: resolvedFile?.path ?? null,
+        filename: resolvedFile?.filename ?? null,
+        deviceType: resolvedFile?.deviceType ?? null,
+      })
 
-    console.info('CriticalPath: database file selected', {
-      path: resolvedFile?.path ?? null,
-      filename: resolvedFile?.filename ?? null,
-      deviceType: resolvedFile?.deviceType ?? null,
-    })
-    // Call database switch cleanup if we have a file path
-    if (resolvedFile?.path) {
-      try {
-        await window.api.switchDatabase(resolvedFile.path)
-        console.log('Database switch cleanup completed for:', resolvedFile.path)
+      if (resolvedFile?.path) {
+        try {
+          await window.api.switchDatabase(resolvedFile.path)
+          console.log('Database switch cleanup completed for:', resolvedFile.path)
+        }
+        catch (error) {
+          console.warn('Database switch cleanup failed (non-critical):', error)
+        }
       }
-      catch (error) {
-        console.warn('Database switch cleanup failed (non-critical):', error)
-      }
+
+      selectDatabase({
+        databaseFile: resolvedFile,
+        currentApplication: selectedApplication,
+        currentDevice: selectedDevice,
+        actions: selectionActions,
+      })
     }
-    
-    selectDatabase({
-      databaseFile: resolvedFile,
-      currentApplication: selectedApplication,
-      currentDevice: selectedDevice,
-      actions: selectionActions,
-    })
-  }, [queryClient, selectedApplication, selectedDevice, selectionActions])
+
+    try {
+      const resolvedFile = file?.path
+        ? await ensureActiveDatabaseFile({
+            databaseFile: file,
+            selectedDevice,
+            selectedApplication,
+            queryClient,
+            setSelectedDatabaseFile: undefined,
+          })
+        : file
+
+      await selectResolvedDatabaseFile(resolvedFile)
+    }
+    catch (error) {
+      if (error instanceof SqlcipherKeyRequiredError) {
+        requestSqlcipherUnlock({
+          databaseFile: error.databaseFile,
+          onUnlocked: async (databaseFile) => {
+            const resolvedFile = await ensureActiveDatabaseFile({
+              databaseFile,
+              selectedDevice,
+              selectedApplication,
+              queryClient,
+              setSelectedDatabaseFile: undefined,
+            })
+            await selectResolvedDatabaseFile(resolvedFile)
+          },
+        })
+        return
+      }
+
+      toaster.create({
+        title: 'Error opening database',
+        description: error instanceof Error ? error.message : 'Failed to open database',
+        type: 'error',
+        duration: 4000,
+      })
+    }
+  }, [queryClient, requestSqlcipherUnlock, selectedApplication, selectedDevice, selectionActions])
 
   const handleTableChange = useCallback((table) => {    
     console.info('CriticalPath: table selected', {
@@ -361,16 +398,20 @@ export function SubHeader() {
 
   const isNoDB = !databaseFiles?.length && isScanComplete && selectedApplication?.bundleId && selectedDevice?.id
 
-  const databaseMenuFooter = (isFirstRoundLoading || isBackgroundScanning)
-    ? (
-        <HStack px={3} py={2}>
-          <Text fontSize="xs" color="textSecondary">
-            {isFirstRoundLoading ? 'Scanning Documents...' : 'Scanning more folders...'}
-          </Text>
-          <Spinner size="xs" color="flipioPrimary" />
-        </HStack>
-      )
-    : undefined
+  const databaseMenuFooter = useMemo(() => {
+    if (!isFirstRoundLoading && !isBackgroundScanning) {
+      return undefined
+    }
+
+    return (
+      <HStack px={3} py={2}>
+        <Text fontSize="xs" color="textSecondary">
+          {isFirstRoundLoading ? 'Scanning Documents...' : 'Scanning more folders...'}
+        </Text>
+        <Spinner size="xs" color="flipioPrimary" />
+      </HStack>
+    )
+  }, [isBackgroundScanning, isFirstRoundLoading])
 
   const handleOpenDBFile = useCallback(() => {
     window.api.openFile().then((file) => {
@@ -389,13 +430,36 @@ export function SubHeader() {
           filePath,
         })
 
-        selectDesktopDatabase({
-          actions: selectionActions,
-          databaseFile: desktopDatabaseFile,
-        })
+        ensureDatabaseUnlocked(desktopDatabaseFile)
+          .then(() => {
+            selectDesktopDatabase({
+              actions: selectionActions,
+              databaseFile: desktopDatabaseFile,
+            })
+          })
+          .catch((error) => {
+            if (error instanceof SqlcipherKeyRequiredError) {
+              requestSqlcipherUnlock({
+                databaseFile: desktopDatabaseFile,
+                onUnlocked: async (databaseFile) => {
+                  selectDesktopDatabase({
+                    actions: selectionActions,
+                    databaseFile,
+                  })
+                },
+              })
+              return
+            }
+
+            toaster.create({
+              title: 'Error opening database',
+              description: error instanceof Error ? error.message : 'Failed to open database',
+              type: 'error',
+            })
+          })
       }
     })
-  }, [selectionActions])
+  }, [requestSqlcipherUnlock, selectionActions])
 
   const handleExportDB = useCallback(() => {
     if (!selectedDatabaseFile?.path) {

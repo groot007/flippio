@@ -1,10 +1,10 @@
-use super::types::{UserContext, ChangeEvent, OperationType, FieldChange, ChangeMetadata};
+use super::types::{ChangeEvent, ChangeMetadata, FieldChange, OperationType, UserContext};
 use super::ChangeHistoryManager;
+use chrono::Utc;
 use serde_json::Value;
-use sqlx::{Pool, Sqlite, Row};
+use sqlx::{Pool, Row, Sqlite};
 use std::collections::HashMap;
 use tauri::State;
-use chrono::Utc;
 use uuid::Uuid;
 
 pub async fn capture_old_values_for_update(
@@ -14,10 +14,13 @@ pub async fn capture_old_values_for_update(
     columns: &[String],
 ) -> Result<HashMap<String, Value>, sqlx::Error> {
     let column_list = columns.join(", ");
-    let query = format!("SELECT {} FROM {} WHERE {}", column_list, table_name, condition);
-    
+    let query = format!(
+        "SELECT {} FROM {} WHERE {}",
+        column_list, table_name, condition
+    );
+
     let row = sqlx::query(&query).fetch_one(pool).await?;
-    
+
     let mut old_values = HashMap::new();
     for column in columns {
         let value: Value = match row.try_get::<Option<String>, &str>(column) {
@@ -41,7 +44,7 @@ pub async fn capture_old_values_for_update(
         };
         old_values.insert(column.clone(), value);
     }
-    
+
     Ok(old_values)
 }
 
@@ -50,21 +53,21 @@ pub fn create_field_changes(
     new_values: &HashMap<String, Value>,
 ) -> Vec<FieldChange> {
     let mut changes = Vec::new();
-    
+
     // Handle regular updates/inserts by iterating over new_values
     for (field_name, new_value) in new_values {
         let old_value = old_values.get(field_name);
-        
+
         let old_val_opt = match old_value {
             Some(v) if v != &Value::Null => Some(v.clone()),
             _ => None,
         };
-        
+
         let new_val_opt = match new_value {
             v if v != &Value::Null => Some(v.clone()),
             _ => None,
         };
-        
+
         // Only record if there's actually a change
         if old_val_opt != new_val_opt {
             let data_type = match new_value {
@@ -74,7 +77,7 @@ pub fn create_field_changes(
                 Value::Null => "NULL".to_string(),
                 _ => "TEXT".to_string(),
             };
-            
+
             changes.push(FieldChange {
                 field_name: field_name.clone(),
                 old_value: old_val_opt,
@@ -83,7 +86,7 @@ pub fn create_field_changes(
             });
         }
     }
-    
+
     // Handle delete operations: if new_values is empty but old_values has data,
     // create field changes for all old values (showing they were deleted)
     if new_values.is_empty() && !old_values.is_empty() {
@@ -92,7 +95,7 @@ pub fn create_field_changes(
                 v if v != &Value::Null => Some(v.clone()),
                 _ => None,
             };
-            
+
             if old_val_opt.is_some() {
                 let data_type = match old_value {
                     Value::String(_) => "TEXT".to_string(),
@@ -101,7 +104,7 @@ pub fn create_field_changes(
                     Value::Null => "NULL".to_string(),
                     _ => "TEXT".to_string(),
                 };
-                
+
                 changes.push(FieldChange {
                     field_name: field_name.clone(),
                     old_value: old_val_opt,
@@ -111,7 +114,7 @@ pub fn create_field_changes(
             }
         }
     }
-    
+
     changes
 }
 
@@ -129,7 +132,8 @@ pub fn extract_context_from_path(
         .to_string_lossy()
         .to_string();
 
-    let default_package = if let Some(filename) = std::path::Path::new(&normalized_path).file_name() {
+    let default_package = if let Some(filename) = std::path::Path::new(&normalized_path).file_name()
+    {
         filename.to_string_lossy().to_string()
     } else {
         "unknown".to_string()
@@ -150,7 +154,7 @@ pub async fn record_change_with_safety(
     change_event: ChangeEvent,
 ) -> Result<(), String> {
     let manager = change_manager.inner();
-    
+
     match manager.record_change(change_event).await {
         Ok(_) => {
             log::debug!("📝 Change recorded successfully");
@@ -177,12 +181,12 @@ pub fn create_change_event(
         .ok_or("Invalid database path")?
         .to_string_lossy()
         .to_string();
-    
-    // Check if this is a custom file by detecting if both device_id and app_package 
+
+    // Check if this is a custom file by detecting if both device_id and app_package
     // were defaulted to "unknown" (indicating None was passed for both device_id and package_name)
-    let is_custom_file = user_context.device_id == "unknown" && 
-                        user_context.app_package == database_filename;
-    
+    let is_custom_file =
+        user_context.device_id == "unknown" && user_context.app_package == database_filename;
+
     // For custom files, use custom file context key, otherwise use regular context key
     let context_key = if is_custom_file {
         super::generate_custom_file_context_key(db_path)
@@ -193,29 +197,41 @@ pub fn create_change_event(
             &database_filename,
         )
     };
-    
+
     // Debug logging for context key generation
     log::info!("🔍 [record_change] Context key generation:");
     log::info!("🔍 [record_change] Device ID: {}", user_context.device_id);
-    log::info!("🔍 [record_change] App package: {}", user_context.app_package);
-    log::info!("🔍 [record_change] Database filename: {}", database_filename);
+    log::info!(
+        "🔍 [record_change] App package: {}",
+        user_context.app_package
+    );
+    log::info!(
+        "🔍 [record_change] Database filename: {}",
+        database_filename
+    );
     log::info!("🔍 [record_change] Database path: {}", db_path);
     log::info!("🔍 [record_change] Is custom file: {}", is_custom_file);
     log::info!("🔍 [record_change] Generated context key: {}", context_key);
-    
+
     let metadata = ChangeMetadata {
         affected_rows: match &operation_type {
-            OperationType::BulkInsert { count } |
-            OperationType::BulkUpdate { count } |
-            OperationType::BulkDelete { count } => *count,
-            _ => if changes.is_empty() { 0 } else { 1 },
+            OperationType::BulkInsert { count }
+            | OperationType::BulkUpdate { count }
+            | OperationType::BulkDelete { count } => *count,
+            _ => {
+                if changes.is_empty() {
+                    0
+                } else {
+                    1
+                }
+            }
         },
         execution_time_ms: 0, // This could be measured by the caller
         sql_statement,
         original_remote_path: None, // Could be added by caller if available
         pull_timestamp: Utc::now(),
     };
-    
+
     Ok(ChangeEvent {
         id: Uuid::new_v4().to_string(),
         timestamp: Utc::now(),

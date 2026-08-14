@@ -1,24 +1,26 @@
 //! iOS Database File Operations
-//! 
+//!
 //! This module handles database file operations for iOS devices including
 //! detection, pulling, and pushing of database files.
 
-use super::super::types::{DeviceResponse, DatabaseFile};
 use super::super::helpers::clean_temp_dir;
-use crate::commands::database::helpers::prepare_sqlite_file_for_sync;
+use super::super::types::{DatabaseFile, DeviceResponse};
 use super::file_utils::{pull_ios_db_file, IosAppAccessType};
 use super::tools::get_tool_command_legacy;
+use crate::commands::database::helpers::prepare_database_file_for_sync;
+use crate::commands::database::types::DbConnectionCache;
+use log::{error, info};
 use serde::Serialize;
-use tauri::Emitter;
-use tauri_plugin_shell::ShellExt;
-use log::{info, error};
 use std::collections::{HashMap, HashSet, VecDeque};
 use std::sync::{LazyLock, Mutex};
+use tauri::Emitter;
+use tauri_plugin_shell::ShellExt;
 
 const IOS_SCAN_MAX_DEPTH: usize = 6;
 const IOS_SCAN_MAX_DIRECTORIES: usize = 256;
 const IOS_SCAN_PROGRESS_EVENT: &str = "ios-db-scan-progress";
-const IOS_LIBRARY_BACKGROUND_PATHS: [&str; 3] = [
+const IOS_LIBRARY_BACKGROUND_PATHS: [&str; 4] = [
+    "/Library/SQLite",
     "/Library/Application Support",
     "/Library/LocalDatabase",
     "/Library/{bundle_id}",
@@ -54,7 +56,12 @@ fn location_from_remote_path(remote_path: &str) -> String {
     } else if remote_path == "/Documents" || remote_path.starts_with("/Documents/") {
         "Documents".to_string()
     } else {
-        remote_path.trim_matches('/').split('/').next().unwrap_or("Container").to_string()
+        remote_path
+            .trim_matches('/')
+            .split('/')
+            .next()
+            .unwrap_or("Container")
+            .to_string()
     }
 }
 
@@ -64,7 +71,10 @@ fn access_type_for_remote_path(remote_path: &str) -> IosAppAccessType {
 }
 
 fn basename(path: &str) -> &str {
-    path.trim_end_matches('/').rsplit('/').next().unwrap_or(path)
+    path.trim_end_matches('/')
+        .rsplit('/')
+        .next()
+        .unwrap_or(path)
 }
 
 fn matches_bundle_folder_name(path: &str, package_name: &str) -> bool {
@@ -72,14 +82,18 @@ fn matches_bundle_folder_name(path: &str, package_name: &str) -> bool {
 }
 
 fn begin_ios_scan(scan_key: &str) -> u64 {
-    let mut scans = IOS_SCAN_GENERATIONS.lock().expect("iOS scan registry poisoned");
+    let mut scans = IOS_SCAN_GENERATIONS
+        .lock()
+        .expect("iOS scan registry poisoned");
     let next_generation = scans.get(scan_key).copied().unwrap_or(0) + 1;
     scans.insert(scan_key.to_string(), next_generation);
     next_generation
 }
 
 fn cancel_ios_scan(scan_key: &str) {
-    let mut scans = IOS_SCAN_GENERATIONS.lock().expect("iOS scan registry poisoned");
+    let mut scans = IOS_SCAN_GENERATIONS
+        .lock()
+        .expect("iOS scan registry poisoned");
     let next_generation = scans.get(scan_key).copied().unwrap_or(0) + 1;
     scans.insert(scan_key.to_string(), next_generation);
 }
@@ -94,7 +108,9 @@ fn is_ios_scan_active(scan_key: &str, generation: u64) -> bool {
 }
 
 fn finish_ios_scan(scan_key: &str, generation: u64) {
-    let mut scans = IOS_SCAN_GENERATIONS.lock().expect("iOS scan registry poisoned");
+    let mut scans = IOS_SCAN_GENERATIONS
+        .lock()
+        .expect("iOS scan registry poisoned");
     if scans.get(scan_key).copied() == Some(generation) {
         scans.remove(scan_key);
     }
@@ -121,7 +137,8 @@ async fn list_ios_directory(
     let access_args = access_type.afcclient_args(package_name);
     let cmd_args = [access_args[0], access_args[1], "-u", device_id, "ls", path];
 
-    let output = shell.command(afcclient_cmd)
+    let output = shell
+        .command(afcclient_cmd)
         .args(cmd_args)
         .output()
         .await
@@ -156,9 +173,17 @@ async fn ios_path_is_directory(
     access_type: IosAppAccessType,
 ) -> Result<bool, String> {
     let access_args = access_type.afcclient_args(package_name);
-    let cmd_args = [access_args[0], access_args[1], "-u", device_id, "info", path];
+    let cmd_args = [
+        access_args[0],
+        access_args[1],
+        "-u",
+        device_id,
+        "info",
+        path,
+    ];
 
-    let output = shell.command(afcclient_cmd)
+    let output = shell
+        .command(afcclient_cmd)
         .args(cmd_args)
         .output()
         .await
@@ -202,7 +227,10 @@ async fn scan_ios_directory_recursive(
 
     while let Some((path, depth)) = queue.pop_front() {
         if !is_ios_scan_active(scan_key, scan_generation) {
-            scan_warnings.push(format!("Stopped scanning {} because the scan was canceled", root));
+            scan_warnings.push(format!(
+                "Stopped scanning {} because the scan was canceled",
+                root
+            ));
             break;
         }
 
@@ -219,13 +247,25 @@ async fn scan_ios_directory_recursive(
         }
 
         let access_type = access_type_for_remote_path(&path);
-        match list_ios_directory(shell, afcclient_cmd, package_name, device_id, &path, access_type).await {
+        match list_ios_directory(
+            shell,
+            afcclient_cmd,
+            package_name,
+            device_id,
+            &path,
+            access_type,
+        )
+        .await
+        {
             Ok(entries) => {
                 let mut directories = Vec::new();
 
                 for entry_path in entries {
                     if !is_ios_scan_active(scan_key, scan_generation) {
-                        scan_warnings.push(format!("Stopped scanning {} because the scan was canceled", path));
+                        scan_warnings.push(format!(
+                            "Stopped scanning {} because the scan was canceled",
+                            path
+                        ));
                         break;
                     }
 
@@ -236,7 +276,9 @@ async fn scan_ios_directory_recursive(
                         device_id,
                         &entry_path,
                         access_type_for_remote_path(&entry_path),
-                    ).await {
+                    )
+                    .await
+                    {
                         Ok(true) => directories.push(entry_path),
                         Ok(false) => {
                             if is_database_file(&entry_path) {
@@ -289,15 +331,30 @@ async fn scan_ios_directory_shallow(
     let access_type = access_type_for_remote_path(root);
 
     if !is_ios_scan_active(scan_key, scan_generation) {
-        scan_warnings.push(format!("Stopped scanning {} because the scan was canceled", root));
+        scan_warnings.push(format!(
+            "Stopped scanning {} because the scan was canceled",
+            root
+        ));
         return (found_files, subdirectories, scan_warnings);
     }
 
-    match list_ios_directory(shell, afcclient_cmd, package_name, device_id, root, access_type).await {
+    match list_ios_directory(
+        shell,
+        afcclient_cmd,
+        package_name,
+        device_id,
+        root,
+        access_type,
+    )
+    .await
+    {
         Ok(entries) => {
             for entry_path in entries {
                 if !is_ios_scan_active(scan_key, scan_generation) {
-                    scan_warnings.push(format!("Stopped scanning {} because the scan was canceled", root));
+                    scan_warnings.push(format!(
+                        "Stopped scanning {} because the scan was canceled",
+                        root
+                    ));
                     break;
                 }
 
@@ -308,7 +365,9 @@ async fn scan_ios_directory_shallow(
                     device_id,
                     &entry_path,
                     access_type_for_remote_path(&entry_path),
-                ).await {
+                )
+                .await
+                {
                     Ok(true) => subdirectories.push(entry_path),
                     Ok(false) if is_database_file(&entry_path) => found_files.push(entry_path),
                     Ok(false) => {}
@@ -340,7 +399,8 @@ async fn scan_ios_library_root_direct_files(
         "/Library",
         scan_key,
         scan_generation,
-    ).await;
+    )
+    .await;
     found_files.append(&mut direct_files);
     scan_warnings.append(&mut warnings);
 
@@ -359,7 +419,10 @@ async fn collect_ios_database_files(
 
     for remote_path in remote_paths {
         if !is_ios_scan_active(scan_key, scan_generation) {
-            info!("Stopping database file collection because scan {} was canceled", scan_key);
+            info!(
+                "Stopping database file collection because scan {} was canceled",
+                scan_key
+            );
             break;
         }
 
@@ -379,7 +442,9 @@ async fn collect_ios_database_files(
             &remote_path,
             true,
             access_type,
-        ).await {
+        )
+        .await
+        {
             Ok(local_path) => {
                 info!("✅ Successfully pulled file to: {}", local_path);
                 let db_file = DatabaseFile {
@@ -405,7 +470,10 @@ async fn collect_ios_database_files(
                     device_type: "iphone-device".to_string(),
                 };
 
-                info!("Fallback database file object created: {:?}", fallback_db_file);
+                info!(
+                    "Fallback database file object created: {:?}",
+                    fallback_db_file
+                );
                 database_files.push(fallback_db_file);
             }
         }
@@ -450,7 +518,13 @@ async fn scan_ios_library_path_recursive_if_exists(
     scan_generation: u64,
 ) -> (Vec<String>, Vec<String>) {
     if !is_ios_scan_active(scan_key, scan_generation) {
-        return (Vec::new(), vec![format!("Stopped scanning {} because the scan was canceled", path)]);
+        return (
+            Vec::new(),
+            vec![format!(
+                "Stopped scanning {} because the scan was canceled",
+                path
+            )],
+        );
     }
 
     match ios_path_is_directory(
@@ -460,17 +534,25 @@ async fn scan_ios_library_path_recursive_if_exists(
         device_id,
         path,
         access_type_for_remote_path(path),
-    ).await {
-        Ok(true) => scan_ios_directory_recursive(
-            shell,
-            afcclient_cmd,
-            package_name,
-            device_id,
-            path,
-            scan_key,
-            scan_generation,
-        ).await,
-        Ok(false) => (Vec::new(), vec![format!("Skipping {} because it is not a directory", path)]),
+    )
+    .await
+    {
+        Ok(true) => {
+            scan_ios_directory_recursive(
+                shell,
+                afcclient_cmd,
+                package_name,
+                device_id,
+                path,
+                scan_key,
+                scan_generation,
+            )
+            .await
+        }
+        Ok(false) => (
+            Vec::new(),
+            vec![format!("Skipping {} because it is not a directory", path)],
+        ),
         Err(err) => (Vec::new(), vec![format!("Skipping {}: {}", path, err)]),
     }
 }
@@ -490,7 +572,7 @@ pub async fn get_ios_device_database_files(
     info!("=== GET iOS DEVICE DATABASE FILES STARTED ===");
     info!("Device ID: {}", device_id);
     info!("Package name: {}", package_name);
-    
+
     info!("Step 1: Preparing temporary directory for pulled database files");
     // Preserve active temp database files so in-flight table reads do not lose
     // their local copy while a background rescan is still running.
@@ -499,26 +581,29 @@ pub async fn get_ios_device_database_files(
     } else {
         info!("✅ Temp directory ready for pulled database files");
     }
-    
+
     let shell = app_handle.shell();
     let mut database_files = Vec::new();
     let scan_key = format!("{}:{}", device_id, package_name);
     let scan_generation = begin_ios_scan(&scan_key);
-    let scan_request_id = scan_request_id.unwrap_or_else(|| format!("{}:{}", scan_key, scan_generation));
+    let scan_request_id =
+        scan_request_id.unwrap_or_else(|| format!("{}:{}", scan_key, scan_generation));
 
     info!("Step 2: Scanning selected app container for database files");
     let afcclient_cmd = get_tool_command_legacy("afcclient");
     info!("Using afcclient command: {}", afcclient_cmd);
 
-    let (document_remote_files, document_subdirectories, mut scan_warnings) = scan_ios_directory_shallow(
-        &shell,
-        &afcclient_cmd,
-        &package_name,
-        &device_id,
-        "/Documents",
-        &scan_key,
-        scan_generation,
-    ).await;
+    let (document_remote_files, document_subdirectories, mut scan_warnings) =
+        scan_ios_directory_shallow(
+            &shell,
+            &afcclient_cmd,
+            &package_name,
+            &device_id,
+            "/Documents",
+            &scan_key,
+            scan_generation,
+        )
+        .await;
 
     let document_files = collect_ios_database_files(
         &app_handle,
@@ -527,7 +612,8 @@ pub async fn get_ios_device_database_files(
         document_remote_files,
         &scan_key,
         scan_generation,
-    ).await;
+    )
+    .await;
 
     if !document_files.is_empty() {
         emit_ios_scan_progress(
@@ -540,8 +626,7 @@ pub async fn get_ios_device_database_files(
             document_files.clone(),
         );
         database_files.extend(document_files);
-    }
-    else {
+    } else {
         emit_ios_scan_progress(
             &app_handle,
             &scan_key,
@@ -555,7 +640,10 @@ pub async fn get_ios_device_database_files(
 
     for documents_directory in document_subdirectories {
         if !is_ios_scan_active(&scan_key, scan_generation) {
-            info!("Stopping iOS scan after Documents root because scan {} was canceled", scan_key);
+            info!(
+                "Stopping iOS scan after Documents root because scan {} was canceled",
+                scan_key
+            );
             break;
         }
 
@@ -567,7 +655,8 @@ pub async fn get_ios_device_database_files(
             &documents_directory,
             &scan_key,
             scan_generation,
-        ).await;
+        )
+        .await;
         scan_warnings.append(&mut warnings);
 
         let documents_nested_files = collect_ios_database_files(
@@ -577,7 +666,8 @@ pub async fn get_ios_device_database_files(
             remote_files,
             &scan_key,
             scan_generation,
-        ).await;
+        )
+        .await;
         if !documents_nested_files.is_empty() {
             emit_ios_scan_progress(
                 &app_handle,
@@ -599,7 +689,8 @@ pub async fn get_ios_device_database_files(
         &device_id,
         &scan_key,
         scan_generation,
-    ).await;
+    )
+    .await;
     scan_warnings.append(&mut library_root_warnings);
 
     let library_root_files = collect_ios_database_files(
@@ -609,7 +700,8 @@ pub async fn get_ios_device_database_files(
         library_root_files,
         &scan_key,
         scan_generation,
-    ).await;
+    )
+    .await;
     if !library_root_files.is_empty() {
         emit_ios_scan_progress(
             &app_handle,
@@ -624,12 +716,19 @@ pub async fn get_ios_device_database_files(
     }
 
     for (phase, path_template) in [
-        ("library-application-support", IOS_LIBRARY_BACKGROUND_PATHS[0]),
-        ("library-local-database", IOS_LIBRARY_BACKGROUND_PATHS[1]),
-        ("library-bundle-folder", IOS_LIBRARY_BACKGROUND_PATHS[2]),
+        ("library-sqlite", IOS_LIBRARY_BACKGROUND_PATHS[0]),
+        (
+            "library-application-support",
+            IOS_LIBRARY_BACKGROUND_PATHS[1],
+        ),
+        ("library-local-database", IOS_LIBRARY_BACKGROUND_PATHS[2]),
+        ("library-bundle-folder", IOS_LIBRARY_BACKGROUND_PATHS[3]),
     ] {
         if !is_ios_scan_active(&scan_key, scan_generation) {
-            info!("Stopping iOS scan before {} because scan {} was canceled", phase, scan_key);
+            info!(
+                "Stopping iOS scan before {} because scan {} was canceled",
+                phase, scan_key
+            );
             break;
         }
 
@@ -642,7 +741,8 @@ pub async fn get_ios_device_database_files(
             &interpolated_path,
             &scan_key,
             scan_generation,
-        ).await;
+        )
+        .await;
         scan_warnings.append(&mut warnings);
 
         let phase_files = collect_ios_database_files(
@@ -652,7 +752,8 @@ pub async fn get_ios_device_database_files(
             remote_files,
             &scan_key,
             scan_generation,
-        ).await;
+        )
+        .await;
 
         if !phase_files.is_empty() {
             emit_ios_scan_progress(
@@ -671,13 +772,13 @@ pub async fn get_ios_device_database_files(
     for warning in &scan_warnings {
         log::warn!("iOS scan warning: {}", warning);
     }
-    
+
     info!("=== GET iOS DEVICE DATABASE FILES COMPLETED ===");
     info!("📊 Final Results Summary:");
     info!("  Total database files found: {}", database_files.len());
     info!("  Device ID: {}", device_id);
     info!("  Package name: {}", package_name);
-    
+
     if database_files.is_empty() {
         info!("⚠️  No database files found in selected app container roots");
         info!("This could mean:");
@@ -696,7 +797,7 @@ pub async fn get_ios_device_database_files(
     }
 
     finish_ios_scan(&scan_key, scan_generation);
-    
+
     Ok(DeviceResponse {
         success: true,
         data: Some(database_files),
@@ -731,7 +832,9 @@ pub async fn refresh_ios_device_database_file(
         &remote_path,
         true,
         access_type,
-    ).await {
+    )
+    .await
+    {
         Ok(local_path) => {
             let db_file = DatabaseFile {
                 path: local_path,
@@ -773,6 +876,7 @@ pub async fn cancel_ios_device_database_scan(
 #[tauri::command]
 pub async fn device_push_ios_database_file(
     app_handle: tauri::AppHandle,
+    db_cache: tauri::State<'_, DbConnectionCache>,
     device_id: String,
     local_path: String,
     package_name: String,
@@ -783,7 +887,7 @@ pub async fn device_push_ios_database_file(
     info!("Local path: {}", local_path);
     info!("Package name: {}", package_name);
     info!("Remote path: {}", remote_path);
-    
+
     info!("Step 1: Checking file paths");
     // Check if source and destination are the same file (for consistency with simulator)
     let _local_path_canonical = match std::fs::canonicalize(&local_path) {
@@ -797,7 +901,7 @@ pub async fn device_push_ios_database_file(
             });
         }
     };
-    
+
     // For physical devices, we can't canonicalize remote paths, so just do a string comparison
     // This is more for consistency and future-proofing
     if local_path == remote_path {
@@ -805,7 +909,7 @@ pub async fn device_push_ios_database_file(
         info!("📁 File path: {}", local_path);
         // Continue with normal flow since physical devices always need the push operation
     }
-    
+
     info!("Step 2: Validating local file exists");
     // Check if local file exists first
     if !std::path::Path::new(&local_path).exists() {
@@ -818,7 +922,7 @@ pub async fn device_push_ios_database_file(
     }
     info!("✅ Local file exists");
 
-    if let Err(e) = prepare_sqlite_file_for_sync(&local_path) {
+    if let Err(e) = prepare_database_file_for_sync(&db_cache, &local_path).await {
         error!("❌ Failed to prepare SQLite file for sync: {}", e);
         return Ok(DeviceResponse {
             success: false,
@@ -826,7 +930,7 @@ pub async fn device_push_ios_database_file(
             error: Some(format!("Failed to prepare SQLite file for sync: {}", e)),
         });
     }
-    
+
     info!("Step 3: Validating local file content");
     // Validate that the local file is not empty and appears to be a SQLite file
     match std::fs::metadata(&local_path) {
@@ -840,33 +944,9 @@ pub async fn device_push_ios_database_file(
                 });
             }
             info!("✅ Local file size: {} bytes", metadata.len());
-            
-            // Quick check if it looks like a SQLite file
-            if metadata.len() >= 16 {
-                if let Ok(mut file) = std::fs::File::open(&local_path) {
-                    use std::io::Read;
-                    let mut header = [0u8; 16];
-                    if let Ok(_) = file.read_exact(&mut header) {
-                        let header_str = String::from_utf8_lossy(&header[..15]);
-                        if !header_str.starts_with("SQLite format") {
-                            error!("❌ Local file does not appear to be a SQLite database: {}", local_path);
-                            error!("File header: {}", header_str);
-                            return Ok(DeviceResponse {
-                                success: false,
-                                data: None,
-                                error: Some("Local file is not a valid SQLite database".to_string()),
-                            });
-                        }
-                        info!("✅ Local file appears to be a valid SQLite database");
-                    } else {
-                        error!("❌ Cannot read file header for validation");
-                    }
-                } else {
-                    error!("❌ Cannot open file for header validation");
-                }
-            } else {
-                info!("⚠️  File too small for SQLite header validation");
-            }
+
+            // Semantic validation already happened while preparing the file.
+            // SQLCipher headers are intentionally indistinguishable from random bytes.
         }
         Err(e) => {
             error!("❌ Cannot access local file metadata: {}", e);
@@ -877,62 +957,90 @@ pub async fn device_push_ios_database_file(
             });
         }
     }
-    
+
     info!("Step 4: Checking if file exists on device");
     let shell = app_handle.shell();
     let afcclient_cmd = get_tool_command_legacy("afcclient");
     info!("Using afcclient command: {}", afcclient_cmd);
     let access_type = access_type_for_remote_path(&remote_path);
     let access_args = access_type.afcclient_args(&package_name);
-    
+
     // Check if file exists on device first
     let check_args = [
-        access_args[0], access_args[1],
-        "-u", &device_id,
-        "ls", &remote_path
+        access_args[0],
+        access_args[1],
+        "-u",
+        &device_id,
+        "ls",
+        &remote_path,
     ];
-    info!("Check file existence command: {} {}", afcclient_cmd, check_args.join(" "));
-    
-    let check_output = shell.command(&afcclient_cmd)
+    info!(
+        "Check file existence command: {} {}",
+        afcclient_cmd,
+        check_args.join(" ")
+    );
+
+    let check_output = shell
+        .command(&afcclient_cmd)
         .args(check_args)
         .output()
         .await
         .map_err(|e| format!("Failed to execute afcclient check: {}", e))?;
-    
+
     info!("afcclient check exit status: {:?}", check_output.status);
     if !check_output.stdout.is_empty() {
-        info!("afcclient check stdout: {}", String::from_utf8_lossy(&check_output.stdout));
+        info!(
+            "afcclient check stdout: {}",
+            String::from_utf8_lossy(&check_output.stdout)
+        );
     }
     if !check_output.stderr.is_empty() {
-        info!("afcclient check stderr: {}", String::from_utf8_lossy(&check_output.stderr));
+        info!(
+            "afcclient check stderr: {}",
+            String::from_utf8_lossy(&check_output.stderr)
+        );
     }
-    
+
     let file_exists = check_output.status.success();
     if file_exists {
         info!("📁 File exists on device, removing it first");
-        
+
         // Remove existing file
         let remove_args = [
-            access_args[0], access_args[1],
-            "-u", &device_id,
-            "rm", &remote_path
+            access_args[0],
+            access_args[1],
+            "-u",
+            &device_id,
+            "rm",
+            &remote_path,
         ];
-        info!("Remove file command: {} {}", afcclient_cmd, remove_args.join(" "));
-        
-        let remove_output = shell.command(&afcclient_cmd)
+        info!(
+            "Remove file command: {} {}",
+            afcclient_cmd,
+            remove_args.join(" ")
+        );
+
+        let remove_output = shell
+            .command(&afcclient_cmd)
             .args(remove_args)
             .output()
             .await
             .map_err(|e| format!("Failed to execute afcclient remove: {}", e))?;
-        
+
         info!("afcclient remove exit status: {:?}", remove_output.status);
         if !remove_output.stdout.is_empty() {
-            info!("afcclient remove stdout: {}", String::from_utf8_lossy(&remove_output.stdout));
+            info!(
+                "afcclient remove stdout: {}",
+                String::from_utf8_lossy(&remove_output.stdout)
+            );
         }
         if !remove_output.stderr.is_empty() {
-            info!("afcclient remove stderr: {}", String::from_utf8_lossy(&remove_output.stderr));
+            info!(
+                "afcclient remove stderr: {}",
+                String::from_utf8_lossy(&remove_output.stderr)
+            );
         }
-        
+
         if !remove_output.status.success() {
             let error_msg = String::from_utf8_lossy(&remove_output.stderr);
             error!("❌ Failed to remove existing file: {}", error_msg);
@@ -946,31 +1054,42 @@ pub async fn device_push_ios_database_file(
     } else {
         info!("📁 File does not exist on device, proceeding with new file upload");
     }
-    
+
     info!("Step 5: Pushing new file to iOS device");
-    
+
     // Use afcclient to push file to device
     let args = [
-        access_args[0], access_args[1],
-        "-u", &device_id,
-        "put", &local_path, &remote_path
+        access_args[0],
+        access_args[1],
+        "-u",
+        &device_id,
+        "put",
+        &local_path,
+        &remote_path,
     ];
     info!("Push command: {} {}", afcclient_cmd, args.join(" "));
-    
-    let output = shell.command(&afcclient_cmd)
+
+    let output = shell
+        .command(&afcclient_cmd)
         .args(args)
         .output()
         .await
         .map_err(|e| format!("Failed to execute afcclient push: {}", e))?;
-    
+
     info!("afcclient push exit status: {:?}", output.status);
     if !output.stdout.is_empty() {
-        info!("afcclient push stdout: {}", String::from_utf8_lossy(&output.stdout));
+        info!(
+            "afcclient push stdout: {}",
+            String::from_utf8_lossy(&output.stdout)
+        );
     }
     if !output.stderr.is_empty() {
-        info!("afcclient push stderr: {}", String::from_utf8_lossy(&output.stderr));
+        info!(
+            "afcclient push stderr: {}",
+            String::from_utf8_lossy(&output.stderr)
+        );
     }
-    
+
     if !output.status.success() {
         let error_msg = String::from_utf8_lossy(&output.stderr);
         error!("❌ afcclient push command failed: {}", error_msg);
@@ -980,32 +1099,46 @@ pub async fn device_push_ios_database_file(
             error: Some(format!("iOS push failed: {}", error_msg)),
         });
     }
-    
+
     info!("✅ Push command executed successfully");
-    
+
     info!("Step 6: Verifying file was pushed successfully");
     // Verify the file exists on device after push
     let verify_args = [
-        access_args[0], access_args[1],
-        "-u", &device_id,
-        "ls", &remote_path
+        access_args[0],
+        access_args[1],
+        "-u",
+        &device_id,
+        "ls",
+        &remote_path,
     ];
-    info!("Verify file command: {} {}", afcclient_cmd, verify_args.join(" "));
-    
-    let verify_output = shell.command(&afcclient_cmd)
+    info!(
+        "Verify file command: {} {}",
+        afcclient_cmd,
+        verify_args.join(" ")
+    );
+
+    let verify_output = shell
+        .command(&afcclient_cmd)
         .args(verify_args)
         .output()
         .await
         .map_err(|e| format!("Failed to execute afcclient verify: {}", e))?;
-    
+
     info!("afcclient verify exit status: {:?}", verify_output.status);
     if !verify_output.stdout.is_empty() {
-        info!("afcclient verify stdout: {}", String::from_utf8_lossy(&verify_output.stdout));
+        info!(
+            "afcclient verify stdout: {}",
+            String::from_utf8_lossy(&verify_output.stdout)
+        );
     }
     if !verify_output.stderr.is_empty() {
-        info!("afcclient verify stderr: {}", String::from_utf8_lossy(&verify_output.stderr));
+        info!(
+            "afcclient verify stderr: {}",
+            String::from_utf8_lossy(&verify_output.stderr)
+        );
     }
-    
+
     if !verify_output.status.success() {
         error!("❌ File verification failed - file may not have been pushed correctly");
         return Ok(DeviceResponse {
@@ -1014,13 +1147,16 @@ pub async fn device_push_ios_database_file(
             error: Some("File push verification failed".to_string()),
         });
     }
-    
+
     info!("✅ File verified successfully on device");
     info!("=== PUSH iOS DATABASE FILE COMPLETED ===");
-    
+
     Ok(DeviceResponse {
         success: true,
-        data: Some(format!("Successfully pushed {} to {}", local_path, remote_path)),
+        data: Some(format!(
+            "Successfully pushed {} to {}",
+            local_path, remote_path
+        )),
         error: None,
     })
 }
@@ -1033,7 +1169,10 @@ mod tests {
     fn test_normalize_and_append_ios_paths() {
         assert_eq!(normalize_ios_dir_path("Library"), "/Library");
         assert_eq!(normalize_ios_dir_path("/Documents/"), "/Documents");
-        assert_eq!(append_ios_path("/Library", "Application Support"), "/Library/Application Support");
+        assert_eq!(
+            append_ios_path("/Library", "Application Support"),
+            "/Library/Application Support"
+        );
     }
 
     #[test]
@@ -1052,8 +1191,17 @@ mod tests {
 
     #[test]
     fn test_matches_bundle_folder_name_is_exact() {
-        assert!(matches_bundle_folder_name("/Library/com.example.app", "com.example.app"));
-        assert!(!matches_bundle_folder_name("/Library/Application Support", "com.example.app"));
-        assert!(!matches_bundle_folder_name("/Library/app", "com.example.app"));
+        assert!(matches_bundle_folder_name(
+            "/Library/com.example.app",
+            "com.example.app"
+        ));
+        assert!(!matches_bundle_folder_name(
+            "/Library/Application Support",
+            "com.example.app"
+        ));
+        assert!(!matches_bundle_folder_name(
+            "/Library/app",
+            "com.example.app"
+        ));
     }
 }

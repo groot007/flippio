@@ -1,5 +1,6 @@
 import type { DatabaseFile } from '@renderer/types'
 import { transformToCamelCase } from '@renderer/utils/caseTransformer'
+import { ensureDatabaseUnlocked } from '@renderer/utils/sqlcipher'
 import { useQuery } from '@tanstack/react-query'
 
 interface Device {
@@ -24,7 +25,7 @@ export function useDatabaseTables(
       }
 
       const dbPath = selectedDatabaseFile.path
-      await window.api.openDatabase(dbPath)
+      await ensureDatabaseUnlocked(selectedDatabaseFile)
 
       // Pass the database path to getTables to ensure it uses the correct connection
       const response = await window.api.getTables(dbPath)

@@ -1,5 +1,5 @@
 // Enhanced iOS tool validation with robust fallback mechanisms
-use log::{info, warn, error};
+use log::{error, info, warn};
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 use std::process::Command;
@@ -7,23 +7,51 @@ use std::process::Command;
 /// Error types for iOS tool validation
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum ToolValidationError {
-    NotFound { tool: String, attempted_paths: Vec<String> },
-    NotExecutable { tool: String, path: String },
-    PermissionDenied { tool: String, path: String },
-    ValidationFailed { tool: String, error: String },
+    NotFound {
+        tool: String,
+        attempted_paths: Vec<String>,
+    },
+    NotExecutable {
+        tool: String,
+        path: String,
+    },
+    PermissionDenied {
+        tool: String,
+        path: String,
+    },
+    ValidationFailed {
+        tool: String,
+        error: String,
+    },
 }
 
 impl std::fmt::Display for ToolValidationError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            ToolValidationError::NotFound { tool, attempted_paths } => {
-                write!(f, "Tool '{}' not found. Attempted paths: {}", tool, attempted_paths.join(", "))
+            ToolValidationError::NotFound {
+                tool,
+                attempted_paths,
+            } => {
+                write!(
+                    f,
+                    "Tool '{}' not found. Attempted paths: {}",
+                    tool,
+                    attempted_paths.join(", ")
+                )
             }
             ToolValidationError::NotExecutable { tool, path } => {
-                write!(f, "Tool '{}' found at '{}' but is not executable", tool, path)
+                write!(
+                    f,
+                    "Tool '{}' found at '{}' but is not executable",
+                    tool, path
+                )
             }
             ToolValidationError::PermissionDenied { tool, path } => {
-                write!(f, "Permission denied accessing tool '{}' at '{}'", tool, path)
+                write!(
+                    f,
+                    "Permission denied accessing tool '{}' at '{}'",
+                    tool, path
+                )
             }
             ToolValidationError::ValidationFailed { tool, error } => {
                 write!(f, "Validation failed for tool '{}': {}", tool, error)
@@ -62,7 +90,10 @@ impl IOSToolValidator {
     }
 
     /// Get a validated tool path with comprehensive fallback
-    pub fn get_validated_tool(&self, tool_name: &str) -> Result<ValidatedTool, ToolValidationError> {
+    pub fn get_validated_tool(
+        &self,
+        tool_name: &str,
+    ) -> Result<ValidatedTool, ToolValidationError> {
         let mut attempted_paths = Vec::new();
 
         info!("🔍 Starting enhanced validation for tool: {}", tool_name);
@@ -131,7 +162,7 @@ impl IOSToolValidator {
                         continue;
                     }
                 };
-                
+
                 info!("    ✅ Tool validated successfully!");
                 return Ok(ValidatedTool {
                     path: tool_path,
@@ -158,14 +189,12 @@ impl IOSToolValidator {
                 paths: Self::get_bundled_production_paths(),
                 validator: Self::validate_bundled_tool,
             },
-
             // Strategy 2: Bundled tools (development) - Prefer checked-in tools during dev
             ToolDiscoveryStrategy {
                 name: "Bundled (Development)".to_string(),
                 paths: Self::get_bundled_dev_paths(),
                 validator: Self::validate_bundled_tool,
             },
-
             // Strategy 3: Homebrew (Apple Silicon)
             ToolDiscoveryStrategy {
                 name: "Homebrew (Apple Silicon)".to_string(),
@@ -175,7 +204,6 @@ impl IOSToolValidator {
                 ],
                 validator: Self::validate_homebrew_tool,
             },
-            
             // Strategy 4: Homebrew (Intel)
             ToolDiscoveryStrategy {
                 name: "Homebrew (Intel)".to_string(),
@@ -185,14 +213,12 @@ impl IOSToolValidator {
                 ],
                 validator: Self::validate_homebrew_tool,
             },
-            
             // Strategy 5: MacPorts
             ToolDiscoveryStrategy {
                 name: "MacPorts".to_string(),
                 paths: vec![PathBuf::from("/opt/local/bin")],
                 validator: Self::validate_system_tool,
             },
-            
             // Strategy 6: System PATH
             ToolDiscoveryStrategy {
                 name: "System PATH".to_string(),
@@ -205,7 +231,7 @@ impl IOSToolValidator {
     /// Get bundled production tool paths
     fn get_bundled_production_paths() -> Vec<PathBuf> {
         let mut paths = Vec::new();
-        
+
         if let Ok(exe_path) = std::env::current_exe() {
             if let Some(exe_dir) = exe_path.parent() {
                 // Production: Contents/MacOS/
@@ -217,21 +243,21 @@ impl IOSToolValidator {
                 }
             }
         }
-        
+
         paths
     }
 
     /// Get bundled development tool paths
     fn get_bundled_dev_paths() -> Vec<PathBuf> {
         let mut paths = Vec::new();
-        
+
         if let Ok(exe_path) = std::env::current_exe() {
             if let Some(exe_dir) = exe_path.parent() {
                 // Development: target/debug/../../../resources/libimobiledevice/tools
                 let dev_path = exe_dir
                     .parent()
-                    .and_then(|p| p.parent())  // target/debug/
-                    .and_then(|p| p.parent())  // target/
+                    .and_then(|p| p.parent()) // target/debug/
+                    .and_then(|p| p.parent()) // target/
                     .map(|p| p.join("resources/libimobiledevice/tools"));
 
                 if let Some(path) = dev_path {
@@ -239,7 +265,7 @@ impl IOSToolValidator {
                 }
             }
         }
-        
+
         paths
     }
 
@@ -290,7 +316,7 @@ impl IOSToolValidator {
                 Err(e) => Err(format!("Failed to check permissions: {}", e)),
             }
         }
-        
+
         #[cfg(not(unix))]
         {
             // On non-Unix systems, assume executable if file exists
@@ -304,21 +330,21 @@ impl IOSToolValidator {
         {
             use std::fs;
             use std::os::unix::fs::PermissionsExt;
-            
-            let metadata = fs::metadata(path)
-                .map_err(|e| format!("Failed to get metadata: {}", e))?;
-            
+
+            let metadata =
+                fs::metadata(path).map_err(|e| format!("Failed to get metadata: {}", e))?;
+
             let mut permissions = metadata.permissions();
             let mode = permissions.mode();
             permissions.set_mode(mode | 0o755); // Add executable permissions
-            
+
             fs::set_permissions(path, permissions)
                 .map_err(|e| format!("Failed to set permissions: {}", e))?;
-            
+
             info!("✅ Fixed executable permissions for: {}", path.display());
             Ok(())
         }
-        
+
         #[cfg(not(unix))]
         {
             // On non-Unix systems, no permission fixing needed
@@ -329,7 +355,7 @@ impl IOSToolValidator {
     /// Test tool execution to verify it's working
     fn test_tool_execution(path: &Path, tool_name: &str) -> Result<Option<String>, String> {
         info!("🧪 Testing tool execution: {}", path.display());
-        
+
         // Different tools have different ways to check version
         let test_args = match tool_name {
             "idevice_id" => vec!["--help"],
@@ -342,22 +368,23 @@ impl IOSToolValidator {
         for args in test_args {
             match Command::new(path).arg(args).output() {
                 Ok(output) => {
-                    if output.status.success() || 
-                       String::from_utf8_lossy(&output.stderr).contains("Usage") ||
-                       String::from_utf8_lossy(&output.stdout).contains("Usage") {
+                    if output.status.success()
+                        || String::from_utf8_lossy(&output.stderr).contains("Usage")
+                        || String::from_utf8_lossy(&output.stdout).contains("Usage")
+                    {
                         info!("✅ Tool execution test passed");
-                        
+
                         // Try to extract version from output
                         let stdout = String::from_utf8_lossy(&output.stdout);
                         let stderr = String::from_utf8_lossy(&output.stderr);
-                        
+
                         // Look for version patterns
                         for line in stdout.lines().chain(stderr.lines()) {
                             if line.contains("version") || line.contains("Version") {
                                 return Ok(Some(line.trim().to_string()));
                             }
                         }
-                        
+
                         return Ok(Some("Unknown version".to_string()));
                     }
 
@@ -376,7 +403,7 @@ impl IOSToolValidator {
                 }
             }
         }
-        
+
         warn!("⚠️ All tool execution tests failed");
         Err(format!(
             "Unable to launch '{}' successfully with validation arguments",
@@ -426,4 +453,4 @@ impl Default for IOSToolValidator {
     fn default() -> Self {
         Self::new()
     }
-} 
+}

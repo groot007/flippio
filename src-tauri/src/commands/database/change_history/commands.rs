@@ -2,13 +2,16 @@
 // Safe Tauri commands for change history - NO REVERT functionality yet
 // Following IMPLEMENTATION_ROADMAP.md Phase 1 approach
 
+use chrono::Utc;
 use tauri::{command, State};
 use uuid::Uuid;
-use chrono::Utc;
 
 use crate::commands::database::change_history::{
     manager::ChangeHistoryManager,
-    types::{ChangeEvent, OperationType, UserContext, ChangeMetadata, ContextSummary, generate_context_key, validate_context_key}
+    types::{
+        generate_context_key, validate_context_key, ChangeEvent, ChangeMetadata, ContextSummary,
+        OperationType, UserContext,
+    },
 };
 use crate::commands::database::DbResponse;
 
@@ -41,10 +44,10 @@ pub async fn record_database_change_safe(
             });
         }
     };
-    
+
     // SAFE: Generate context key with collision detection
     let context_key = generate_context_key(&device_id, &app_package, &database_filename);
-    
+
     // Check for existing changes to validate context uniqueness
     let existing_changes = history_manager.get_changes(&context_key).await;
     if let Some(first_change) = existing_changes.first() {
@@ -53,8 +56,10 @@ pub async fn record_database_change_safe(
             &device_id,
             &app_package,
             &database_filename,
-            Some(first_change)
-        ).await {
+            Some(first_change),
+        )
+        .await
+        {
             return Ok(DbResponse {
                 success: false,
                 data: None,
@@ -62,7 +67,7 @@ pub async fn record_database_change_safe(
             });
         }
     }
-    
+
     let change_event = ChangeEvent {
         id: Uuid::new_v4().to_string(),
         timestamp: Utc::now(),
@@ -79,7 +84,7 @@ pub async fn record_database_change_safe(
             app_name,
             session_id: crate::commands::database::change_history::types::get_session_id(),
         },
-        changes: vec![], // Will be populated by field diff logic in Phase 2
+        changes: vec![],      // Will be populated by field diff logic in Phase 2
         row_identifier: None, // Will be populated by row identification logic in Phase 2
         metadata: ChangeMetadata {
             affected_rows: 1,
@@ -89,7 +94,7 @@ pub async fn record_database_change_safe(
             pull_timestamp: Utc::now(),
         },
     };
-    
+
     // SAFETY: Cannot fail due to memory bounds (Critical Issue #1 fix)
     match history_manager.record_change(change_event).await {
         Ok(()) => Ok(DbResponse {
@@ -113,22 +118,38 @@ pub async fn get_database_change_history(
     history_manager: State<'_, ChangeHistoryManager>,
 ) -> Result<DbResponse<Vec<ChangeEvent>>, String> {
     // Debug logging for get_database_change_history
-    log::info!("🔍 [get_database_change_history] Requested context key: {}", context_key);
-    log::info!("🔍 [get_database_change_history] Table filter: {:?}", table_name);
-    
+    log::info!(
+        "🔍 [get_database_change_history] Requested context key: {}",
+        context_key
+    );
+    log::info!(
+        "🔍 [get_database_change_history] Table filter: {:?}",
+        table_name
+    );
+
     let changes = if let Some(table) = table_name.as_ref() {
-        history_manager.get_changes_for_table(&context_key, table).await
+        history_manager
+            .get_changes_for_table(&context_key, table)
+            .await
     } else {
         history_manager.get_changes(&context_key).await
     };
-    
-    log::info!("🔍 [get_database_change_history] Found {} changes for context key", changes.len());
-    
+
+    log::info!(
+        "🔍 [get_database_change_history] Found {} changes for context key",
+        changes.len()
+    );
+
     // Also log all available context keys for debugging
     let all_context_summaries = history_manager.get_all_context_summaries().await;
-    log::info!("🔍 [get_database_change_history] Available context keys: {:?}", 
-               all_context_summaries.iter().map(|s| &s.context_key).collect::<Vec<_>>());
-    
+    log::info!(
+        "🔍 [get_database_change_history] Available context keys: {:?}",
+        all_context_summaries
+            .iter()
+            .map(|s| &s.context_key)
+            .collect::<Vec<_>>()
+    );
+
     Ok(DbResponse {
         success: true,
         data: Some(changes),
@@ -147,7 +168,7 @@ pub async fn get_last_change_time(
         .get_last_change_time(&context_key, &table_name)
         .await
         .map(|time| time.to_rfc3339());
-    
+
     Ok(DbResponse {
         success: true,
         data: Some(last_time),
@@ -162,7 +183,7 @@ pub async fn get_context_summary(
     history_manager: State<'_, ChangeHistoryManager>,
 ) -> Result<DbResponse<Option<ContextSummary>>, String> {
     let summary = history_manager.get_context_summary(&context_key).await;
-    
+
     Ok(DbResponse {
         success: true,
         data: Some(summary),
@@ -176,7 +197,7 @@ pub async fn get_all_context_summaries(
     history_manager: State<'_, ChangeHistoryManager>,
 ) -> Result<DbResponse<Vec<ContextSummary>>, String> {
     let summaries = history_manager.get_all_context_summaries().await;
-    
+
     Ok(DbResponse {
         success: true,
         data: Some(summaries),
@@ -190,20 +211,29 @@ pub async fn clear_context_changes(
     context_key: String,
     history_manager: State<'_, ChangeHistoryManager>,
 ) -> Result<DbResponse<bool>, String> {
-    println!("🧹 [Backend] clear_context_changes called with key: {}", context_key);
-    
+    println!(
+        "🧹 [Backend] clear_context_changes called with key: {}",
+        context_key
+    );
+
     // Check how many changes exist before clearing
     let changes_before = history_manager.get_changes(&context_key).await;
-    println!("🧹 [Backend] Changes count before clear: {}", changes_before.len());
-    
+    println!(
+        "🧹 [Backend] Changes count before clear: {}",
+        changes_before.len()
+    );
+
     history_manager.clear_changes(&context_key).await;
-    
+
     // Check after clearing
     let changes_after = history_manager.get_changes(&context_key).await;
-    println!("🧹 [Backend] Changes count after clear: {}", changes_after.len());
-    
+    println!(
+        "🧹 [Backend] Changes count after clear: {}",
+        changes_after.len()
+    );
+
     println!("🧹 [Backend] clear_context_changes completed successfully");
-    
+
     Ok(DbResponse {
         success: true,
         data: Some(true),
@@ -217,19 +247,25 @@ pub async fn clear_all_change_history(
     history_manager: State<'_, ChangeHistoryManager>,
 ) -> Result<DbResponse<bool>, String> {
     println!("💥 [Backend] clear_all_change_history called - NUCLEAR OPTION");
-    
+
     // Get diagnostics before clearing
     let contexts_before = history_manager.get_active_contexts().await;
-    println!("💥 [Backend] Active contexts before clear: {:?}", contexts_before);
-    
+    println!(
+        "💥 [Backend] Active contexts before clear: {:?}",
+        contexts_before
+    );
+
     history_manager.clear_all_changes().await;
-    
+
     // Get diagnostics after clearing
     let contexts_after = history_manager.get_active_contexts().await;
-    println!("💥 [Backend] Active contexts after clear: {:?}", contexts_after);
-    
+    println!(
+        "💥 [Backend] Active contexts after clear: {:?}",
+        contexts_after
+    );
+
     println!("💥 [Backend] clear_all_change_history completed successfully");
-    
+
     Ok(DbResponse {
         success: true,
         data: Some(true),
@@ -244,7 +280,7 @@ pub async fn get_change_history_diagnostics(
 ) -> Result<DbResponse<serde_json::Value>, String> {
     let active_contexts = history_manager.get_active_contexts().await;
     let memory_usage_mb = history_manager.get_memory_usage_mb();
-    
+
     let diagnostics = serde_json::json!({
         "active_contexts": active_contexts.len(),
         "memory_usage_mb": memory_usage_mb,
@@ -252,7 +288,7 @@ pub async fn get_change_history_diagnostics(
         "max_changes_per_context": 100,
         "contexts": active_contexts
     });
-    
+
     Ok(DbResponse {
         success: true,
         data: Some(diagnostics),
@@ -276,9 +312,9 @@ pub async fn generate_custom_file_context_key_command(
     database_path: String,
 ) -> Result<DbResponse<String>, String> {
     use crate::commands::database::change_history::types::generate_custom_file_context_key;
-    
+
     let context_key = generate_custom_file_context_key(&database_path);
-    
+
     Ok(DbResponse {
         success: true,
         data: Some(context_key),

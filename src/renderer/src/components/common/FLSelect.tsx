@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { Box, Button, HStack, Icon, Text, VStack } from '@chakra-ui/react'
 import { chakraComponents, Select } from 'chakra-react-select'
+import { useMemo } from 'react'
 import { LuInfo, LuPin } from 'react-icons/lu'
 
 interface SelectOption {
@@ -85,7 +86,7 @@ const FLSelect: React.FC<CustomSelectProps> = ({
 
   const styles = controlStyles[variant]
 
-  const customComponents = {
+  const customComponents = useMemo(() => ({
     Control: ({ children, ...props }: any) => {
       return (
         <chakraComponents.Control {...props}>
@@ -212,7 +213,7 @@ const FLSelect: React.FC<CustomSelectProps> = ({
         </chakraComponents.Option>
       )
     },
-  }
+  }), [menuFooter, showPinIcon, testId])
 
   return (
     <Box
@@ -235,6 +236,12 @@ const FLSelect: React.FC<CustomSelectProps> = ({
         inputId={testId}
         instanceId={testId}
         menuPortalTarget={typeof document !== 'undefined' ? document.body : undefined}
+        styles={{
+          menuPortal: provided => ({
+            ...provided,
+            zIndex: 2000,
+          }),
+        }}
         chakraStyles={{
           menu: provided => ({
             ...provided,

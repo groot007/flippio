@@ -1,5 +1,6 @@
 use crate::commands::database::connection_access::{
-    get_cached_connection, get_current_pool, validate_pool_health,
+    get_cached_connection, get_current_pool, has_sqlite_plaintext_header, is_sqlcipher_key_error,
+    mark_cached_connection_active, reset_connection_for_open, validate_pool_health,
 };
 use crate::commands::database::helpers::get_default_value_for_type;
 use crate::commands::database::types::*;
@@ -15,20 +16,68 @@ pub async fn db_open(
     state: State<'_, DbPool>,
     db_cache: State<'_, DbConnectionCache>,
     file_path: String,
-) -> Result<DbResponse<String>, String> {
+    key: Option<String>,
+) -> Result<DbResponse<DbOpenResult>, String> {
     log::info!("Opening database with caching: {}", file_path);
+    reset_connection_for_open(&state, &db_cache, &file_path).await;
 
-    match get_cached_connection(&db_cache, &file_path).await {
-        Ok(pool) => {
+    let has_plaintext_header = match has_sqlite_plaintext_header(&file_path) {
+        Ok(value) => value,
+        Err(e) => {
+            return Ok(DbResponse {
+                success: false,
+                data: None,
+                error: Some(e),
+            });
+        }
+    };
+
+    let connection_result = if has_plaintext_header {
+        match get_cached_connection(&db_cache, &file_path, None).await {
+            Ok(pool) => Ok((pool, false)),
+            Err(plain_error) => match key.as_deref() {
+                Some(key) => get_cached_connection(&db_cache, &file_path, Some(key))
+                    .await
+                    .map(|pool| (pool, true)),
+                None if is_sqlcipher_key_error(&plain_error) => {
+                    return Ok(sqlcipher_key_required_response(&file_path, false));
+                }
+                None => Err(plain_error),
+            },
+        }
+    } else {
+        match key.as_deref() {
+            Some(key) => get_cached_connection(&db_cache, &file_path, Some(key))
+                .await
+                .map(|pool| (pool, true)),
+            None => return Ok(sqlcipher_key_required_response(&file_path, false)),
+        }
+    };
+
+    match connection_result {
+        Ok((pool, is_sqlcipher)) => {
+            mark_cached_connection_active(&db_cache, &file_path).await;
             *state.write().await = Some(pool);
 
             Ok(DbResponse {
                 success: true,
-                data: Some(file_path.clone()),
+                data: Some(DbOpenResult {
+                    path: file_path.clone(),
+                    requires_key: false,
+                    encryption_state: if is_sqlcipher {
+                        "sqlcipher".to_string()
+                    } else {
+                        "plain".to_string()
+                    },
+                }),
                 error: None,
             })
         }
         Err(e) => {
+            if is_sqlcipher_key_error(&e) {
+                return Ok(sqlcipher_key_required_response(&file_path, key.is_some()));
+            }
+
             log::error!("Failed to open database: {}", e);
             Ok(DbResponse {
                 success: false,
@@ -36,6 +85,27 @@ pub async fn db_open(
                 error: Some(e),
             })
         }
+    }
+}
+
+fn sqlcipher_key_required_response(
+    file_path: &str,
+    rejected_key: bool,
+) -> DbResponse<DbOpenResult> {
+    DbResponse {
+        success: false,
+        data: Some(DbOpenResult {
+            path: file_path.to_string(),
+            requires_key: true,
+            encryption_state: "unknown".to_string(),
+        }),
+        error: Some(if rejected_key {
+            "Invalid SQLCipher key, unsupported encryption settings, or invalid database"
+                .to_string()
+        } else {
+            "Database may be SQLCipher-encrypted or invalid. Enter a SQLCipher key to continue."
+                .to_string()
+        }),
     }
 }
 
@@ -57,9 +127,11 @@ pub async fn db_get_tables(
         }
     };
 
-    match sqlx::query("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'")
-        .fetch_all(&pool)
-        .await
+    match sqlx::query(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'",
+    )
+    .fetch_all(&pool)
+    .await
     {
         Ok(rows) => {
             let tables: Vec<TableInfo> = rows
@@ -118,7 +190,9 @@ pub async fn db_get_table_data(
                     return Ok(DbResponse {
                         success: false,
                         data: None,
-                        error: Some("Unable to establish a working database connection".to_string()),
+                        error: Some(
+                            "Unable to establish a working database connection".to_string(),
+                        ),
                     });
                 }
             }
@@ -166,7 +240,11 @@ pub async fn db_get_table_data(
     let column_query = format!("PRAGMA table_info({})", table_name);
     let column_rows = match sqlx::query(&column_query).fetch_all(&pool).await {
         Ok(rows) => {
-            log::info!("✅ Retrieved {} columns for table '{}'", rows.len(), table_name);
+            log::info!(
+                "✅ Retrieved {} columns for table '{}'",
+                rows.len(),
+                table_name
+            );
             rows
         }
         Err(e) => {
@@ -190,11 +268,18 @@ pub async fn db_get_table_data(
         })
         .collect();
 
-    let data_query_with_rowid = format!("SELECT rowid AS {}, * FROM {}", FLIPPIO_ROWID_COLUMN, table_name);
+    let data_query_with_rowid = format!(
+        "SELECT rowid AS {}, * FROM {}",
+        FLIPPIO_ROWID_COLUMN, table_name
+    );
     let data_query_without_rowid = format!("SELECT * FROM {}", table_name);
     let data_rows = match sqlx::query(&data_query_with_rowid).fetch_all(&pool).await {
         Ok(rows) => {
-            log::info!("✅ Retrieved {} rows from table '{}' with rowid metadata", rows.len(), table_name);
+            log::info!(
+                "✅ Retrieved {} rows from table '{}' with rowid metadata",
+                rows.len(),
+                table_name
+            );
             rows
         }
         Err(rowid_error) => {
@@ -204,9 +289,16 @@ pub async fn db_get_table_data(
                 rowid_error
             );
 
-            match sqlx::query(&data_query_without_rowid).fetch_all(&pool).await {
+            match sqlx::query(&data_query_without_rowid)
+                .fetch_all(&pool)
+                .await
+            {
                 Ok(rows) => {
-                    log::info!("✅ Retrieved {} rows from table '{}'", rows.len(), table_name);
+                    log::info!(
+                        "✅ Retrieved {} rows from table '{}'",
+                        rows.len(),
+                        table_name
+                    );
                     rows
                 }
                 Err(e) => {
@@ -240,7 +332,9 @@ pub async fn db_get_table_data(
                                 Err(_) => match row.try_get::<String, _>(i) {
                                     Ok(str_val) => {
                                         if let Ok(int_val) = str_val.parse::<i64>() {
-                                            serde_json::Value::Number(serde_json::Number::from(int_val))
+                                            serde_json::Value::Number(serde_json::Number::from(
+                                                int_val,
+                                            ))
                                         } else {
                                             serde_json::Value::String(str_val)
                                         }
@@ -268,9 +362,9 @@ pub async fn db_get_table_data(
                                 },
                             },
                             "BLOB" => match row.try_get::<Vec<u8>, _>(i) {
-                                Ok(blob_data) => {
-                                    serde_json::Value::String(general_purpose::STANDARD.encode(blob_data))
-                                }
+                                Ok(blob_data) => serde_json::Value::String(
+                                    general_purpose::STANDARD.encode(blob_data),
+                                ),
                                 Err(_) => serde_json::Value::String("".to_string()),
                             },
                             _ => match row.try_get::<String, _>(i) {
