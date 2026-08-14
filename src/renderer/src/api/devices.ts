@@ -25,6 +25,7 @@ export interface DeviceApi {
   cancelIOSDeviceDatabaseScan: (scanKey: string) => Promise<CancelIOSDeviceDatabaseScanResult>
   checkAppExistence: (deviceId: string, applicationId: string) => Promise<any>
   getAndroidDatabaseFiles: (deviceId: string, applicationId: string) => Promise<any>
+  refreshAndroidDatabaseFile: (deviceId: string, applicationId: string, remotePath: string) => Promise<any>
   getAndroidPackages: (deviceId: string) => Promise<any>
   getDevices: () => Promise<GetDevicesResult>
   getIOsDevicePackages: (deviceId: string) => Promise<any>
@@ -126,6 +127,9 @@ export function createDeviceApi({ invokeCommandWithResponse }: DeviceApiDependen
 
     getAndroidDatabaseFiles: (deviceId: string, applicationId: string) =>
       invokeCommandWithResponse('adb:getAndroidDatabaseFiles', 'files', deviceId, applicationId),
+
+    refreshAndroidDatabaseFile: (deviceId: string, applicationId: string, remotePath: string) =>
+      invokeCommandWithResponse('adb:refreshAndroidDatabaseFile', 'file', deviceId, applicationId, remotePath),
 
     checkAppExistence: (deviceId: string, applicationId: string) =>
       invokeCommandWithResponse('device:checkAppExistence', 'exists', deviceId, applicationId),

@@ -80,6 +80,7 @@ beforeAll(() => {
         remotePath: '/remote/test2.db',
       },
     }),
+    refreshAndroidDatabaseFile: vi.fn().mockResolvedValue({ success: true, file: null }),
     cancelIOSDeviceDatabaseScan: vi.fn().mockResolvedValue({ success: true }),
     getIOSSimulatorDatabaseFiles: vi.fn().mockResolvedValue([]),
     getTables: vi.fn().mockResolvedValue([]),
@@ -337,6 +338,32 @@ describe('subHeader component', () => {
     await waitFor(() => {
       expect(mockHandleDBRefresh).toHaveBeenCalledTimes(1)
     })
+  })
+
+  it('pulls the selected Android database during an explicit refresh', async () => {
+    mockSelectedDatabaseFile = {
+      filename: 'test.db',
+      path: '/path/to/test.db',
+      deviceType: 'android',
+      packageName: 'com.test.app',
+      remotePath: '/data/data/com.test.app/databases/test.db',
+    }
+    vi.mocked(globalThis.window.api.refreshAndroidDatabaseFile).mockResolvedValue({
+      success: true,
+      file: mockSelectedDatabaseFile,
+    })
+
+    render(<SubHeader />)
+    fireEvent.click(screen.getByTestId('refresh-db'))
+
+    await waitFor(() => {
+      expect(globalThis.window.api.refreshAndroidDatabaseFile).toHaveBeenCalledWith(
+        'device1',
+        'com.test.app',
+        '/data/data/com.test.app/databases/test.db',
+      )
+    })
+    expect(mockHandleDBRefresh).not.toHaveBeenCalled()
   })
 
   it('shows export button', () => {

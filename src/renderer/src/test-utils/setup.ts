@@ -115,6 +115,7 @@ beforeAll(() => {
     getAndroidDatabaseFiles: vi.fn(),
     getIOSDeviceDatabaseFiles: vi.fn(),
     refreshIOSDeviceDatabaseFile: vi.fn(),
+    refreshAndroidDatabaseFile: vi.fn(),
     cancelIOSDeviceDatabaseScan: vi.fn(),
     getIOSSimulatorDatabaseFiles: vi.fn(),
     checkAppExistence: vi.fn(),

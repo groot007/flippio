@@ -3,7 +3,9 @@
 //! This module provides file transfer utilities and helper functions
 //! for iOS device file operations.
 
-use super::super::helpers::{ensure_temp_dir, generate_unique_filename};
+use super::super::helpers::{
+    ensure_temp_dir, generate_unique_filename, temp_database_matches_source, TemporaryDownload,
+};
 use super::super::types::DatabaseFileMetadata;
 use super::tools::get_tool_command_legacy;
 use chrono;
@@ -53,20 +55,19 @@ fn afcclient_output_indicates_failure(stdout: &[u8], stderr: &[u8]) -> Option<St
     None
 }
 
-/// Pull iOS database file to local temp directory
+/// Pull a database file from a physical iOS device to the local temp directory.
 pub async fn pull_ios_db_file(
     app_handle: &tauri::AppHandle,
     device_id: &str,
     package_name: &str,
     remote_path: &str,
-    is_device: bool,
     access_type: IosAppAccessType,
+    reuse_existing: bool,
 ) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
     info!("=== PULL iOS DB FILE STARTED ===");
     info!("Device ID: {}", device_id);
     info!("Package name: {}", package_name);
     info!("Remote path: {}", remote_path);
-    info!("Is device (not simulator): {}", is_device);
 
     info!("Step 1: Creating temporary directory");
     let temp_dir = ensure_temp_dir()?;
@@ -81,97 +82,82 @@ pub async fn pull_ios_db_file(
     let local_path = temp_dir.join(&unique_filename);
     info!("✅ Local path: {}", local_path.display());
 
-    if local_path.exists() {
-        info!("Step 3a: Removing existing local temp file before pull");
-        fs::remove_file(&local_path).map_err(|e| {
-            format!(
-                "Failed to remove stale temp file {}: {}",
-                local_path.display(),
-                e
-            )
-        })?;
-        let metadata_path = format!("{}.meta.json", local_path.display());
-        if let Err(e) = fs::remove_file(&metadata_path) {
-            if e.kind() != std::io::ErrorKind::NotFound {
-                return Err(format!(
-                    "Failed to remove stale metadata file {}: {}",
-                    metadata_path, e
-                )
-                .into());
-            }
-        }
+    if reuse_existing
+        && temp_database_matches_source(&local_path, device_id, package_name, remote_path)
+    {
+        info!("♻️ Reusing the existing local copy during database discovery");
+        return Ok(local_path.to_string_lossy().to_string());
     }
 
-    if is_device {
-        info!("Step 4: Pulling from physical iOS device using afcclient");
-        let afcclient_cmd = get_tool_command_legacy("afcclient");
-        info!("Using afcclient command: {}", afcclient_cmd);
+    let download = TemporaryDownload::new(&temp_dir, &unique_filename);
+    let download_path = download.path();
 
-        // Use afcclient to pull file from device
-        let local_path_str = local_path.to_string_lossy();
-        let access_args = access_type.afcclient_args(package_name);
-        let args = [
-            access_args[0],
-            access_args[1],
-            "-u",
-            device_id,
-            "get",
-            remote_path,
-            &local_path_str,
-        ];
-        info!("Pull command: {} {}", afcclient_cmd, args.join(" "));
+    info!("Step 4: Pulling from physical iOS device using afcclient");
+    let afcclient_cmd = get_tool_command_legacy("afcclient");
+    info!("Using afcclient command: {}", afcclient_cmd);
 
-        let shell = app_handle.shell();
+    let local_path_str = download_path.to_string_lossy();
+    let access_args = access_type.afcclient_args(package_name);
+    let args = [
+        access_args[0],
+        access_args[1],
+        "-u",
+        device_id,
+        "get",
+        remote_path,
+        &local_path_str,
+    ];
+    info!("Pull command: {} {}", afcclient_cmd, args.join(" "));
 
-        let output = shell
-            .command(&afcclient_cmd)
-            .args(args)
-            .output()
-            .await
-            .map_err(|e| format!("Failed to execute afcclient: {}", e))?;
+    let shell = app_handle.shell();
 
-        info!("afcclient exit status: {:?}", output.status);
-        if !output.stdout.is_empty() {
-            info!(
-                "afcclient stdout: {}",
-                String::from_utf8_lossy(&output.stdout)
-            );
-        }
-        if !output.stderr.is_empty() {
-            info!(
-                "afcclient stderr: {}",
-                String::from_utf8_lossy(&output.stderr)
-            );
-        }
+    let output = shell
+        .command(&afcclient_cmd)
+        .args(args)
+        .output()
+        .await
+        .map_err(|e| format!("Failed to execute afcclient: {}", e))?;
 
-        if !output.status.success() {
-            let error_msg = String::from_utf8_lossy(&output.stderr);
-            error!("❌ afcclient command failed: {}", error_msg);
-            return Err(format!("iOS pull failed: {}", error_msg).into());
-        }
+    info!("afcclient exit status: {:?}", output.status);
+    if !output.stdout.is_empty() {
+        info!(
+            "afcclient stdout: {}",
+            String::from_utf8_lossy(&output.stdout)
+        );
+    }
+    if !output.stderr.is_empty() {
+        info!(
+            "afcclient stderr: {}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+    }
 
-        if let Some(error_msg) = afcclient_output_indicates_failure(&output.stdout, &output.stderr)
-        {
-            error!(
-                "❌ afcclient reported pull failure despite success status: {}",
-                error_msg
-            );
-            return Err(format!("iOS pull failed: {}", error_msg).into());
-        }
-    } else {
-        error!("❌ Simulator file pulling should use different method");
-        return Err("Invalid device type for this function".into());
+    if !output.status.success() {
+        let error_msg = String::from_utf8_lossy(&output.stderr);
+        error!("❌ afcclient command failed: {}", error_msg);
+        return Err(format!("iOS pull failed: {}", error_msg).into());
+    }
+
+    if let Some(error_msg) = afcclient_output_indicates_failure(&output.stdout, &output.stderr) {
+        error!(
+            "❌ afcclient reported pull failure despite success status: {}",
+            error_msg
+        );
+        return Err(format!("iOS pull failed: {}", error_msg).into());
     }
 
     info!("✅ Pull command executed successfully");
 
     info!("Step 5: Verifying pulled file exists and has valid content");
-    if !local_path.exists() {
-        error!("❌ Pulled file does not exist at: {}", local_path.display());
+    if !download_path.exists() {
+        error!(
+            "❌ Pulled file does not exist at: {}",
+            download_path.display()
+        );
         return Err("Pulled file was not created".into());
     }
 
-    match std::fs::metadata(&local_path) {
+    match std::fs::metadata(&download_path) {
         Ok(metadata) => {
             info!("✅ Pulled file size: {} bytes", metadata.len());
             if metadata.len() == 0 {
@@ -181,7 +167,7 @@ pub async fn pull_ios_db_file(
 
             // Quick check if it looks like a SQLite file (for database files)
             if metadata.len() >= 16 {
-                if let Ok(mut file) = std::fs::File::open(&local_path) {
+                if let Ok(mut file) = std::fs::File::open(&download_path) {
                     use std::io::Read;
                     let mut header = [0u8; 16];
                     if let Ok(_) = file.read_exact(&mut header) {
@@ -203,6 +189,14 @@ pub async fn pull_ios_db_file(
             return Err(format!("Cannot access pulled file: {}", e).into());
         }
     }
+
+    download.install(&local_path).map_err(|e| {
+        format!(
+            "Failed to install refreshed database {}: {}",
+            local_path.display(),
+            e
+        )
+    })?;
 
     info!("Step 6: Storing metadata for pulled file");
     // Store metadata

@@ -1,8 +1,6 @@
-# Build And Deployment
+# Build and Deployment
 
 ## Local Builds
-
-Current local commands:
 
 ```bash
 npm run tauri:dev
@@ -10,37 +8,19 @@ npm run tauri:build
 npm run tauri:build:debug
 ```
 
-`src-tauri/tauri.conf.json` already wires the frontend build through `beforeDevCommand` and `beforeBuildCommand`, so there is no supported post-bundle script in the current workflow.
+`src-tauri/tauri.conf.json` owns the renderer build hooks. Do not add a second post-bundle path unless the release workflow requires it.
 
-## Release Workflow
+## Release Gate
 
-The supported release path is GitHub Actions:
+1. Update `CHANGELOG.md` for the exact release version.
+2. Run `npm run version:update -- <version>`.
+3. Review generated package, Cargo, and Tauri version changes.
+4. Run lint, typecheck, frontend tests, Rust tests, and a production build.
+5. Commit the release changes, then push a `v<version>` tag.
 
-- Workflow: `.github/workflows/tauri-release.yml`
-- Trigger: git tags matching `v*`
-- Release notes source: `CHANGELOG.md`
-- Build target today: `universal-apple-darwin`
+The workflow in `.github/workflows/tauri-release.yml` builds a universal macOS artifact, signs it, notarizes it, publishes the GitHub release, and includes updater metadata.
 
-Before tagging a release:
-
-```bash
-npm run version:update -- 0.4.5
-yarn lint
-yarn typecheck
-yarn test
-yarn test:rust
-```
-
-Then create and push a tag:
-
-```bash
-git tag v0.4.5
-git push origin v0.4.5
-```
-
-## Required Release Secrets
-
-The active workflow expects these secrets:
+## Required Secrets
 
 - `TAURI_SIGNING_PRIVATE_KEY`
 - `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`
@@ -52,12 +32,11 @@ The active workflow expects these secrets:
 - `APPLE_TEAM_ID`
 - `VITE_POSTHOG_API_KEY`
 
-## Updater Notes
+The workflow also consumes the existing `FLIPPIO` secret when writing its build environment.
 
-- Auto-updater configuration lives in `src-tauri/tauri.conf.json`.
-- Release signing is handled by the GitHub Actions workflow, not local helper scripts.
-- If updater keys change, update the workflow secrets and the `plugins.updater.pubkey` value in `src-tauri/tauri.conf.json` together.
+## Updater Contract
 
-## What Was Removed
-
-This repository no longer treats ad hoc local signing or notarization scripts as the canonical release path. If you need to change the release process, update the GitHub workflow and this guide together.
+- Updater configuration and public key live in `src-tauri/tauri.conf.json`.
+- Private signing keys live only in repository secrets.
+- If signing keys rotate, update the workflow secrets and updater public key together.
+- Release notes are extracted from the matching `CHANGELOG.md` section; a missing section fails the release.

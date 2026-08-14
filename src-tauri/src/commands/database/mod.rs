@@ -13,6 +13,7 @@ pub mod tests;
 
 // Re-export everything to maintain compatibility
 pub use commands::*;
+pub(crate) use connection_access::{has_live_cached_connection, reset_connection_for_open};
 pub use connection_manager::DatabaseConnectionManager;
 pub use table_reads::*;
 pub use types::*;

@@ -170,6 +170,7 @@ const COMMAND_MAP = {
   'adb:getDevices': 'adb_get_devices',
   'adb:getPackages': 'adb_get_packages',
   'adb:getAndroidDatabaseFiles': 'adb_get_android_database_files',
+  'adb:refreshAndroidDatabaseFile': 'adb_refresh_android_database_file',
   'adb:pushDatabaseFile': 'adb_push_database_file',
   'adb:getDeviceInfo': 'adb_get_device_info',
   'device:getIOsDevices': 'device_get_ios_devices',
@@ -324,6 +325,7 @@ function getParameterNames(command: string): string[] {
     adb_get_devices: [], // No parameters
     adb_get_packages: ['deviceId'],
     adb_get_android_database_files: ['deviceId', 'packageName'],
+    adb_refresh_android_database_file: ['deviceId', 'packageName', 'remotePath'],
     adb_push_database_file: ['deviceId', 'localPath', 'packageName', 'remotePath'],
     adb_get_device_info: ['deviceId'],
     device_push_ios_database_file: ['deviceId', 'localPath', 'packageName', 'remotePath'],

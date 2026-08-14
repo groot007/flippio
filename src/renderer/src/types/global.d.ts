@@ -38,6 +38,7 @@ declare global {
       getDevices: () => Promise<GetDevicesResult>
       cancelIOSDeviceDatabaseScan: (scanKey: string) => Promise<CancelIOSDeviceDatabaseScanResult>
       refreshIOSDeviceDatabaseFile: (deviceId: string, packageName: string, remotePath: string) => Promise<any>
+      refreshAndroidDatabaseFile: (deviceId: string, packageName: string, remotePath: string) => Promise<any>
       uploadIOSDbFile: (deviceId: string, packageName: string, localFilePath: string, remoteLocation: string) => Promise<any>
       pushDatabaseFile: (deviceId: string, localPath: string, packageName: string, remotePath: string, deviceType?: string) => Promise<any>
 

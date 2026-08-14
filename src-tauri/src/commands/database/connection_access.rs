@@ -158,14 +158,22 @@ pub async fn reset_connection_for_open(
     db_cache: &DbConnectionCache,
     db_path: &str,
 ) {
-    *state.write().await = None;
+    let active_pool = state.write().await.take();
 
     let normalized_path = normalize_db_path(db_path);
-    let mut cache_guard = db_cache.write().await;
-    for cached_connection in cache_guard.values_mut() {
-        cached_connection.set_active(false);
+    let cached_pool = {
+        let mut cache_guard = db_cache.write().await;
+        for cached_connection in cache_guard.values_mut() {
+            cached_connection.set_active(false);
+        }
+        cache_guard
+            .remove(&normalized_path)
+            .map(|connection| connection.pool)
+    };
+
+    if let Some(pool) = cached_pool.or(active_pool) {
+        pool.close().await;
     }
-    cache_guard.remove(&normalized_path);
 }
 
 pub async fn mark_cached_connection_active(db_cache: &DbConnectionCache, db_path: &str) {
@@ -174,6 +182,15 @@ pub async fn mark_cached_connection_active(db_cache: &DbConnectionCache, db_path
     if let Some(cached_connection) = cache_guard.get_mut(&normalized_path) {
         cached_connection.set_active(true);
     }
+}
+
+pub async fn has_live_cached_connection(db_cache: &DbConnectionCache, db_path: &str) -> bool {
+    let normalized_path = normalize_db_path(db_path);
+    db_cache
+        .read()
+        .await
+        .get(&normalized_path)
+        .is_some_and(|connection| !connection.is_pool_closed())
 }
 
 // Helper function to get the current active database from cache or state.

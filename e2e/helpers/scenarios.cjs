@@ -617,6 +617,9 @@ function createSimulatorHappyPathScenario() {
 
 function createAndroidRefreshPreserveScenario() {
   return createAndroidScenario('android-refresh-preserve', {
+    adb_refresh_android_database_file: {
+      default: successData(DATABASE_FILE),
+    },
     adb_get_android_database_files: withQueue(
       successData([DATABASE_FILE]),
       [successData([DATABASE_FILE])],

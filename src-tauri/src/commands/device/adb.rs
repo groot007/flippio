@@ -1,7 +1,8 @@
 use super::helpers::*;
 use super::types::*;
 use crate::commands::database::helpers::prepare_database_file_for_sync;
-use crate::commands::database::types::DbConnectionCache;
+use crate::commands::database::types::{DbConnectionCache, DbPool};
+use crate::commands::database::{has_live_cached_connection, reset_connection_for_open};
 use chrono;
 use log::{error, info};
 use serde_json;
@@ -266,10 +267,12 @@ where
 
 // Pull Android database file to local temp directory
 async fn pull_android_db_file(
+    db_cache: &DbConnectionCache,
     device_id: &str,
     package_name: &str,
     remote_path: &str,
     admin_access: bool,
+    reuse_existing: bool,
 ) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
     info!("=== Starting pull_android_db_file ===");
     info!("Device ID: {}", device_id);
@@ -288,6 +291,17 @@ async fn pull_android_db_file(
         local_path, unique_filename
     );
 
+    if reuse_existing
+        && temp_database_matches_source(&local_path, device_id, package_name, remote_path)
+        && has_live_cached_connection(db_cache, &local_path.to_string_lossy()).await
+    {
+        info!("♻️ Reusing the existing local copy during database discovery");
+        return Ok(local_path.to_string_lossy().to_string());
+    }
+
+    let download = TemporaryDownload::new(&temp_dir, &unique_filename);
+    let download_path = download.path();
+
     // Execute ADB command based on admin access
     if admin_access {
         info!("Using admin access (run-as) mode");
@@ -301,7 +315,7 @@ async fn pull_android_db_file(
             device_id,
             package_name,
             remote_path,
-            local_path.display()
+            download_path.display()
         );
 
         info!("Executing shell command: {}", shell_cmd);
@@ -323,7 +337,7 @@ async fn pull_android_db_file(
 
         // For exec-out with redirection, check if file was created successfully
         // rather than relying solely on exit status
-        if !local_path.exists() {
+        if !download_path.exists() {
             let error_msg = String::from_utf8_lossy(&output.stderr);
             error!("Shell command failed - file not created: {}", error_msg);
             return Err(format!("ADB exec-out failed to create file: {}", error_msg).into());
@@ -344,7 +358,7 @@ async fn pull_android_db_file(
             device_id,
             "pull",
             remote_path,
-            &local_path.to_string_lossy(),
+            &download_path.to_string_lossy(),
         ])
         .await?;
 
@@ -365,7 +379,7 @@ async fn pull_android_db_file(
     }
 
     // Verify the file was created and has content
-    match fs::metadata(&local_path) {
+    match fs::metadata(&download_path) {
         Ok(metadata) => {
             info!("File successfully created: {:?}", local_path);
             info!("File size: {} bytes", metadata.len());
@@ -377,7 +391,7 @@ async fn pull_android_db_file(
 
             // Check if it looks like a SQLite file (first 16 bytes should be SQLite header)
             if metadata.len() >= 16 {
-                match fs::File::open(&local_path) {
+                match fs::File::open(&download_path) {
                     Ok(mut file) => {
                         use std::io::Read;
                         let mut header = [0u8; 16];
@@ -403,6 +417,14 @@ async fn pull_android_db_file(
             return Err(format!("File was not created: {}", e).into());
         }
     }
+
+    download.install(&local_path).map_err(|e| {
+        format!(
+            "Failed to install refreshed database {}: {}",
+            local_path.display(),
+            e
+        )
+    })?;
 
     // Store metadata
     let metadata = DatabaseFileMetadata {
@@ -527,6 +549,7 @@ pub async fn adb_get_packages(
 #[tauri::command]
 pub async fn adb_get_android_database_files(
     _app_handle: tauri::AppHandle,
+    db_cache: tauri::State<'_, DbConnectionCache>,
     device_id: String,
     package_name: String,
 ) -> Result<DeviceResponse<Vec<DatabaseFile>>, String> {
@@ -538,11 +561,11 @@ pub async fn adb_get_android_database_files(
 
     // Preserve active temp DB files so fast table selection does not race with
     // a background Android rescan deleting the currently selected file.
-    if let Err(e) = clean_temp_dir() {
-        error!("Failed to clean temp directory: {}", e);
+    if let Err(e) = ensure_temp_dir() {
+        error!("Failed to create temp directory: {}", e);
         // Continue anyway, but log the error
     } else {
-        info!("✅ Successfully cleaned old temp files before Android database pull");
+        info!("✅ Android database temp directory is ready");
     }
 
     let mut database_files = Vec::new();
@@ -555,7 +578,16 @@ pub async fn adb_get_android_database_files(
         .await;
 
     for (file_path, admin_access, location) in found_files {
-        match pull_android_db_file(&device_id, &package_name, &file_path, admin_access).await {
+        match pull_android_db_file(
+            &db_cache,
+            &device_id,
+            &package_name,
+            &file_path,
+            admin_access,
+            true,
+        )
+        .await
+        {
             Ok(local_path) => {
                 let filename = std::path::Path::new(&file_path)
                     .file_name()
@@ -597,6 +629,72 @@ pub async fn adb_get_android_database_files(
         data: Some(database_files),
         error: None,
     })
+}
+
+/// Refresh one selected Android database without replacing unrelated active files.
+#[tauri::command]
+pub async fn adb_refresh_android_database_file(
+    state: tauri::State<'_, DbPool>,
+    db_cache: tauri::State<'_, DbConnectionCache>,
+    device_id: String,
+    package_name: String,
+    remote_path: String,
+) -> Result<DeviceResponse<DatabaseFile>, String> {
+    let found_files =
+        discover_android_database_candidates_with(&device_id, &package_name, |args| async move {
+            let arg_refs: Vec<&str> = args.iter().map(String::as_str).collect();
+            execute_adb_command(&arg_refs).await
+        })
+        .await;
+
+    let Some((_, admin_access, location)) = found_files
+        .into_iter()
+        .find(|(path, _, _)| path == &remote_path)
+    else {
+        return Ok(DeviceResponse {
+            success: false,
+            data: None,
+            error: Some("Selected Android database no longer exists".to_string()),
+        });
+    };
+
+    match pull_android_db_file(
+        &db_cache,
+        &device_id,
+        &package_name,
+        &remote_path,
+        admin_access,
+        false,
+    )
+    .await
+    {
+        Ok(local_path) => {
+            reset_connection_for_open(&state, &db_cache, &local_path).await;
+            let filename = Path::new(&remote_path)
+                .file_name()
+                .and_then(|name| name.to_str())
+                .unwrap_or("unknown")
+                .to_string();
+
+            Ok(DeviceResponse {
+                success: true,
+                data: Some(DatabaseFile {
+                    path: local_path,
+                    package_name,
+                    filename,
+                    location,
+                    remote_path: Some(remote_path),
+                    device_type: "android".to_string(),
+                }),
+                error: None,
+            })
+        }
+        Err(error) => Ok(DeviceResponse {
+            success: false,
+            data: None,
+            error: Some(error.to_string()),
+        }),
+    }
 }
 
 // Push database file back to Android device

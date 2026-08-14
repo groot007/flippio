@@ -8,23 +8,29 @@ export class SqlcipherKeyRequiredError extends Error {
   }
 }
 
-export function getDatabaseKeyIdentifier(databaseFile: Pick<DatabaseFile, 'filename' | 'path' | 'remotePath'>) {
-  return databaseFile.remotePath || databaseFile.path || databaseFile.filename
+type DatabaseKeySource = Pick<DatabaseFile, 'deviceId' | 'filename' | 'packageName' | 'path' | 'remotePath'>
+
+export function getDatabaseKeyIdentifier(databaseFile: DatabaseKeySource) {
+  return [
+    databaseFile.deviceId || 'local',
+    databaseFile.packageName || 'local',
+    databaseFile.remotePath || databaseFile.path || databaseFile.filename,
+  ].join('::')
 }
 
-export function getRememberedDatabaseKey(databaseFile: Pick<DatabaseFile, 'filename' | 'path' | 'remotePath'>) {
+export function getRememberedDatabaseKey(databaseFile: DatabaseKeySource) {
   const identifier = getDatabaseKeyIdentifier(databaseFile)
   return useSqlcipherUnlock.getState().keyByIdentifier[identifier]
 }
 
 export function rememberDatabaseKey(
-  databaseFile: Pick<DatabaseFile, 'filename' | 'path' | 'remotePath'>,
+  databaseFile: DatabaseKeySource,
   key: string,
 ) {
   useSqlcipherUnlock.getState().rememberKey(getDatabaseKeyIdentifier(databaseFile), key)
 }
 
-export function forgetDatabaseKey(databaseFile: Pick<DatabaseFile, 'filename' | 'path' | 'remotePath'>) {
+export function forgetDatabaseKey(databaseFile: DatabaseKeySource) {
   useSqlcipherUnlock.getState().forgetKey(getDatabaseKeyIdentifier(databaseFile))
 }
 

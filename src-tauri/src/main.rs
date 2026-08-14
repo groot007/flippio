@@ -89,6 +89,7 @@ pub fn run() {
             commands::device::adb_get_devices,
             commands::device::adb_get_packages,
             commands::device::adb_get_android_database_files,
+            commands::device::adb_refresh_android_database_file,
             commands::device::adb_push_database_file,
             commands::device::adb_get_device_info,
             // Device commands (iOS)

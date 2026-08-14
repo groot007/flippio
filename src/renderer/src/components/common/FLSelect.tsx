@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { Box, Button, HStack, Icon, Text, VStack } from '@chakra-ui/react'
 import { chakraComponents, Select } from 'chakra-react-select'
-import { useMemo } from 'react'
+import { useMemo, useRef } from 'react'
 import { LuInfo, LuPin } from 'react-icons/lu'
 
 interface SelectOption {
@@ -85,12 +85,16 @@ const FLSelect: React.FC<CustomSelectProps> = ({
   }
 
   const styles = controlStyles[variant]
+  const iconRef = useRef(icon)
+  const menuFooterRef = useRef(menuFooter)
+  iconRef.current = icon
+  menuFooterRef.current = menuFooter
 
   const customComponents = useMemo(() => ({
     Control: ({ children, ...props }: any) => {
       return (
         <chakraComponents.Control {...props}>
-          <HStack ml={3} mr={1} color="textSecondary">{icon}</HStack>
+          <HStack ml={3} mr={1} color="textSecondary">{iconRef.current}</HStack>
           {children}
         </chakraComponents.Control>
       )
@@ -102,7 +106,7 @@ const FLSelect: React.FC<CustomSelectProps> = ({
             <Box flex="1 1 auto" minH={0}>
               {children}
             </Box>
-            {menuFooter
+            {menuFooterRef.current
               ? (
                   <Box
                     flexShrink={0}
@@ -110,7 +114,7 @@ const FLSelect: React.FC<CustomSelectProps> = ({
                     borderTop="1px solid"
                     borderColor="borderPrimary"
                   >
-                    {menuFooter}
+                    {menuFooterRef.current}
                   </Box>
                 )
               : null}
@@ -213,7 +217,7 @@ const FLSelect: React.FC<CustomSelectProps> = ({
         </chakraComponents.Option>
       )
     },
-  }), [menuFooter, showPinIcon, testId])
+  }), [showPinIcon, testId])
 
   return (
     <Box

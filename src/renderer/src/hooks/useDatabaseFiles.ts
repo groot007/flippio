@@ -44,6 +44,12 @@ function mergeDatabaseFiles(existing: DatabaseFile[], incoming: DatabaseFile[]) 
   return merged
 }
 
+function reconcileDatabaseFiles(existing: DatabaseFile[], authoritative: DatabaseFile[]) {
+  const authoritativeKeys = new Set(authoritative.map(file => file.remotePath || file.path))
+  const retained = existing.filter(file => authoritativeKeys.has(file.remotePath || file.path))
+  return mergeDatabaseFiles(retained, authoritative)
+}
+
 export async function fetchDatabaseFilesForSelection(
   selectedDevice: Device,
   selectedApplication: ApplicationSelection,
@@ -75,7 +81,8 @@ export async function fetchDatabaseFilesForSelection(
     throw new Error(response.error || 'Failed to fetch database files')
   }
 
-  return transformToCamelCase(response.files)
+  const files = transformToCamelCase(response.files) as DatabaseFile[]
+  return files.map(file => ({ ...file, deviceId: selectedDevice.id }))
 }
 
 export function useDatabaseFiles(
@@ -152,7 +159,8 @@ export function useDatabaseFiles(
         return
       }
 
-      const incomingFiles = transformToCamelCase(event.payload.files ?? []) as DatabaseFile[]
+      const incomingFiles = (transformToCamelCase(event.payload.files ?? []) as DatabaseFile[])
+        .map(file => ({ ...file, deviceId: selectedDevice?.id }))
 
       if (event.payload.phase === 'documents-root') {
         setScanState(() => ({
@@ -161,6 +169,10 @@ export function useDatabaseFiles(
       }
 
       setStreamedFiles((currentFiles) => {
+        if (event.payload.phase === 'scan-complete') {
+          return reconcileDatabaseFiles(currentFiles, incomingFiles)
+        }
+
         if (event.payload.mode === 'replace') {
           return mergeDatabaseFiles(currentFiles, incomingFiles)
         }
@@ -175,7 +187,7 @@ export function useDatabaseFiles(
         void unlistenPromise.then(unlisten => unlisten())
       }
     }
-  }, [scanKey])
+  }, [scanKey, selectedDevice?.id])
 
   const query = useQuery({
     queryKey: ['databaseFiles', selectedDevice?.id, selectedApplication?.bundleId],

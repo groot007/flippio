@@ -1,98 +1,109 @@
 <div align="center">
   <h1>Flippio</h1>
-  <p>A modern database viewer for mobile applications</p>
+  <p>Inspect and edit SQLite databases from mobile apps and local files.</p>
 
-  ![alt text](image.png)
+  ![Flippio database browser](image.png)
 </div>
 
-## Overview
+Flippio is a desktop database browser built for mobile development. It can find an app's databases, show their tables and rows, edit data, run SQL, and sync supported changes back to a device.
 
-Flippio is a modern cross-platform application built with Tauri and React, designed to help developers inspect and modify database files on iOS and Android devices. It provides a streamlined interface for connecting to devices, browsing applications, and exploring their databases.
+## What you can connect
 
-## Features
+- Android devices and emulators
+- iOS simulators
+- Physical iOS devices
+- Local `.db`, `.db3`, `.sqlite`, `.sqlite3`, and `.sqlitedb` files
 
-- 📱 Connect to iOS simulators and Android devices
-- 📦 Browse installed applications on connected devices
-- 🗄️ Explore database files (.db, .sqlite, .sqlite3)
-- 📋 View and edit database table contents
-- 🔄 Push changes back to device
-- 🌓 Light and dark theme support
+Private app data is subject to the platform's access rules. Android apps normally need to be debuggable for `run-as` access. Physical iOS access depends on the app container and services exposed by the device.
 
-## Installation
+## Main features
 
-### Download
+- Browse installed apps and discover their database files
+- Inspect schemas, tables, rows, JSON values, and BLOB data
+- Insert, update, and delete rows
+- Run custom SQL queries
+- Refresh a database without losing the current table selection
+- Push supported edits back to Android and iOS devices
+- Open SQLCipher databases with a passphrase
+- Export database files and use light or dark mode
 
-Download the latest version from the [Releases](https://github.com/groot007/flippio/releases) page.
+## Install
 
-### Building from Source
+Download the latest signed macOS build from [GitHub Releases](https://github.com/groot007/flippio/releases). Current automated releases are universal macOS builds for Apple silicon and Intel Macs.
 
-```bash
-# Clone the repository
-git clone https://github.com/groot007/flippio.git
-cd flippio
+After installation, make sure the tools for your target platform are available:
 
-# Install dependencies
-npm install
+- Android: Android SDK Platform Tools, with `adb` on `PATH`; enable USB debugging and accept the computer authorization prompt.
+- iOS simulator: Xcode and its command-line tools; start the simulator before opening Flippio.
+- Physical iOS device: connect and trust the Mac, then accept any pairing prompts.
 
-# Run in development mode
-npm run tauri:dev
+## Typical workflow
 
-# Build for your platform
-npm run tauri:build
-```
+1. Start a device or connect it by USB.
+2. Select the device, then the app.
+3. Select a discovered database and table.
+4. Inspect or edit rows, or open the SQL query window.
+5. Use refresh to pull the latest file. Row edits made through the grid are synced automatically when the platform permits it.
 
-## Requirements
+Custom SQL runs against the active local copy. Export or use the structured row editor when a device-backed write must be pushed automatically.
 
-### For iOS Development
-- macOS with Xcode installed
-- iOS Simulator running
-- `xcrun` command line tools
+Use the folder button to inspect a local database without selecting a device or app.
 
-### For Android Development
-- Android SDK installed
-- `adb` in your PATH
-- Android device with USB debugging enabled or emulator running
+> Back up important databases before editing them. A running mobile app may overwrite changes or keep related data in WAL files.
 
-## Usage
+## SQLCipher databases
 
-1. **Connect Device**: Start Flippio and select your connected device
-2. **Select Application**: Choose an app from the installed applications list
-3. **Explore Databases**: Browse available database files for the selected app
-4. **Inspect & Edit**: View table structure and edit data as needed
-5. **Save Changes**: Push changes back to the device when finished
+When a file cannot be opened as plain SQLite, Flippio asks for its SQLCipher passphrase. A valid key is remembered in memory for the current app session and is not written to disk.
+
+The current unlock flow targets standard SQLCipher passphrase databases. Databases using custom cipher compatibility settings, raw keys, or a custom plaintext-header configuration may require matching configuration that Flippio does not yet expose.
 
 ## Troubleshooting
 
-### Android Device Not Detected
-- Ensure USB debugging is enabled on your device
-- Check if your device is authorized (accept the USB debugging prompt)
-- Verify that `adb devices` shows your device in a terminal
+### A device is missing
 
-### iOS Simulator Not Detected
-- Make sure a simulator is running
-- Verify that `xcrun simctl list devices | grep Booted` shows devices in a terminal
+- Android: run `adb devices`. The device should be listed as `device`, not `offline` or `unauthorized`.
+- iOS simulator: run `xcrun simctl list devices` and confirm a simulator is `Booted`.
+- Physical iOS: reconnect the cable, unlock the device, and confirm the trust/pairing prompts.
 
-### Database Changes Not Saving
-- For Android, ensure the app has debugging enabled
-- Some system apps or apps with special protections may not allow database modifications
+### An app or database is missing
+
+- Confirm that the app is installed for the selected device.
+- Open the app once so it creates its database.
+- Refresh the list. Physical iOS scans may add results progressively.
+- Android private storage usually requires a debuggable app.
+
+### Changes do not reach the device
+
+- Keep the target app closed while pushing changes; an active app can overwrite the file.
+- Confirm the remote app container is writable.
+- Reopen or refresh the database after reconnecting a device.
+- Some protected, production, and system apps cannot be modified.
+
+### A database will not open
+
+- Confirm it is a SQLite or SQLCipher database rather than an unrelated file with a database extension.
+- For SQLCipher, retry the exact passphrase used by the app.
+- Copy the file together with its `-wal` and `-shm` files when recent writes appear to be missing.
+
+## Build from source
+
+Development requires Node.js 20+, Rust stable, and the Tauri v2 prerequisites for macOS.
+
+```bash
+git clone https://github.com/groot007/flippio.git
+cd flippio
+npm install
+npm run tauri:dev
+```
+
+Create a production build with:
+
+```bash
+npm run tauri:build
+```
+
+See [development setup](docs/guides/development-setup.md) for validation commands and [build and deployment](docs/guides/build-and-deployment.md) for the release process.
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Acknowledgments
-
-- [Tauri](https://tauri.app/)
-- [React](https://reactjs.org/)
-- [Chakra UI](https://chakra-ui.com/)
-- [AG Grid](https://www.ag-grid.com/)
+Issues and focused pull requests are welcome. Please include the affected platform, device type, reproduction steps, and relevant logs for device-connection bugs.

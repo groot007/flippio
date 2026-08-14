@@ -142,6 +142,7 @@ describe('useDatabaseFiles hook', () => {
     expect(mockIOSDeviceDatabaseFiles).toHaveBeenCalledWith('device-123', 'com.test.app', expect.any(String))
     expect(result.current.data).toEqual([
       {
+        deviceId: 'device-123',
         filename: 'app.db',
         path: '/path/to/app.db',
         deviceType: 'iphone-device',
@@ -181,6 +182,7 @@ describe('useDatabaseFiles hook', () => {
     expect(mockIOSSimulatorDatabaseFiles).toHaveBeenCalledWith('simulator-123', 'com.simulator.app')
     expect(result.current.data).toEqual([
       {
+        deviceId: 'simulator-123',
         filename: 'simulator.db',
         path: '/path/to/simulator.db',
         deviceType: 'simulator',
@@ -220,6 +222,7 @@ describe('useDatabaseFiles hook', () => {
     expect(mockAndroidDatabaseFiles).toHaveBeenCalledWith('android-123', 'com.android.app')
     expect(result.current.data).toEqual([
       {
+        deviceId: 'android-123',
         filename: 'android.db',
         path: '/path/to/android.db',
         deviceType: 'android',
@@ -259,6 +262,7 @@ describe('useDatabaseFiles hook', () => {
     expect(mockAndroidDatabaseFiles).toHaveBeenCalledWith('emulator-456', 'com.emulator.app')
     expect(result.current.data).toEqual([
       {
+        deviceId: 'emulator-456',
         filename: 'emulator.db',
         path: '/path/to/emulator.db',
         deviceType: 'emulator',
@@ -341,7 +345,7 @@ describe('useDatabaseFiles hook', () => {
 
     expect(mockAndroidDatabaseFiles).toHaveBeenCalledWith('device-1', 'com.app1')
     expect(result.current.data).toEqual([
-      { filename: 'android.db', path: '/android.db', deviceType: 'android', packageName: 'com.app1', remotePath: '/android.db' },
+      { deviceId: 'device-1', filename: 'android.db', path: '/android.db', deviceType: 'android', packageName: 'com.app1', remotePath: '/android.db' },
     ])
 
     // Change device and application
@@ -353,7 +357,7 @@ describe('useDatabaseFiles hook', () => {
 
     expect(mockIOSDeviceDatabaseFiles).toHaveBeenCalledWith('device-2', 'com.app2', expect.any(String))
     expect(result.current.data).toEqual([
-      { filename: 'ios.db', path: '/ios.db', deviceType: 'iphone-device', packageName: 'com.app2', remotePath: '/ios.db' },
+      { deviceId: 'device-2', filename: 'ios.db', path: '/ios.db', deviceType: 'iphone-device', packageName: 'com.app2', remotePath: '/ios.db' },
     ])
   })
 
@@ -413,6 +417,7 @@ describe('useDatabaseFiles hook', () => {
 
     expect(result.current.data).toEqual([
       {
+        deviceId: 'multi-device',
         filename: 'users.db',
         path: '/path/to/users.db',
         deviceType: 'android',
@@ -420,6 +425,7 @@ describe('useDatabaseFiles hook', () => {
         remotePath: '/data/data/com.multi.app/databases/users.db',
       },
       {
+        deviceId: 'multi-device',
         filename: 'settings.db',
         path: '/path/to/settings.db',
         deviceType: 'android',
@@ -471,6 +477,7 @@ describe('useDatabaseFiles hook', () => {
 
     expect(result.current.data).toEqual([
       {
+        deviceId: 'iphone-1',
         filename: 'stale.db',
         path: '/stale.db',
         deviceType: 'iphone-device',
@@ -596,5 +603,21 @@ describe('useDatabaseFiles hook', () => {
     })
 
     expect(result.current.data?.map(file => file.path)).toEqual(['/first.db', '/second.db'])
+
+    emitScanProgress({
+      scanKey: 'iphone-1:com.test.app',
+      scanRequestId: secondRequestId,
+      mode: 'replace',
+      phase: 'scan-complete',
+      files: [{
+        filename: 'second.db',
+        path: '/second.db',
+        device_type: 'iphone-device',
+        package_name: 'com.test.app',
+        remote_path: '/second.db',
+      }],
+    })
+
+    expect(result.current.data?.map(file => file.path)).toEqual(['/second.db'])
   })
 })
