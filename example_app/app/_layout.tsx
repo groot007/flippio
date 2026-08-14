@@ -30,23 +30,19 @@ export default function RootLayout() {
           return
         }
 
+        await initDatabase()
         setAppReady(true)
         await SplashScreen.hideAsync()
       }
       catch (e) {
         console.warn('Error initializing app shell:', e)
         setAppReady(true)
+        await SplashScreen.hideAsync()
       }
     }
 
     prepare()
   }, [loaded, fontError])
-
-  useEffect(() => {
-    initDatabase().catch((e) => {
-      console.warn('Error initializing database:', e)
-    })
-  }, [])
 
   if (!appReady) {
     return null

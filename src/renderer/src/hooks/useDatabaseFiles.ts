@@ -162,7 +162,7 @@ export function useDatabaseFiles(
 
       setStreamedFiles((currentFiles) => {
         if (event.payload.mode === 'replace') {
-          return incomingFiles
+          return mergeDatabaseFiles(currentFiles, incomingFiles)
         }
 
         return mergeDatabaseFiles(currentFiles, incomingFiles)
@@ -201,7 +201,6 @@ export function useDatabaseFiles(
       const nextScanRequestId = scanKey ? createScanRequestId(scanKey) : null
       activeScanRequestIdRef.current = nextScanRequestId
       setActiveScanRequestId(nextScanRequestId)
-      setStreamedFiles([])
       setScanState({
         firstRoundComplete: false,
       })

@@ -12,6 +12,7 @@ const mockSetTableData = vi.hoisted(() => vi.fn())
 const mockClearTableData = vi.hoisted(() => vi.fn())
 const mockSetIsRefreshingTableData = vi.hoisted(() => vi.fn())
 const mockSetSelectedRow = vi.hoisted(() => vi.fn())
+const mockSetSqlcipherRequest = vi.hoisted(() => vi.fn())
 let mockSelectedDevice: any
 let mockSelectedApplication: any
 let mockSelectedDatabaseFile: any
@@ -84,7 +85,7 @@ beforeAll(() => {
     getTables: vi.fn().mockResolvedValue([]),
     getTableInfo: vi.fn().mockResolvedValue({ rows: [], columns: [] }),
     executeQuery: vi.fn().mockResolvedValue({ rows: [], columns: [] }),
-    openDatabase: vi.fn().mockResolvedValue(true),
+    openDatabase: vi.fn().mockResolvedValue({ success: true, path: '/path/to/test.db', requiresKey: false, encryptionState: 'plain' }),
     openFile: vi.fn().mockResolvedValue({ canceled: false, filePaths: ['/path/to/test.db'] }),
     exportFile: vi.fn().mockResolvedValue('/path/to/exported.db'),
     exportTextFile: vi.fn().mockResolvedValue('/path/to/exported.csv'),
@@ -186,6 +187,12 @@ vi.mock('@renderer/store', () => ({
     }
     return selector ? selector(state) : state
   },
+  useSqlcipherUnlock: (selector) => {
+    const state = {
+      setRequest: mockSetSqlcipherRequest,
+    }
+    return selector ? selector(state) : state
+  },
 }))
 
 vi.mock('@renderer/store/useRowEditingStore', () => ({
@@ -250,6 +257,7 @@ describe('subHeader component', () => {
     mockSetIsRefreshingTableData.mockImplementation((value) => {
       mockIsRefreshingTableData = value
     })
+    mockSetSqlcipherRequest.mockReset()
   })
 
   it('renders database and table selectors', () => {
@@ -257,6 +265,30 @@ describe('subHeader component', () => {
 
     expect(screen.getByTestId('select-Select Database')).toBeInTheDocument()
     expect(screen.getByTestId('select-Select Table')).toBeInTheDocument()
+  })
+
+  it('requests SQLCipher unlock when selected database requires a key', async () => {
+    vi.mocked(globalThis.window.api.openDatabase).mockResolvedValueOnce({
+      success: false,
+      path: '/path/to/test.db',
+      requiresKey: true,
+      encryptionState: 'sqlcipher',
+      error: 'SQLCipher key required',
+    } as any)
+
+    render(<SubHeader />)
+
+    fireEvent.click(screen.getByTestId('Select Database-/path/to/test.db'))
+
+    await waitFor(() => {
+      expect(mockSetSqlcipherRequest).toHaveBeenCalledWith(
+        expect.objectContaining({
+          databaseFile: expect.objectContaining({
+            path: '/path/to/test.db',
+          }),
+        }),
+      )
+    })
   })
 
   it('disables database and table selection until the prior core selection step exists', () => {
@@ -474,7 +506,7 @@ describe('subHeader component', () => {
     expect(mockClearTableData).not.toHaveBeenCalled()
   })
 
-  it('keeps database and table selection disabled during iPhone first-round scan loading', () => {
+  it('keeps an existing database list interactive during iPhone first-round refresh', () => {
     mockSelectedDevice = { id: 'iphone-1', name: 'iPhone', deviceType: 'iphone-device' }
     mockSelectedApplication = { bundleId: 'com.test.app', name: 'Test App' }
     mockSelectedDatabaseFile = {
@@ -489,8 +521,8 @@ describe('subHeader component', () => {
 
     render(<SubHeader />)
 
-    expect(screen.getByTestId('select-Select Database')).toHaveAttribute('data-disabled', 'true')
-    expect(screen.getByTestId('select-Select Table')).toHaveAttribute('data-disabled', 'true')
+    expect(screen.getByTestId('select-Select Database')).toHaveAttribute('data-disabled', 'false')
+    expect(screen.getByTestId('select-Select Table')).toHaveAttribute('data-disabled', 'false')
     expect(screen.getByTestId('refresh-db')).toBeDisabled()
     expect(screen.getByTestId('refresh-db')).toHaveAttribute('data-state', 'open')
   })

@@ -2,14 +2,18 @@
 // Tests for database commands that require actual SQLite databases
 
 use crate::commands::database::*;
-use tempfile::TempDir;
-use std::fs;
 use rusqlite::Connection;
+use std::collections::HashMap;
+use std::fs;
+use std::sync::Arc;
+use std::time::Duration;
+use tempfile::TempDir;
+use tokio::sync::RwLock;
 
 /// Create a test SQLite database with sample data
 pub fn create_test_database(db_path: &str) -> Result<(), rusqlite::Error> {
     let conn = Connection::open(db_path)?;
-    
+
     // Create a simple test table
     conn.execute(
         "CREATE TABLE users (
@@ -21,23 +25,23 @@ pub fn create_test_database(db_path: &str) -> Result<(), rusqlite::Error> {
         )",
         [],
     )?;
-    
+
     // Insert test data
     conn.execute(
         "INSERT INTO users (name, email, age, active) VALUES (?1, ?2, ?3, ?4)",
         ["John Doe", "john@example.com", "30", "1"],
     )?;
-    
+
     conn.execute(
         "INSERT INTO users (name, email, age, active) VALUES (?1, ?2, ?3, ?4)",
         ["Jane Smith", "jane@example.com", "25", "1"],
     )?;
-    
+
     conn.execute(
         "INSERT INTO users (name, email, age, active) VALUES (?1, ?2, ?3, ?4)",
         ["Bob Johnson", "bob@example.com", "35", "0"],
     )?;
-    
+
     // Create another table for testing relationships
     conn.execute(
         "CREATE TABLE posts (
@@ -50,23 +54,63 @@ pub fn create_test_database(db_path: &str) -> Result<(), rusqlite::Error> {
         )",
         [],
     )?;
-    
+
     conn.execute(
         "INSERT INTO posts (user_id, title, content) VALUES (?1, ?2, ?3)",
         ["1", "First Post", "This is John's first post"],
     )?;
-    
+
     conn.execute(
         "INSERT INTO posts (user_id, title, content) VALUES (?1, ?2, ?3)",
         ["2", "Jane's Post", "This is Jane's post"],
     )?;
-    
+
+    Ok(())
+}
+
+pub fn create_sqlcipher_test_database(db_path: &str, key: &str) -> Result<(), rusqlite::Error> {
+    let conn = Connection::open(db_path)?;
+    let escaped_key = key.replace('\'', "''");
+    conn.execute_batch(&format!("PRAGMA key = '{}';", escaped_key))?;
+
+    // Reuse the same public test fixture shape so backend tests can compare
+    // plain and encrypted flows with identical table data.
+    conn.execute(
+        "CREATE TABLE users (
+            id INTEGER PRIMARY KEY,
+            name TEXT NOT NULL,
+            email TEXT UNIQUE,
+            age INTEGER,
+            active BOOLEAN DEFAULT 1
+        )",
+        [],
+    )?;
+
+    conn.execute(
+        "INSERT INTO users (name, email, age, active) VALUES (?1, ?2, ?3, ?4)",
+        ["John Doe", "john@example.com", "30", "1"],
+    )?;
+
+    conn.execute(
+        "INSERT INTO users (name, email, age, active) VALUES (?1, ?2, ?3, ?4)",
+        ["Jane Smith", "jane@example.com", "25", "1"],
+    )?;
+
+    conn.execute(
+        "INSERT INTO users (name, email, age, active) VALUES (?1, ?2, ?3, ?4)",
+        ["Bob Johnson", "bob@example.com", "35", "0"],
+    )?;
+
     Ok(())
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::commands::database::connection_access::{
+        get_cached_connection, has_sqlite_plaintext_header, mark_cached_connection_active,
+        reset_connection_for_open,
+    };
     use crate::commands::database::helpers::*;
     use sqlx::Row;
 
@@ -74,20 +118,20 @@ mod tests {
     async fn test_database_connection_manager() {
         let temp_dir = TempDir::new().unwrap();
         let db_path = temp_dir.path().join("test.db");
-        
+
         // Create test database
         create_test_database(db_path.to_str().unwrap()).unwrap();
-        
+
         let manager = DatabaseConnectionManager::new();
-        
+
         // Test getting a connection
         let conn_result = manager.get_connection(db_path.to_str().unwrap()).await;
         assert!(conn_result.is_ok());
-        
+
         // Test that the same path returns the same connection
         let conn_result2 = manager.get_connection(db_path.to_str().unwrap()).await;
         assert!(conn_result2.is_ok());
-        
+
         // Test closing connection
         let _ = manager.close_connection(db_path.to_str().unwrap()).await;
     }
@@ -100,7 +144,10 @@ mod tests {
         create_test_database(db_path.to_str().unwrap()).unwrap();
 
         let manager = DatabaseConnectionManager::new();
-        let pool = manager.get_connection(db_path.to_str().unwrap()).await.unwrap();
+        let pool = manager
+            .get_connection(db_path.to_str().unwrap())
+            .await
+            .unwrap();
 
         sqlx::query("UPDATE users SET name = ? WHERE id = ?")
             .bind("Updated John")
@@ -139,44 +186,206 @@ mod tests {
     #[tokio::test]
     async fn test_connection_manager_missing_path_returns_clean_error() {
         let manager = DatabaseConnectionManager::new();
-        let result = manager.get_connection("/tmp/definitely-missing-flippio.db").await;
+        let result = manager
+            .get_connection("/tmp/definitely-missing-flippio.db")
+            .await;
 
         assert!(result.is_err());
         assert!(result.unwrap_err().contains("Database file does not exist"));
     }
 
+    #[tokio::test]
+    async fn test_connection_manager_sqlcipher_requires_valid_key() {
+        let temp_dir = TempDir::new().unwrap();
+        let db_path = temp_dir.path().join("encrypted.db");
+        let db_path_str = db_path.to_str().unwrap();
+
+        create_sqlcipher_test_database(db_path_str, "flippio-secret").unwrap();
+
+        let manager = DatabaseConnectionManager::new();
+
+        let without_key = manager.get_connection(db_path_str).await;
+        assert!(without_key.is_err());
+
+        let wrong_key = manager
+            .get_connection_with_key(db_path_str, Some("wrong-secret"))
+            .await;
+        assert!(wrong_key.is_err());
+
+        let pool = manager
+            .get_connection_with_key(db_path_str, Some("flippio-secret"))
+            .await
+            .unwrap();
+
+        let count: i64 = sqlx::query("SELECT COUNT(*) as count FROM users")
+            .fetch_one(&pool)
+            .await
+            .unwrap()
+            .get("count");
+
+        assert_eq!(count, 3);
+
+        let wrong_key_after_unlock = manager
+            .get_connection_with_key(db_path_str, Some("wrong-secret"))
+            .await;
+        assert!(wrong_key_after_unlock.is_err());
+    }
+
+    #[tokio::test]
+    async fn test_production_cache_rejects_wrong_key_after_successful_unlock() {
+        let temp_dir = TempDir::new().unwrap();
+        let db_path = temp_dir.path().join("encrypted.db");
+        let db_path_str = db_path.to_str().unwrap();
+        create_sqlcipher_test_database(db_path_str, "flippio-secret").unwrap();
+
+        let cache = Arc::new(RwLock::new(HashMap::new()));
+        get_cached_connection(&cache, db_path_str, Some("flippio-secret"))
+            .await
+            .unwrap();
+
+        let wrong_key = get_cached_connection(&cache, db_path_str, Some("wrong-secret")).await;
+
+        assert!(wrong_key.is_err());
+    }
+
+    #[tokio::test]
+    async fn test_open_reset_revokes_previous_active_and_cached_pool() {
+        let temp_dir = TempDir::new().unwrap();
+        let db_path = temp_dir.path().join("encrypted.db");
+        let db_path_str = db_path.to_str().unwrap();
+        create_sqlcipher_test_database(db_path_str, "flippio-secret").unwrap();
+
+        let cache = Arc::new(RwLock::new(HashMap::new()));
+        let pool = get_cached_connection(&cache, db_path_str, Some("flippio-secret"))
+            .await
+            .unwrap();
+        let active_pool = Arc::new(RwLock::new(Some(pool)));
+
+        reset_connection_for_open(&active_pool, &cache, db_path_str).await;
+
+        assert!(active_pool.read().await.is_none());
+        assert!(cache.read().await.is_empty());
+    }
+
+    #[tokio::test]
+    async fn test_active_database_is_not_a_ttl_cleanup_candidate() {
+        let temp_dir = TempDir::new().unwrap();
+        let db_path = temp_dir.path().join("plain.db");
+        let db_path_str = db_path.to_str().unwrap();
+        create_test_database(db_path_str).unwrap();
+
+        let cache = Arc::new(RwLock::new(HashMap::new()));
+        get_cached_connection(&cache, db_path_str, None)
+            .await
+            .unwrap();
+        mark_cached_connection_active(&cache, db_path_str).await;
+
+        let cache_guard = cache.read().await;
+        let cached = cache_guard.values().next().unwrap();
+        assert!(!cached.is_cleanup_candidate(Duration::ZERO));
+    }
+
+    #[tokio::test]
+    async fn test_prepare_encrypted_database_for_sync_uses_unlocked_pool() {
+        let temp_dir = TempDir::new().unwrap();
+        let db_path = temp_dir.path().join("encrypted.db");
+        let db_path_str = db_path.to_str().unwrap();
+        create_sqlcipher_test_database(db_path_str, "flippio-secret").unwrap();
+
+        let cache = Arc::new(RwLock::new(HashMap::new()));
+        let pool = get_cached_connection(&cache, db_path_str, Some("flippio-secret"))
+            .await
+            .unwrap();
+        sqlx::query("UPDATE users SET name = 'Synced' WHERE id = 1")
+            .execute(&pool)
+            .await
+            .unwrap();
+
+        prepare_database_file_for_sync(&cache, db_path_str)
+            .await
+            .unwrap();
+
+        let count: i64 = sqlx::query("SELECT COUNT(*) FROM users WHERE name = 'Synced'")
+            .fetch_one(&pool)
+            .await
+            .unwrap()
+            .get(0);
+        assert_eq!(count, 1);
+    }
+
+    #[test]
+    fn test_empty_database_is_treated_as_plaintext_sqlite() {
+        let temp_dir = TempDir::new().unwrap();
+        let db_path = temp_dir.path().join("empty.db");
+        fs::write(&db_path, []).unwrap();
+
+        assert!(has_sqlite_plaintext_header(db_path.to_str().unwrap()).unwrap());
+    }
+
+    #[test]
+    fn test_sqlcipher_fixture_does_not_expose_plain_sqlite_header() {
+        let temp_dir = TempDir::new().unwrap();
+        let plain_db_path = temp_dir.path().join("plain.db");
+        let encrypted_db_path = temp_dir.path().join("encrypted.db");
+
+        create_test_database(plain_db_path.to_str().unwrap()).unwrap();
+        create_sqlcipher_test_database(encrypted_db_path.to_str().unwrap(), "flippio-secret")
+            .unwrap();
+
+        assert_eq!(
+            has_sqlite_plaintext_header(plain_db_path.to_str().unwrap()).unwrap(),
+            true
+        );
+        assert_eq!(
+            has_sqlite_plaintext_header(encrypted_db_path.to_str().unwrap()).unwrap(),
+            false
+        );
+    }
+
     #[test]
     fn test_database_helpers() {
         // Test default value generation
-        assert_eq!(get_default_value_for_type("INTEGER"), serde_json::Value::Number(serde_json::Number::from(0)));
-        assert_eq!(get_default_value_for_type("TEXT"), serde_json::Value::String("".to_string()));
-        assert_eq!(get_default_value_for_type("BOOLEAN"), serde_json::Value::Bool(false));
-        assert_eq!(get_default_value_for_type("UNKNOWN"), serde_json::Value::Null);
+        assert_eq!(
+            get_default_value_for_type("INTEGER"),
+            serde_json::Value::Number(serde_json::Number::from(0))
+        );
+        assert_eq!(
+            get_default_value_for_type("TEXT"),
+            serde_json::Value::String("".to_string())
+        );
+        assert_eq!(
+            get_default_value_for_type("BOOLEAN"),
+            serde_json::Value::Bool(false)
+        );
+        assert_eq!(
+            get_default_value_for_type("UNKNOWN"),
+            serde_json::Value::Null
+        );
     }
 
     #[test]
     fn test_reset_sqlite_wal_mode_with_real_db() -> Result<(), Box<dyn std::error::Error>> {
         let temp_dir = TempDir::new()?;
         let db_path = temp_dir.path().join("test.db");
-        
+
         // Create a real database
         create_test_database(db_path.to_str().unwrap())?;
-        
+
         // Create mock WAL files
         let wal_path = temp_dir.path().join("test.db-wal");
         let shm_path = temp_dir.path().join("test.db-shm");
         fs::write(&wal_path, "mock wal content")?;
         fs::write(&shm_path, "mock shm content")?;
-        
+
         // Run the function
         let result = reset_sqlite_wal_mode(db_path.to_str().unwrap());
         assert!(result.is_ok());
-        
+
         // WAL and SHM files should be removed
         assert!(db_path.exists());
         assert!(!wal_path.exists());
         assert!(!shm_path.exists());
-        
+
         Ok(())
     }
 
@@ -184,35 +393,37 @@ mod tests {
     fn test_create_test_database() -> Result<(), Box<dyn std::error::Error>> {
         let temp_dir = TempDir::new()?;
         let db_path = temp_dir.path().join("test.db");
-        
+
         // Create the test database
         create_test_database(db_path.to_str().unwrap())?;
-        
+
         // Verify the database was created
         assert!(db_path.exists());
-        
+
         // Connect and verify the structure
         let conn = Connection::open(&db_path)?;
-        
+
         // Check if users table exists
-        let mut stmt = conn.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='users'")?;
+        let mut stmt =
+            conn.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='users'")?;
         let table_exists: bool = stmt.exists([])?;
         assert!(table_exists);
-        
+
         // Check if posts table exists
-        let mut stmt = conn.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='posts'")?;
+        let mut stmt =
+            conn.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='posts'")?;
         let table_exists: bool = stmt.exists([])?;
         assert!(table_exists);
-        
+
         // Check data was inserted
         let mut stmt = conn.prepare("SELECT COUNT(*) FROM users")?;
         let count: i64 = stmt.query_row([], |row| row.get(0))?;
         assert_eq!(count, 3);
-        
+
         let mut stmt = conn.prepare("SELECT COUNT(*) FROM posts")?;
         let count: i64 = stmt.query_row([], |row| row.get(0))?;
         assert_eq!(count, 2);
-        
+
         Ok(())
     }
 
@@ -220,77 +431,79 @@ mod tests {
     fn test_database_types_and_constraints() -> Result<(), Box<dyn std::error::Error>> {
         let temp_dir = TempDir::new()?;
         let db_path = temp_dir.path().join("test.db");
-        
+
         create_test_database(db_path.to_str().unwrap())?;
-        
+
         let conn = Connection::open(&db_path)?;
-        
+
         // Test that email constraint works (should fail on duplicate)
         let result = conn.execute(
             "INSERT INTO users (name, email, age) VALUES (?1, ?2, ?3)",
             ["Test User", "john@example.com", "40"], // Duplicate email
         );
         assert!(result.is_err()); // Should fail due to UNIQUE constraint
-        
+
         // Test that foreign key works
         let _result = conn.execute(
             "INSERT INTO posts (user_id, title, content) VALUES (?1, ?2, ?3)",
-            ["999", "Invalid Post", "This should work even with invalid foreign key"],
+            [
+                "999",
+                "Invalid Post",
+                "This should work even with invalid foreign key",
+            ],
         );
         // Note: SQLite doesn't enforce foreign keys by default, so this might succeed
         // In a real test, you'd want to enable foreign key constraints
-        
+
         Ok(())
     }
 
-    #[test] 
+    #[test]
     fn test_database_query_operations() -> Result<(), Box<dyn std::error::Error>> {
         let temp_dir = TempDir::new()?;
         let db_path = temp_dir.path().join("test.db");
-        
+
         create_test_database(db_path.to_str().unwrap())?;
-        
+
         let conn = Connection::open(&db_path)?;
-        
+
         // Test basic SELECT
         let mut stmt = conn.prepare("SELECT name, email FROM users WHERE active = 1")?;
         let user_iter = stmt.query_map([], |row| {
-            Ok((
-                row.get::<_, String>(0)?,
-                row.get::<_, String>(1)?,
-            ))
+            Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?))
         })?;
-        
+
         let mut users = Vec::new();
         for user in user_iter {
             users.push(user?);
         }
-        
+
         assert_eq!(users.len(), 2); // John and Jane are active
         assert!(users.iter().any(|(name, _)| name == "John Doe"));
         assert!(users.iter().any(|(name, _)| name == "Jane Smith"));
-        
+
         // Test JOIN operation
         let mut stmt = conn.prepare(
             "SELECT u.name, p.title FROM users u 
-             JOIN posts p ON u.id = p.user_id"
+             JOIN posts p ON u.id = p.user_id",
         )?;
         let joined_iter = stmt.query_map([], |row| {
-            Ok((
-                row.get::<_, String>(0)?,
-                row.get::<_, String>(1)?,
-            ))
+            Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?))
         })?;
-        
+
         let mut joined_results = Vec::new();
         for result in joined_iter {
             joined_results.push(result?);
         }
-        
+
         assert_eq!(joined_results.len(), 2);
-        assert!(joined_results.iter().any(|(name, title)| name == "John Doe" && title == "First Post"));
-        assert!(joined_results.iter().any(|(name, title)| name == "Jane Smith" && title == "Jane's Post"));
-        
+        assert!(joined_results
+            .iter()
+            .any(|(name, title)| name == "John Doe" && title == "First Post"));
+        assert!(joined_results
+            .iter()
+            .any(|(name, title)| name == "Jane Smith" && title == "Jane's Post"));
+
         Ok(())
     }
-} 
+}

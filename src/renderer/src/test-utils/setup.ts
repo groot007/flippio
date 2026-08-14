@@ -121,7 +121,7 @@ beforeAll(() => {
     uploadIOSDbFile: vi.fn(),
     pushDatabaseFile: vi.fn(),
     getTables: vi.fn(),
-    openDatabase: vi.fn(),
+    openDatabase: vi.fn().mockResolvedValue({ success: true, path: '/tmp/test.db', requiresKey: false, encryptionState: 'plain' }),
     getTableInfo: vi.fn(),
     updateTableRow: vi.fn(),
     executeQuery: vi.fn(),

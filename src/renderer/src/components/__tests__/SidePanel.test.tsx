@@ -37,7 +37,7 @@ beforeAll(() => {
     getTables: vi.fn().mockResolvedValue([]),
     getTableInfo: vi.fn().mockResolvedValue({ rows: [], columns: [] }),
     executeQuery: vi.fn().mockResolvedValue({ rows: [], columns: [] }),
-    openDatabase: vi.fn().mockResolvedValue(true),
+    openDatabase: vi.fn().mockResolvedValue({ success: true, path: '/path/to/test.db', requiresKey: false, encryptionState: 'plain' }),
     openFile: vi.fn().mockResolvedValue({ canceled: false, filePaths: ['/path/to/test.db'] }),
     exportFile: vi.fn().mockResolvedValue('/path/to/exported.db'),
     exportTextFile: vi.fn().mockResolvedValue('/path/to/exported.csv'),

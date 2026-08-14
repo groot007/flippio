@@ -1,15 +1,15 @@
 //! iOS Simulator Operations
-//! 
+//!
 //! This module handles iOS simulator-specific operations including
 //! database file management and app data access.
 
-use super::super::types::{DeviceResponse, DatabaseFile};
 use super::super::helpers::force_clean_temp_dir;
-use tauri::{State};
-use tauri_plugin_shell::ShellExt;
-use log::{info, error};
+use super::super::types::{DatabaseFile, DeviceResponse};
+use log::{error, info};
 use std::collections::{HashSet, VecDeque};
 use std::path::{Path, PathBuf};
+use tauri::State;
+use tauri_plugin_shell::ShellExt;
 
 const IOS_SIM_SCAN_MAX_DEPTH: usize = 6;
 const IOS_SIM_SCAN_MAX_DIRECTORIES: usize = 256;
@@ -18,13 +18,6 @@ fn is_database_file(path: &Path) -> bool {
     path.extension()
         .and_then(|ext| ext.to_str())
         .map(|ext| matches!(ext, "db" | "sqlite" | "sqlite3"))
-        .unwrap_or(false)
-}
-
-fn matches_bundle_folder_name(path: &Path, package_name: &str) -> bool {
-    path.file_name()
-        .and_then(|name| name.to_str())
-        .map(|name| name.eq_ignore_ascii_case(package_name))
         .unwrap_or(false)
 }
 
@@ -118,47 +111,71 @@ fn scan_simulator_root(root_path: &Path) -> (Vec<PathBuf>, Vec<String>) {
     (found_files, scan_warnings)
 }
 
-fn scan_simulator_library_targets(container_path: &Path, package_name: &str) -> (Vec<PathBuf>, Vec<String>) {
+fn scan_simulator_library_targets(
+    container_path: &Path,
+    package_name: &str,
+) -> (Vec<PathBuf>, Vec<String>) {
+    let library_path = container_path.join("Library");
     let mut found_files = Vec::new();
     let mut scan_warnings = Vec::new();
-    let library_path = container_path.join("Library");
-
-    if !library_path.exists() {
-        return (found_files, scan_warnings);
-    }
-
     let entries = match std::fs::read_dir(&library_path) {
         Ok(entries) => entries,
+        Err(err) if err.kind() == std::io::ErrorKind::NotFound => {
+            return (found_files, scan_warnings);
+        }
         Err(err) => {
-            scan_warnings.push(format!("Skipping {}: {}", library_path.to_string_lossy(), err));
+            scan_warnings.push(format!(
+                "Skipping {}: {}",
+                library_path.to_string_lossy(),
+                err
+            ));
             return (found_files, scan_warnings);
         }
     };
+    let recursive_targets = [
+        "SQLite",
+        "Application Support",
+        "LocalDatabase",
+        package_name,
+    ];
 
     for entry_result in entries {
         let entry = match entry_result {
             Ok(entry) => entry,
             Err(err) => {
-                scan_warnings.push(format!("Skipping entry in {}: {}", library_path.to_string_lossy(), err));
+                scan_warnings.push(format!(
+                    "Skipping entry in {}: {}",
+                    library_path.to_string_lossy(),
+                    err
+                ));
                 continue;
             }
         };
-
         let entry_path = entry.path();
         let file_type = match entry.file_type() {
             Ok(file_type) => file_type,
             Err(err) => {
-                scan_warnings.push(format!("Skipping {}: {}", entry_path.to_string_lossy(), err));
+                scan_warnings.push(format!(
+                    "Skipping {}: {}",
+                    entry_path.to_string_lossy(),
+                    err
+                ));
                 continue;
             }
         };
 
         if file_type.is_file() && is_database_file(&entry_path) {
             found_files.push(entry_path);
-            continue;
-        }
-
-        if file_type.is_dir() && matches_bundle_folder_name(&entry_path, package_name) {
+        } else if file_type.is_dir()
+            && entry_path
+                .file_name()
+                .and_then(|name| name.to_str())
+                .is_some_and(|name| {
+                    recursive_targets
+                        .iter()
+                        .any(|target| name.eq_ignore_ascii_case(target))
+                })
+        {
             let (mut nested_files, mut nested_warnings) = scan_simulator_root(&entry_path);
             found_files.append(&mut nested_files);
             scan_warnings.append(&mut nested_warnings);
@@ -183,7 +200,7 @@ pub async fn upload_simulator_ios_db_file(
     info!("Local file path: {}", local_file_path);
     info!("Package name: {}", package_name);
     info!("Remote location: {}", remote_location);
-    
+
     // Close any existing database connection to prevent file locks during copy
     {
         let mut pool_guard = db_pool_state.write().await;
@@ -193,14 +210,14 @@ pub async fn upload_simulator_ios_db_file(
             info!("✅ Database connection closed");
         }
     }
-    
+
     // Small delay to ensure connection is fully closed
     tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
-    
+
     // Check if source and destination are the same file
     if let (Ok(local_canonical), Ok(remote_canonical)) = (
         std::fs::canonicalize(&local_file_path),
-        std::fs::canonicalize(&remote_location)
+        std::fs::canonicalize(&remote_location),
     ) {
         if local_canonical == remote_canonical {
             info!("✅ Source and destination are the same file - no copy needed");
@@ -211,7 +228,7 @@ pub async fn upload_simulator_ios_db_file(
             });
         }
     }
-    
+
     // Validate local file exists and has content
     if !std::path::Path::new(&local_file_path).exists() {
         error!("❌ Local file does not exist: {}", local_file_path);
@@ -221,7 +238,7 @@ pub async fn upload_simulator_ios_db_file(
             error: Some(format!("Local file {} does not exist", local_file_path)),
         });
     }
-    
+
     // Simple file copy
     info!("� Copying {} to {}", local_file_path, remote_location);
     match std::fs::copy(&local_file_path, &remote_location) {
@@ -229,7 +246,10 @@ pub async fn upload_simulator_ios_db_file(
             info!("✅ Successfully copied {} bytes", bytes_copied);
             Ok(DeviceResponse {
                 success: true,
-                data: Some(format!("Successfully uploaded {} to simulator at {}", local_file_path, remote_location)),
+                data: Some(format!(
+                    "Successfully uploaded {} to simulator at {}",
+                    local_file_path, remote_location
+                )),
                 error: None,
             })
         }
@@ -254,35 +274,53 @@ pub async fn get_ios_simulator_database_files(
     info!("=== GET iOS SIMULATOR DATABASE FILES STARTED ===");
     info!("Device ID (Simulator): {}", device_id);
     info!("Package name: {}", package_name);
-    
+
     // Force clean temp directory before processing simulator database files to avoid stale data
     if let Err(e) = force_clean_temp_dir() {
         log::warn!("❌ Failed to force clean temp directory: {}", e);
     } else {
         info!("✅ Successfully force cleaned temp directory before simulator database processing");
     }
-    
+
     let shell = app_handle.shell();
     let mut database_files = Vec::new();
-    
+
     info!("Step 1: Getting app container path using xcrun simctl");
-    let get_container_output = shell.command("xcrun")
-        .args(["simctl", "get_app_container", &device_id, &package_name, "data"])
+    let get_container_output = shell
+        .command("xcrun")
+        .args([
+            "simctl",
+            "get_app_container",
+            &device_id,
+            &package_name,
+            "data",
+        ])
         .output()
         .await;
-    
+
     match get_container_output {
         Ok(container_result) => {
-            info!("get_app_container exit status: {:?}", container_result.status);
+            info!(
+                "get_app_container exit status: {:?}",
+                container_result.status
+            );
             if !container_result.stdout.is_empty() {
-                info!("get_app_container stdout: {}", String::from_utf8_lossy(&container_result.stdout));
+                info!(
+                    "get_app_container stdout: {}",
+                    String::from_utf8_lossy(&container_result.stdout)
+                );
             }
             if !container_result.stderr.is_empty() {
-                info!("get_app_container stderr: {}", String::from_utf8_lossy(&container_result.stderr));
+                info!(
+                    "get_app_container stderr: {}",
+                    String::from_utf8_lossy(&container_result.stderr)
+                );
             }
-            
+
             if container_result.status.success() {
-                let container_path = String::from_utf8_lossy(&container_result.stdout).trim().to_string();
+                let container_path = String::from_utf8_lossy(&container_result.stdout)
+                    .trim()
+                    .to_string();
                 info!("✅ App container path: {}", container_path);
 
                 info!("Step 2: Searching selected app container roots for database files");
@@ -344,13 +382,74 @@ pub async fn get_ios_simulator_database_files(
             });
         }
     }
-    
+
     info!("=== GET iOS SIMULATOR DATABASE FILES COMPLETED ===");
     info!("Found {} database files", database_files.len());
-    
+
     Ok(DeviceResponse {
         success: true,
         data: Some(database_files),
         error: None,
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::fs;
+    use std::time::{SystemTime, UNIX_EPOCH};
+
+    #[test]
+    fn scans_database_files_across_the_library_tree() {
+        let unique = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("system clock should be after Unix epoch")
+            .as_nanos();
+        let container = std::env::temp_dir().join(format!(
+            "flippio-simulator-library-scan-{}-{unique}",
+            std::process::id()
+        ));
+        let package_name = "com.example.flippio";
+        let relative_paths = [
+            "Library/root.db",
+            "Library/SQLite/sqlcipher_items_sample.db",
+            "Library/Application Support/application-support-fixture.sqlite",
+            "Library/LocalDatabase/local-database-fixture.sqlite3",
+            "Library/com.example.flippio/bundle-folder-fixture.db",
+            "Library/Caches/internal-cache.db",
+        ];
+
+        for relative_path in relative_paths {
+            let path = container.join(relative_path);
+            fs::create_dir_all(path.parent().expect("fixture should have a parent"))
+                .expect("fixture directory should be created");
+            fs::write(path, []).expect("fixture file should be created");
+        }
+
+        let (files, warnings) = scan_simulator_library_targets(&container, package_name);
+        let mut relative_files = files
+            .iter()
+            .map(|path| {
+                path.strip_prefix(&container)
+                    .expect("result should be inside fixture container")
+                    .to_string_lossy()
+                    .to_string()
+            })
+            .collect::<Vec<_>>();
+        relative_files.sort();
+
+        fs::remove_dir_all(&container).expect("fixture container should be removed");
+
+        assert!(warnings.is_empty(), "unexpected warnings: {warnings:?}");
+        assert_eq!(
+            relative_files,
+            vec![
+                "Library/Application Support/application-support-fixture.sqlite",
+                "Library/LocalDatabase/local-database-fixture.sqlite3",
+                "Library/SQLite/sqlcipher_items_sample.db",
+                "Library/com.example.flippio/bundle-folder-fixture.db",
+                "Library/root.db",
+            ]
+        );
+    }
 }

@@ -544,4 +544,57 @@ describe('useDatabaseFiles hook', () => {
 
     expect(result.current.data).toEqual([])
   })
+
+  it('keeps visible files and appends discoveries while an iPhone scan refreshes', async () => {
+    const device: Device = { id: 'iphone-1', deviceType: 'iphone-device' }
+    const application: Application = { bundleId: 'com.test.app', name: 'Test App' }
+
+    mockIOSDeviceDatabaseFiles
+      .mockResolvedValueOnce({ success: true, files: [] })
+      .mockResolvedValueOnce({ success: true, files: [] })
+
+    const { result } = renderHook(() => useDatabaseFiles(device, application), {
+      wrapper: createWrapper(),
+    })
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+    const firstRequestId = mockIOSDeviceDatabaseFiles.mock.calls[0][2]
+
+    emitScanProgress({
+      scanKey: 'iphone-1:com.test.app',
+      scanRequestId: firstRequestId,
+      mode: 'replace',
+      phase: 'documents-root',
+      files: [{
+        filename: 'first.db',
+        path: '/first.db',
+        device_type: 'iphone-device',
+        package_name: 'com.test.app',
+        remote_path: '/first.db',
+      }],
+    })
+
+    await act(async () => {
+      await result.current.refetch()
+    })
+    const secondRequestId = mockIOSDeviceDatabaseFiles.mock.calls[1][2]
+
+    expect(result.current.data?.map(file => file.path)).toEqual(['/first.db'])
+
+    emitScanProgress({
+      scanKey: 'iphone-1:com.test.app',
+      scanRequestId: secondRequestId,
+      mode: 'replace',
+      phase: 'documents-root',
+      files: [{
+        filename: 'second.db',
+        path: '/second.db',
+        device_type: 'iphone-device',
+        package_name: 'com.test.app',
+        remote_path: '/second.db',
+      }],
+    })
+
+    expect(result.current.data?.map(file => file.path)).toEqual(['/first.db', '/second.db'])
+  })
 })

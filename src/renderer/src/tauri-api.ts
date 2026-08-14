@@ -342,7 +342,7 @@ function getParameterNames(command: string): string[] {
     get_ios_simulators: [],
 
     // Database commands
-    db_open: ['filePath'],
+    db_open: ['filePath', 'key'],
     db_get_tables: ['currentDbPath'],
     db_get_table_data: ['tableName', 'currentDbPath'],
     db_get_info: ['filePath'],

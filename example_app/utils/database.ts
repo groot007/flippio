@@ -1,12 +1,27 @@
 import Constants from 'expo-constants'
 import * as FileSystem from 'expo-file-system'
-import * as SQLite from 'expo-sqlite'
+import {
+  ANDROID_DATABASE_PATH,
+  type DB,
+  IOS_LIBRARY_PATH,
+  open,
+  type Scalar,
+} from '@op-engineering/op-sqlite'
 import { Platform } from 'react-native'
 
 // Database name
 const DATABASE_NAME = 'flippio.db'
 
-type DatabaseHandle = Awaited<ReturnType<typeof openDatabase>>
+interface DatabaseHandle {
+  closeAsync: () => Promise<void>
+  execAsync: (sql: string) => Promise<void>
+  getFirstAsync: <T>(sql: string, params?: Scalar[]) => Promise<T | null>
+  getAllAsync: <T>(sql: string, params?: Scalar[]) => Promise<T[]>
+  runAsync: (
+    sql: string,
+    params?: Scalar[],
+  ) => Promise<{ changes: number; lastInsertRowId?: number }>
+}
 
 export interface Item {
   id: number
@@ -22,6 +37,7 @@ export interface DatabaseFixture {
   description: string
   directory?: string
   path: string
+  sqlcipherKey?: string
   removable?: boolean
 }
 
@@ -126,8 +142,25 @@ const RANDOM_ROW_TEMPLATES = [
   },
 ] as const satisfies RandomRowPayload[]
 
+const SQLCIPHER_FIXTURE_NAME = 'sqlcipher_items_sample.db'
+const SQLCIPHER_FIXTURE_KEY = 'flippio-secret'
+const SQLCIPHER_FIXTURE_DESCRIPTION = 'SQLCipher encrypted fixture'
+const DEFAULT_DATABASE_DIRECTORY = Platform.OS === 'ios'
+  ? `${IOS_LIBRARY_PATH}/SQLite`
+  : ANDROID_DATABASE_PATH
+
+let initDatabasePromise: Promise<void> | null = null
+
 function randomInt(max: number) {
   return Math.floor(Math.random() * max)
+}
+
+async function closeDatabase(db: DatabaseHandle | null | undefined) {
+  if (!db) {
+    return
+  }
+
+  await db.closeAsync().catch(() => undefined)
 }
 
 export function buildRandomItemPayload(): RandomRowPayload {
@@ -150,8 +183,7 @@ export function buildRandomItemPayload(): RandomRowPayload {
 export function openDatabase(
   databaseName: string = DATABASE_NAME,
   directory?: string,
-  options?: SQLite.SQLiteOpenOptions,
-) {
+): DatabaseHandle {
   if (Platform.OS === 'web') {
     return {
       transaction: () => {
@@ -167,8 +199,46 @@ export function openDatabase(
     } as any
   }
 
-  // This is the correct way to open the database in expo-sqlite
-  return SQLite.openDatabaseAsync(databaseName, options, directory)
+  const encryptionKey = getSqlcipherKey(databaseName)
+  const options = {
+    name: databaseName,
+    location: directory ?? DEFAULT_DATABASE_DIRECTORY,
+    ...(encryptionKey ? { encryptionKey } : {}),
+  }
+
+  return adaptDatabase(open(options))
+}
+
+function adaptDatabase(db: DB): DatabaseHandle {
+  return {
+    closeAsync: () => db.closeAsync(),
+    execAsync: async (sql) => {
+      await db.execute(sql)
+    },
+    getFirstAsync: async <T>(sql: string, params?: Scalar[]) => {
+      const result = await db.execute(sql, params)
+      return (result.rows[0] as T | undefined) ?? null
+    },
+    getAllAsync: async <T>(sql: string, params?: Scalar[]) => {
+      const result = await db.execute(sql, params)
+      return result.rows as T[]
+    },
+    runAsync: async (sql, params) => {
+      const result = await db.execute(sql, params)
+      return {
+        changes: result.rowsAffected,
+        lastInsertRowId: result.insertId,
+      }
+    },
+  }
+}
+
+function getSqlcipherKey(databaseName: string) {
+  if (databaseName === SQLCIPHER_FIXTURE_NAME) {
+    return SQLCIPHER_FIXTURE_KEY
+  }
+
+  return null
 }
 
 async function ensureSchema(db: DatabaseHandle) {
@@ -244,6 +314,13 @@ async function seedFixtureDatabase(db: DatabaseHandle, description: string) {
   )
 }
 
+async function openFixtureDatabase(
+  databaseName: string,
+  directory?: string,
+): Promise<DatabaseHandle> {
+  return openDatabase(databaseName, directory)
+}
+
 function buildDatabasePath(databaseName: string, directory?: string) {
   if (!directory) {
     return databaseName
@@ -272,8 +349,8 @@ function getDefaultDatabaseFixture(): DatabaseFixture {
   return {
     databaseName: DATABASE_NAME,
     description: 'Primary app database',
-    directory: SQLite.defaultDatabaseDirectory,
-    path: buildDatabasePath(DATABASE_NAME, SQLite.defaultDatabaseDirectory),
+    directory: DEFAULT_DATABASE_DIRECTORY,
+    path: buildDatabasePath(DATABASE_NAME, DEFAULT_DATABASE_DIRECTORY),
   }
 }
 
@@ -336,7 +413,7 @@ function getIosFixtureDirectories() {
 }
 
 async function listManagedDatabaseFixtures(): Promise<DatabaseFixture[]> {
-  const directory = SQLite.defaultDatabaseDirectory
+  const directory = DEFAULT_DATABASE_DIRECTORY
 
   if (!directory) {
     return []
@@ -365,17 +442,26 @@ async function listManagedDatabaseFixtures(): Promise<DatabaseFixture[]> {
 }
 
 function getStaticDatabaseFixtures(): DatabaseFixture[] {
-  const fixtures = [getDefaultDatabaseFixture()]
+  const fixtures = [
+    getDefaultDatabaseFixture(),
+    {
+      databaseName: SQLCIPHER_FIXTURE_NAME,
+      description: SQLCIPHER_FIXTURE_DESCRIPTION,
+      directory: DEFAULT_DATABASE_DIRECTORY,
+      path: buildDatabasePath(SQLCIPHER_FIXTURE_NAME, DEFAULT_DATABASE_DIRECTORY),
+      sqlcipherKey: SQLCIPHER_FIXTURE_KEY,
+    },
+  ]
 
   if (Platform.OS === 'ios') {
     fixtures.push(
       {
         databaseName: 'expo-default-fixture.db',
-        description: 'expo-sqlite default directory fixture',
-        directory: SQLite.defaultDatabaseDirectory,
+        description: 'Default database directory fixture',
+        directory: DEFAULT_DATABASE_DIRECTORY,
         path: buildDatabasePath(
           'expo-default-fixture.db',
-          SQLite.defaultDatabaseDirectory,
+          DEFAULT_DATABASE_DIRECTORY,
         ),
       },
       ...getIosFixtureDirectories(),
@@ -393,9 +479,16 @@ export async function getDatabaseFixtures(): Promise<DatabaseFixture[]> {
 }
 
 async function createEmptyDatabaseFixture(databaseName: string) {
-  const db = await openDatabase(databaseName, SQLite.defaultDatabaseDirectory)
-  await ensureSchema(db)
-  await db.closeAsync()
+  let db: DatabaseHandle | null = null
+
+  try {
+    const openedDb = await openFixtureDatabase(databaseName, DEFAULT_DATABASE_DIRECTORY)
+    db = openedDb
+    await ensureSchema(openedDb)
+  }
+  finally {
+    await closeDatabase(db)
+  }
 }
 
 export async function createManagedDatabase() {
@@ -417,7 +510,7 @@ export async function createManagedDatabase() {
 
   return {
     databaseName,
-    path: buildDatabasePath(databaseName, SQLite.defaultDatabaseDirectory),
+    path: buildDatabasePath(databaseName, DEFAULT_DATABASE_DIRECTORY),
   }
 }
 
@@ -439,26 +532,76 @@ async function initIosFixtureDatabases() {
   const fixtures = (await getDatabaseFixtures()).filter(
     fixture => fixture.databaseName !== DATABASE_NAME,
   ).filter(
+    fixture => fixture.databaseName !== SQLCIPHER_FIXTURE_NAME,
+  ).filter(
     fixture => !fixture.removable,
   )
 
   for (const fixture of fixtures) {
-    const db = await openDatabase(fixture.databaseName, fixture.directory)
-    await seedFixtureDatabase(db, fixture.description)
+    let db: DatabaseHandle | null = null
+
+    try {
+      const openedDb = await openFixtureDatabase(fixture.databaseName, fixture.directory)
+      db = openedDb
+      await seedFixtureDatabase(openedDb, fixture.description)
+    }
+    finally {
+      await closeDatabase(db)
+    }
+  }
+}
+
+async function initSqlcipherFixture() {
+  let db: DatabaseHandle | null = null
+
+  try {
+    const openedDb = await openFixtureDatabase(SQLCIPHER_FIXTURE_NAME, DEFAULT_DATABASE_DIRECTORY)
+    db = openedDb
+    const cipher = await openedDb.getFirstAsync<{ cipher_version?: string }>('PRAGMA cipher_version')
+
+    if (!cipher?.cipher_version) {
+      throw new Error('OP-SQLite was built without SQLCipher support')
+    }
+
+    await seedFixtureDatabase(openedDb, SQLCIPHER_FIXTURE_DESCRIPTION)
+  }
+  finally {
+    await closeDatabase(db)
   }
 }
 
 // Initialize database schema and create a pre-filled database if needed
 export async function initDatabase() {
-  try {
-    const db = await openDatabase()
-    await seedIfEmpty(db)
-    await initIosFixtureDatabases()
+  if (initDatabasePromise) {
+    return initDatabasePromise
   }
-  catch (error) {
-    console.error('Error initializing database:', error)
-    throw error
-  }
+
+  initDatabasePromise = (async () => {
+    let db: DatabaseHandle | null = null
+
+    try {
+      const openedDb = await openFixtureDatabase(DATABASE_NAME)
+      db = openedDb
+      await seedIfEmpty(openedDb)
+      await closeDatabase(openedDb)
+      db = null
+
+      await initIosFixtureDatabases()
+      if (Platform.OS !== 'web') {
+        await initSqlcipherFixture()
+      }
+    }
+    catch (error) {
+      console.error('Error initializing database:', error)
+      throw error
+    }
+    finally {
+      await closeDatabase(db)
+      initDatabasePromise = null
+    }
+  })()
+
+  return initDatabasePromise
 }
 
 // Get all items from the selected database
@@ -469,13 +612,12 @@ export async function getItems(
   let db: DatabaseHandle | null = null
 
   try {
-    db = await openDatabase(databaseName, directory, { useNewConnection: true })
-    await ensureSchema(db)
-    // @ts-expect-error types
-    const items = await db.getAllAsync<Item>(`SELECT * FROM items ORDER BY created_at DESC`)
+    const openedDb = await openFixtureDatabase(databaseName, directory)
+    db = openedDb
+    await ensureSchema(openedDb)
+    const items = await openedDb.getAllAsync<Item>(`SELECT * FROM items ORDER BY created_at DESC`)
 
     // Parse JSON data for each item
-    // @ts-expect-error types
     return items?.map(item => ({
       ...item,
       jsonData: item.json_data ? JSON.parse(item.json_data) : null,
@@ -486,7 +628,7 @@ export async function getItems(
     return []
   }
   finally {
-    await db?.closeAsync()
+    await closeDatabase(db)
   }
 }
 
@@ -501,11 +643,12 @@ export async function addItem(
   let db: DatabaseHandle | null = null
 
   try {
-    db = await openDatabase(databaseName, directory, { useNewConnection: true })
-    await ensureSchema(db)
+    const openedDb = await openFixtureDatabase(databaseName, directory)
+    db = openedDb
+    await ensureSchema(openedDb)
     const jsonString = jsonData ? JSON.stringify(jsonData) : null
 
-    const result = await db.runAsync(
+    const result = await openedDb.runAsync(
       `INSERT INTO items (title, description, created_at, json_data) VALUES (?, ?, ?, ?)`,
       [title, description, Date.now(), jsonString],
     )
@@ -529,9 +672,10 @@ export async function deleteItem(
   let db: DatabaseHandle | null = null
 
   try {
-    db = await openDatabase(databaseName, directory, { useNewConnection: true })
-    await ensureSchema(db)
-    await db.runAsync(`DELETE FROM items WHERE id = ?`, [id])
+    const openedDb = await openFixtureDatabase(databaseName, directory)
+    db = openedDb
+    await ensureSchema(openedDb)
+    await openedDb.runAsync(`DELETE FROM items WHERE id = ?`, [id])
   }
   catch (error) {
     console.error('Error deleting item from database:', error)

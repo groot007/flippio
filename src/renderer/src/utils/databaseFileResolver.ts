@@ -1,6 +1,7 @@
 import type { DatabaseFile, DeviceInfo } from '@renderer/types/devices'
 import type { QueryClient } from '@tanstack/react-query'
 import { fetchDatabaseFilesForSelection } from '@renderer/hooks/useDatabaseFiles'
+import { ensureDatabaseUnlocked } from './sqlcipher'
 
 interface ApplicationSelection {
   bundleId: string
@@ -20,16 +21,8 @@ function isMissingDatabaseFileError(error: Error) {
   return error.message.includes('Database file does not exist')
 }
 
-async function openDatabaseFile(candidatePath: string) {
-  const response = await window.api.openDatabase(candidatePath)
-
-  if (response === true) {
-    return
-  }
-
-  if (!response?.success) {
-    throw new Error(response?.error || 'Failed to open database')
-  }
+async function openDatabaseFile(databaseFile: DatabaseFile) {
+  await ensureDatabaseUnlocked(databaseFile)
 }
 
 function findMatchingDatabaseFile(databaseFile: DatabaseFile, refreshedFiles: DatabaseFile[]) {
@@ -54,7 +47,7 @@ export async function ensureActiveDatabaseFile({
 
   try {
     if (!forceRefresh) {
-      await openDatabaseFile(databaseFile.path)
+      await openDatabaseFile(databaseFile)
       return databaseFile
     }
   }
@@ -90,7 +83,7 @@ export async function ensureActiveDatabaseFile({
     }
 
     setSelectedDatabaseFile?.(matchedDatabaseFile)
-    await openDatabaseFile(matchedDatabaseFile.path)
+    await openDatabaseFile(matchedDatabaseFile)
 
     return matchedDatabaseFile
   }
@@ -123,7 +116,7 @@ export async function ensureActiveDatabaseFile({
   }
 
   setSelectedDatabaseFile?.(matchedDatabaseFile)
-  await openDatabaseFile(matchedDatabaseFile.path)
+  await openDatabaseFile(matchedDatabaseFile)
 
   return matchedDatabaseFile
 }

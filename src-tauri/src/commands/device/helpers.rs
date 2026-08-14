@@ -1,8 +1,8 @@
-use std::fs;
-use std::path::{Path, PathBuf};
-use log::{info, error};
+use log::{error, info};
 use std::collections::hash_map::DefaultHasher;
+use std::fs;
 use std::hash::{Hash, Hasher};
+use std::path::{Path, PathBuf};
 
 // Temp directory utilities
 pub fn get_temp_dir_path() -> PathBuf {
@@ -11,22 +11,26 @@ pub fn get_temp_dir_path() -> PathBuf {
 
 /// Generate a unique local filename based on remote path to avoid conflicts
 /// when multiple files have the same name but come from different device locations
-pub fn generate_unique_filename(remote_path: &str) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
+pub fn generate_unique_filename(
+    remote_path: &str,
+) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
     let path = Path::new(remote_path);
-    let filename = path.file_name()
+    let filename = path
+        .file_name()
         .ok_or("Invalid remote path: no filename")?
         .to_string_lossy();
-    
+
     // Get the parent directory for uniqueness
-    let parent_dir = path.parent()
+    let parent_dir = path
+        .parent()
         .map(|p| p.to_string_lossy())
         .unwrap_or_default();
-    
+
     // Create a short hash of the full path for uniqueness
     let mut hasher = DefaultHasher::new();
     remote_path.hash(&mut hasher);
     let path_hash = hasher.finish();
-    
+
     // Extract meaningful parent folder name for readability
     let parent_suffix = if !parent_dir.is_empty() {
         // Get the last meaningful directory component
@@ -39,7 +43,7 @@ pub fn generate_unique_filename(remote_path: &str) -> Result<String, Box<dyn std
     } else {
         String::new()
     };
-    
+
     // Handle files with and without extensions
     if let Some(stem) = path.file_stem().map(|s| s.to_string_lossy()) {
         if let Some(ext) = path.extension().map(|s| s.to_string_lossy()) {
@@ -54,34 +58,34 @@ pub fn generate_unique_filename(remote_path: &str) -> Result<String, Box<dyn std
 
 pub fn ensure_temp_dir() -> Result<PathBuf, Box<dyn std::error::Error + Send + Sync>> {
     let temp_dir = get_temp_dir_path();
-    
+
     // Only create temp directory if it doesn't exist
     if !temp_dir.exists() {
         fs::create_dir_all(&temp_dir)?;
     }
-    
+
     Ok(temp_dir)
 }
 
 pub fn clean_temp_dir() -> Result<PathBuf, Box<dyn std::error::Error + Send + Sync>> {
     let temp_dir = get_temp_dir_path();
-    
+
     // Ensure temp directory exists
     if !temp_dir.exists() {
         fs::create_dir_all(&temp_dir)?;
         return Ok(temp_dir);
     }
-    
+
     // Clean only old files (older than 1 hour) to preserve active database files
     clean_old_temp_files(&temp_dir, std::time::Duration::from_secs(3600))?;
-    
+
     Ok(temp_dir)
 }
 
 /// Touch a file to update its modification time (keep it from being cleaned up)
 pub fn touch_temp_file(file_path: &str) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     use std::time::SystemTime;
-    
+
     let path = Path::new(file_path);
     if path.exists() {
         // Update the file's modification time to now
@@ -96,20 +100,23 @@ pub fn touch_temp_file(file_path: &str) -> Result<(), Box<dyn std::error::Error 
 }
 
 /// Clean only old temporary files, preserving recently accessed ones
-pub fn clean_old_temp_files(temp_dir: &Path, max_age: std::time::Duration) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+pub fn clean_old_temp_files(
+    temp_dir: &Path,
+    max_age: std::time::Duration,
+) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     use std::time::SystemTime;
-    
+
     if !temp_dir.exists() {
         return Ok(());
     }
-    
+
     let now = SystemTime::now();
     let mut cleaned_count = 0;
-    
+
     for entry in fs::read_dir(temp_dir)? {
         let entry = entry?;
         let path = entry.path();
-        
+
         if path.is_file() {
             // Check file age
             if let Ok(metadata) = entry.metadata() {
@@ -117,7 +124,11 @@ pub fn clean_old_temp_files(temp_dir: &Path, max_age: std::time::Duration) -> Re
                     if let Ok(age) = now.duration_since(modified) {
                         if age > max_age {
                             if let Err(e) = fs::remove_file(&path) {
-                                log::warn!("⚠️ Failed to remove old temp file {}: {}", path.display(), e);
+                                log::warn!(
+                                    "⚠️ Failed to remove old temp file {}: {}",
+                                    path.display(),
+                                    e
+                                );
                             } else {
                                 log::info!("🗑️ Cleaned old temp file: {}", path.display());
                                 cleaned_count += 1;
@@ -128,11 +139,11 @@ pub fn clean_old_temp_files(temp_dir: &Path, max_age: std::time::Duration) -> Re
             }
         }
     }
-    
+
     if cleaned_count > 0 {
         log::info!("🧹 Cleaned {} old temp files", cleaned_count);
     }
-    
+
     Ok(())
 }
 
@@ -141,7 +152,10 @@ pub fn clean_old_temp_files(temp_dir: &Path, max_age: std::time::Duration) -> Re
 pub async fn touch_database_file(file_path: String) -> Result<String, String> {
     match touch_temp_file(&file_path) {
         Ok(()) => {
-            log::info!("📅 Updated timestamp for active database file: {}", file_path);
+            log::info!(
+                "📅 Updated timestamp for active database file: {}",
+                file_path
+            );
             Ok("File timestamp updated".to_string())
         }
         Err(e) => {
@@ -156,7 +170,10 @@ pub async fn touch_database_file(file_path: String) -> Result<String, String> {
 pub async fn force_clean_temp_directory() -> Result<String, String> {
     match force_clean_temp_dir() {
         Ok(temp_dir) => {
-            log::info!("🗑️ Successfully force cleaned temp directory: {}", temp_dir.display());
+            log::info!(
+                "🗑️ Successfully force cleaned temp directory: {}",
+                temp_dir.display()
+            );
             Ok(format!("Temp directory cleaned: {}", temp_dir.display()))
         }
         Err(e) => {
@@ -170,17 +187,17 @@ pub async fn force_clean_temp_directory() -> Result<String, String> {
 /// Use when you want to ensure completely clean state before pulling new database files
 pub fn force_clean_temp_dir() -> Result<PathBuf, Box<dyn std::error::Error + Send + Sync>> {
     let temp_dir = get_temp_dir_path();
-    
+
     // Remove existing temp directory if it exists
     if temp_dir.exists() {
         fs::remove_dir_all(&temp_dir)?;
         log::info!("🗑️ Force cleaned entire temp directory to avoid stale data");
     }
-    
+
     // Create fresh temp directory
     fs::create_dir_all(&temp_dir)?;
     log::info!("📁 Created fresh temp directory for database operations");
-    
+
     Ok(temp_dir)
 }
 
@@ -188,15 +205,15 @@ pub fn force_clean_temp_dir() -> Result<PathBuf, Box<dyn std::error::Error + Sen
 pub fn get_adb_path() -> String {
     // Try to find ADB in common locations
     let possible_paths = vec![
-        "adb",  // System PATH
-        "/usr/local/bin/adb",  // Homebrew on macOS
-        "/opt/homebrew/bin/adb",  // Homebrew on Apple Silicon
-        "/usr/bin/adb",  // Linux
-        "/Android/Sdk/platform-tools/adb",  // Android SDK
-        "~/Library/Android/sdk/platform-tools/adb",  // macOS Android SDK
-        "~/Android/Sdk/platform-tools/adb",  // User Android SDK
+        "adb",                                      // System PATH
+        "/usr/local/bin/adb",                       // Homebrew on macOS
+        "/opt/homebrew/bin/adb",                    // Homebrew on Apple Silicon
+        "/usr/bin/adb",                             // Linux
+        "/Android/Sdk/platform-tools/adb",          // Android SDK
+        "~/Library/Android/sdk/platform-tools/adb", // macOS Android SDK
+        "~/Android/Sdk/platform-tools/adb",         // User Android SDK
     ];
-    
+
     for path in possible_paths {
         let expanded_path = if path.starts_with("~") {
             // Expand ~ to home directory
@@ -208,50 +225,52 @@ pub fn get_adb_path() -> String {
         } else {
             path.to_string()
         };
-        
+
         if Path::new(&expanded_path).exists() {
             return expanded_path;
         }
     }
-    
+
     // Fallback to just "adb" and hope it's in PATH
     "adb".to_string()
 }
 
 // Execute ADB command with proper error handling
-pub async fn execute_adb_command(args: &[&str]) -> Result<std::process::Output, Box<dyn std::error::Error + Send + Sync>> {
+pub async fn execute_adb_command(
+    args: &[&str],
+) -> Result<std::process::Output, Box<dyn std::error::Error + Send + Sync>> {
     let adb_path = get_adb_path();
-    
+
     info!("Executing ADB command: {} {}", adb_path, args.join(" "));
-    
+
     let output = tokio::process::Command::new(adb_path)
         .args(args)
         .output()
         .await?;
-    
+
     info!("ADB command completed with exit code: {:?}", output.status);
-    
+
     if !output.status.success() {
         let error_msg = String::from_utf8_lossy(&output.stderr);
         if !error_msg.is_empty() {
             error!("ADB command failed: {}", error_msg);
         }
     }
-    
+
     Ok(output)
 }
 
 pub fn find_android_emulator_path() -> String {
     let possible_paths = vec![
-        "emulator",  // System PATH
-        "/usr/local/bin/emulator",  // Homebrew on macOS
-        "/opt/homebrew/bin/emulator",  // Homebrew on Apple Silicon
-        "/usr/bin/emulator",  // Linux
-        "/Android/Sdk/emulator/emulator",  // Android SDK
-        "~/Library/Android/sdk/emulator/emulator",  // macOS Android SDK
-        "~/Android/Sdk/emulator/emulator",  // User Android SDK
+        "emulator",                                // System PATH
+        "/usr/local/bin/emulator",                 // Homebrew on macOS
+        "/opt/homebrew/bin/emulator",              // Homebrew on Apple Silicon
+        "/usr/bin/emulator",                       // Linux
+        "/Android/Sdk/emulator/emulator",          // Android SDK
+        "~/Library/Android/sdk/emulator/emulator", // macOS Android SDK
+        "~/Android/Sdk/emulator/emulator",         // User Android SDK
     ];
-    
+
     for path in possible_paths {
         let expanded_path = if path.starts_with("~") {
             // Expand ~ to home directory
@@ -263,12 +282,12 @@ pub fn find_android_emulator_path() -> String {
         } else {
             path.to_string()
         };
-        
+
         if Path::new(&expanded_path).exists() {
             return expanded_path;
         }
     }
-    
+
     // Fallback to just "emulator" and hope it's in PATH
     "emulator".to_string()
 }
@@ -296,8 +315,8 @@ pub fn get_libimobiledevice_tool_path(tool_name: &str) -> Option<std::path::Path
 
             let dev_path = exe_dir
                 .parent()
-                .and_then(|p| p.parent())  // target/debug/
-                .and_then(|p| p.parent())  // target/
+                .and_then(|p| p.parent()) // target/debug/
+                .and_then(|p| p.parent()) // target/
                 .map(|p| p.join("resources/libimobiledevice/tools").join(tool_name));
 
             if let Some(ref dev_path) = dev_path {
@@ -345,11 +364,11 @@ mod tests {
         // Test temp dir path generation (without actually creating)
         let temp_dir_path = get_temp_dir_path();
         assert!(temp_dir_path.to_string_lossy().contains("flippio-db-temp"));
-        
+
         // Test that function works (may or may not create new dir if it already exists)
         let result = ensure_temp_dir();
         assert!(result.is_ok());
-        
+
         let dir = result?;
         assert!(dir.exists());
         assert!(dir.is_dir());
@@ -363,29 +382,35 @@ mod tests {
 
         // Test that clean_temp_dir preserves recent files and creates directory
         let temp_dir = get_temp_dir_path();
-        
+
         // Ensure temp dir exists first
         let created_dir = ensure_temp_dir()?;
         assert!(created_dir.exists(), "Temp directory should be created");
-        
+
         // Create a recent file (should be preserved since it's less than 1 hour old)
         let recent_file = temp_dir.join("recent_file.txt");
         fs::write(&recent_file, "recent content")?;
         assert!(recent_file.exists(), "Test file should be created");
-        
+
         // Run clean_temp_dir
         let result = clean_temp_dir()?;
-        
+
         // The result should be the temp directory path and it should exist
-        assert!(result.exists(), "Temp directory should exist after clean_temp_dir");
-        assert_eq!(result, temp_dir, "clean_temp_dir should return the temp directory path");
-        
+        assert!(
+            result.exists(),
+            "Temp directory should exist after clean_temp_dir"
+        );
+        assert_eq!(
+            result, temp_dir,
+            "clean_temp_dir should return the temp directory path"
+        );
+
         // Recent file should still exist (since it's new)
         assert!(recent_file.exists(), "Recent file should be preserved");
-        
+
         // Clean up test files
         let _ = fs::remove_file(&recent_file);
-        
+
         Ok(())
     }
 
@@ -396,22 +421,22 @@ mod tests {
         // Test the force clean functionality
         let temp_dir = get_temp_dir_path();
         let _ = ensure_temp_dir()?;
-        
+
         // Create test files
         let test_file1 = temp_dir.join("test1.txt");
         let test_file2 = temp_dir.join("test2.txt");
         fs::write(&test_file1, "content1")?;
         fs::write(&test_file2, "content2")?;
-        
+
         assert!(test_file1.exists());
         assert!(test_file2.exists());
-        
+
         // Force clean should remove everything
         let result = force_clean_temp_dir()?;
         assert!(result.exists());
         assert!(!test_file1.exists());
         assert!(!test_file2.exists());
-        
+
         Ok(())
     }
 
@@ -443,21 +468,22 @@ mod tests {
     }
 
     #[test]
-    fn test_temp_dir_operations_integration() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    fn test_temp_dir_operations_integration() -> Result<(), Box<dyn std::error::Error + Send + Sync>>
+    {
         let _guard = temp_dir_test_lock().lock().unwrap();
 
         // Test the path generation logic
         let temp_path = get_temp_dir_path();
         assert!(temp_path.to_string_lossy().contains("flippio-db-temp"));
-        
+
         // Test that ensure_temp_dir works
         let result = ensure_temp_dir();
         assert!(result.is_ok());
-        
+
         // Test that clean_temp_dir works
         let result = clean_temp_dir();
         assert!(result.is_ok());
-        
+
         Ok(())
     }
 }

@@ -417,14 +417,35 @@ describe('tauri API - critical infrastructure tests', () => {
         ]
 
         for (const path of validPaths) {
-          mockInvoke.mockResolvedValue({ success: true, data: path })
+          mockInvoke.mockResolvedValue({ success: true, data: { path, requires_key: false, encryption_state: 'plain' } })
           
           const result = await tauriApi.api.openDatabase(path)
           
           expect(result.success).toBe(true)
           expect(result.path).toBe(path)
-          expect(mockInvoke).toHaveBeenCalledWith('db_open', { filePath: path })
+          expect(result.requiresKey).toBe(false)
+          expect(result.encryptionState).toBe('plain')
+          expect(mockInvoke).toHaveBeenCalledWith('db_open', { filePath: path, key: undefined })
         }
+      })
+
+      it('should surface SQLCipher key prompts from db_open', async () => {
+        mockInvoke.mockResolvedValue({
+          success: false,
+          data: {
+            path: '/Users/test/encrypted.db',
+            requires_key: true,
+            encryption_state: 'sqlcipher',
+          },
+          error: 'SQLCipher key required',
+        })
+
+        const result = await tauriApi.api.openDatabase('/Users/test/encrypted.db')
+
+        expect(result.success).toBe(false)
+        expect(result.requiresKey).toBe(true)
+        expect(result.encryptionState).toBe('sqlcipher')
+        expect(result.error).toBe('SQLCipher key required')
       })
 
       it('should handle database switch operations', async () => {

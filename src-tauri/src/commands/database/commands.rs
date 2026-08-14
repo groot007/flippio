@@ -1,14 +1,14 @@
 // Database commands - enhanced with connection caching
-use crate::commands::database::types::*;
-use crate::commands::database::connection_access::get_current_pool;
-use crate::commands::database::helpers::ensure_database_file_permissions;
 use crate::commands::database::change_history::{
-    capture_old_values_for_update, extract_context_from_path,
-    record_change_with_safety, create_change_event, OperationType
+    capture_old_values_for_update, create_change_event, extract_context_from_path,
+    record_change_with_safety, OperationType,
 };
 use crate::commands::database::change_tracking::{
-    create_field_changes_optimized, extract_row_values
+    create_field_changes_optimized, extract_row_values,
 };
+use crate::commands::database::connection_access::get_current_pool;
+use crate::commands::database::helpers::ensure_database_file_permissions;
+use crate::commands::database::types::*;
 use serde_json;
 use sqlx::{Column, Row, TypeInfo, ValueRef};
 use std::collections::HashMap;
@@ -58,7 +58,11 @@ pub async fn db_update_table_row(
     // Validate that we have a specific database path for write operations
     let db_path = match current_db_path.clone() {
         Some(path) => {
-            log::info!("📝 UPDATE operation for table '{}' on database: {}", table_name, path);
+            log::info!(
+                "📝 UPDATE operation for table '{}' on database: {}",
+                table_name,
+                path
+            );
             path
         }
         None => {
@@ -66,7 +70,10 @@ pub async fn db_update_table_row(
             return Ok(DbResponse {
                 success: false,
                 data: None,
-                error: Some("UPDATE operation requires a specific database path - no database selected".to_string()),
+                error: Some(
+                    "UPDATE operation requires a specific database path - no database selected"
+                        .to_string(),
+                ),
             });
         }
     };
@@ -83,38 +90,56 @@ pub async fn db_update_table_row(
             });
         }
     };
-    
+
     // Ensure database file permissions are correct before write operation
     if let Err(permission_error) = ensure_database_file_permissions(&db_path) {
-        log::error!("❌ Failed to ensure database permissions: {}", permission_error);
+        log::error!(
+            "❌ Failed to ensure database permissions: {}",
+            permission_error
+        );
         return Ok(DbResponse {
             success: false,
             data: None,
             error: Some(format!("Database permission error: {}", permission_error)),
         });
     }
-    
+
     // Build the UPDATE query
     let columns: Vec<String> = row.keys().cloned().collect();
-    let set_clause = columns.iter().map(|col| format!("{} = ?", col)).collect::<Vec<_>>().join(", ");
-    let query = format!("UPDATE {} SET {} WHERE {}", table_name, set_clause, condition);
-    
-    log::info!("🔧 Executing UPDATE query on database '{}': {}", db_path, query);
-    
+    let set_clause = columns
+        .iter()
+        .map(|col| format!("{} = ?", col))
+        .collect::<Vec<_>>()
+        .join(", ");
+    let query = format!(
+        "UPDATE {} SET {} WHERE {}",
+        table_name, set_clause, condition
+    );
+
+    log::info!(
+        "🔧 Executing UPDATE query on database '{}': {}",
+        db_path,
+        query
+    );
+
     // PHASE 2: Capture old values for change tracking (non-fatal if fails)
-    let old_values = match capture_old_values_for_update(&pool, &table_name, &condition, &columns).await {
-        Ok(values) => {
-            log::debug!("📝 Captured old values for change tracking");
-            Some(values)
-        }
-        Err(e) => {
-            log::warn!("⚠️ Failed to capture old values for change tracking (non-fatal): {}", e);
-            None
-        }
-    };
-    
+    let old_values =
+        match capture_old_values_for_update(&pool, &table_name, &condition, &columns).await {
+            Ok(values) => {
+                log::debug!("📝 Captured old values for change tracking");
+                Some(values)
+            }
+            Err(e) => {
+                log::warn!(
+                    "⚠️ Failed to capture old values for change tracking (non-fatal): {}",
+                    e
+                );
+                None
+            }
+        };
+
     let mut query_builder = sqlx::query(&query);
-    
+
     for col in &columns {
         if let Some(value) = row.get(col) {
             query_builder = match value {
@@ -125,26 +150,36 @@ pub async fn db_update_table_row(
                     } else if let Some(float_val) = n.as_f64() {
                         query_builder.bind(float_val)
                     } else {
-                        log::error!("Error binding value for column '{}': Invalid number format", col);
+                        log::error!(
+                            "Error binding value for column '{}': Invalid number format",
+                            col
+                        );
                         return Ok(DbResponse {
                             success: false,
                             data: None,
-                            error: Some(format!("Error binding value for column '{}': Invalid number format", col)),
+                            error: Some(format!(
+                                "Error binding value for column '{}': Invalid number format",
+                                col
+                            )),
                         });
                     }
-                },
+                }
                 serde_json::Value::Bool(b) => query_builder.bind(b),
                 serde_json::Value::Null => query_builder.bind(None::<String>),
                 _ => query_builder.bind(value.to_string()),
             };
         }
     }
-    
+
     match query_builder.execute(&pool).await {
         Ok(result) => {
             let rows_affected = result.rows_affected();
-            log::info!("✅ UPDATE successful on database '{}': {} rows affected", db_path, rows_affected);
-            
+            log::info!(
+                "✅ UPDATE successful on database '{}': {} rows affected",
+                db_path,
+                rows_affected
+            );
+
             // PHASE 2: Record change in history (non-fatal if fails)
             if let Some(old_vals) = old_values {
                 let user_context = extract_context_from_path(
@@ -155,13 +190,10 @@ pub async fn db_update_table_row(
                     package_name,
                     app_name,
                 );
-                
-                let field_changes = create_field_changes_optimized(
-                    &OperationType::Update,
-                    &old_vals,
-                    &row
-                );
-                
+
+                let field_changes =
+                    create_field_changes_optimized(&OperationType::Update, &old_vals, &row);
+
                 if !field_changes.is_empty() {
                     match create_change_event(
                         &db_path,
@@ -183,7 +215,7 @@ pub async fn db_update_table_row(
                     log::debug!("📝 No field changes detected, skipping change record");
                 }
             }
-            
+
             Ok(DbResponse {
                 success: true,
                 data: Some(rows_affected),
@@ -192,15 +224,20 @@ pub async fn db_update_table_row(
         }
         Err(e) => {
             log::error!("❌ UPDATE failed on database '{}': {}", db_path, e);
-            
+
             // If it's a read-only error, try to fix permissions and retry once
-            if e.to_string().contains("readonly database") || e.to_string().contains("attempt to write a readonly database") {
-                log::warn!("🔄 Detected read-only database error, attempting to fix permissions and retry");
-                
+            if e.to_string().contains("readonly database")
+                || e.to_string()
+                    .contains("attempt to write a readonly database")
+            {
+                log::warn!(
+                    "🔄 Detected read-only database error, attempting to fix permissions and retry"
+                );
+
                 match ensure_database_file_permissions(&db_path) {
                     Ok(()) => {
                         log::info!("✅ Fixed permissions, retrying UPDATE operation");
-                        
+
                         // Rebuild the query for retry
                         let mut retry_query_builder = sqlx::query(&query);
                         for col in &columns {
@@ -215,19 +252,25 @@ pub async fn db_update_table_row(
                                         } else {
                                             retry_query_builder.bind(value.to_string())
                                         }
-                                    },
+                                    }
                                     serde_json::Value::Bool(b) => retry_query_builder.bind(b),
-                                    serde_json::Value::Null => retry_query_builder.bind(None::<String>),
+                                    serde_json::Value::Null => {
+                                        retry_query_builder.bind(None::<String>)
+                                    }
                                     _ => retry_query_builder.bind(value.to_string()),
                                 };
                             }
                         }
-                        
+
                         // Retry the operation once
                         match retry_query_builder.execute(&pool).await {
                             Ok(result) => {
                                 let rows_affected = result.rows_affected();
-                                log::info!("✅ UPDATE retry successful on database '{}': {} rows affected", db_path, rows_affected);
+                                log::info!(
+                                    "✅ UPDATE retry successful on database '{}': {} rows affected",
+                                    db_path,
+                                    rows_affected
+                                );
                                 return Ok(DbResponse {
                                     success: true,
                                     data: Some(rows_affected),
@@ -235,7 +278,10 @@ pub async fn db_update_table_row(
                                 });
                             }
                             Err(retry_error) => {
-                                log::error!("❌ UPDATE failed even after permission fix: {}", retry_error);
+                                log::error!(
+                                    "❌ UPDATE failed even after permission fix: {}",
+                                    retry_error
+                                );
                             }
                         }
                     }
@@ -244,7 +290,7 @@ pub async fn db_update_table_row(
                     }
                 }
             }
-            
+
             Ok(DbResponse {
                 success: false,
                 data: None,
@@ -272,7 +318,11 @@ pub async fn db_insert_table_row(
     // Validate that we have a specific database path for write operations
     let db_path = match current_db_path.clone() {
         Some(path) => {
-            log::info!("📝 INSERT operation for table '{}' on database: {}", table_name, path);
+            log::info!(
+                "📝 INSERT operation for table '{}' on database: {}",
+                table_name,
+                path
+            );
             path
         }
         None => {
@@ -280,7 +330,10 @@ pub async fn db_insert_table_row(
             return Ok(DbResponse {
                 success: false,
                 data: None,
-                error: Some("INSERT operation requires a specific database path - no database selected".to_string()),
+                error: Some(
+                    "INSERT operation requires a specific database path - no database selected"
+                        .to_string(),
+                ),
             });
         }
     };
@@ -297,27 +350,37 @@ pub async fn db_insert_table_row(
             });
         }
     };
-    
+
     // Ensure database file permissions are correct before write operation
     if let Err(permission_error) = ensure_database_file_permissions(&db_path) {
-        log::error!("❌ Failed to ensure database permissions: {}", permission_error);
+        log::error!(
+            "❌ Failed to ensure database permissions: {}",
+            permission_error
+        );
         return Ok(DbResponse {
             success: false,
             data: None,
             error: Some(format!("Database permission error: {}", permission_error)),
         });
     }
-    
+
     // Build the INSERT query
     let columns: Vec<String> = row.keys().cloned().collect();
     let placeholders = vec!["?"; columns.len()].join(", ");
     let columns_str = columns.join(", ");
-    let query = format!("INSERT INTO {} ({}) VALUES ({})", table_name, columns_str, placeholders);
-    
-    log::info!("🔧 Executing INSERT query on database '{}': {}", db_path, query);
-    
+    let query = format!(
+        "INSERT INTO {} ({}) VALUES ({})",
+        table_name, columns_str, placeholders
+    );
+
+    log::info!(
+        "🔧 Executing INSERT query on database '{}': {}",
+        db_path,
+        query
+    );
+
     let mut query_builder = sqlx::query(&query);
-    
+
     for col in &columns {
         if let Some(value) = row.get(col) {
             query_builder = match value {
@@ -328,26 +391,36 @@ pub async fn db_insert_table_row(
                     } else if let Some(float_val) = n.as_f64() {
                         query_builder.bind(float_val)
                     } else {
-                        log::error!("Error binding value for column '{}': Invalid number format", col);
+                        log::error!(
+                            "Error binding value for column '{}': Invalid number format",
+                            col
+                        );
                         return Ok(DbResponse {
                             success: false,
                             data: None,
-                            error: Some(format!("Error binding value for column '{}': Invalid number format", col)),
+                            error: Some(format!(
+                                "Error binding value for column '{}': Invalid number format",
+                                col
+                            )),
                         });
                     }
-                },
+                }
                 serde_json::Value::Bool(b) => query_builder.bind(b),
                 serde_json::Value::Null => query_builder.bind(None::<String>),
                 _ => query_builder.bind(value.to_string()),
             };
         }
     }
-    
+
     match query_builder.execute(&pool).await {
         Ok(result) => {
             let row_id = result.last_insert_rowid();
-            log::info!("✅ INSERT successful on database '{}': new row ID {}", db_path, row_id);
-            
+            log::info!(
+                "✅ INSERT successful on database '{}': new row ID {}",
+                db_path,
+                row_id
+            );
+
             // PHASE 2: Record change in history (non-fatal if fails)
             let user_context = extract_context_from_path(
                 &db_path,
@@ -357,15 +430,12 @@ pub async fn db_insert_table_row(
                 package_name,
                 app_name,
             );
-            
+
             // For INSERT, all values are "new" values, no old values
             let empty_old_values = HashMap::new();
-            let field_changes = create_field_changes_optimized(
-                &OperationType::Insert,
-                &empty_old_values,
-                &row
-            );
-            
+            let field_changes =
+                create_field_changes_optimized(&OperationType::Insert, &empty_old_values, &row);
+
             if !field_changes.is_empty() {
                 match create_change_event(
                     &db_path,
@@ -380,11 +450,14 @@ pub async fn db_insert_table_row(
                         let _ = record_change_with_safety(&change_history, change_event).await;
                     }
                     Err(e) => {
-                        log::warn!("⚠️ Failed to create change event for INSERT (non-fatal): {}", e);
+                        log::warn!(
+                            "⚠️ Failed to create change event for INSERT (non-fatal): {}",
+                            e
+                        );
                     }
                 }
             }
-            
+
             Ok(DbResponse {
                 success: true,
                 data: Some(row_id),
@@ -393,15 +466,20 @@ pub async fn db_insert_table_row(
         }
         Err(e) => {
             log::error!("❌ INSERT failed on database '{}': {}", db_path, e);
-            
+
             // If it's a read-only error, try to fix permissions and retry once
-            if e.to_string().contains("readonly database") || e.to_string().contains("attempt to write a readonly database") {
-                log::warn!("🔄 Detected read-only database error, attempting to fix permissions and retry");
-                
+            if e.to_string().contains("readonly database")
+                || e.to_string()
+                    .contains("attempt to write a readonly database")
+            {
+                log::warn!(
+                    "🔄 Detected read-only database error, attempting to fix permissions and retry"
+                );
+
                 match ensure_database_file_permissions(&db_path) {
                     Ok(()) => {
                         log::info!("✅ Fixed permissions, retrying INSERT operation");
-                        
+
                         // Rebuild the query for retry
                         let mut retry_query_builder = sqlx::query(&query);
                         for col in &columns {
@@ -416,19 +494,25 @@ pub async fn db_insert_table_row(
                                         } else {
                                             retry_query_builder.bind(value.to_string())
                                         }
-                                    },
+                                    }
                                     serde_json::Value::Bool(b) => retry_query_builder.bind(b),
-                                    serde_json::Value::Null => retry_query_builder.bind(None::<String>),
+                                    serde_json::Value::Null => {
+                                        retry_query_builder.bind(None::<String>)
+                                    }
                                     _ => retry_query_builder.bind(value.to_string()),
                                 };
                             }
                         }
-                        
+
                         // Retry the operation once
                         match retry_query_builder.execute(&pool).await {
                             Ok(result) => {
                                 let row_id = result.last_insert_rowid();
-                                log::info!("✅ INSERT retry successful on database '{}': new row ID {}", db_path, row_id);
+                                log::info!(
+                                    "✅ INSERT retry successful on database '{}': new row ID {}",
+                                    db_path,
+                                    row_id
+                                );
                                 return Ok(DbResponse {
                                     success: true,
                                     data: Some(row_id),
@@ -436,36 +520,53 @@ pub async fn db_insert_table_row(
                                 });
                             }
                             Err(retry_error) => {
-                                log::error!("❌ INSERT failed even after permission fix: {}", retry_error);
-                                
+                                log::error!(
+                                    "❌ INSERT failed even after permission fix: {}",
+                                    retry_error
+                                );
+
                                 // If still failing, try to reset WAL mode as a last resort
                                 if retry_error.to_string().contains("readonly database") {
                                     log::warn!("🔄 Attempting WAL file cleanup as final retry");
-                                    match crate::commands::database::helpers::reset_sqlite_wal_mode(&db_path) {
+                                    match crate::commands::database::helpers::reset_sqlite_wal_mode(
+                                        &db_path,
+                                    ) {
                                         Ok(()) => {
-                                            log::info!("✅ WAL files cleared, attempting final retry");
+                                            log::info!(
+                                                "✅ WAL files cleared, attempting final retry"
+                                            );
                                             // Rebuild the query for final retry
                                             let mut final_query_builder = sqlx::query(&query);
                                             for col in &columns {
                                                 if let Some(value) = row.get(col) {
                                                     final_query_builder = match value {
-                                                        serde_json::Value::String(s) => final_query_builder.bind(s),
+                                                        serde_json::Value::String(s) => {
+                                                            final_query_builder.bind(s)
+                                                        }
                                                         serde_json::Value::Number(n) => {
                                                             if let Some(int_val) = n.as_i64() {
                                                                 final_query_builder.bind(int_val)
-                                                            } else if let Some(float_val) = n.as_f64() {
+                                                            } else if let Some(float_val) =
+                                                                n.as_f64()
+                                                            {
                                                                 final_query_builder.bind(float_val)
                                                             } else {
-                                                                final_query_builder.bind(value.to_string())
+                                                                final_query_builder
+                                                                    .bind(value.to_string())
                                                             }
-                                                        },
-                                                        serde_json::Value::Bool(b) => final_query_builder.bind(b),
-                                                        serde_json::Value::Null => final_query_builder.bind(None::<String>),
-                                                        _ => final_query_builder.bind(value.to_string()),
+                                                        }
+                                                        serde_json::Value::Bool(b) => {
+                                                            final_query_builder.bind(b)
+                                                        }
+                                                        serde_json::Value::Null => {
+                                                            final_query_builder.bind(None::<String>)
+                                                        }
+                                                        _ => final_query_builder
+                                                            .bind(value.to_string()),
                                                     };
                                                 }
                                             }
-                                            
+
                                             match final_query_builder.execute(&pool).await {
                                                 Ok(result) => {
                                                     let row_id = result.last_insert_rowid();
@@ -482,7 +583,10 @@ pub async fn db_insert_table_row(
                                             }
                                         }
                                         Err(wal_error) => {
-                                            log::error!("❌ Failed to clear WAL files: {}", wal_error);
+                                            log::error!(
+                                                "❌ Failed to clear WAL files: {}",
+                                                wal_error
+                                            );
                                         }
                                     }
                                 }
@@ -494,7 +598,7 @@ pub async fn db_insert_table_row(
                     }
                 }
             }
-            
+
             Ok(DbResponse {
                 success: false,
                 data: None,
@@ -521,7 +625,11 @@ pub async fn db_add_new_row_with_defaults(
     // Validate that we have a specific database path for write operations
     let db_path = match current_db_path.clone() {
         Some(path) => {
-            log::info!("📝 INSERT DEFAULT VALUES operation for table '{}' on database: {}", table_name, path);
+            log::info!(
+                "📝 INSERT DEFAULT VALUES operation for table '{}' on database: {}",
+                table_name,
+                path
+            );
             path
         }
         None => {
@@ -529,7 +637,10 @@ pub async fn db_add_new_row_with_defaults(
             return Ok(DbResponse {
                 success: false,
                 data: None,
-                error: Some("INSERT operation requires a specific database path - no database selected".to_string()),
+                error: Some(
+                    "INSERT operation requires a specific database path - no database selected"
+                        .to_string(),
+                ),
             });
         }
     };
@@ -538,7 +649,10 @@ pub async fn db_add_new_row_with_defaults(
     let pool = match get_current_pool(&state, &db_cache, current_db_path.clone()).await {
         Ok(pool) => pool,
         Err(e) => {
-            log::error!("❌ Failed to get connection for INSERT DEFAULT VALUES operation: {}", e);
+            log::error!(
+                "❌ Failed to get connection for INSERT DEFAULT VALUES operation: {}",
+                e
+            );
             return Ok(DbResponse {
                 success: false,
                 data: None,
@@ -546,22 +660,29 @@ pub async fn db_add_new_row_with_defaults(
             });
         }
     };
-    
+
     // Ensure database file permissions are correct before write operation
     if let Err(permission_error) = ensure_database_file_permissions(&db_path) {
-        log::error!("❌ Failed to ensure database permissions: {}", permission_error);
+        log::error!(
+            "❌ Failed to ensure database permissions: {}",
+            permission_error
+        );
         return Ok(DbResponse {
             success: false,
             data: None,
             error: Some(format!("Database permission error: {}", permission_error)),
         });
     }
-    
+
     let pragma_query = format!("PRAGMA table_info({})", table_name);
     let schema_rows = match sqlx::query(&pragma_query).fetch_all(&pool).await {
         Ok(rows) => rows,
         Err(e) => {
-            log::error!("❌ Failed to read schema for INSERT DEFAULT VALUES on '{}': {}", table_name, e);
+            log::error!(
+                "❌ Failed to read schema for INSERT DEFAULT VALUES on '{}': {}",
+                table_name,
+                e
+            );
             return Ok(DbResponse {
                 success: false,
                 data: None,
@@ -578,7 +699,10 @@ pub async fn db_add_new_row_with_defaults(
         let column_type = row.get::<String, _>("type");
         let not_null = row.get::<i64, _>("notnull") != 0;
         let primary_key = row.get::<i64, _>("pk") != 0;
-        let default_literal = row.try_get::<Option<String>, _>("dflt_value").ok().flatten();
+        let default_literal = row
+            .try_get::<Option<String>, _>("dflt_value")
+            .ok()
+            .flatten();
 
         // Let SQLite handle generated/defaulted primary keys.
         if primary_key && default_literal.is_none() {
@@ -596,7 +720,8 @@ pub async fn db_add_new_row_with_defaults(
         }
 
         insert_columns.push(column_name);
-        let generated_value = crate::commands::database::helpers::get_default_value_for_type(&column_type);
+        let generated_value =
+            crate::commands::database::helpers::get_default_value_for_type(&column_type);
         insert_values.push(if generated_value.is_null() {
             serde_json::Value::String(String::new())
         } else {
@@ -615,20 +740,37 @@ pub async fn db_add_new_row_with_defaults(
             placeholders
         )
     };
-    
-    log::info!("🔧 Executing INSERT DEFAULT VALUES query on database '{}': {}", db_path, query);
-    
-    match bind_json_values(sqlx::query(&query), &insert_values).execute(&pool).await {
+
+    log::info!(
+        "🔧 Executing INSERT DEFAULT VALUES query on database '{}': {}",
+        db_path,
+        query
+    );
+
+    match bind_json_values(sqlx::query(&query), &insert_values)
+        .execute(&pool)
+        .await
+    {
         Ok(result) => {
             let row_id = result.last_insert_rowid();
-            log::info!("✅ INSERT DEFAULT VALUES successful on database '{}': new row ID {}", db_path, row_id);
-            
+            log::info!(
+                "✅ INSERT DEFAULT VALUES successful on database '{}': new row ID {}",
+                db_path,
+                row_id
+            );
+
             // Record change in history (non-fatal if fails)
             log::info!("🔍 Attempting to record change - context params: device_id={:?}, device_name={:?}, device_type={:?}, package_name={:?}, app_name={:?}", 
                        device_id, device_name, device_type, package_name, app_name);
-                       
-            if let (Some(device_id), Some(device_name), Some(device_type), Some(package_name), Some(app_name)) = 
-                (device_id, device_name, device_type, package_name, app_name) {
+
+            if let (
+                Some(device_id),
+                Some(device_name),
+                Some(device_type),
+                Some(package_name),
+                Some(app_name),
+            ) = (device_id, device_name, device_type, package_name, app_name)
+            {
                 log::info!("✅ All context parameters available, creating change event");
                 let user_context = extract_context_from_path(
                     &db_path,
@@ -638,12 +780,12 @@ pub async fn db_add_new_row_with_defaults(
                     Some(package_name),
                     Some(app_name),
                 );
-                
+
                 // For INSERT DEFAULT VALUES, we don't know the exact values inserted
                 let _empty_old_values: HashMap<String, serde_json::Value> = HashMap::new();
                 let _empty_row: HashMap<String, serde_json::Value> = HashMap::new(); // We'll populate with default indicator
                 let field_changes = vec![]; // Empty since we don't know the actual values
-                
+
                 if let Ok(change_event) = create_change_event(
                     &db_path,
                     &table_name,
@@ -658,7 +800,7 @@ pub async fn db_add_new_row_with_defaults(
             } else {
                 log::warn!("⚠️ Cannot record change - missing context parameters");
             }
-            
+
             Ok(DbResponse {
                 success: true,
                 data: Some(row_id),
@@ -666,26 +808,51 @@ pub async fn db_add_new_row_with_defaults(
             })
         }
         Err(e) => {
-            log::error!("❌ INSERT DEFAULT VALUES failed on database '{}': {}", db_path, e);
-            
+            log::error!(
+                "❌ INSERT DEFAULT VALUES failed on database '{}': {}",
+                db_path,
+                e
+            );
+
             // If it's a read-only error, try to fix permissions and retry once
-            if e.to_string().contains("readonly database") || e.to_string().contains("attempt to write a readonly database") {
-                log::warn!("🔄 Detected read-only database error, attempting to fix permissions and retry");
-                
+            if e.to_string().contains("readonly database")
+                || e.to_string()
+                    .contains("attempt to write a readonly database")
+            {
+                log::warn!(
+                    "🔄 Detected read-only database error, attempting to fix permissions and retry"
+                );
+
                 match ensure_database_file_permissions(&db_path) {
                     Ok(()) => {
-                        log::info!("✅ Fixed permissions, retrying INSERT DEFAULT VALUES operation");
-                        
+                        log::info!(
+                            "✅ Fixed permissions, retrying INSERT DEFAULT VALUES operation"
+                        );
+
                         // Retry the operation once
-                        match bind_json_values(sqlx::query(&query), &insert_values).execute(&pool).await {
+                        match bind_json_values(sqlx::query(&query), &insert_values)
+                            .execute(&pool)
+                            .await
+                        {
                             Ok(result) => {
                                 let row_id = result.last_insert_rowid();
                                 log::info!("✅ INSERT DEFAULT VALUES retry successful on database '{}': new row ID {}", db_path, row_id);
-                                
+
                                 // Record change in history (non-fatal if fails) - retry case
                                 log::info!("🔍 Recording change for retry case");
-                                if let (Some(device_id), Some(device_name), Some(device_type), Some(package_name), Some(app_name)) = 
-                                    (&device_id, &device_name, &device_type, &package_name, &app_name) {
+                                if let (
+                                    Some(device_id),
+                                    Some(device_name),
+                                    Some(device_type),
+                                    Some(package_name),
+                                    Some(app_name),
+                                ) = (
+                                    &device_id,
+                                    &device_name,
+                                    &device_type,
+                                    &package_name,
+                                    &app_name,
+                                ) {
                                     log::info!("✅ Retry case - All context parameters available");
                                     let user_context = extract_context_from_path(
                                         &db_path,
@@ -695,7 +862,7 @@ pub async fn db_add_new_row_with_defaults(
                                         Some(package_name.clone()),
                                         Some(app_name.clone()),
                                     );
-                                    
+
                                     if let Ok(change_event) = create_change_event(
                                         &db_path,
                                         &table_name,
@@ -705,10 +872,14 @@ pub async fn db_add_new_row_with_defaults(
                                         Some(row_id.to_string()),
                                         Some(query.clone()),
                                     ) {
-                                        let _ = record_change_with_safety(&change_history, change_event).await;
+                                        let _ = record_change_with_safety(
+                                            &change_history,
+                                            change_event,
+                                        )
+                                        .await;
                                     }
                                 }
-                                
+
                                 return Ok(DbResponse {
                                     success: true,
                                     data: Some(row_id),
@@ -716,47 +887,80 @@ pub async fn db_add_new_row_with_defaults(
                                 });
                             }
                             Err(retry_error) => {
-                                log::error!("❌ INSERT DEFAULT VALUES failed even after permission fix: {}", retry_error);
-                                
+                                log::error!(
+                                    "❌ INSERT DEFAULT VALUES failed even after permission fix: {}",
+                                    retry_error
+                                );
+
                                 // If still failing, try to reset WAL mode as a last resort
                                 if retry_error.to_string().contains("readonly database") {
                                     log::warn!("🔄 Attempting WAL file cleanup as final retry");
-                                    match crate::commands::database::helpers::reset_sqlite_wal_mode(&db_path) {
+                                    match crate::commands::database::helpers::reset_sqlite_wal_mode(
+                                        &db_path,
+                                    ) {
                                         Ok(()) => {
-                                            log::info!("✅ WAL files cleared, attempting final retry");
+                                            log::info!(
+                                                "✅ WAL files cleared, attempting final retry"
+                                            );
                                             // Retry the operation once
-                                            match bind_json_values(sqlx::query(&query), &insert_values).execute(&pool).await {
+                                            match bind_json_values(
+                                                sqlx::query(&query),
+                                                &insert_values,
+                                            )
+                                            .execute(&pool)
+                                            .await
+                                            {
                                                 Ok(result) => {
                                                     let row_id = result.last_insert_rowid();
                                                     log::info!("✅ INSERT DEFAULT VALUES final retry successful on database '{}': new row ID {}", db_path, row_id);
-                                                    
+
                                                     // Record change in history (non-fatal if fails) - final retry case
-                                                    log::info!("🔍 Recording change for final retry case");
-                                                    if let (Some(device_id), Some(device_name), Some(device_type), Some(package_name), Some(app_name)) = 
-                                                        (&device_id, &device_name, &device_type, &package_name, &app_name) {
+                                                    log::info!(
+                                                        "🔍 Recording change for final retry case"
+                                                    );
+                                                    if let (
+                                                        Some(device_id),
+                                                        Some(device_name),
+                                                        Some(device_type),
+                                                        Some(package_name),
+                                                        Some(app_name),
+                                                    ) = (
+                                                        &device_id,
+                                                        &device_name,
+                                                        &device_type,
+                                                        &package_name,
+                                                        &app_name,
+                                                    ) {
                                                         log::info!("✅ Final retry case - All context parameters available");
-                                                        let user_context = extract_context_from_path(
-                                                            &db_path,
-                                                            Some(device_id.clone()),
-                                                            Some(device_name.clone()),
-                                                            Some(device_type.clone()),
-                                                            Some(package_name.clone()),
-                                                            Some(app_name.clone()),
-                                                        );
-                                                        
-                                                        if let Ok(change_event) = create_change_event(
-                                                            &db_path,
-                                                            &table_name,
-                                                            OperationType::Insert,
-                                                            user_context,
-                                                            vec![], // Empty since we don't know the actual values
-                                                            Some(row_id.to_string()),
-                                                            Some(query.clone()),
-                                                        ) {
-                                                            let _ = record_change_with_safety(&change_history, change_event).await;
+                                                        let user_context =
+                                                            extract_context_from_path(
+                                                                &db_path,
+                                                                Some(device_id.clone()),
+                                                                Some(device_name.clone()),
+                                                                Some(device_type.clone()),
+                                                                Some(package_name.clone()),
+                                                                Some(app_name.clone()),
+                                                            );
+
+                                                        if let Ok(change_event) =
+                                                            create_change_event(
+                                                                &db_path,
+                                                                &table_name,
+                                                                OperationType::Insert,
+                                                                user_context,
+                                                                vec![], // Empty since we don't know the actual values
+                                                                Some(row_id.to_string()),
+                                                                Some(query.clone()),
+                                                            )
+                                                        {
+                                                            let _ = record_change_with_safety(
+                                                                &change_history,
+                                                                change_event,
+                                                            )
+                                                            .await;
                                                         }
                                                     }
-                                                    
+
                                                     return Ok(DbResponse {
                                                         success: true,
                                                         data: Some(row_id),
@@ -769,7 +973,10 @@ pub async fn db_add_new_row_with_defaults(
                                             }
                                         }
                                         Err(wal_error) => {
-                                            log::error!("❌ Failed to clear WAL files: {}", wal_error);
+                                            log::error!(
+                                                "❌ Failed to clear WAL files: {}",
+                                                wal_error
+                                            );
                                         }
                                     }
                                 }
@@ -781,7 +988,7 @@ pub async fn db_add_new_row_with_defaults(
                     }
                 }
             }
-            
+
             Ok(DbResponse {
                 success: false,
                 data: None,
@@ -809,7 +1016,11 @@ pub async fn db_delete_table_row(
     // Validate that we have a specific database path for write operations
     let db_path = match current_db_path.clone() {
         Some(path) => {
-            log::info!("📝 DELETE operation for table '{}' on database: {}", table_name, path);
+            log::info!(
+                "📝 DELETE operation for table '{}' on database: {}",
+                table_name,
+                path
+            );
             path
         }
         None => {
@@ -817,7 +1028,10 @@ pub async fn db_delete_table_row(
             return Ok(DbResponse {
                 success: false,
                 data: None,
-                error: Some("DELETE operation requires a specific database path - no database selected".to_string()),
+                error: Some(
+                    "DELETE operation requires a specific database path - no database selected"
+                        .to_string(),
+                ),
             });
         }
     };
@@ -834,17 +1048,20 @@ pub async fn db_delete_table_row(
             });
         }
     };
-    
+
     // Ensure database file permissions are correct before write operation
     if let Err(permission_error) = ensure_database_file_permissions(&db_path) {
-        log::error!("❌ Failed to ensure database permissions: {}", permission_error);
+        log::error!(
+            "❌ Failed to ensure database permissions: {}",
+            permission_error
+        );
         return Ok(DbResponse {
             success: false,
             data: None,
             error: Some(format!("Database permission error: {}", permission_error)),
         });
     }
-    
+
     // Safety checks
     if table_name.trim().is_empty() {
         return Ok(DbResponse {
@@ -853,7 +1070,7 @@ pub async fn db_delete_table_row(
             error: Some("Table name cannot be empty".to_string()),
         });
     }
-    
+
     if condition.trim().is_empty() {
         return Ok(DbResponse {
             success: false,
@@ -861,30 +1078,41 @@ pub async fn db_delete_table_row(
             error: Some("Delete condition cannot be empty".to_string()),
         });
     }
-    
+
     let query = format!("DELETE FROM {} WHERE {}", table_name, condition);
-    log::info!("🔧 Executing DELETE query on database '{}': {}", db_path, query);
-    
+    log::info!(
+        "🔧 Executing DELETE query on database '{}': {}",
+        db_path,
+        query
+    );
+
     // PHASE 2: Capture old values before deletion for change tracking (non-fatal if fails)
     let old_values = match sqlx::query(&format!("SELECT * FROM {} WHERE {}", table_name, condition))
         .fetch_all(&pool)
-        .await 
+        .await
     {
         Ok(rows) => {
             log::debug!("📝 Captured {} rows for deletion tracking", rows.len());
             Some(rows)
         }
         Err(e) => {
-            log::warn!("⚠️ Failed to capture old values for delete tracking (non-fatal): {}", e);
+            log::warn!(
+                "⚠️ Failed to capture old values for delete tracking (non-fatal): {}",
+                e
+            );
             None
         }
     };
-    
+
     match sqlx::query(&query).execute(&pool).await {
         Ok(result) => {
             let rows_affected = result.rows_affected();
-            log::info!("✅ DELETE successful on database '{}': {} rows affected", db_path, rows_affected);
-            
+            log::info!(
+                "✅ DELETE successful on database '{}': {} rows affected",
+                db_path,
+                rows_affected
+            );
+
             // PHASE 2: Record change in history (non-fatal if fails)
             if let Some(deleted_rows) = old_values {
                 let user_context = extract_context_from_path(
@@ -895,18 +1123,18 @@ pub async fn db_delete_table_row(
                     package_name,
                     app_name,
                 );
-                
+
                 // Record each deleted row as a separate change event
                 for (row_index, row) in deleted_rows.iter().enumerate() {
                     let old_row_values = extract_row_values(row);
                     let empty_new_values = std::collections::HashMap::new();
-                    
+
                     let field_changes = create_field_changes_optimized(
                         &OperationType::Delete,
                         &old_row_values,
                         &empty_new_values,
                     );
-                    
+
                     if !field_changes.is_empty() {
                         match create_change_event(
                             &db_path,
@@ -918,16 +1146,20 @@ pub async fn db_delete_table_row(
                             Some(query.clone()),
                         ) {
                             Ok(change_event) => {
-                                let _ = record_change_with_safety(&change_history, change_event).await;
+                                let _ =
+                                    record_change_with_safety(&change_history, change_event).await;
                             }
                             Err(e) => {
-                                log::warn!("⚠️ Failed to create change event for DELETE (non-fatal): {}", e);
+                                log::warn!(
+                                    "⚠️ Failed to create change event for DELETE (non-fatal): {}",
+                                    e
+                                );
                             }
                         }
                     }
                 }
             }
-            
+
             Ok(DbResponse {
                 success: true,
                 data: Some(rows_affected),
@@ -936,20 +1168,29 @@ pub async fn db_delete_table_row(
         }
         Err(e) => {
             log::error!("❌ DELETE failed on database '{}': {}", db_path, e);
-            
+
             // If it's a read-only error, try to fix permissions and retry once
-            if e.to_string().contains("readonly database") || e.to_string().contains("attempt to write a readonly database") {
-                log::warn!("🔄 Detected read-only database error, attempting to fix permissions and retry");
-                
+            if e.to_string().contains("readonly database")
+                || e.to_string()
+                    .contains("attempt to write a readonly database")
+            {
+                log::warn!(
+                    "🔄 Detected read-only database error, attempting to fix permissions and retry"
+                );
+
                 match ensure_database_file_permissions(&db_path) {
                     Ok(()) => {
                         log::info!("✅ Fixed permissions, retrying DELETE operation");
-                        
+
                         // Retry the operation once
                         match sqlx::query(&query).execute(&pool).await {
                             Ok(result) => {
                                 let rows_affected = result.rows_affected();
-                                log::info!("✅ DELETE retry successful on database '{}': {} rows affected", db_path, rows_affected);
+                                log::info!(
+                                    "✅ DELETE retry successful on database '{}': {} rows affected",
+                                    db_path,
+                                    rows_affected
+                                );
                                 return Ok(DbResponse {
                                     success: true,
                                     data: Some(rows_affected),
@@ -957,7 +1198,10 @@ pub async fn db_delete_table_row(
                                 });
                             }
                             Err(retry_error) => {
-                                log::error!("❌ DELETE failed even after permission fix: {}", retry_error);
+                                log::error!(
+                                    "❌ DELETE failed even after permission fix: {}",
+                                    retry_error
+                                );
                             }
                         }
                     }
@@ -966,7 +1210,7 @@ pub async fn db_delete_table_row(
                     }
                 }
             }
-            
+
             Ok(DbResponse {
                 success: false,
                 data: None,
@@ -997,16 +1241,16 @@ pub async fn db_execute_query(
             });
         }
     };
-    
+
     let is_select = query.trim().to_uppercase().starts_with("SELECT");
-    
+
     if is_select {
         // Handle SELECT queries
         match sqlx::query(&query).fetch_all(&pool).await {
             Ok(rows) => {
                 let mut result_rows = Vec::new();
                 let mut columns = Vec::new();
-                
+
                 if !rows.is_empty() {
                     // Get column info from first row
                     for column in rows[0].columns() {
@@ -1015,7 +1259,7 @@ pub async fn db_execute_query(
                             "type": ""
                         }));
                     }
-                    
+
                     // Process all rows
                     for row in rows {
                         let mut row_data = HashMap::new();
@@ -1026,57 +1270,68 @@ pub async fn db_execute_query(
                                         serde_json::Value::Null
                                     } else {
                                         match column.type_info().name() {
-                                            "TEXT" => {
-                                                match row.try_get::<String, _>(i) {
-                                                    Ok(val) => serde_json::Value::String(val),
-                                                    Err(_) => serde_json::Value::String("".to_string()),
-                                                }
+                                            "TEXT" => match row.try_get::<String, _>(i) {
+                                                Ok(val) => serde_json::Value::String(val),
+                                                Err(_) => serde_json::Value::String("".to_string()),
                                             },
                                             "INTEGER" => {
                                                 match row.try_get::<i64, _>(i) {
-                                                    Ok(val) => serde_json::Value::Number(serde_json::Number::from(val)),
-                                                    Err(_) => {
-                                                        // Try as string first, then convert to number if possible
-                                                        match row.try_get::<String, _>(i) {
-                                                            Ok(str_val) => {
-                                                                if let Ok(int_val) = str_val.parse::<i64>() {
-                                                                    serde_json::Value::Number(serde_json::Number::from(int_val))
-                                                                } else {
-                                                                    serde_json::Value::String(str_val)
-                                                                }
-                                                            },
-                                                            Err(_) => serde_json::Value::Null,
-                                                        }
-                                                    }
-                                                }
-                                            },
-                                            "REAL" => {
-                                                match row.try_get::<f64, _>(i) {
                                                     Ok(val) => serde_json::Value::Number(
-                                                        serde_json::Number::from_f64(val).unwrap_or(serde_json::Number::from(0))
+                                                        serde_json::Number::from(val),
                                                     ),
                                                     Err(_) => {
                                                         // Try as string first, then convert to number if possible
                                                         match row.try_get::<String, _>(i) {
                                                             Ok(str_val) => {
-                                                                if let Ok(float_val) = str_val.parse::<f64>() {
+                                                                if let Ok(int_val) =
+                                                                    str_val.parse::<i64>()
+                                                                {
                                                                     serde_json::Value::Number(
-                                                                        serde_json::Number::from_f64(float_val).unwrap_or(serde_json::Number::from(0))
+                                                                        serde_json::Number::from(
+                                                                            int_val,
+                                                                        ),
                                                                     )
                                                                 } else {
-                                                                    serde_json::Value::String(str_val)
+                                                                    serde_json::Value::String(
+                                                                        str_val,
+                                                                    )
                                                                 }
-                                                            },
+                                                            }
                                                             Err(_) => serde_json::Value::Null,
                                                         }
                                                     }
                                                 }
-                                            },
-                                            _ => {
-                                                match row.try_get::<String, _>(i) {
-                                                    Ok(val) => serde_json::Value::String(val),
-                                                    Err(_) => serde_json::Value::String("".to_string()),
+                                            }
+                                            "REAL" => {
+                                                match row.try_get::<f64, _>(i) {
+                                                    Ok(val) => serde_json::Value::Number(
+                                                        serde_json::Number::from_f64(val)
+                                                            .unwrap_or(serde_json::Number::from(0)),
+                                                    ),
+                                                    Err(_) => {
+                                                        // Try as string first, then convert to number if possible
+                                                        match row.try_get::<String, _>(i) {
+                                                            Ok(str_val) => {
+                                                                if let Ok(float_val) =
+                                                                    str_val.parse::<f64>()
+                                                                {
+                                                                    serde_json::Value::Number(
+                                                                        serde_json::Number::from_f64(float_val).unwrap_or(serde_json::Number::from(0))
+                                                                    )
+                                                                } else {
+                                                                    serde_json::Value::String(
+                                                                        str_val,
+                                                                    )
+                                                                }
+                                                            }
+                                                            Err(_) => serde_json::Value::Null,
+                                                        }
+                                                    }
                                                 }
+                                            }
+                                            _ => match row.try_get::<String, _>(i) {
+                                                Ok(val) => serde_json::Value::String(val),
+                                                Err(_) => serde_json::Value::String("".to_string()),
                                             },
                                         }
                                     }
@@ -1088,7 +1343,7 @@ pub async fn db_execute_query(
                         result_rows.push(serde_json::json!(row_data));
                     }
                 }
-                
+
                 Ok(DbResponse {
                     success: true,
                     data: Some(serde_json::json!({
@@ -1137,9 +1392,12 @@ pub async fn db_get_connection_stats(
 ) -> Result<DbResponse<HashMap<String, serde_json::Value>>, String> {
     let cache_guard = db_cache.read().await;
     let mut stats = HashMap::new();
-    
-    stats.insert("total_connections".to_string(), serde_json::Value::from(cache_guard.len()));
-    
+
+    stats.insert(
+        "total_connections".to_string(),
+        serde_json::Value::from(cache_guard.len()),
+    );
+
     let connection_details: Vec<serde_json::Value> = cache_guard
         .iter()
         .map(|(path, conn)| {
@@ -1150,9 +1408,12 @@ pub async fn db_get_connection_stats(
             })
         })
         .collect();
-        
-    stats.insert("connections".to_string(), serde_json::Value::Array(connection_details));
-    
+
+    stats.insert(
+        "connections".to_string(),
+        serde_json::Value::Array(connection_details),
+    );
+
     Ok(DbResponse {
         success: true,
         data: Some(stats),
@@ -1169,7 +1430,7 @@ pub async fn db_clear_cache_for_path(
         Ok(absolute_path) => absolute_path.to_string_lossy().to_string(),
         Err(_) => db_path.clone(),
     };
-    
+
     let mut cache_guard = db_cache.write().await;
     if cache_guard.remove(&normalized_path).is_some() {
         log::info!("🧹 Cleared cache for database: {}", normalized_path);
@@ -1196,7 +1457,7 @@ pub async fn db_clear_all_cache(
     let count = cache_guard.len();
     cache_guard.clear();
     log::info!("🧹 Cleared all database cache entries: {} removed", count);
-    
+
     Ok(DbResponse {
         success: true,
         data: Some(format!("Cleared {} cache entries", count)),
@@ -1210,33 +1471,39 @@ pub async fn db_switch_database(
     new_db_path: String,
 ) -> Result<DbResponse<String>, String> {
     log::info!("🔄 Switching to database: {}", new_db_path);
-    
+
     // Clear any potentially stale connections to allow clean switch
     let mut cache_guard = db_cache.write().await;
     let cache_size_before = cache_guard.len();
-    
+
     // Remove any connections that might conflict with the new database
     cache_guard.retain(|path, cached_conn| {
         if cached_conn.should_be_removed(std::time::Duration::from_secs(0)) {
-            log::info!("🧹 Removed stale connection during database switch: {}", path);
+            log::info!(
+                "🧹 Removed stale connection during database switch: {}",
+                path
+            );
             false
         } else {
             true
         }
     });
-    
+
     let cache_size_after = cache_guard.len();
     let cleaned_count = cache_size_before - cache_size_after;
-    
+
     if cleaned_count > 0 {
-        log::info!("🧹 Cleaned {} stale connections during database switch", cleaned_count);
+        log::info!(
+            "🧹 Cleaned {} stale connections during database switch",
+            cleaned_count
+        );
     }
-    
+
     // Also clear WAL files for the new database in case there are any locks
     if let Err(e) = crate::commands::database::helpers::reset_sqlite_wal_mode(&new_db_path) {
         log::warn!("⚠️ Could not clear WAL files for new database (this is normal if no WAL files exist): {}", e);
     }
-    
+
     log::info!("✅ Database switch prepared: {}", new_db_path);
     Ok(DbResponse {
         success: true,
@@ -1244,7 +1511,6 @@ pub async fn db_switch_database(
         error: None,
     })
 }
-
 
 #[tauri::command]
 pub async fn db_clear_table(
@@ -1263,7 +1529,11 @@ pub async fn db_clear_table(
     // Validate that we have a specific database path for write operations
     let db_path = match current_db_path.clone() {
         Some(path) => {
-            log::info!("📝 CLEAR TABLE operation for table '{}' on database: {}", table_name, path);
+            log::info!(
+                "📝 CLEAR TABLE operation for table '{}' on database: {}",
+                table_name,
+                path
+            );
             path
         }
         None => {
@@ -1280,7 +1550,10 @@ pub async fn db_clear_table(
     let pool = match get_current_pool(&state, &db_cache, current_db_path.clone()).await {
         Ok(pool) => pool,
         Err(e) => {
-            log::error!("❌ Failed to get connection for CLEAR TABLE operation: {}", e);
+            log::error!(
+                "❌ Failed to get connection for CLEAR TABLE operation: {}",
+                e
+            );
             return Ok(DbResponse {
                 success: false,
                 data: None,
@@ -1288,17 +1561,20 @@ pub async fn db_clear_table(
             });
         }
     };
-    
+
     // Ensure database file permissions are correct before write operation
     if let Err(permission_error) = ensure_database_file_permissions(&db_path) {
-        log::error!("❌ Failed to ensure database permissions: {}", permission_error);
+        log::error!(
+            "❌ Failed to ensure database permissions: {}",
+            permission_error
+        );
         return Ok(DbResponse {
             success: false,
             data: None,
             error: Some(format!("Database permission error: {}", permission_error)),
         });
     }
-    
+
     // Safety checks
     if table_name.trim().is_empty() {
         return Ok(DbResponse {
@@ -1307,27 +1583,36 @@ pub async fn db_clear_table(
             error: Some("Table name cannot be empty".to_string()),
         });
     }
-    
+
     // First, count how many rows will be deleted for change tracking
-    let row_count = match sqlx::query_scalar::<_, i64>(&format!("SELECT COUNT(*) FROM {}", table_name))
-        .fetch_one(&pool)
-        .await 
-    {
-        Ok(count) => count as usize,
-        Err(e) => {
-            log::warn!("⚠️ Failed to count rows before clear (non-fatal): {}", e);
-            0 // Continue with operation even if count fails
-        }
-    };
-    
+    let row_count =
+        match sqlx::query_scalar::<_, i64>(&format!("SELECT COUNT(*) FROM {}", table_name))
+            .fetch_one(&pool)
+            .await
+        {
+            Ok(count) => count as usize,
+            Err(e) => {
+                log::warn!("⚠️ Failed to count rows before clear (non-fatal): {}", e);
+                0 // Continue with operation even if count fails
+            }
+        };
+
     let query = format!("DELETE FROM {}", table_name);
-    log::info!("🔧 Executing CLEAR TABLE query on database '{}': {}", db_path, query);
-    
+    log::info!(
+        "🔧 Executing CLEAR TABLE query on database '{}': {}",
+        db_path,
+        query
+    );
+
     match sqlx::query(&query).execute(&pool).await {
         Ok(result) => {
             let rows_affected = result.rows_affected();
-            log::info!("✅ CLEAR TABLE successful on database '{}': {} rows deleted", db_path, rows_affected);
-            
+            log::info!(
+                "✅ CLEAR TABLE successful on database '{}': {} rows deleted",
+                db_path,
+                rows_affected
+            );
+
             // Record change in history (non-fatal if fails)
             let user_context = extract_context_from_path(
                 &db_path,
@@ -1337,17 +1622,17 @@ pub async fn db_clear_table(
                 package_name,
                 app_name,
             );
-            
+
             // Create a bulk delete or clear operation type based on count
             let operation_type = if row_count > 0 {
                 OperationType::BulkDelete { count: row_count }
             } else {
                 OperationType::Clear
             };
-            
+
             // For clear operations, we don't track individual field changes
             let field_changes = vec![];
-            
+
             match create_change_event(
                 &db_path,
                 &table_name,
@@ -1361,10 +1646,13 @@ pub async fn db_clear_table(
                     let _ = record_change_with_safety(&change_history, change_event).await;
                 }
                 Err(e) => {
-                    log::warn!("⚠️ Failed to create change event for CLEAR TABLE (non-fatal): {}", e);
+                    log::warn!(
+                        "⚠️ Failed to create change event for CLEAR TABLE (non-fatal): {}",
+                        e
+                    );
                 }
             }
-            
+
             Ok(DbResponse {
                 success: true,
                 data: Some(rows_affected),
@@ -1373,15 +1661,20 @@ pub async fn db_clear_table(
         }
         Err(e) => {
             log::error!("❌ CLEAR TABLE failed on database '{}': {}", db_path, e);
-            
+
             // If it's a read-only error, try to fix permissions and retry once
-            if e.to_string().contains("readonly database") || e.to_string().contains("attempt to write a readonly database") {
-                log::warn!("🔄 Detected read-only database error, attempting to fix permissions and retry");
-                
+            if e.to_string().contains("readonly database")
+                || e.to_string()
+                    .contains("attempt to write a readonly database")
+            {
+                log::warn!(
+                    "🔄 Detected read-only database error, attempting to fix permissions and retry"
+                );
+
                 match ensure_database_file_permissions(&db_path) {
                     Ok(()) => {
                         log::info!("✅ Fixed permissions, retrying CLEAR TABLE operation");
-                        
+
                         // Retry the operation once
                         match sqlx::query(&query).execute(&pool).await {
                             Ok(result) => {
@@ -1398,17 +1691,23 @@ pub async fn db_clear_table(
                                 return Ok(DbResponse {
                                     success: false,
                                     data: None,
-                                    error: Some(format!("Clear table operation failed after retry: {}", retry_error)),
+                                    error: Some(format!(
+                                        "Clear table operation failed after retry: {}",
+                                        retry_error
+                                    )),
                                 });
                             }
                         }
                     }
                     Err(permission_retry_error) => {
-                        log::error!("❌ Failed to fix permissions for retry: {}", permission_retry_error);
+                        log::error!(
+                            "❌ Failed to fix permissions for retry: {}",
+                            permission_retry_error
+                        );
                     }
                 }
             }
-            
+
             Ok(DbResponse {
                 success: false,
                 data: None,

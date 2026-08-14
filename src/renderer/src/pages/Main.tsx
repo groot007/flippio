@@ -2,6 +2,7 @@ import { VStack } from '@chakra-ui/react'
 import { DataGrid } from '@renderer/components/data/DataGrid'
 import { DragAndDropProvider } from '@renderer/components/data/DragAndDropProvider'
 import AppHeader from '@renderer/components/layout/AppHeader'
+import { SqlcipherUnlockModal } from '@renderer/components/layout/SqlcipherUnlockModal'
 import { SubHeader } from '@renderer/components/layout/SubHeader'
 import { SidePanel } from '@renderer/components/SidePanel'
 
@@ -19,6 +20,7 @@ export function Main() {
         <SubHeader />
         <DataGrid />
         <SidePanel />
+        <SqlcipherUnlockModal />
       </VStack>
     </DragAndDropProvider>
   )

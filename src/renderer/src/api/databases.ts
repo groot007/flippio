@@ -12,11 +12,25 @@ export interface ExportFileOptions {
   }>
 }
 
+export interface OpenDatabaseResult {
+  encryptionState?: 'plain' | 'sqlcipher' | 'unknown'
+  error?: string
+  path?: string
+  requiresKey?: boolean
+  success: boolean
+}
+
+interface DbOpenData {
+  encryption_state: OpenDatabaseResult['encryptionState']
+  path: string
+  requires_key: boolean
+}
+
 export interface DatabaseApi {
   exportFile: (options: ExportFileOptions) => Promise<string | null>
   getTables: (dbPath?: string) => Promise<any>
   getTableInfo: (tableName: string, dbPath?: string) => Promise<any>
-  openDatabase: (filePath: string) => Promise<any>
+  openDatabase: (filePath: string, key?: string) => Promise<OpenDatabaseResult>
   openFile: () => Promise<OpenFileResult>
   switchDatabase: (filePath: string) => Promise<any>
 }
@@ -66,20 +80,25 @@ export function createDatabaseApi({
       }
     },
 
-    openDatabase: async (filePath: string) => {
+    openDatabase: async (filePath: string, key?: string) => {
       validateInput(filePath, 'filePath', { required: true, type: 'string', maxLength: 500 })
+      if (key !== undefined) {
+        validateInput(key, 'key', { type: 'string', maxLength: 500 })
+      }
 
-      if (!filePath.match(/\.(db|sqlite|sqlite3)$/i)) {
-        throw new Error('Invalid database file extension. Expected .db, .sqlite, or .sqlite3')
+      if (!filePath.match(/\.(db|db3|sqlite|sqlite3|sqlitedb)$/i)) {
+        throw new Error('Invalid database file extension. Expected .db, .db3, .sqlite, .sqlite3, or .sqlitedb')
       }
 
       try {
-        const response = await invokeRaw<any>('db_open', { filePath })
-        const validatedResponse = validateDeviceResponse(response)
+        const response = await invokeRaw<{ data?: DbOpenData, error?: string, success: boolean }>('db_open', { filePath, key })
+        const validatedResponse = validateDeviceResponse<DbOpenData>(response)
 
         return {
           success: validatedResponse.success,
-          path: validatedResponse.data,
+          path: validatedResponse.data?.path,
+          requiresKey: validatedResponse.data?.requires_key ?? false,
+          encryptionState: validatedResponse.data?.encryption_state,
           error: validatedResponse.error,
         }
       }
